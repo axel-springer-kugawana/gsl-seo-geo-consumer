@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "event-models-standards/cloudevent-asyncapi-sample"
+		}
+	],
+	"settings": {}
+}
