@@ -13,7 +13,7 @@ Implementing these standards in our events can provide us with many benefits:
 
 ## Additional links
 
-Confluence page related to this study: https://avivgroup.atlassian.net/wiki/spaces/AARCH/pages/298583562/Event+model+standards
+Confluence page related to this study: https://avivgroup.atlassian.net/wiki/spaces/AARCH/pages/306220332/DSDG+Event+models+standards
 
 ## Samples
 
