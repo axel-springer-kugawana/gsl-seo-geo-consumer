@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "generate-ts-schema": "ts-node gen-ts-schema-from-asyncapi-spec --spec-file-path ../api-docs/classified/1.0.0/asyncapi.yaml --dest-file-path ../src/shared/specs/classifieds/1.0.0/asyncapi.ts",
+    "generate-ts-schema": "ts-node gen-ts-schema-from-asyncapi-spec --spec-file-path ../api-docs/classified/1.0.0/asyncapi.yaml --dest-file-path ../src/shared/schemas/classifieds/1.0.0/asyncapi.ts",
     "generate-models": "ts-node gen-ts-types-from-asyncapi-spec --spec-file-path ../api-docs/classified/1.0.0/asyncapi.yaml --dest-file-path ../src/shared/models/classifieds/1.0.0/models.ts"
   },
   "author": "",

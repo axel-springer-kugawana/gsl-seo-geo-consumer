@@ -193,9 +193,7 @@ export const schema={
                         "type": "string",
                         "enum": [
                           "IntegrationEvent",
-                          "DeltaEvent",
-                          "NotificationEvent",
-                          "CarriedStateEvent"
+                          "DomainEvent"
                         ],
                         "x-parser-schema-id": "EventCategory"
                       },
@@ -426,9 +424,7 @@ export const schema={
                         "type": "string",
                         "enum": [
                           "IntegrationEvent",
-                          "DeltaEvent",
-                          "NotificationEvent",
-                          "CarriedStateEvent"
+                          "DomainEvent"
                         ],
                         "x-parser-schema-id": "EventCategory"
                       },
@@ -669,9 +665,7 @@ export const schema={
                   "type": "string",
                   "enum": [
                     "IntegrationEvent",
-                    "DeltaEvent",
-                    "NotificationEvent",
-                    "CarriedStateEvent"
+                    "DomainEvent"
                   ],
                   "x-parser-schema-id": "EventCategory"
                 },
@@ -902,9 +896,7 @@ export const schema={
                   "type": "string",
                   "enum": [
                     "IntegrationEvent",
-                    "DeltaEvent",
-                    "NotificationEvent",
-                    "CarriedStateEvent"
+                    "DomainEvent"
                   ],
                   "x-parser-schema-id": "EventCategory"
                 },
@@ -1139,9 +1131,7 @@ export const schema={
                 "type": "string",
                 "enum": [
                   "IntegrationEvent",
-                  "DeltaEvent",
-                  "NotificationEvent",
-                  "CarriedStateEvent"
+                  "DomainEvent"
                 ],
                 "x-parser-schema-id": "EventCategory"
               },
@@ -1369,9 +1359,7 @@ export const schema={
                 "type": "string",
                 "enum": [
                   "IntegrationEvent",
-                  "DeltaEvent",
-                  "NotificationEvent",
-                  "CarriedStateEvent"
+                  "DomainEvent"
                 ],
                 "x-parser-schema-id": "EventCategory"
               },
@@ -1598,9 +1586,7 @@ export const schema={
             "type": "string",
             "enum": [
               "IntegrationEvent",
-              "DeltaEvent",
-              "NotificationEvent",
-              "CarriedStateEvent"
+              "DomainEvent"
             ],
             "x-parser-schema-id": "EventCategory"
           },
@@ -1635,9 +1621,7 @@ export const schema={
         "type": "string",
         "enum": [
           "IntegrationEvent",
-          "DeltaEvent",
-          "NotificationEvent",
-          "CarriedStateEvent"
+          "DomainEvent"
         ],
         "x-parser-schema-id": "EventCategory"
       },

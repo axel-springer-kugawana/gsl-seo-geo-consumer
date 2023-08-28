@@ -41,6 +41,7 @@ const generator = new TypeScriptGenerator({
     {
 
       interface: {
+
         property: ({ content }) => {
           // modalina does not handle correctly additionalProperties 
           // here we remove it when --with-additionalProperties is provided 
@@ -63,7 +64,8 @@ const generator = new TypeScriptGenerator({
   const models = await generator.generate(object);
   let fileContent = "";
   for (const model of models) {
-    fileContent += model.result;
+    // exporting all models
+    fileContent += `export ${model.result}` ;
     fileContent += `\r\n`
     fileContent += " "
     fileContent += `\r\n`

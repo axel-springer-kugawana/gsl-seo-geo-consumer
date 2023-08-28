@@ -14,13 +14,13 @@ export interface ClassifiedCreatedEvent {
   dataBase64?: string;
 }
  
-interface ClassifiedCreatedEventDataObject {
+export interface ClassifiedCreatedEventDataObject {
   classifiedId?: string;
 }
  
-type ClassifiedCreatedV1EventType = "classified-created.v1";
+export type ClassifiedCreatedV1EventType = "classified-created.v1";
  
-type EventCategory = "IntegrationEvent" | "DomainEvent";
+export type EventCategory = "IntegrationEvent" | "DomainEvent";
  
 export interface ClassifiedCensoredEvent {
   data: ClassifiedCensoredEventDataObject;
@@ -38,10 +38,10 @@ export interface ClassifiedCensoredEvent {
   dataBase64?: string;
 }
  
-interface ClassifiedCensoredEventDataObject {
+export interface ClassifiedCensoredEventDataObject {
   classifiedId: string;
   censorshipReason?: string;
 }
  
-type ClassifiedCensoredV1EventType = "classified-censored.v1";
+export type ClassifiedCensoredV1EventType = "classified-censored.v1";
  
