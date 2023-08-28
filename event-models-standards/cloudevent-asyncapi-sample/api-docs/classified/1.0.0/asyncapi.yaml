@@ -81,9 +81,7 @@ components:
           type: string
           enum: 
             - "IntegrationEvent" 
-            - "DeltaEvent" 
-            - "NotificationEvent"
-            - "CarriedStateEvent"
+            - "DomainEvent" 
 
     ClassifiedCreatedEventData:
       type: object

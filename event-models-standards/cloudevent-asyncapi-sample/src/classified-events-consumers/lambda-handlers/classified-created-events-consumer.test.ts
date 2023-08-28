@@ -8,7 +8,7 @@ describe('Consume classified created events lambda handler', () => {
             id: "cabf382d-47d1-6666-8b82-fff00bad4acd",
             type: "classified-created.v1",
             source: "abcd",
-            eventcategory: 'NotificationEvent',
+            eventcategory: 'IntegrationEvent',
             specversion: "1.0",
             data: {
                 classifiedId: "1234",
@@ -17,7 +17,7 @@ describe('Consume classified created events lambda handler', () => {
             id: "cabf382d-47d1-43b5-8b82-fff00bad4bcd",
             type: "classified-created.v1",
             source: "abcd",
-            eventcategory: 'NotificationEvent',
+            eventcategory: 'IntegrationEvent',
             specversion: "1.0",
             data: {
                 classifiedId: "456",
@@ -54,7 +54,7 @@ describe('Consume classified created events lambda handler', () => {
         const events = [{
             id: "cabf382d-0000-8888-8b82-fff00bad4acd",
             source: "abcd",
-            eventcategory: 'NotificationEvent',
+            eventcategory: 'IntegrationEvent',
             specversion: "1.0",
             data: {
                 classifiedId: "1234",
@@ -63,7 +63,7 @@ describe('Consume classified created events lambda handler', () => {
             id: "cabf382d-47d1-43b5-8b82-fff00bad4bcd",
             type: "classified-created.v1",
             source: "abcd",
-            eventcategory: 'NotificationEvent',
+            eventcategory: 'IntegrationEvent',
             specversion: "1.0",
             data: {
                 classifiedId: "456",
@@ -102,7 +102,7 @@ describe('Consume classified created events lambda handler', () => {
         const events = [{
             id: "cabf382d-0000-8888-8b82-fff00bad4acd",
             source: "abcd",
-            eventcategory: 'NotificationEvent',
+            eventcategory: 'IntegrationEvent',
             specversion: "1.0",
             data: {
                 someRandomProperty: "1234",
@@ -112,7 +112,7 @@ describe('Consume classified created events lambda handler', () => {
             id: "cabf382d-47d1-43b5-8b82-fff00bad4bcd",
             type: "classified-created.v1",
             source: "abcd",
-            eventcategory: 'NotificationEvent',
+            eventcategory: 'IntegrationEvent',
             specversion: "1.0",
             data: {
                 classifiedId: "456",

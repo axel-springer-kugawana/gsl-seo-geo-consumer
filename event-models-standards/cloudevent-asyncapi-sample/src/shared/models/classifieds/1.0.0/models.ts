@@ -20,7 +20,7 @@ interface ClassifiedCreatedEventDataObject {
  
 type ClassifiedCreatedV1EventType = "classified-created.v1";
  
-type EventCategory = "IntegrationEvent" | "DeltaEvent" | "NotificationEvent" | "CarriedStateEvent";
+type EventCategory = "IntegrationEvent" | "DomainEvent";
  
 export interface ClassifiedCensoredEvent {
   data: ClassifiedCensoredEventDataObject;
@@ -43,5 +43,5 @@ interface ClassifiedCensoredEventDataObject {
   censorshipReason?: string;
 }
  
-export type ClassifiedCensoredV1EventType = "classified-censored.v1";
+type ClassifiedCensoredV1EventType = "classified-censored.v1";
  
