@@ -1,7 +1,7 @@
 
 # Generating Schemas & models from AsyncAPI specification
 
-A code generation tool is essential in the API contract-first approach to automatically create consistent and accurate code structures based on the defined contract, ensuring seamless integration and reducing manual coding errors.
+A code generation tool is essential in the API contract-first approach to automatically create consistent code structures based on the defined contract, ensuring seamless integration and reducing manual coding errors.
 
 In order to simplify handling asyncapi sepc, you can find here two scripts
 
