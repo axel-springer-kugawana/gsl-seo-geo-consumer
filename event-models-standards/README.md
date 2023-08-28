@@ -22,3 +22,12 @@ Implementing these standards in our events can provide us with many benefits:
 You will find [here](./cloudevent-asyncapi-sample/) a sample application that leverage the use of cloudevent and asyncapi standards.
 
 ![samples schema](./cloudevent-asyncapi-sample/assets/event-std-schema01.png)
+
+#### Sample content
+
+- Producer/Consumer sample using CloudEvent spec  
+- AsyncAPI [model generation](./cloudevent-asyncapi-sample/api-docs-tools/)
+- [Event model validation](./cloudevent-asyncapi-sample/src/shared/validators/) with [AJV](https://ajv.js.org/)
+- [IaC with terraform](./cloudevent-asyncapi-sample/infra/), 
+- SNS/SQS subscription [payload filtering](./cloudevent-asyncapi-sample/infra/modules/classified-events-consumers/classified-censored-events-consumer.tf#L13)
+- SQS partial [batch responses handling]§https://docs.aws.amazon.com/prescriptive-guidance/latest/lambda-event-filtering-partial-batch-responses-for-sqs/best-practices-partial-batch-responses.html)
