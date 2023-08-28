@@ -11,9 +11,9 @@ Implementing these standards in our events can provide us with many benefits:
 - Discovrability and documentation
 - Standardized observability patterns and debugging options
 
-## Additional links
+## Study contents
 
-Confluence page related to this study: https://avivgroup.atlassian.net/wiki/spaces/AARCH/pages/306220332/DSDG+Event+models+standards
+- Confluence page related to this study: https://avivgroup.atlassian.net/wiki/spaces/AARCH/pages/306220332/DSDG+Event+models+standards
 
 ## Samples
 
