@@ -30,4 +30,4 @@ You will find [here](./cloudevent-asyncapi-sample/) a sample application that le
 - [Event model validation](./cloudevent-asyncapi-sample/src/shared/validators/) with [AJV](https://ajv.js.org/)
 - [IaC with terraform](./cloudevent-asyncapi-sample/infra/), 
 - SNS/SQS subscription [payload filtering](./cloudevent-asyncapi-sample/infra/modules/classified-events-consumers/classified-censored-events-consumer.tf#L13)
-- SQS partial [batch responses handling]§https://docs.aws.amazon.com/prescriptive-guidance/latest/lambda-event-filtering-partial-batch-responses-for-sqs/best-practices-partial-batch-responses.html)
+- SQS partial [batch responses handling](https://docs.aws.amazon.com/prescriptive-guidance/latest/lambda-event-filtering-partial-batch-responses-for-sqs/best-practices-partial-batch-responses.html)
