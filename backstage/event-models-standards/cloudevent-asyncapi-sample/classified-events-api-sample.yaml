@@ -1,0 +1,16 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+    name: Cloudevent Asyncapi Sample
+    title: Sample of an event driven api
+    description: Sample of an event driven api that uses cloudevent & async API
+    annotations:
+        github.com/project-slug: axel-springer-kugawana/aviv_architecture_distributed_systems_design_guild
+spec:
+    type: asyncapi
+    owner: axel-springer-kugawana/distributed-systems-design-guild
+    lifecycle: experimental
+    system: cloudevent-asyncapi-sample
+    definition:
+        $asyncapi: '../../../event-models-standards/cloudevent-asyncapi-sample/api-docs/classified/1.0.0/asyncapi.yaml'

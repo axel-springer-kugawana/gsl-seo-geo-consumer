@@ -1,0 +1,8 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+    name: aviv-architecture-distributed-systems-design-guild
+spec:
+    targets:
+        - ./backstage/event-models-standards/cloudevent-asyncapi-sample/classified-events-api.yaml
