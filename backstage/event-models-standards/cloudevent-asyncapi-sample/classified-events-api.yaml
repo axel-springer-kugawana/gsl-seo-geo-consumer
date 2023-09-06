@@ -10,7 +10,7 @@ metadata:
 spec:
     type: asyncapi
     owner: axel-springer-kugawana/distributed-systems-design-guild
-    lifecycle: experimental
+    lifecycle: production
     system: cloudevent-asyncapi-sample
     definition:
         $asyncapi: '../../../event-models-standards/cloudevent-asyncapi-sample/api-docs/classified/1.0.0/asyncapi.yaml'
