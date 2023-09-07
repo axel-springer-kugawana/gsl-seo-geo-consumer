@@ -13,4 +13,4 @@ spec:
     lifecycle: production
     system: cloudevent-asyncapi-sample
     definition:
-        $asyncapi: '/event-models-standards/cloudevent-asyncapi-sample/api-docs/classified/1.0.0/asyncapi.yaml'
+        $asyncapi: https://github.com/axel-springer-kugawana/aviv_architecture_distributed_systems_design_guild/blob/main/event-models-standards/cloudevent-asyncapi-sample/api-docs/classified/1.0.0/asyncapi.yaml
