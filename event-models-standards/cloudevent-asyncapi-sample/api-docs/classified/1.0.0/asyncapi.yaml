@@ -53,7 +53,7 @@ components:
     EventEnvelope:
       type: object
       allOf:
-      - $ref: 'https://raw.githubusercontent.com/cloudevents/spec/v1.0.1/spec.json'
+      - $ref: '../../cloudevent-1.0.1.json' 
       properties:
         id:
           type: string
