@@ -10,8 +10,8 @@ metadata:
     tags:
     - backend-guild
     - cloudevent
-    - EDA
-    - Sample
+    - eda
+    - sample
 spec:
     type: asyncapi
     owner: axel-springer-kugawana/distributed-systems-design-guild
