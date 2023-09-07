@@ -2,7 +2,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: API
 metadata:
-    name: Cloudevent Asyncapi Sample
+    name: cloudevent-asyncapi-sample
     title: Sample of an event driven api
     description: Sample of an event driven api that uses cloudevent & async API
     annotations:
