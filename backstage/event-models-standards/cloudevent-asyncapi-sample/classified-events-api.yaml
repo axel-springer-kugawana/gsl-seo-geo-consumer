@@ -8,10 +8,10 @@ metadata:
     annotations:
         github.com/project-slug: axel-springer-kugawana/aviv_architecture_distributed_systems_design_guild
     tags:
-    - backend guild
+    - backend-guild
     - cloudevent
-    - eda
-    - sample
+    - EDA
+    - Sample
 spec:
     type: asyncapi
     owner: axel-springer-kugawana/distributed-systems-design-guild
