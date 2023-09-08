@@ -53,6 +53,10 @@ components:
     EventEnvelope:
       type: object
       allOf:
+      ## https://raw.githubusercontent.com/cloudevents/spec/v1.0.1/spec.json
+      ## We reference a local copy of cloudevent specification eventhough json schema supports remote references.
+      ## The reason is that backstage is not able to read remote files from raw.githubusercontent.com.
+      ## see: https://roadie.io/docs/getting-started/openapi-specs/#step-1-create-an-api-kind:~:text=Note%20that%20if%20you%20are%20hosting%20your%20OpenAPI%20specs%20in%20GitHub%20and%20referencing%20them%20with%20the%20%24openapi%20property%2C%20the%20link%20must%20point%20to%20the%20URL%20starting%20with%20https%3A//github.com%20and%20not%20https%3A//raw.githubusercontent.com.
       - $ref: '../../cloudevent-1.0.1.json' 
       properties:
         id:
