@@ -1,8 +1,9 @@
 # Intro
 
 This folder holds all the code samples that helps building idempotent event consumers.
-These samples showcase how to handle idempotency on lambda based serverless workloads using Lambda power tools. 
-Lambda powertools is a suite of utilities that helps adopting best practices when writing Lambda functions.
+These samples showcase how to handle idempotency on lambda based serverless workloads using [Lambda power tools](https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/idempotency/).
+
+[Lambda powertools](https://docs.powertools.aws.dev/lambda/typescript/latest/) is a suite of utilities that helps adopting best practices when writing Lambda functions.
 
 ## What is idempotency and what are idempotent event consumers ?
 
@@ -17,15 +18,25 @@ Key design conciderations :
 - Atomicity: Idempotent processing should be atomic: The entire operation either succeeds or fails as a whole. This ensures that even if an event is processed more than once, the system remains in a consistent state.
 - Error management: Event consumers should implement error-handling mechanisms to gracefully handle failures during event processing. For example, if processing an event fails, the consumer should be able to safely retry the processing without causing side effects.
 
-
+Given all of these key conciderations, implementing custom idempotency logic can be error prone and it is recommended to use supported and tested libraries and tested. hence the use of Lambda power tools when building serverless workloads. 
 
 
 ## Samples
 
-You will find [here](./src/) a sample application that leverage the use of lambda power tools and handling idempotencykey that is part of the cloudevent envelope. 
+You will find [here](./src/) a sample serverless application that leverages the use of lambda power tools in order to be idempotent. 
 
 #### idempotent sqs consumer with lambda powertools and cloudevents
 <img src="./assets/idempotent-event-consumer.png" width="600" >
+
+
+##### Sample content
+
+- Making [function call idempotent](./events-consumers/lambda-handlers/classified-censored-events-consumer.ts#L13) based on the `idempotencykey` property of the CloudEvent envelope
+- SQS partial [batch responses handling](https://docs.aws.amazon.com/prescriptive-guidance/latest/lambda-event-filtering-partial-batch-responses-for-sqs/best-practices-partial-batch-responses.html) with [lambda powertools](./events-consumers/lambda-handlers/classified-censored-events-consumer.ts#L48)
+- Producer/Consumer sample using CloudEvent spec  
+- [Event model validation](./shared/validators/classifieds-events-validators.ts) with [AJV](https://ajv.js.org/)
+- [IaC with terraform](./infra/), 
+
 
 
 
