@@ -1,0 +1,34 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "type": "node",
+        "request": "launch",
+        "name": "Launch debug on current active test",
+        "protocol": "inspector",
+        "program": "${workspaceRoot}/node_modules/jest/bin/jest.js",
+        "args": [
+          "--collectCoverage=false",
+          "--colors",
+          "--config",
+          "${workspaceRoot}/jest.config.js",
+          "--runInBand",
+          "--runTestsByPath",
+          "${relativeFile}",
+          "--testPathPattern=${fileDirname}",
+          "--testTimeout=10000000"
+        ],
+        "outputCapture": "std",
+        "internalConsoleOptions": "openOnSessionStart",
+        "envFile": "${workspaceRoot}/local/.local.env",
+        "skipFiles": [
+          "${workspaceRoot}/../../node_modules/**/*",
+          "<node_internals>/**/*"
+        ],
+        "windows": {
+          "skipFiles": ["C:\\**\\node_modules\\**\\*", "<node_internals>/**/*"]
+        },
+        "disableOptimisticBPs": true
+      }
+    ]
+  }

@@ -14,6 +14,12 @@ Promote exchanges and experimentations around distributed systems
 
 ## 🏗️ Studies & Code samples
 
+<<<<<<< HEAD
+| Topic                                                                                                                                                                                   | Description                                                                                                                                                                              |
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [EDA, Event models standards, conventions & guildelines](https://github.com/axel-springer-kugawana/aviv_architecture_distributed_systems_design_guild/tree/main/event-models-standards)      | Holds all code samples supporting the "[event model guidelines & convention](https://avivgroup.atlassian.net/wiki/spaces/AARCH/pages/306220332/DSDG+Event+models+standards)" guild study |
+| [EDA, Idempotent consumers](https://github.com/axel-springer-kugawana/aviv_architecture_distributed_systems_design_guild/tree/main/idempotent-event-consumers) | Code sample demonstrating how to create idempotent event consumers by using lambda-power-tools                                                                                           |
+=======
 | Topic                                                                                                                                                                                                                                               | Description                                                                                                                                                                                                                             |
 |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [Event models standards, conventions & guildelines](https://github.com/axel-springer-kugawana/aviv_architecture_distributed_systems_design_guild/tree/main/event-models-standards)                                                                  | Holds all code samples supporting the "[event model guidelines & convention](https://avivgroup.atlassian.net/wiki/spaces/AARCH/pages/306220332/DSDG+Event+models+standards)" guild study                                                |
@@ -21,6 +27,7 @@ Promote exchanges and experimentations around distributed systems
 | [Sample: Using step functions distributed map to build a data feeder from s3 bucket](./samples/data-feeder-with-step-function-distributed-map) | Code sample showcasing hto use step functions distributed map in order to read an S3 bucket in parallel and in distributed way (e.g. useful when we want to feed/init classifieds into a context from classified management)            |
 
 
+>>>>>>> main
 
 ## ✍️ Contribution
 

@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "event-models-standards/cloudevent-asyncapi-sample"
+		},
+		{
+			"path": "idempotent-event-consumers"
 		}
 	],
 	"settings": {}
