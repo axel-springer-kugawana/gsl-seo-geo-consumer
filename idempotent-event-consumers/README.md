@@ -32,7 +32,7 @@ You will find [here](./src/) a sample serverless application that leverages the 
 ##### Sample content
 
 - Making [function call idempotent](./events-consumers/lambda-handlers/classified-censored-events-consumer.ts#L13) based on the `idempotencykey` property of the CloudEvent envelope
-- SQS partial [batch responses handling](https://docs.aws.amazon.com/prescriptive-guidance/latest/lambda-event-filtering-partial-batch-responses-for-sqs/best-practices-partial-batch-responses.html) with [lambda powertools](./events-consumers/lambda-handlers/classified-censored-events-consumer.ts#L48)
+- SQS partial [batch responses handling](https://docs.aws.amazon.com/prescriptive-guidance/latest/lambda-event-filtering-partial-batch-responses-for-sqs/best-practices-partial-batch-responses.html) with lambda powertools [batch processing feature](./events-consumers/lambda-handlers/classified-censored-events-consumer.ts#L48)
 - Producer/Consumer sample using CloudEvent spec  
 - [Event model validation](./shared/validators/classifieds-events-validators.ts) with [AJV](https://ajv.js.org/)
 - [IaC with terraform](./infra/), 
