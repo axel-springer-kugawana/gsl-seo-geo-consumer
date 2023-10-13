@@ -50,3 +50,13 @@ NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY", and
 ## Additional links
 
 [Confluence page related to this study](https://avivgroup.atlassian.net/wiki/spaces/AARCH/pages/308117511/DSDG+HTTP+REST+API+standards)
+
+## API documentation lint
+
+A standard API documentation linter is provided with a set of rules that can be extended
+
+To run the linter use the following command : 
+
+```bash
+npx @stoplight/spectral-cli lint <oepnapi-file> [--ruleset <ruleset-file>]
+```

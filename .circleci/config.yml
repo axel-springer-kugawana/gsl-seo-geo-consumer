@@ -28,9 +28,29 @@ jobs:
         - store_artifacts:
             path: ~/project/swagger-openapi.html
             destination: swagger-openapi.html
+  api-doc-lint:
+    docker:
+      - image: cimg/node:18.18.1
+    parameters:
+        OPENAPI_PATH:
+          type: string
+        RULESET_FILE_PATH:
+          type: string
+    working_directory: ~/project
+    steps:
+        - checkout
+        - attach_workspace:
+            at: ./
+        - run:
+            name: Lint openapi doc
+            command: |
+              npx @stoplight/spectral-cli lint << parameters.OPENAPI_PATH >> --ruleset << parameters.RULESET_FILE_PATH >>
 
 workflows:
   http-api-standards:
     jobs:
       - generate-api-doc:
           OPENAPI_PATH: "http-api-standards/src/api-doc/openapi.yaml"
+      - api-doc-lint:
+          OPENAPI_PATH: "http-api-standards/src/api-doc/openapi.yaml"
+          RULESET_FILE_PATH: "http-api-standards/src/api-doc/.spectral.yaml"
