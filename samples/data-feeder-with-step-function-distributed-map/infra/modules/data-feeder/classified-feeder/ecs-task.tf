@@ -3,13 +3,29 @@ resource "aws_ecs_cluster" "ecs_cluster" {
 }
 
 resource "aws_ecs_task_definition" "ecs_task_definition" {
-  family = "${var.application}-${var.environment}-task"
+  family = "${var.application}-${var.environment}-list-bucket-task"
   container_definitions = jsonencode([
     {
-      name   = "${var.application}-${var.environment}-job"
-      image  = var.container_image
-      cpu    = var.container_cpu_units
-      memory = var.container_memory
+      name      = "${var.application}-${var.environment}-list-bucket-job"
+      essential = true
+      image     = var.container_image
+      cpu       = var.container_cpu_units
+      memory    = var.container_memory
+      environment = [
+        {
+          "name" : "SOURCE_BUCKET",
+          "value" : "testing-distributed-map"
+        },
+        {
+          "name" : "LIST_BUCKET",
+          "value" : "cd-feeder-file-list"
+        },
+         {
+          "name" : "PREFIX",
+          "value" : "users2"
+        }
+      ]
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -21,17 +37,18 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
       }
     }
   ])
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   task_role_arn = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.container_cpu_units
   memory                   = var.container_memory
   network_mode             = "awsvpc"
+
 }
 
 
-## TASK EXECUTION ROLE ##
 data "aws_iam_policy_document" "ecs_task_execution_assume_role_policy" {
+
   statement {
     effect = "Allow"
     principals {
@@ -43,6 +60,7 @@ data "aws_iam_policy_document" "ecs_task_execution_assume_role_policy" {
 }
 
 resource "aws_iam_role" "ecs_task_execution_role" {
+  name               = "sync-bucket-lister"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_execution_assume_role_policy.json
 }
 
@@ -57,14 +75,31 @@ data "aws_iam_policy_document" "ecs_task_execution_policy_statements" {
     resources = ["arn:aws:logs:*:*:*"]
   }
   statement {
+    effect = "Allow"
+    actions = [
+      "s3:PutObject",
+    ]
+    resources = [
+      "${var.list_of_files_bucket_arn}/*"
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:ListBucket",
+    ]
+    resources = [
+      "${var.classified_data_s3_bucket_arn}"
+    ]
+  }
+  statement {
     actions = [
       "ecr:GetAuthorizationToken",
       "ecr:BatchCheckLayerAvailability",
       "ecr:GetDownloadUrlForLayer",
       "ecr:BatchGetImage",
     ]
-    effect = "Allow"
-    ## TODO : constrain the resource
+    effect    = "Allow"
     resources = ["*"]
   }
 }
@@ -80,12 +115,12 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy_attach
 
 
 resource "aws_cloudwatch_log_group" "ecs_task_job_log_group" {
-  name              = "/ecs/${var.application}-${var.environment}-ecs_task_job_log_group-x"
+  name              = "/ecs/${var.application}-${var.environment}-ecs_task_job_log_group"
   retention_in_days = 3
 }
 
 resource "aws_security_group" "sg_task_runner" {
-  name        = "ecs task job runner sg x"
+  name        = "${var.application}-${var.environment}-task-sg"
   description = "sg to assign to ecs task job runner network configuration"
   vpc_id      = data.aws_ssm_parameter.vpc_id.value
 

@@ -3,20 +3,6 @@ locals {
   task_family_arn    = replace(aws_ecs_task_definition.ecs_task_definition.arn, "/:\\d+$/", "")
 }
 
-resource "aws_sfn_state_machine" "sfn_state_machine" {
-  name     = local.state_machine_name
-  role_arn = aws_iam_role.step_function_role.arn
-  definition = templatefile("${path.module}/files/run-job.json.tmpl", {
-    cluster_arn         = "${aws_ecs_cluster.ecs_cluster.arn}"
-    task_definition_arn = "${local.task_family_arn}"
-    subnets = [
-      "${data.aws_ssm_parameter.container_subnet_1.value}",
-      "${data.aws_ssm_parameter.container_subnet_2.value}",
-      "${data.aws_ssm_parameter.container_subnet_3.value}"
-    ]
-    security_groups = ["${aws_security_group.sg_task_runner.id}"]
-  })
-}
 
 resource "aws_iam_role" "step_function_role" {
   assume_role_policy = jsonencode({
@@ -38,6 +24,24 @@ resource "aws_iam_role" "step_function_role" {
     ]
   })
 }
+
+
+resource "aws_sfn_state_machine" "sfn_state_machine" {
+  name     = local.state_machine_name
+  role_arn = aws_iam_role.step_function_role.arn
+  definition = templatefile("${path.module}/files/run-job.json.tmpl", {
+    cluster_arn         = "${aws_ecs_cluster.ecs_cluster.arn}"
+    task_definition_arn = "${local.task_family_arn}"
+    subnets = [
+      "${data.aws_ssm_parameter.container_subnet_1.value}",
+      "${data.aws_ssm_parameter.container_subnet_2.value}",
+      "${data.aws_ssm_parameter.container_subnet_3.value}"
+    ]
+    security_groups = ["${aws_security_group.sg_task_runner.id}"]
+  })
+}
+
+
 
 data "aws_iam_policy_document" "step_function_policy" {
   statement {

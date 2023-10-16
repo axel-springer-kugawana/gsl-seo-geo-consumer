@@ -3,7 +3,13 @@ const {
 }= require("@aws-sdk/client-s3");
 
 
-console.log("starting ...");
+const config = {
+    "from": process.env.SOURCE_BUCKET,
+    "prefix": process.env.PREFIX,
+    "to": process.env.LIST_BUCKET,
+    "jobId": process.env.JOB_ID
+}
+
 
 const client = new S3Client({});
 
