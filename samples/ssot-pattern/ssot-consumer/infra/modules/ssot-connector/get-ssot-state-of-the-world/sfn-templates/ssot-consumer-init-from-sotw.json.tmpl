@@ -1,0 +1,104 @@
+{
+  "Comment": "ssot consumer init from state of the world",
+  "StartAt": "List objects in bucket by prefix with ECS",
+  "States": {
+    "List objects in bucket by prefix with ECS": {
+      "Type": "Task",
+      "ResultPath": "$.RunTask",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "Cluster": "${cluster_arn}",
+        "TaskDefinition": "${task_definition_arn}",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "SecurityGroups": ${jsonencode(security_groups)},
+            "Subnets": ${jsonencode(subnets)}
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": ${jsonencode(container_name)},
+              "Environment": [
+                {
+                  "Name": "SOURCE_BUCKET",
+                  "Value": ${jsonencode(source_bucket)}
+                },
+                {
+                  "Name": "PREFIX",
+                  "Value.$": ${jsonencode(prefix)}
+                },
+                {
+                  "Name": "LIST_BUCKET",
+                  "Value": ${jsonencode(inventory_bucket)}
+                },
+                {
+                  "Name": "OUTPUT_FILE",
+                  "Value.$": ${jsonencode(output_inventory_file)}
+                }
+
+              ]
+            }
+          ]
+        },
+        "LaunchType": "FARGATE",
+        "PlatformVersion": "LATEST"
+      },
+      "Next": "Process objects"
+    },
+    "Process objects": {
+      "Type": "Map",
+      "ItemProcessor": {
+        "ProcessorConfig": {
+          "Mode": "DISTRIBUTED",
+          "ExecutionType": "STANDARD"
+        },
+        "StartAt": "Get object content",
+        "States": {
+          "Get object content": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "OutputPath": "$.Payload",
+            "Parameters": {
+              "Payload.$": "$",
+              "FunctionName":  ${jsonencode(get_objects_function_name)
+              }
+            },
+            "Retry": [
+              {
+                "ErrorEquals": [
+                  "Lambda.ServiceException",
+                  "Lambda.AWSLambdaException",
+                  "Lambda.SdkClientException",
+                  "Lambda.TooManyRequestsException"
+                ],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 6,
+                "BackoffRate": 2
+              }
+            ],
+            "End": true
+          }
+        }
+      },
+      "ItemReader": {
+        "Resource": "arn:aws:states:::s3:getObject",
+        "Parameters": {
+          "Bucket": ${jsonencode(inventory_bucket)
+          },
+          "Key.$": ${jsonencode(output_inventory_file)}
+        },
+        "ReaderConfig": {
+          "InputType": "JSON"
+        }
+      },
+      "MaxConcurrency": 300,
+      "Label": "S3objectkeys",
+      "ItemBatcher": {
+        "MaxItemsPerBatch": 30
+      },
+      "End": true,
+      "ResultPath": null
+    }
+  }
+}

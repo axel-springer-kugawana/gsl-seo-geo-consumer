@@ -1,0 +1,125 @@
+asyncapi: '2.6.0'
+info:
+  title: SSOT Stream API
+  version: 1.0.0
+
+channels:
+  ssot-events:
+    subscribe:
+      message:
+        oneOf:
+        - $ref: '#/components/messages/SSoTEntityCreated'
+        - $ref: '#/components/messages/SSoTEntityUpdated'
+        - $ref: '#/components/messages/SSoTEntityDeleted'
+components:
+  messages:
+    SSoTEntityUpdated:
+      payload:
+         $ref: '#/components/schemas/SSoTEntityUpdatedEvent'
+    SSoTEntityDeleted:
+      payload:
+         $ref: '#/components/schemas/SSoTEntityDeletedEvent'
+    SSoTEntityCreated:
+      payload:
+         $ref: '#/components/schemas/SSoTEntityCreatedEvent'
+
+
+  schemas:
+
+    SSoTEntityDeletedEvent:
+      type: object
+      additionalProperties: false
+      allOf:
+        - $ref: '#/components/schemas/EventEnvelope'
+      properties:
+        data:
+          $ref: '#/components/schemas/SSoTEntityDeletedEventData'
+        type:
+          $ref: '#/components/schemas/SSoTEntityDeletedV1EventType'
+      required:
+        - data
+        - type
+
+    SSoTEntityCreatedEvent:
+      type: object
+      additionalProperties: false
+      allOf:
+        - $ref: '#/components/schemas/EventEnvelope'
+      properties:
+        data:
+          $ref: '#/components/schemas/SSoTEntityStateEventData'
+        type:
+          $ref: '#/components/schemas/SSoTEntityCreatedV1EventType'
+        subject:
+          type: string
+      required:
+        - data
+        - type
+
+    SSoTEntityUpdatedEvent:
+      type: object
+      additionalProperties: false
+      allOf:
+        - $ref: '#/components/schemas/EventEnvelope'
+      properties:
+        data:
+          $ref: '#/components/schemas/SSoTEntityStateEventData'
+        type:
+          $ref: '#/components/schemas/SSoTEntityUpdatedV1EventType'
+        subject:
+          type: string
+      required:
+        - data
+        - type
+
+    EventEnvelope:
+      type: object
+      allOf:
+      - $ref: "https://raw.githubusercontent.com/cloudevents/spec/v1.0.1/spec.json"
+      properties:
+        id:
+          type: string
+          format: uuid
+        idempotencykey:
+          type: string
+          format: uuid
+        
+    SSoTEntityStateEventData:
+      type: object
+      properties:
+        id:
+          type: string
+        version:
+          type: number
+        modelVersion:
+          type: string
+        updateDate:
+          type: number
+        property1:
+          type: string
+        property2: 
+          type: string
+        property3: 
+          type: string
+
+    SSoTEntityCreatedV1EventType:
+      type: string
+      enum: 
+          - classified-created.v1
+
+    SSoTEntityUpdatedV1EventType:
+      type: string
+      enum: 
+          - classified-updated.v1
+
+    SSoTEntityDeletedV1EventType:
+      type: string
+      enum: 
+          - classified-deleted.v1
+
+    SSoTEntityDeletedEventData:
+      type: object
+      properties:
+        id:
+          type: string
+
