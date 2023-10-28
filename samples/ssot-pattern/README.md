@@ -8,12 +8,15 @@ In an event-driven architecture, Single Source of Truth (SSoT) consumers may wan
 * to validate new feature in their application.
 * or to rebuild reference data into their own application context when they need to. 
 
+
+Here is a high level view of the interaction betwween a producer & a consumer
+
 ```mermaid
 
 flowchart LR 
     A[SSoT Producer] -->|Events 'notification events or carried state events'|B[SSoT Consumer]
-    B[SSoT Consumer] -->|Get Data by Id| A[SSoT Consumer]
-    B[SSoT Consumer] -->|Get state of the workd| A[SSoT Consumer]
+    B[SSoT Consumer] -->|Get Data by Id| A[SSoT Producer]
+    B[SSoT Consumer] -->|Get state of the workd| A[SSoT Producer]
     
 
 ```
