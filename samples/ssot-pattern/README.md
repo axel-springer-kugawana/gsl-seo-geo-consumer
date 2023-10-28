@@ -15,8 +15,8 @@ Here is a high level view of the interaction betwween a producer & a consumer
 
 flowchart LR 
     A[SSoT Producer] -->|Events 'notification events or carried state events'|B[SSoT Consumer]
-    B[SSoT Consumer] -->|Get Data by Id| A[SSoT Producer]
-    B[SSoT Consumer] -->|Get state of the workd| A[SSoT Producer]
+    B[SSoT Consumer] -->|Get SSoT entity by Id| A[SSoT Producer]
+    B[SSoT Consumer] -->|Get state of the world| A[SSoT Producer]
     
 
 ```
