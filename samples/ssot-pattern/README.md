@@ -6,7 +6,7 @@ In an event-driven architecture, Single Source of Truth (SSoT) consumers may wan
 * to keep their application consistent
 * to recover from errors
 * to validate new feature in their application.
-* or to rebuild reference data into your own application context to be resilient 
+* or to rebuild reference data into their own application context when they need to. 
 
 ```mermaid
 
