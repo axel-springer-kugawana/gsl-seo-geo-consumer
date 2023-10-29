@@ -14,8 +14,10 @@ variable "process_ssot_events_lambda" {
   })
 }
 
-variable "ssot_topic" {
+
+variable "ssot_consumer_queue" {
   type = object({
     arn = string
+    id = string
   })
 }

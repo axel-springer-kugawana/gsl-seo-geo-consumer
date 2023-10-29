@@ -14,7 +14,12 @@ const createSSOTItem = async (id: string, data: SSoTData, dataModelVersion: stri
         "S": id
       }
     },
-    UpdateExpression: "SET #DATAATTN = :DATAATTV, #VERSIONATTN = if_not_exists(#VERSIONCATTN,:VERSIONATTV), #DATAVERSIONATTN = :DATAVERSIONATTV, #DATAPARTITIONATTN = :DATAPARTITIONATTV",
+    UpdateExpression: `
+      SET 
+        #DATAATTN = :DATAATTV, 
+        #VERSIONATTN = if_not_exists(#VERSIONCATTN,:VERSIONATTV), 
+        #DATAVERSIONATTN = :DATAVERSIONATTV, 
+        #DATAPARTITIONATTN = :DATAPARTITIONATTV`,
     ConditionExpression: "#PKATTN <> :PKATTV",
     ExpressionAttributeValues: {
       ":DATAATTV": {
@@ -39,7 +44,7 @@ const createSSOTItem = async (id: string, data: SSoTData, dataModelVersion: stri
       "#VERSIONCATTN": "version",
       "#PKATTN": "id",
       "#DATAVERSIONATTN": "dataModelVersion",
-      "#DATAPARTITIONATTN": "parition"
+      "#DATAPARTITIONATTN": "partition"
     }
   }));
 
@@ -69,7 +74,12 @@ const updateSSOTItem = async (ssotItem: SSoTModel) : Promise<SSoTModel> => {
         "S": id
       }
     },
-    UpdateExpression: "SET #DATAATTN = :DATAATTV, #VERSIONATTN = :VERSIONATTN + :VERSIONATTINCV, #DATAVERSIONATTN = :DATAVERSIONATTV,  #DATAPARTITIONATTN = :DATAPARTITIONATTV",
+    UpdateExpression: `
+      SET 
+        #DATAATTN = :DATAATTV, 
+        #VERSIONATTN = :VERSIONATTN + :VERSIONATTINCV, 
+        #DATAVERSIONATTN = :DATAVERSIONATTV, 
+        #DATAPARTITIONATTN = :DATAPARTITIONATTV`,
     ConditionExpression: "#VERSIONATTN = :VERSIONATTCURRV",
     ExpressionAttributeValues: {
       ":DATAATTV": {
@@ -92,7 +102,7 @@ const updateSSOTItem = async (ssotItem: SSoTModel) : Promise<SSoTModel> => {
       "#DATAATTN": "data",
       "#VERSIONATTN": "version",
       "#DATAVERSIONATTN": "dataModelVersion",
-      "#DATAPARTITIONATTN": "parition"
+      "#DATAPARTITIONATTN": "partition"
     }
   }));
 

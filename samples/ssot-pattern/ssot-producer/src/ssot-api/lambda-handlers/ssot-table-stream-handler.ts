@@ -15,9 +15,6 @@ const asSSOTEvent = (ddbRecord: DynamoDBRecord): SSoTStream | undefined => {
                 const dataModelVersion = ddbRecord.dynamodb?.NewImage?.dataModelVersion?.S!;
                 const version = parseInt(ddbRecord.dynamodb?.NewImage?.version?.N!);
                 const partition = ddbRecord.dynamodb?.NewImage?.partition?.S!;
-
-                //TODO: validate format
-
                 return {
                     type: ddbRecord.eventName === "INSERT" ? "Created" : "Updated",
                     id: ssotItemId,
@@ -36,7 +33,6 @@ const asSSOTEvent = (ddbRecord: DynamoDBRecord): SSoTStream | undefined => {
                 const partition = ddbRecord.dynamodb?.OldImage?.partition?.S!;
                 const version = parseInt(ddbRecord.dynamodb?.NewImage?.version?.N!);
                 const ssotItemData = ddbRecord.dynamodb?.OldImage?.data.S!;
-
                 return {
                     type: "Deleted",
                     id: ssotItemId,

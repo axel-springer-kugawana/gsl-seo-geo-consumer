@@ -42,3 +42,10 @@ variable "account_data" {
     })
   })
 }
+
+variable "ssot_consumer_queue" {
+  type = object({
+    arn = string
+    id = string
+  })
+}

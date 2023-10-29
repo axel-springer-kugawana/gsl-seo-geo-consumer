@@ -36,6 +36,15 @@ data "aws_iam_policy_document" "lambda_policy" {
       "${var.ssot_sotw_bucket.arn}/*"
     ]
   }
+   statement {
+    effect = "Allow"
+    actions = [
+      "sqs:SendMessage",
+    ]
+    resources = [
+      "${var.ssot_consumer_queue.arn}"
+    ]
+  }
 }
 
 resource "aws_iam_policy" "iam_policy_for_lambda" {
@@ -57,6 +66,7 @@ module "process_ssot_items_lambda" {
   memory_size          = "512"
   timeout = 60
   env_variables = {
-    SSOT_SOTW_BUCKET_NAME = var.ssot_sotw_bucket.id
+    SSOT_SOTW_BUCKET_NAME = var.ssot_sotw_bucket.id,
+    INTERNAL_SSOT_EVENTS_QUEUE = var.ssot_consumer_queue.id
   }
 }
