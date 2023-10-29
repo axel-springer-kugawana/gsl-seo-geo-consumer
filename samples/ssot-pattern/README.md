@@ -36,6 +36,8 @@ On this solution a producer saves its state of the world (e.g. Classifieds, Agen
 
 Both of these two stores are kept in sync.
 
+You will find [here the producer code here along with its iac](./ssot-producer/) 
+
 
 ### Consumer:
 The consumer subscribes to events from the consumer and handle them according to their own business requirements.
@@ -47,3 +49,20 @@ In the case when a full re-init is required, Consumers can query the state for t
 * Self service aspect of it: Consumers can decide to get the state of the world without requiring the producer team to scale accordingly. Here we are offloading some aspects related to the capacity planning and scaling to S3. 
 
 In this solution Consumers leverage "step functions distributed map" feature that allows to process the S3 bucket items in parallel. Making the re-init part a fast operation with a very low cost (At the time of writing, reading 1.377.000 classifieds takes an average of 10 minutes)
+
+You will find [here the consumer code here along with its iac](./ssot-consumer/)
+
+### TODO
+
+- [x] Producer, initial implementation based on strategy 1
+- [x] Consumer, initial implementation based on strategy 1
+- [InProgress] Producer, provide an api via a private api gateway (iac)
+- [InProgress] Documenting producer deployment
+- [InProgress] Documenting consumer deployment
+- [ ] Producer - Circle ci deployment
+- [ ] Consumer - Circle ci deployment  
+- [ ] Integration tests
+- [ ] Making SSoT Model templatable
+
+
+
