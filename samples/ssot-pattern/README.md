@@ -23,7 +23,7 @@ flowchart LR
 
 
 [Several stragies](https://avivgroup.atlassian.net/wiki/spaces/AARCH/pages/321302652/DSDG+SSOT+pattern+and+Event+Replay) are possible when building this pattern. 
-In this sample we will focus on [this strategy](https://avivgroup.atlassian.net/wiki/spaces/AARCH/pages/321302652/DSDG+SSOT+pattern+and+Event+Replay#Strategy-1%3A-SSOT-producers-publish-events-and-store-the-state-of-the-world-on-an-S3-bucket.-For-initialization-purpose%2C-each-event-consumer-read-and-feed-this-data-into-its-own-context-by-feeding-the-data-from-the-state-of-the-world-bucket.) as it provides fullfill our current needs while being cost effective end with less maintainance on both producer & consumer side.
+In this sample we will focus on [this strategy](https://avivgroup.atlassian.net/wiki/spaces/AARCH/pages/321302652/DSDG+SSOT+pattern+and+Event+Replay#Strategy-1%3A-SSOT-producers-publish-events-and-store-the-state-of-the-world-on-an-S3-bucket.-For-initialization-purpose%2C-each-event-consumer-read-and-feed-this-data-into-its-own-context-by-feeding-the-data-from-the-state-of-the-world-bucket.) as it fullfills our current needs (e.g. Getting Classifieds data form classified managmeent into your own context) while being cost effective and with less maintainance on both producer & consumer side.
 
 ## Solution overview
 
