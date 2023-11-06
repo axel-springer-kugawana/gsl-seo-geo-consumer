@@ -30,29 +30,46 @@ module "ssot_consumer" {
     id  = local.ssot_bucket_id
   }
 
-
-
   process_ssot_items_lambda = {
     dist_dir = "../src/dist/ssot-connector/lambda-handlers/"
     handler  = "get-ssot-items-content.handler"
+  }
+
+  ssot_consumer_queue = {
+    arn = module.ssot_consumer_queue.ssot_consumer_queue_arn
+    id = module.ssot_consumer_queue.ssot_consumer_queue_id
   }
 
   application = var.application
   environment = var.environment
 }
 
-module "ssot_events_handling" {
-  source = "./modules/ssot-connector/ssot-events-handling"
 
+module "ssot_consumer_queue" {
+
+   source = "./modules/ssot-connector/ssot-consumer-internal-queue"
 
   ssot_topic = {
     arn = local.ssot_events_topic
   }
 
+  application = var.application
+  environment = var.environment
+
+}
+
+module "ssot_events_handling" {
+  source = "./modules/ssot-connector/ssot-events-handling"
+
   process_ssot_events_lambda = {
     dist_dir                  = "../src/dist/ssot-connector/lambda-handlers/"
     handler                   = "process-ssot-events.handler"
     queue_esm_max_concurrency = 100
+  }
+
+  ssot_consumer_queue = {
+    arn = module.ssot_consumer_queue.ssot_consumer_queue_arn
+    id = module.ssot_consumer_queue.ssot_consumer_queue_id
   }
 
   application = var.application

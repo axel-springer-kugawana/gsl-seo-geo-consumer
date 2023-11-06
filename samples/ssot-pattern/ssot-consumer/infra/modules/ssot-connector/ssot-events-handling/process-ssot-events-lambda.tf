@@ -1,5 +1,5 @@
 resource "aws_lambda_event_source_mapping" "lambda_event_source" {
-  event_source_arn        = module.ssot_events_consumer_queue.queue_arn
+  event_source_arn        = var.ssot_consumer_queue.arn
   function_name           = module.process_ssot_events_lambda.function_name
   function_response_types = ["ReportBatchItemFailures"]
   scaling_config {
@@ -44,7 +44,7 @@ data "aws_iam_policy_document" "lambda_policy" {
       "sqs:GetQueueAttributes"
     ]
     resources = [
-      "${module.ssot_events_consumer_queue.queue_arn}"
+      "${var.ssot_consumer_queue.arn}"
     ]
   }
 }
