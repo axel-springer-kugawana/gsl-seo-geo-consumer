@@ -29,11 +29,15 @@ variable "runtime" {
     type   = string
 }
 
-
 variable "lambda_dist_dir" {
     type   = string
 }
 
+variable "cloudwatch_log_retention" {
+  type        = number
+  default     = 7
+  description = "Number of days for log retention"
+}
 
 # variable "kinesis_firehose_arn" {
 #   description = "Kinesis ARN for log stream"
