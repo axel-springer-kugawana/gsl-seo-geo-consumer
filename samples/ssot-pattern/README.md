@@ -56,7 +56,7 @@ You will find [here the consumer code here along with its iac](./ssot-consumer/)
 
 - [x] Producer, initial implementation based on strategy 1
 - [x] Consumer, initial implementation based on strategy 1
-- [ ] In Progress - Producer, provide an api via a private api gateway (iac) 
+- [x] In Progress - Producer, provide an api via a private api gateway (iac) 
 - [ ] In Progress - Documenting producer deployment
 - [ ] In Progress -  Documenting consumer deployment
 - [ ] Producer - Circle ci deployment
