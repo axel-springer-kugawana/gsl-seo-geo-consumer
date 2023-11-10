@@ -29,7 +29,7 @@ module "ssot_api" {
 
   get_ssot_item_lambda = {
     dist_dir = "../src/dist/ssot-api/lambda-handlers"
-    handler  = "get-ssot-item.handler"
+    handler  = "get-ssot-item-by-id.handler"
   }
 
   state_of_world_table = {

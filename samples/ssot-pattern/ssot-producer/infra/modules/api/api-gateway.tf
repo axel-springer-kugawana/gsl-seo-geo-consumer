@@ -1,4 +1,3 @@
-########## private api gateway ###############
 locals {
   http_statuscodes = {
     OK       = "200"
@@ -19,32 +18,32 @@ resource "aws_api_gateway_rest_api" "private_api" {
     types = ["PRIVATE"]
   }
 
-#   policy = jsonencode({
-#     Version = "2012-10-17",
-#     Statement = [
-#       {
-#         Effect    = "Allow",
-#         Principal = "*",
-#         Action    = "execute-api:Invoke",
-#         Resource = [
-#           "execute-api:/*"
-#         ],
-#       },
-#       {
-#         Effect    = "Deny",
-#         Principal = "*",
-#         Action    = "execute-api:Invoke",
-#         Resource  = [
-#           "execute-api:/*"
-#         ],
-#         Condition = {
-#           "StringNotEquals" = {
-#             "aws:sourceVpc" = "vpc-01b88fada1e797866" # VPC ID of Central Network where the VPC Endpoint resides
-#           }
-#         }
-#       }
-#     ],
-#   })
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect    = "Allow",
+        Principal = "*",
+        Action    = "execute-api:Invoke",
+        Resource = [
+          "execute-api:/*"
+        ],
+      },
+      # {
+      #   Effect    = "Deny",
+      #   Principal = "*",
+      #   Action    = "execute-api:Invoke",
+      #   Resource  = [
+      #     "execute-api:/*"
+      #   ],
+      #   Condition = {
+      #     "StringNotEquals" = {
+      #       "aws:sourceVpc" = "vpc-01b88fada1e797866" # VPC ID of Central Network where the VPC Endpoint resides
+      #     }
+      #   }
+      # }
+    ],
+  })
 }
 
 resource "aws_api_gateway_resource" "ssot_entity" {

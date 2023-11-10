@@ -2,7 +2,7 @@ locals {
   state_of_world_table_partition_key  = "id"
   state_of_world_table_data_attribute = "data"
   state_of_world_table_partition_attribute = "partition"
-  state_of_world_table_data_version_attribute = "dataVersion"
+  state_of_world_table_data_version_attribute = "dataModelVersion"
   state_of_world_table_version_attribute = "version"
 
 }

@@ -144,7 +144,7 @@ const getSSOTItemById = async <TId extends string>(id: TId) => {
 
   const data = JSON.parse(result.Item.data.S!);
   const version = result.Item.version.N;
-  const dataVersion = result.Item.dataVersion.S;
+  const dataVersion = result.Item.dataModelVersion.S;
 
   return {
     data,

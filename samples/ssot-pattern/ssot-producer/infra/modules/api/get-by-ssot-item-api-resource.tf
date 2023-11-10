@@ -22,7 +22,7 @@ resource "aws_api_gateway_integration" "lambda_integration" {
   http_method             = aws_api_gateway_method.get_method.http_method
   integration_http_method = local.http_methods.POST
   type                    = "AWS_PROXY"
-  uri                     = module.get_ssot_item_lambda.function_arn
+  uri                     = module.get_ssot_item_lambda.function_invoke_arn
 
 }
 
