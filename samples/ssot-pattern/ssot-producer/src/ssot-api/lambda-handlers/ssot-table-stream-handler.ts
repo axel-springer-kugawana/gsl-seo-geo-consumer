@@ -4,7 +4,7 @@ import { publishSSOTEvent } from "ssot-api/adapters/ssot-events-publisher";
 import { deleteSSOTItem, putSSOTItem } from "ssot-api/adapters/ssot-sotw-bucket";
 import { SSoTStream } from "@shared/models/ssot-entity/1.0.0/ssot-stream-events";
 import { SSoTData } from "@shared/models/ssot-entity/1.0.0/ssot-model";
-import { BatchProcessor, EventType, processPartialResponse } from "@aws-lambda-powertools/batch";
+import { BatchProcessor, BatchProcessorSync, EventType, processPartialResponse } from "@aws-lambda-powertools/batch";
 
 const asSSOTEvent = (ddbRecord: DynamoDBRecord): SSoTStream | undefined => {
     switch (ddbRecord.eventName) {
@@ -46,8 +46,11 @@ const asSSOTEvent = (ddbRecord: DynamoDBRecord): SSoTStream | undefined => {
     }
 }
 
-const processor = new BatchProcessor(EventType.DynamoDBStreams);
-
+// ordering is important while reading dynamodb stream
+// here we are using `BatchProcessorSync` instead of `BatchProcessor` 
+// to guarentee that records were processed on the  same order as they arrive
+// relevent documentation: https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/batch/#async-or-sync-processing
+const processor = new BatchProcessorSync(EventType.DynamoDBStreams);
 
 export const recordHandler = async (record: DynamoDBRecord): Promise<void> => {
     const evt = asSSOTEvent(record);
