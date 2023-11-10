@@ -57,12 +57,12 @@ resource "aws_iam_policy" "ssot_table_stream_handler_lambda_iam_policy" {
           "${aws_s3_bucket.state_of_world_bucket.arn}/*"
         ]
       },
-       {
+      {
         Effect = "Allow"
         Action = [
           "sns:PublishBatch",
           "sns:Publish",
-          
+
         ]
         Resource = [
           aws_sns_topic.classified_events_topic.arn,
@@ -89,12 +89,14 @@ module "ssot_table_stream_handler_lambda" {
   memory_size          = "512"
   env_variables = {
     STATE_OF_WORLD_BUCKET = aws_s3_bucket.state_of_world_bucket.id
-    SSOT_TOPIC_ARN = aws_sns_topic.classified_events_topic.arn
+    SSOT_TOPIC_ARN        = aws_sns_topic.classified_events_topic.arn
   }
 }
 
 resource "aws_lambda_event_source_mapping" "ssot_table_stream_handler_event_source" {
-  event_source_arn  = var.state_of_world_table.stream_arn
-  function_name     = module.ssot_table_stream_handler_lambda.function_name
-  starting_position = "TRIM_HORIZON"
+  event_source_arn        = var.state_of_world_table.stream_arn
+  function_name           = module.ssot_table_stream_handler_lambda.function_name
+  starting_position       = "TRIM_HORIZON"
+  function_response_types = ["ReportBatchItemFailures"]
+
 }

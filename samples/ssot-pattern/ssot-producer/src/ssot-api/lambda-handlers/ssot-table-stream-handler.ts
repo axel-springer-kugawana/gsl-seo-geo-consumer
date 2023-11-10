@@ -1,9 +1,10 @@
 import { enableLambdaPowertoolsLoggingAndMetrics } from "@shared/cross-cutting/lambda-logging-middleware";
-import { Context, DynamoDBRecord, DynamoDBStreamEvent } from "aws-lambda";
+import { Context, DynamoDBBatchResponse, DynamoDBRecord, DynamoDBStreamEvent, KinesisStreamRecord } from "aws-lambda";
 import { publishSSOTEvent } from "ssot-api/adapters/ssot-events-publisher";
 import { deleteSSOTItem, putSSOTItem } from "ssot-api/adapters/ssot-sotw-bucket";
 import { SSoTStream } from "@shared/models/ssot-entity/1.0.0/ssot-stream-events";
 import { SSoTData } from "@shared/models/ssot-entity/1.0.0/ssot-model";
+import { BatchProcessor, EventType, processPartialResponse } from "@aws-lambda-powertools/batch";
 
 const asSSOTEvent = (ddbRecord: DynamoDBRecord): SSoTStream | undefined => {
     switch (ddbRecord.eventName) {
@@ -45,30 +46,36 @@ const asSSOTEvent = (ddbRecord: DynamoDBRecord): SSoTStream | undefined => {
     }
 }
 
-export const lambdaHandler = async (event: DynamoDBStreamEvent, context: Context): Promise<void> => {
+const processor = new BatchProcessor(EventType.DynamoDBStreams);
 
-    const events = event.Records.map(item => asSSOTEvent(item))
 
-    for (let index = 0; index < events.length; index++) {
+export const recordHandler = async (record: DynamoDBRecord): Promise<void> => {
+    const evt = asSSOTEvent(record);
 
-        const evt = events[index];
-
-        if (!evt) {
-            return;
-        }
-
-        // update state of the world bucket
-        if (evt.type === "Created" || evt.type === "Updated") {
-            await putSSOTItem(evt);
-        } else {
-            await deleteSSOTItem(evt);
-
-        }
-        // publish event
-        await publishSSOTEvent(evt);
+    if (!evt) {
+        return;
     }
+
+    // update state of the world bucket
+    if (evt.type === "Created" || evt.type === "Updated") {
+        await putSSOTItem(evt);
+    } else {
+        await deleteSSOTItem(evt);
+
+    }
+    // publish event
+    await publishSSOTEvent(evt);
 }
 
+
+
+export const lambdaHandler = async (event: DynamoDBStreamEvent, context: Context): Promise<DynamoDBBatchResponse> => {
+    return processPartialResponse(event, async (record: DynamoDBRecord) => {
+        return await recordHandler(record);
+    }, processor, {
+        context,
+    });
+}
 
 
 export const handler = enableLambdaPowertoolsLoggingAndMetrics(lambdaHandler);
