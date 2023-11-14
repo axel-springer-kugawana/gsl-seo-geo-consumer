@@ -8,7 +8,7 @@ const s3Client = new S3Client({});
 
 const putSSOTItem = async (createOrUpdateAction: SSoTStream) => {
 
-    const { data, id, dataModelVersion, partition } = createOrUpdateAction;
+    const { data, id, dataModelVersion, partition} = createOrUpdateAction;
 
     const command = new PutObjectCommand({
         Key: generateS3bucketForActiveObjectKey_V0({ partition, dataVersion: dataModelVersion, identifier: id }),

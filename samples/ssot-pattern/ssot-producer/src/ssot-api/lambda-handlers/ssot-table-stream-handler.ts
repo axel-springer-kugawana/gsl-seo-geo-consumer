@@ -1,10 +1,11 @@
 import { enableLambdaPowertoolsLoggingAndMetrics } from "@shared/cross-cutting/lambda-logging-middleware";
-import { Context, DynamoDBBatchResponse, DynamoDBRecord, DynamoDBStreamEvent, KinesisStreamRecord } from "aws-lambda";
+import { Context, DynamoDBBatchResponse, DynamoDBRecord, DynamoDBStreamEvent } from "aws-lambda";
 import { publishSSOTEvent } from "ssot-api/adapters/ssot-events-publisher";
 import { deleteSSOTItem, putSSOTItem } from "ssot-api/adapters/ssot-sotw-bucket";
 import { SSoTStream } from "@shared/models/ssot-entity/1.0.0/ssot-stream-events";
 import { SSoTData } from "@shared/models/ssot-entity/1.0.0/ssot-model";
-import { BatchProcessor, BatchProcessorSync, EventType, processPartialResponse } from "@aws-lambda-powertools/batch";
+import { BatchProcessor, EventType, processPartialResponse } from "@aws-lambda-powertools/batch";
+import { logger } from "@shared/cross-cutting/logger";
 
 const asSSOTEvent = (ddbRecord: DynamoDBRecord): SSoTStream | undefined => {
     switch (ddbRecord.eventName) {
@@ -46,18 +47,20 @@ const asSSOTEvent = (ddbRecord: DynamoDBRecord): SSoTStream | undefined => {
     }
 }
 
-// ordering is important while reading dynamodb stream
-// here we are using `BatchProcessorSync` instead of `BatchProcessor` 
-// to guarentee that records were processed on the  same order as they arrive
 // relevent documentation: https://docs.powertools.aws.dev/lambda/typescript/latest/utilities/batch/#async-or-sync-processing
-const processor = new BatchProcessorSync(EventType.DynamoDBStreams);
+const processor = new BatchProcessor(EventType.DynamoDBStreams);
 
 export const recordHandler = async (record: DynamoDBRecord): Promise<void> => {
+
     const evt = asSSOTEvent(record);
 
-    if (!evt) {
+    if (evt == null) {
         return;
     }
+
+    logger.info("ddb stream event handled", {
+        evt
+    });
 
     // update state of the world bucket
     if (evt.type === "Created" || evt.type === "Updated") {
@@ -68,6 +71,7 @@ export const recordHandler = async (record: DynamoDBRecord): Promise<void> => {
     }
     // publish event
     await publishSSOTEvent(evt);
+
 }
 
 

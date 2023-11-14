@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "state_of_world_inventory_bucket" {
-  bucket = "${var.application}-${var.environment}-state-of-the-world-inventory-bucket"
+  bucket = "${var.application}-${var.environment}-${var.ssot_name}-sotw-inventory-bucket"
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "state_of_world_bucket_bucket_encryption" {

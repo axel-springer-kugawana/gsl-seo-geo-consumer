@@ -6,6 +6,10 @@ variable "environment" {
   type = string
 }
 
+variable "ssot_name" {
+  type = string
+}
+
 variable "ssot_topic" {
   type = object({
     arn = string

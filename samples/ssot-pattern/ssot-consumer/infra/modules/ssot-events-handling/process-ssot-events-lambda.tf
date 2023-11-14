@@ -59,7 +59,7 @@ resource "aws_iam_role_policy_attachment" "attach_iam_policy_to_iam_role" {
 }
 
 module "process_ssot_events_lambda" {
-  source               = "../../constructs/lambda"
+  source               = "../constructs/lambda"
   lambda_handler       = var.process_ssot_events_lambda.handler
   lambda_function_name = "${var.application}-${var.environment}-process-ssot-events"
   lambda_dist_dir      = var.process_ssot_events_lambda.dist_dir

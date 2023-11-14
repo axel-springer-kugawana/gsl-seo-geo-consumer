@@ -10,10 +10,11 @@ const calculateHash = (input: string): string => {
     return hash.digest('hex');
 }
 
-const hashToRange = (input: string, rangeSize: number): number => {
+
+const hashToRange = (input: string, rangeSize: number): string => {
     const hash = calculateHash(input);
     const hashValue = parseInt(hash, 16); // Convert the hash to a numeric value
-    return hashValue % rangeSize; // Apply modulo to map to the desired range
+    return (hashValue % rangeSize).toString(); // Apply modulo to map to the desired range
 }
 
 
@@ -41,10 +42,10 @@ export const generateS3bucketDeletedPrefixLayoutWithTrailingSlash_V0 = (opts: { 
 
 export const generateS3bucketForActiveObjectKey_V0 = (opts: { partition?: string, dataVersion: string, identifier: string }): string => {
     const hashFromRange = hashToRange(opts.identifier, hashRange);
-    return `${generateS3bucketActivePrefixLayoutWithTrailingSlash_V0({ partition: opts.partition, hash: hashFromRange.toString(), dataVersion: opts.dataVersion })}${opts.identifier}.json`;
+    return `${generateS3bucketActivePrefixLayoutWithTrailingSlash_V0({ partition: opts.partition, hash: hashFromRange, dataVersion: opts.dataVersion })}${opts.identifier}.json`;
 }
 
 export const generateS3bucketForDeletedObjectKey_V0 = (opts: { partition?: string, dataVersion: string, identifier: string }): string => {
     const hashFromRange = hashToRange(opts.identifier, hashRange);
-    return `${generateS3bucketDeletedPrefixLayoutWithTrailingSlash_V0({ partition: opts.partition, hash: hashFromRange.toString(), dataVersion: opts.dataVersion })}${opts.identifier}.json`;
+    return `${generateS3bucketDeletedPrefixLayoutWithTrailingSlash_V0({ partition: opts.partition, hash: hashFromRange, dataVersion: opts.dataVersion })}${opts.identifier}.json`;
 }

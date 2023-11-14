@@ -1,5 +1,5 @@
 locals {
-  state_machine_name = "${var.application}-${var.environment}-get-sotw-sfn"
+  state_machine_name = "${var.application}-${var.environment}-${var.ssot_name}-get-sotw-sfn"
   task_family_arn    = replace(aws_ecs_task_definition.ecs_task_definition.arn, "/:\\d+$/", "")
 }
 
@@ -67,7 +67,8 @@ resource "aws_sfn_state_machine" "get-ssot-sotw-sfn" {
     output_inventory_file = "$$.Execution.Name"
     source_bucket = "${var.ssot_sotw_bucket.id}"
     prefix = "$.prefix"
-    container_name = "${var.application}-${var.environment}-list-bucket-job"
+    container_name = "${var.application}-${var.environment}-${var.ssot_name}-list-bucket-job"
+    ssot_name = "${var.ssot_name}"
   })
 }
 

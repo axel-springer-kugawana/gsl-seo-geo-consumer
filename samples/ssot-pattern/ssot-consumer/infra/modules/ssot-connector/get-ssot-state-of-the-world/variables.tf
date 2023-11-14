@@ -6,6 +6,10 @@ variable "environment" {
   type = string
 }
 
+variable "ssot_name" {
+  type = string
+}
+
 variable "list_bucket_task" {
   type = object({
     container_image     = string,

@@ -1,12 +1,12 @@
 resource "aws_ecs_cluster" "ecs_cluster" {
-  name = "${var.application}-${var.environment}-cluster"
+  name = "${var.application}-${var.environment}-${var.ssot_name}-cluster"
 }
 
 resource "aws_ecs_task_definition" "ecs_task_definition" {
-  family = "${var.application}-${var.environment}-list-bucket-task"
+  family = "${var.application}-${var.environment}-${var.ssot_name}-list-bucket-task"
   container_definitions = jsonencode([
     {
-      name      = "${var.application}-${var.environment}-list-bucket-job"
+      name      = "${var.application}-${var.environment}-${var.ssot_name}-list-bucket-job"
       essential = true
       image     = var.list_bucket_task.container_image
       cpu       = var.list_bucket_task.container_cpu_units
@@ -35,7 +35,7 @@ resource "aws_ecs_task_definition" "ecs_task_definition" {
 
 
 resource "aws_security_group" "sg_task" {
-  name        = "${var.application}-${var.environment}-list-ssot-sotw-task-sg"
+  name        = "${var.application}-${var.environment}-${var.ssot_name}-list-ssot-sotw-task-sg"
   description = "sg to assign to ecs task job runner network configuration"
   vpc_id      = var.account_data.vpc_id
   egress {
@@ -49,7 +49,7 @@ resource "aws_security_group" "sg_task" {
 
 
 resource "aws_cloudwatch_log_group" "ecs_task_job_log_group" {
-  name              = "/ecs/${var.application}-${var.environment}-ecs_task_job_log_group"
+  name              = "/ecs/${var.application}-${var.environment}-${var.ssot_name}-ecs_task_job_log_group"
   retention_in_days = 3
 }
 

@@ -25,6 +25,9 @@ const publishSSOTEvent = async (ssotStreamEvent: SSoTStream) => {
         }]
     }));
 
+
+    
+
 }
 
 const asEventEnvelope = (ssotStreamEvent: SSoTStream) => {

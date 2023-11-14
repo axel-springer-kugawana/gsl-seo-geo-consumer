@@ -1,5 +1,4 @@
 resource "aws_iam_role" "lambda_role" {
-  name = "sync-bucket-reader"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -59,7 +58,7 @@ resource "aws_iam_role_policy_attachment" "attach_iam_policy_to_iam_role" {
 module "process_ssot_items_lambda" {
   source               = "../../constructs/lambda"
   lambda_handler       = var.process_ssot_items_lambda.handler
-  lambda_function_name = "${var.application}-${var.environment}-process-ssot-items"
+  lambda_function_name = "${var.application}-${var.environment}-${var.ssot_name}-process-ssot-entities"
   lambda_dist_dir      = var.process_ssot_items_lambda.dist_dir
   runtime              = "nodejs18.x"
   lambda_role_arn      = aws_iam_role.lambda_role.arn

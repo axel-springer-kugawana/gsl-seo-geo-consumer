@@ -11,7 +11,7 @@ data "aws_iam_policy_document" "ecs_task_execution_assume_role_policy" {
 }
 
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name               = "sync-bucket-lister"
+  name               = "${var.ssot_name}-sync-bucket-lister"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_execution_assume_role_policy.json
 }
 
