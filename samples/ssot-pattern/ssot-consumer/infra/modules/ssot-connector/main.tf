@@ -1,7 +1,5 @@
 locals {
-  ssot_bucket_arn = "arn:aws:s3:::ssot-producer-sandbox-state-of-the-world"
-  ssot_bucket_id = "ssot-producer-sandbox-state-of-the-world"
-  ssot_events_topic = "arn:aws:sns:eu-west-1:952085476791:ssot-producer-sandbox-ssot-events-topic"
+  // TODO
   list_bucket_task_ecr_image = "952085476791.dkr.ecr.eu-west-1.amazonaws.com/ssot-consumer-sandbox-ssot-stow-inventory:latest"
 }
 
@@ -27,8 +25,8 @@ module "ssot_consumer_get_state_of_the_world" {
   }
 
   ssot_sotw_bucket = {
-    arn = local.ssot_bucket_arn
-    id  = local.ssot_bucket_id
+    arn = var.bucket.arn
+    id  = var.bucket.id
   }
 
   process_ssot_items_lambda = {
@@ -50,7 +48,7 @@ module "ssot_consumer_get_state_of_the_world" {
 module "ssot_consumer_queue" {
    source = "./ssot-consumer-internal-queue"
   ssot_topic = {
-    arn = local.ssot_events_topic
+    arn = var.events_topic_arn
   }
 
   application = var.application
