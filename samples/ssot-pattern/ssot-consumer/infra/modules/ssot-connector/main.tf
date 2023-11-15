@@ -1,5 +1,5 @@
 locals {
-  // TODO
+  // TODO: find a better way to deal with ECR image
   list_bucket_task_ecr_image = "952085476791.dkr.ecr.eu-west-1.amazonaws.com/ssot-consumer-sandbox-ssot-stow-inventory:latest"
 }
 
