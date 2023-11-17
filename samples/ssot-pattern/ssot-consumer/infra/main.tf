@@ -2,13 +2,15 @@ module "ssot_connector_classifieds" {
   source = "./modules/ssot-connector"
   bucket = {
     id = "ssot-producer-sandbox-state-of-the-world"
-    arn = "arn:aws:s3:::ssot-producer-sandbox-state-of-the-world"
   }
-  events_topic_arn = "arn:aws:sns:eu-west-1:952085476791:ssot-producer-sandbox-ssot-events-topic"
+  ssot_events_topic = {
+    arn = "arn:aws:sns:eu-west-1:952085476791:ssot-producer-sandbox-ssot-events-topic"
+  }
   application = var.application
   environment = var.environment
   ssot_name = "classifieds"
 }
+
 
 module "ssot_events_handling" {
   source = "./modules/ssot-events-handling"

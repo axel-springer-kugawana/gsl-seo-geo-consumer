@@ -18,11 +18,11 @@ locals {
 variable bucket {
 type = object({
     id = string
-    arn  = string
   })
 }
 
-variable events_topic_arn {
- type = string
-
+variable ssot_events_topic {
+  type = object({
+    arn = string
+  })
 }

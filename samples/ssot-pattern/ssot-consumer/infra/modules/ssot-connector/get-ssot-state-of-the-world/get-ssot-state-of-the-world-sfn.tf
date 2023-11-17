@@ -53,7 +53,7 @@ data "aws_iam_policy_document" "ecs_event_rules" {
 resource "aws_sfn_state_machine" "get-ssot-sotw-sfn" {
   name     = local.state_machine_name
   role_arn = aws_iam_role.step_function_role.arn
-  definition = templatefile("${path.module}/sfn-templates/ssot-consumer-init-from-sotw.json.tmpl", {
+  definition = templatefile("${path.module}/sfn-templates/ssot-consumer-init-from-sotw-list-with-container.json.tmpl", {
     cluster_arn         = "${aws_ecs_cluster.ecs_cluster.arn}"
     task_definition_arn = "${local.task_family_arn}"
     subnets = [

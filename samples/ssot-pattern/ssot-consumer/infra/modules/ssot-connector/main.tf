@@ -25,7 +25,7 @@ module "ssot_consumer_get_state_of_the_world" {
   }
 
   ssot_sotw_bucket = {
-    arn = var.bucket.arn
+    arn = "arn:aws:s3:::${var.bucket.id}"
     id  = var.bucket.id
   }
 
@@ -48,7 +48,7 @@ module "ssot_consumer_get_state_of_the_world" {
 module "ssot_consumer_queue" {
    source = "./ssot-consumer-internal-queue"
   ssot_topic = {
-    arn = var.events_topic_arn
+    arn = var.ssot_events_topic.arn
   }
 
   application = var.application
