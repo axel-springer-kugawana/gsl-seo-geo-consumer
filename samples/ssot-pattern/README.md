@@ -23,11 +23,11 @@ flowchart LR
 
 
 [Several stragies](https://avivgroup.atlassian.net/wiki/spaces/AARCH/pages/321302652/DSDG+SSOT+pattern+and+Event+Replay) are possible when building this pattern. 
-In this sample we will focus on [this strategy](https://avivgroup.atlassian.net/wiki/spaces/AARCH/pages/321302652/DSDG+SSOT+pattern+and+Event+Replay#Strategy-1%3A-SSOT-producers-publish-events-and-store-the-state-of-the-world-on-an-S3-bucket.-For-initialization-purpose%2C-each-event-consumer-read-and-feed-this-data-into-its-own-context-by-feeding-the-data-from-the-state-of-the-world-bucket.) as it fullfills our current needs (e.g. Getting Classifieds data form classified managmeent into your own context) while being cost effective and with less maintainance on both producer & consumer side.
+In this sample we will focus on [this strategy](https://avivgroup.atlassian.net/wiki/spaces/AARCH/pages/321302652/DSDG+SSoT+pattern#Strategy-1.c-%3A-Along-with-an-Event-%26-Replay-interface%2C-SSoTs-expose-a-REST-AI-that-allow-consumers-to-Get-data-by-SSoT-entity-Id.-Events-can-carry-full-SSoT-entity-state-or-Events-can-be-of-type-notification-events-.-Reading-from-the-bucket-is-done-without-relying-on-the-step-function-distributed-map) as it fullfills our current needs (e.g. Getting Classifieds data form classified managmeent into your own context) while being cost effective and with less maintainance on both producer & consumer side.
 
 ## Solution overview
 
-![Solution overview](./assets/ssot-pattern-strat-1-solution-overview.gif "Strategy 1 solution overview").
+![Solution overview](./assets/ssot-pattern-strat-1-c-solution-overview.gif "Strategy 1 solution overview").
 
 ### Producer: 
 On this solution a producer saves its state of the world (e.g. Classifieds, Agency Data, etc.) in two stores: 
@@ -47,8 +47,6 @@ In the case when a full re-init is required, Consumers can query the state for t
 * A Producer can have millions of items (e.g. Classifieds), Querying the API can incur cost and is generally equivalent to a scan operation on the DynamoDb table which is not recommended practice with regards to the table capacity & cost.
 
 * Self service aspect of it: Consumers can decide to get the state of the world without requiring the producer team to scale accordingly. Here we are offloading some aspects related to the capacity planning and scaling to S3. 
-
-In this solution Consumers leverage "step functions distributed map" feature that allows to process the S3 bucket items in parallel. Making the re-init part a fast operation with a very low cost (At the time of writing, reading 1.377.000 classifieds takes an average of 10 minutes)
 
 You will find [here the consumer code here along with its iac](./ssot-consumer/)
 
