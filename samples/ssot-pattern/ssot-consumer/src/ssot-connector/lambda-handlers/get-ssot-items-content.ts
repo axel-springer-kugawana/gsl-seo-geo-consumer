@@ -1,20 +1,12 @@
 import { enableLambdaPowertoolsLoggingAndMetrics } from "@shared/cross-cutting/lambda-logging-middleware";
-import { logger } from "@shared/cross-cutting/logger";
 import { publishDataAsReplayedEvent } from "@ssot-connector/adapters/ssot-replay-event-publisher";
 import { getSSOTItem } from "@ssot-connector/adapters/ssot-sotw-store";
-import { Context } from "aws-lambda";
-
+import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
+import { BatchProcessor, EventType, processPartialResponse } from "@aws-lambda-powertools/batch";
 
 type ItemsToProcess = { Items: string[] };
 
-
-
-export const lambdaHandler = async (event: ItemsToProcess, context: Context): Promise<void> => {
-
-
-    logger.info("Processing ssot keys...", {
-        numberOfItemsToProcess: event.Items.length
-    });
+export const itemsHandler = async (event: ItemsToProcess): Promise<void> => {
 
     await Promise.all(event.Items.map(async key => {
         const data = await getSSOTItem(key);
@@ -22,6 +14,19 @@ export const lambdaHandler = async (event: ItemsToProcess, context: Context): Pr
     }));
 }
 
+const processor = new BatchProcessor(EventType.SQS);
 
-export const handler = enableLambdaPowertoolsLoggingAndMetrics(lambdaHandler);
+export const queueSourceHandler = async (event: SQSEvent, context: Context): Promise<SQSBatchResponse> => {
+
+    return processPartialResponse(event, async (record: SQSRecord) => {
+        const content = JSON.parse(record.body) as ItemsToProcess;
+        return await itemsHandler(content);
+    }, processor, {
+        context,
+    });
+}
+
+export const handler = enableLambdaPowertoolsLoggingAndMetrics(itemsHandler);
+
+export const queueHandler = enableLambdaPowertoolsLoggingAndMetrics(queueSourceHandler);
 

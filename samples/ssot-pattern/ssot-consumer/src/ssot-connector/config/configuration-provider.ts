@@ -8,11 +8,23 @@ const configSchema = {
         default: "SSOT_BUCKET_NAME",
         env: 'SSOT_SOTW_BUCKET_NAME',
     },
+    keysQueueUrl: {
+        doc: 'Keys to Procress Queue',
+        format: String,
+        default: "SSOT_KEYS_QUEUE",
+        env: 'SSOT_KEYS_QUEUE',
+    },
     internalSSOTEventsQueueUrl: {
         doc: 'Internal SSOT Events QueueUrl',
         format: String,
         default: "INTERNAL_SSOT_EVENTS_QUEUE",
         env: 'INTERNAL_SSOT_EVENTS_QUEUE',
+    },
+    ssotName: {
+        doc: 'SSoT Name',
+        format: String,
+        default: "SSOT_NAME",
+        env: 'SSOT_NAME',
     },
 }
 export const config = convict(configSchema).validate({ allowed: 'strict' });

@@ -13,15 +13,16 @@ const publishDataAsReplayedEvent = async <TSSOTData>(data: TSSOTData) => {
     }));
 }
 
-
 const asMessageEnvelope = <TSSOTData>(data: TSSOTData) => {
+
+    const ssotName = config.get("ssotName");
 
     return {
         id: uuid(),
         idempotencykey: hash(JSON.stringify(data)),
         specversion: "1.0",
         source: "ssot-consumer",
-        type: "classified.replayed.v1",
+        type: `${ssotName}.replayed.v1`,
         data: {
             ...data
         }

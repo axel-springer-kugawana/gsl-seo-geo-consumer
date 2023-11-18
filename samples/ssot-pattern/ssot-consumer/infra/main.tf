@@ -1,7 +1,7 @@
 module "ssot_connector_classifieds" {
   source = "./modules/ssot-connector"
   bucket = {
-    id = "ssot-producer-sandbox-state-of-the-world"
+    id = "aviv-classdisp-dev-main-resync-bucket"
   }
   ssot_events_topic = {
     arn = "arn:aws:sns:eu-west-1:952085476791:ssot-producer-sandbox-ssot-events-topic"
