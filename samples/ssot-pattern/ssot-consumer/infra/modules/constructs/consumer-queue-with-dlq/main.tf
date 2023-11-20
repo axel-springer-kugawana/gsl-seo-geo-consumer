@@ -5,11 +5,11 @@ resource "aws_sqs_queue" "consumer_dlq" {
 
 resource "aws_sqs_queue" "consumer_queue" {
   name = var.consumer_sqs_name
-  redrive_policy = jsonencode({
+  visibility_timeout_seconds = var.queue_visibility_timeout
+    redrive_policy = jsonencode({
     deadLetterTargetArn = aws_sqs_queue.consumer_dlq.arn
     maxReceiveCount     = var.retry_count
   })
-
 }
 
 resource "aws_sqs_queue_redrive_allow_policy" "consumer_dlq_redrive_policy" {
