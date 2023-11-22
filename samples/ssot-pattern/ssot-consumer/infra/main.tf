@@ -17,7 +17,7 @@ module "ssot_events_handling" {
   process_ssot_events_lambda = {
     dist_dir                  = "../src/dist/ssot-events-handling/lambda-handlers/"
     handler                   = "process-ssot-events.handler"
-    queue_esm_max_concurrency = 100
+    queue_esm_max_concurrency = 30
   }
 
   ssot_consumer_queue = {

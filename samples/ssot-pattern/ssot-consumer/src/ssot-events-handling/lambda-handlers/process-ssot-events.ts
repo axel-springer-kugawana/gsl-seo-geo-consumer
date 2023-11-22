@@ -2,10 +2,17 @@ import { BatchProcessor, EventType, processPartialResponse } from "@aws-lambda-p
 import { enableLambdaPowertoolsLoggingAndMetrics } from "@shared/cross-cutting/lambda-logging-middleware";
 import { logger } from "@shared/cross-cutting/logger";
 import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
+import { putItem } from "ssot-events-handling/adapters/materialized-view-store";
 
 const processor = new BatchProcessor(EventType.SQS);
 
 export const recordHandler = async (record: SQSRecord): Promise<void> => {
+
+    const e = JSON.parse(record.body);
+    const cId = e.data.classifiedId;
+
+    await putItem(cId, e.data);
+
     logger.info("Processing events...",{
         event: JSON.parse(record.body)
     });

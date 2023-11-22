@@ -77,11 +77,27 @@ export const recordHandler = async (record: DynamoDBRecord): Promise<void> => {
 
 
 export const lambdaHandler = async (event: DynamoDBStreamEvent, context: Context): Promise<DynamoDBBatchResponse> => {
-    return processPartialResponse(event, async (record: DynamoDBRecord) => {
-        return await recordHandler(record);
-    }, processor, {
-        context,
-    });
+
+    const errors: DynamoDBRecord[] = [];
+
+    for (let i = 0; i < event.Records.length; i++) {
+        try {
+
+            await recordHandler(event.Records[i]);
+
+        } catch {
+            errors.push(event.Records[i]);
+        }
+    }
+
+    return {
+        batchItemFailures: errors.map(record => {
+            return {
+                itemIdentifier: record.dynamodb!.SequenceNumber!
+            }
+        })
+
+    }
 }
 
 

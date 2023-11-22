@@ -47,6 +47,15 @@ data "aws_iam_policy_document" "lambda_policy" {
       "${var.ssot_consumer_queue.arn}"
     ]
   }
+  statement {
+    effect = "Allow"
+    actions = [
+      "dynamodb:UpdateItem"
+    ]
+     resources = [
+      "${aws_dynamodb_table.ssot_materialized_view_table.arn}"
+    ]
+  }
 }
 
 resource "aws_iam_policy" "iam_policy_for_lambda" {
@@ -68,6 +77,7 @@ module "process_ssot_events_lambda" {
   memory_size          = "512"
   timeout              = 60
   env_variables = {
+    MV_TABLE_NAME = aws_dynamodb_table.ssot_materialized_view_table.name
 
   }
 }
