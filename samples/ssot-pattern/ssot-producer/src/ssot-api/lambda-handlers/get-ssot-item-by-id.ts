@@ -1,6 +1,6 @@
 import { enableLambdaPowertoolsLoggingAndMetrics } from "@shared/cross-cutting/lambda-logging-middleware";
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
-import { getSSOTItemById } from "ssot-store/adapters/ssot-store";
+import { getSSoTEntityById } from "ssot-store/adapters/ssot-store";
 
 export const lambdaHandler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
 
@@ -24,7 +24,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent, context: Contex
     }
 
 
-    const item = await getSSOTItemById(id);
+    const item = await getSSoTEntityById(id);
 
     if (!item) {
         return {

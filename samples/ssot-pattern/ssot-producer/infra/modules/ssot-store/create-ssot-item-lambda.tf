@@ -49,7 +49,6 @@ module "create_ssot_item_lambda" {
   lambda_handler       = var.create_ssot_item_lambda.handler
   lambda_role_arn      = aws_iam_role.create_or_update_ssot_item_lambda_role.arn
   lambda_dist_dir      = var.create_ssot_item_lambda.dist_dir
-  runtime              = "nodejs18.x"
   timeout              = 5
   memory_size          = "512"
   env_variables = {
@@ -63,7 +62,6 @@ module "update_ssot_item_lambda" {
   lambda_handler       = var.update_ssot_item_lambda.handler
   lambda_role_arn      = aws_iam_role.create_or_update_ssot_item_lambda_role.arn
   lambda_dist_dir      = var.update_ssot_item_lambda.dist_dir
-  runtime              = "nodejs18.x"
   timeout              = 5
   memory_size          = "512"
   env_variables = {

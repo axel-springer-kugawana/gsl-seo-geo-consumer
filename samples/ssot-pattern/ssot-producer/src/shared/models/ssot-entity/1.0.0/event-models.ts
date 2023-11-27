@@ -1,5 +1,7 @@
+import { SSoTEntity, SSoTEntityName } from "./ssot-model";
+
 export interface SSoTEntityCreatedEvent {
-  data: SSoTEntityStateEventDataObject;
+  data: SSoTEntity;
   type: SSoTEntityCreatedV1EventType;
   subject?: string;
   id: string;
@@ -22,10 +24,10 @@ export interface SSoTEntityStateEventDataObject {
   property3?: string;
 }
  
-export type SSoTEntityCreatedV1EventType = "classified-created.v1";
+export type SSoTEntityCreatedV1EventType = `${typeof SSoTEntityName}-created.v1`;
  
 export interface SSoTEntityUpdatedEvent {
-  data: SSoTEntityStateEventDataObject;
+  data: SSoTEntity;
   type: SSoTEntityUpdatedV1EventType;
   subject?: string;
   id: string;
@@ -38,7 +40,7 @@ export interface SSoTEntityUpdatedEvent {
   dataBase64?: string;
 }
  
-export type SSoTEntityUpdatedV1EventType = "classified-updated.v1";
+export type SSoTEntityUpdatedV1EventType = `${typeof SSoTEntityName}-updated.v1`;
  
 export interface SSoTEntityDeletedEvent {
   data: SSoTEntityDeletedEventDataObject;
@@ -58,5 +60,5 @@ export interface SSoTEntityDeletedEventDataObject {
   id?: string;
 }
  
-export type SSoTEntityDeletedV1EventType = "classified-deleted.v1";
+export type SSoTEntityDeletedV1EventType = `${typeof SSoTEntityName}-deleted.v1`;
  

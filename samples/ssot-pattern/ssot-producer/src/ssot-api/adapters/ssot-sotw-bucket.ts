@@ -2,18 +2,18 @@ import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client
 import { logger } from "@shared/cross-cutting/logger";
 import { generateS3bucketForActiveObjectKey_V0, generateS3bucketForDeletedObjectKey_V0 } from "./ssot-bucket-object-layout-v0";
 import { config } from "ssot-api/config/configuration-provider";
-import { SSoTStream } from "@shared/models/ssot-entity/1.0.0/ssot-stream-events";
+import { SSoTEvent } from "@shared/models/ssot-entity/1.0.0/ssot-events";
 
 const s3Client = new S3Client({});
 
-const putSSOTItem = async (createOrUpdateAction: SSoTStream) => {
+const putSSoTEntity = async (event: SSoTEvent) => {
 
-    const { data, id, dataModelVersion, partition} = createOrUpdateAction;
+    const { entity: { id, metadata: { partition, dataModelVersion}}  } = event; 
 
     const command = new PutObjectCommand({
         Key: generateS3bucketForActiveObjectKey_V0({ partition, dataVersion: dataModelVersion, identifier: id }),
         Bucket: config.get("ssotBucketName"),
-        Body: JSON.stringify(data)
+        Body: JSON.stringify(event.entity)
     });
 
     const result = await s3Client.send(command);
@@ -38,9 +38,9 @@ const putSSOTItem = async (createOrUpdateAction: SSoTStream) => {
 }
 
 
-const deleteSSOTItem = async (deleteAction: SSoTStream) => {
+const deleteSSoTEntity = async (event: SSoTEvent) => {
 
-    const { id, dataModelVersion, partition, data } = deleteAction;
+    const { entity: { id, metadata: { partition, dataModelVersion}}  } = event; 
 
     const active = generateS3bucketForActiveObjectKey_V0({ partition, dataVersion: dataModelVersion, identifier: id });
     const deleted = generateS3bucketForDeletedObjectKey_V0({ partition, dataVersion: dataModelVersion, identifier: id });
@@ -48,7 +48,7 @@ const deleteSSOTItem = async (deleteAction: SSoTStream) => {
     await s3Client.send(new PutObjectCommand({
         Bucket: config.get("ssotBucketName"),
         Key: deleted,
-        Body: JSON.stringify(data)
+        Body: JSON.stringify(event.entity)
     }));
 
     await s3Client.send(new DeleteObjectCommand({
@@ -60,6 +60,6 @@ const deleteSSOTItem = async (deleteAction: SSoTStream) => {
 
 
 export {
-    putSSOTItem,
-    deleteSSOTItem
+    putSSoTEntity,
+    deleteSSoTEntity
 }

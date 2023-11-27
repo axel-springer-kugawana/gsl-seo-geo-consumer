@@ -1,16 +1,17 @@
 import { SNSClient, PublishBatchCommand } from "@aws-sdk/client-sns";
 import { SSoTEntityCreatedEvent, SSoTEntityDeletedEvent, SSoTEntityUpdatedEvent } from "@shared/models/ssot-entity/1.0.0/event-models";
 import { config } from "ssot-api/config/configuration-provider";
-import { SSoTStream } from "@shared/models/ssot-entity/1.0.0/ssot-stream-events";
+import { SSoTEvent } from "@shared/models/ssot-entity/1.0.0/ssot-events";
 import { uuid } from 'uuidv4';
 import { createHash } from 'crypto';
 import { logger } from "@shared/cross-cutting/logger";
+import { SSoTEntityName } from "@shared/models/ssot-entity/1.0.0/ssot-model";
 
 const snsClient = new SNSClient({});
 
-const publishSSOTEvent = async (ssotStreamEvent: SSoTStream) => {
+const publishSSOTEvent = async (ssotEvent: SSoTEvent) => {
 
-    const event = asEventEnvelope(ssotStreamEvent);
+    const event = asEventEnvelope(ssotEvent);
 
     logger.info({
         "message": "publishing message",
@@ -25,61 +26,48 @@ const publishSSOTEvent = async (ssotStreamEvent: SSoTStream) => {
         }]
     }));
 
-
-    
-
 }
 
-const asEventEnvelope = (ssotStreamEvent: SSoTStream) => {
+const asEventEnvelope = (ssotEvent: SSoTEvent) => {
 
     const commonEventEnvelopeProperties = {
         id: uuid(),
-        idempotencykey: hash(JSON.stringify(ssotStreamEvent)),
+        idempotencykey: hash(JSON.stringify(ssotEvent)),
         specversion: "1.0",
         source: "ssot-producer",
     }
 
-    switch (ssotStreamEvent.type) {
+    switch (ssotEvent.eventType) {
         case "Updated":
             return <SSoTEntityUpdatedEvent>{
                 ...commonEventEnvelopeProperties,
-                type: "classified-updated.v1",
+                type: `${SSoTEntityName}-updated.v1`,
                 data: {
-                    id: ssotStreamEvent.id,
-                    modelVersion: ssotStreamEvent.dataModelVersion,
-                    version: ssotStreamEvent.version,
-                    property1: ssotStreamEvent.data.prop1,
-                    property2: ssotStreamEvent.data.prop2,
-                    property3: ssotStreamEvent.data.prop3,
+                  ...ssotEvent.entity
                 }
 
             }
         case "Created":
             return <SSoTEntityCreatedEvent>{
                 ...commonEventEnvelopeProperties,
-                type: "classified-created.v1",
+                type: `${SSoTEntityName}-created.v1` ,
                 data: {
-                    id: ssotStreamEvent.id,
-                    modelVersion: ssotStreamEvent.dataModelVersion,
-                    version: ssotStreamEvent.version,
-                    property1: ssotStreamEvent.data.prop1,
-                    property2: ssotStreamEvent.data.prop2,
-                    property3: ssotStreamEvent.data.prop3,
+                  ...ssotEvent.entity
                 }
             }
         case "Deleted":
             return <SSoTEntityDeletedEvent>{
                 ...commonEventEnvelopeProperties,
-                type: "classified-deleted.v1",
+                type: `${SSoTEntityName}-deleted.v1`,
                 data: {
-                    id: ssotStreamEvent.id
+                    id: ssotEvent.entity.id
                 }
             }
     }
    
 }
 
-export const hash = (contents: string) => createHash('sha256').update(contents).digest("hex");
+export const hash = (contents: string) => createHash('md5').update(contents).digest("hex");
 
 export {
     publishSSOTEvent

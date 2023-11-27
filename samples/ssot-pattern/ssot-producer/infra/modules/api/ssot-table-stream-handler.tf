@@ -84,7 +84,6 @@ module "ssot_table_stream_handler_lambda" {
   lambda_handler       = var.ssot_table_stream_handler_lambda.handler
   lambda_role_arn      = aws_iam_role.ssot_table_stream_handler_lambda_role.arn
   lambda_dist_dir      = var.ssot_table_stream_handler_lambda.dist_dir
-  runtime              = "nodejs18.x"
   timeout              = 5
   memory_size          = "512"
   env_variables = {

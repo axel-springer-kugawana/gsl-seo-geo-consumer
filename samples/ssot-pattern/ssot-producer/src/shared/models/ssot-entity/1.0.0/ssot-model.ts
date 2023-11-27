@@ -1,13 +1,17 @@
-export type SSoTData = {
+type SSoTEntityMetadata = {
+    metadata : {
+        objectVersion: number, 
+        dataModelVersion: string,
+        partition: string
+    }
+}
+
+export type SSoTEntity = {
+    id: string,
     prop1: string,
     prop2: string,
     prop3: string
-}
+} & SSoTEntityMetadata;
 
-export type SSoTModel = {
-    id: string,
-    version: number,
-    dataModelVersion: string,
-    partition: string,
-    data : SSoTData
-}
+export const SSoTName ="ssot-name";
+export const SSoTEntityName = "ssot-entity-name";

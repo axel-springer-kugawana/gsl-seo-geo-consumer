@@ -1,6 +1,6 @@
 import { enableLambdaPowertoolsLoggingAndMetrics } from "@shared/cross-cutting/lambda-logging-middleware";
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
-import { deleteSSOTItem } from "ssot-store/adapters/ssot-store";
+import { deleteSSoTEntity } from "ssot-store/adapters/ssot-store";
 import { z } from "zod";
 
 const deleteSchemaCommand = z.object({
@@ -10,7 +10,7 @@ const deleteSchemaCommand = z.object({
 export const lambdaHandler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
     const command = deleteSchemaCommand.safeParse(JSON.parse(event.body!));
     if (command.success) {
-        await deleteSSOTItem(command.data.id);
+        await deleteSSoTEntity(command.data.id);
         return {
             statusCode: 200,
             body: ""

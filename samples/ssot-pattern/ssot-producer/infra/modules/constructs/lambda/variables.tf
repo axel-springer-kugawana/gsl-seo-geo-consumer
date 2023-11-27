@@ -27,6 +27,7 @@ variable "memory_size" {
 
 variable "runtime" {
     type   = string
+    default = "nodejs20.x"
 }
 
 variable "lambda_dist_dir" {
@@ -39,12 +40,3 @@ variable "cloudwatch_log_retention" {
   description = "Number of days for log retention"
 }
 
-# variable "kinesis_firehose_arn" {
-#   description = "Kinesis ARN for log stream"
-#   type        = string
-# }
-
-# variable "loggroup_role_arn" {
-#   description = "Role ARN for loggroup (should be able to write to kinesis firehose)"
-#   type        = string
-# }

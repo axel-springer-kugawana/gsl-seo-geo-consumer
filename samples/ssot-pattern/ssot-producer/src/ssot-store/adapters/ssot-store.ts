@@ -1,17 +1,16 @@
 import { DeleteItemCommand, DynamoDBClient, GetItemCommand, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { config } from "ssot-store/config/configuration-provider";
-import { SSoTData, SSoTModel } from "@shared/models/ssot-entity/1.0.0/ssot-model";
+import { SSoTEntity } from "@shared/models/ssot-entity/1.0.0/ssot-model";
 
 const ddbClient = new DynamoDBClient({});
 
-
-const createSSOTItem = async (id: string, data: SSoTData, dataModelVersion: string, partition: string): Promise<SSoTModel> => {
+const createSSoTEntity = async (entity: SSoTEntity): Promise<SSoTEntity> => {
 
   const result = await ddbClient.send(new UpdateItemCommand({
     TableName: config.get("ssotTable"),
     Key: {
       "id": {
-        "S": id
+        "S": entity.id
       }
     },
     UpdateExpression: `
@@ -23,19 +22,19 @@ const createSSOTItem = async (id: string, data: SSoTData, dataModelVersion: stri
     ConditionExpression: "#PKATTN <> :PKATTV",
     ExpressionAttributeValues: {
       ":DATAATTV": {
-        "S": JSON.stringify(data)
+        "S": JSON.stringify(entity)
       },
       ":DATAVERSIONATTV": {
-        "S": dataModelVersion
+        "S": entity.metadata.dataModelVersion
       },
       ":VERSIONATTV": {
         "N": "1"
       },
       ":PKATTV": {
-        "S": id
+        "S": entity.id
       },
       ":DATAPARTITIONATTV": {
-        "S": partition 
+        "S": entity.metadata.partition 
       }
     },
     ExpressionAttributeNames: {
@@ -49,29 +48,26 @@ const createSSOTItem = async (id: string, data: SSoTData, dataModelVersion: stri
   }));
 
   if (result.$metadata.httpStatusCode !== 200) {
-    throw new Error(`Error creating item of id: ${id}`, {
+    throw new Error(`Error creating item of id: ${entity.id}`, {
       cause: result.$metadata
     });
   }
 
+  entity.metadata.objectVersion = 1;
+
   return {
-    id,
-    dataModelVersion,
-    version: 1,
-    data,
-    partition
+    ...entity
   }
 }
 
-const updateSSOTItem = async (ssotItem: SSoTModel) : Promise<SSoTModel> => {
+const updateSSoTEntity = async (entity: SSoTEntity) : Promise<SSoTEntity> => {
 
-  const { id, version, data, dataModelVersion, partition } = ssotItem;
 
   const result = await ddbClient.send(new UpdateItemCommand({
     TableName: config.get("ssotTable"),
     "Key": {
       "id": {
-        "S": id
+        "S": entity.id
       }
     },
     UpdateExpression: `
@@ -83,19 +79,19 @@ const updateSSOTItem = async (ssotItem: SSoTModel) : Promise<SSoTModel> => {
     ConditionExpression: "#VERSIONATTN = :VERSIONATTCURRV",
     ExpressionAttributeValues: {
       ":DATAATTV": {
-        "S": JSON.stringify(data)
+        "S": JSON.stringify(entity)
       },
       ":DATAVERSIONATTV": {
-        "S": dataModelVersion
+        "S": entity.metadata.dataModelVersion
       },
       ":VERSIONATTINCV": {
         "N": "1"
       },
       ":VERSIONATTCURRV": {
-        "N": version?.toString() 
+        "N": entity.metadata.objectVersion?.toString() 
       },
       ":DATAPARTITIONATTV": {
-        "S": partition 
+        "S": entity.metadata.partition
       }
     },
     ExpressionAttributeNames: {
@@ -108,22 +104,16 @@ const updateSSOTItem = async (ssotItem: SSoTModel) : Promise<SSoTModel> => {
 
 
   if (result.$metadata.httpStatusCode !== 200) {
-    throw new Error(`Error updating item of id ${id}`, {
+    throw new Error(`Error updating item of id ${entity.id}`, {
       cause: result.$metadata
     });
   }
 
-  return {
-    id,
-    dataModelVersion,
-    version,
-    data,
-    partition
-  }
+  return entity;
 
 }
 
-const deleteSSOTItem = async <TId extends string>(id: TId) => {
+const deleteSSoTEntity = async (id: string) => {
   await ddbClient.send(new DeleteItemCommand({
     Key: { pk: { S: id } },
     TableName: config.get("ssotTable")
@@ -131,7 +121,7 @@ const deleteSSOTItem = async <TId extends string>(id: TId) => {
 }
 
 
-const getSSOTItemById = async <TId extends string>(id: TId) => {
+const getSSoTEntityById = async (id: string) => {
   const result = await ddbClient.send(new GetItemCommand({
     Key: { id: { S: id } },
     TableName: config.get("ssotTable")
@@ -154,8 +144,8 @@ const getSSOTItemById = async <TId extends string>(id: TId) => {
 }
 
 export {
-  createSSOTItem,
-  updateSSOTItem,
-  deleteSSOTItem,
-  getSSOTItemById
+  createSSoTEntity,
+  updateSSoTEntity,
+  deleteSSoTEntity,
+  getSSoTEntityById
 }
