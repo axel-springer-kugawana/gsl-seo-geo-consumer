@@ -118,7 +118,7 @@ paths:
     - The PATCH method **MUST NOT** be robust against non-existence of resources by implicitly creating the resource before updating. Non-existence **MUST** trigger an error.
     - The updated resource **MUST** be returned as part of the reponse payload.
     - The PATCH method **MUST** require the usage of the [JSON Patch standard (RFC 6902)](https://datatracker.ietf.org/doc/html/rfc6902) which includes instruction on how to update the resource :
-        - The media type **MUST** be `application/json-patch+json`.
+        - The media type **MUST** be `application/json-patch+json; charset=utf-8`.
         - The JSON Patch document **MUST** be a JSON representing an array of operations objects.
         - Operations **MUST** have exactly one `op` member. Its value **MUST** be one of :
             - `add`
@@ -183,3 +183,52 @@ paths:
     - The HEAD method **MUST NOT** be used to retieve the header information of multiple resources (collection of resources).
     - The HEAD endpoint **MUST NOT** expose a `requestBody`.
 
+## Headers
+
+- Supported headers **MUST** be explicitly specified in the documentation.
+- Headers **MUST** be part of list of non-obselete RFC (see [the list of standard HTTP headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers)).
+- Headers **MUST** have a description.
+- Headers **MUST NOT** be prefixed with `X-`, `x-` or any other custom naming.
+
+### Request headers
+
+- Every request **MUST** define an *optional* `traceparent` header. The traceparent header is defined as such :
+
+```yaml
+components:
+    parameters:
+        traceparentHeader:
+            name: traceparent
+            in: header
+            required: false
+            description: Identifies the incoming request in the tracing system
+            example: a-random-string
+            schema:
+                type: string
+                minLength: 0
+                maxLenght: 32
+```
+The value is a string defined by the client for each requests made.
+- Every request **MUST** define, if applicable, at least one required `Content-Type` header. The value **MUST** always be one of the following :
+    - `application/json; charset=utf-8`
+    - `application/json-patch+json; charset=utf-8`
+    - `application/octet-stream`
+
+### Response headers
+
+- Every defined request response **MUST** provide a `traceparent` header. The traceparent header is defined as such :
+
+```yaml
+components:
+    headers:
+        traceparent:
+            description: Identifies the request in the tracing system
+            required: true
+            example: 00-0af7651916cd43dd8448eb211c80319c-b9c7c989f97918e1-01
+            schema:
+                type: string
+                minLength: 0
+                pattern: ^[\da-f]{2}-[\da-f]{32}-[\da-f]{16}-[\da-f]{2}$
+```
+The value is a string defined by the API server for each requests answered, base either on the traceparent header value provided by the client if applicable or a new value randomly generated.
+- Every request response **MUST** define a required `Content-Type` header. The value **MUST** always be `application/json; charset=utf-8`.
