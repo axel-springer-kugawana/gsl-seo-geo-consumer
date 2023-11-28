@@ -93,10 +93,11 @@ const generateDeleteSSotEntityCommandZodDefinition = (modelSchema: Record<string
 
     const ssotModelSchema = parse(fs.readFileSync(modelPath, "utf8"));
     const ssotMetadataSchema = parse(fs.readFileSync(`${__dirname}/templates/metadata.yaml`, "utf8"));
-
+    
     const ssotEntitySchema = {
         allOf: [ssotModelSchema, ssotMetadataSchema]
     };
+
 
     const ssotEntityType = await compile(ssotEntitySchema, "ssot-entity", {
         additionalProperties: false,
