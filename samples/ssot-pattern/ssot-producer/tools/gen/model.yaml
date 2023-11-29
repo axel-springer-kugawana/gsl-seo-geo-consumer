@@ -1,0 +1,14 @@
+$schema: http://json-schema.org/draft-04/schema#
+$id: SSoTEntityModel
+type: object
+properties:
+  id:
+    type: string
+  estateType:
+    type: string
+  distributionType:
+    type: string
+required:
+- estateType
+- distributionType
+- id

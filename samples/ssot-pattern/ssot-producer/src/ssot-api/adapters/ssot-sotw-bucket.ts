@@ -2,18 +2,18 @@ import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client
 import { logger } from "@shared/cross-cutting/logger";
 import { generateS3bucketForActiveObjectKey_V0, generateS3bucketForDeletedObjectKey_V0 } from "./ssot-bucket-object-layout-v0";
 import { config } from "ssot-api/config/configuration-provider";
-import { SSoTEvent } from "@shared/models/ssot-entity/1.0.0/ssot-events";
+import { SsotEntity } from "@shared/models/ssot-entity/models";
 
 const s3Client = new S3Client({});
 
-const putSSoTEntity = async (event: SSoTEvent) => {
+const putSSoTEntity = async (entity: SsotEntity) => {
 
-    const { entity: { id, metadata: { partition, dataModelVersion}}  } = event; 
+    const { id, metadata: { partition, dataModelVersion}} = entity; 
 
     const command = new PutObjectCommand({
         Key: generateS3bucketForActiveObjectKey_V0({ partition, dataVersion: dataModelVersion, identifier: id }),
         Bucket: config.get("ssotBucketName"),
-        Body: JSON.stringify(event.entity)
+        Body: JSON.stringify(entity)
     });
 
     const result = await s3Client.send(command);
@@ -38,9 +38,9 @@ const putSSoTEntity = async (event: SSoTEvent) => {
 }
 
 
-const deleteSSoTEntity = async (event: SSoTEvent) => {
+const deleteSSoTEntity = async (entity: SsotEntity) => {
 
-    const { entity: { id, metadata: { partition, dataModelVersion}}  } = event; 
+    const { id, metadata: { partition, dataModelVersion}} = entity; 
 
     const active = generateS3bucketForActiveObjectKey_V0({ partition, dataVersion: dataModelVersion, identifier: id });
     const deleted = generateS3bucketForDeletedObjectKey_V0({ partition, dataVersion: dataModelVersion, identifier: id });
@@ -48,7 +48,7 @@ const deleteSSoTEntity = async (event: SSoTEvent) => {
     await s3Client.send(new PutObjectCommand({
         Bucket: config.get("ssotBucketName"),
         Key: deleted,
-        Body: JSON.stringify(event.entity)
+        Body: JSON.stringify(entity)
     }));
 
     await s3Client.send(new DeleteObjectCommand({

@@ -1,15 +1,14 @@
 import { SNSClient, PublishBatchCommand } from "@aws-sdk/client-sns";
-import { SSoTEntityCreatedEvent, SSoTEntityDeletedEvent, SSoTEntityUpdatedEvent } from "@shared/models/ssot-entity/1.0.0/event-models";
 import { config } from "ssot-api/config/configuration-provider";
-import { SSoTEvent } from "@shared/models/ssot-entity/1.0.0/ssot-events";
 import { uuid } from 'uuidv4';
 import { createHash } from 'crypto';
 import { logger } from "@shared/cross-cutting/logger";
-import { SSoTEntityName } from "@shared/models/ssot-entity/1.0.0/ssot-model";
+import { SSoTEntityEvents } from "@shared/models/ssot-entity/event-models";
+import { SsotInternalEvent } from "@shared/models/internal-events";
 
 const snsClient = new SNSClient({});
 
-const publishSSOTEvent = async (ssotEvent: SSoTEvent) => {
+const publishSSOTEvent = async (ssotEvent: SsotInternalEvent) => {
 
     const event = asEventEnvelope(ssotEvent);
 
@@ -28,39 +27,42 @@ const publishSSOTEvent = async (ssotEvent: SSoTEvent) => {
 
 }
 
-const asEventEnvelope = (ssotEvent: SSoTEvent) => {
+const asEventEnvelope = (ssotEvent: SsotInternalEvent) : SSoTEntityEvents => {
 
     const commonEventEnvelopeProperties = {
         id: uuid(),
         idempotencykey: hash(JSON.stringify(ssotEvent)),
-        specversion: "1.0",
+        specversion: "1.0" as const,
         source: "ssot-producer",
     }
 
     switch (ssotEvent.eventType) {
         case "Updated":
-            return <SSoTEntityUpdatedEvent>{
+            return {
                 ...commonEventEnvelopeProperties,
-                type: `${SSoTEntityName}-updated.v1`,
+                type: "ssotentity-updated.v1",
                 data: {
                   ...ssotEvent.entity
                 }
 
             }
         case "Created":
-            return <SSoTEntityCreatedEvent>{
+            return {
                 ...commonEventEnvelopeProperties,
-                type: `${SSoTEntityName}-created.v1` ,
+                type: `ssotentity-created.v1`,
+                specversion: "1.0",
                 data: {
                   ...ssotEvent.entity
                 }
             }
         case "Deleted":
-            return <SSoTEntityDeletedEvent>{
+            return {
                 ...commonEventEnvelopeProperties,
-                type: `${SSoTEntityName}-deleted.v1`,
+                type: `ssotentity-deleted.v1`,
+                specversion: "1.0",
                 data: {
-                    id: ssotEvent.entity.id
+                    id: ssotEvent.entity.id,
+                    metadata: ssotEvent.entity.metadata
                 }
             }
     }

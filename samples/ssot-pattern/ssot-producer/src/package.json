@@ -1,7 +1,6 @@
 {
   "name": "event-producer-consumer",
   "scripts": {
-    "init:producer": "ts-node --project ./local/tsconfig.local.json ./tools/generate-producer-models.ts -n ssotentity  -d ./shared/models/ssotentity/1.0.0 -m ./tools/model.yaml",
     "build:lambdas": "node esbuild.config.js",
     "watch": "tsc --noEmit --watch",
     "test": "jest",

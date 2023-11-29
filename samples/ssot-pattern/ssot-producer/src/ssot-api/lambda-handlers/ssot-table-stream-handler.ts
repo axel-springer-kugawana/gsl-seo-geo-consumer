@@ -1,12 +1,12 @@
 import { enableLambdaPowertoolsLoggingAndMetrics } from "@shared/cross-cutting/lambda-logging-middleware";
-import { Context, DynamoDBBatchResponse, DynamoDBRecord, DynamoDBStreamEvent } from "aws-lambda";
+import { DynamoDBBatchResponse, DynamoDBRecord, DynamoDBStreamEvent } from "aws-lambda";
 import { publishSSOTEvent } from "ssot-api/adapters/ssot-events-publisher";
 import { deleteSSoTEntity, putSSoTEntity } from "ssot-api/adapters/ssot-sotw-bucket";
-import { SSoTEvent } from "@shared/models/ssot-entity/1.0.0/ssot-events";
-import { SSoTEntity } from "@shared/models/ssot-entity/1.0.0/ssot-model";
 import { logger } from "@shared/cross-cutting/logger";
+import { SsotEntity } from "@shared/models/ssot-entity/models";
+import { SsotInternalEvent } from "@shared/models/internal-events";
 
-const asSSOTEvent = (ddbRecord: DynamoDBRecord): SSoTEvent | undefined => {
+const asSSOTEvent = (ddbRecord: DynamoDBRecord) : SsotInternalEvent | undefined => {
     switch (ddbRecord.eventName) {
         case "INSERT":
         case "MODIFY":
@@ -15,12 +15,11 @@ const asSSOTEvent = (ddbRecord: DynamoDBRecord): SSoTEvent | undefined => {
                 return {
                     eventType: ddbRecord.eventName === "INSERT" ? "Created" : "Updated",
                     entity : {
-                        ...JSON.parse(ssotItemData) as SSoTEntity,
+                        ...JSON.parse(ssotItemData) as SsotEntity,
                     },
                     
                 };
             }
-
 
         case "REMOVE":
             {
@@ -28,7 +27,7 @@ const asSSOTEvent = (ddbRecord: DynamoDBRecord): SSoTEvent | undefined => {
                 return {
                     eventType: "Deleted",
                     entity: {
-                        ...JSON.parse(ssotItemData) as SSoTEntity,
+                        ...JSON.parse(ssotItemData) as SsotEntity,
                     },
                 };
             }
@@ -50,9 +49,9 @@ export const recordHandler = async (record: DynamoDBRecord): Promise<void> => {
 
     // update state of the world bucket
     if (evt.eventType === "Created" || evt.eventType === "Updated") {
-        await putSSoTEntity(evt);
+        await putSSoTEntity(evt.entity);
     } else {
-        await deleteSSoTEntity(evt);
+        await deleteSSoTEntity(evt.entity);
 
     }
     // publish event
@@ -62,7 +61,7 @@ export const recordHandler = async (record: DynamoDBRecord): Promise<void> => {
 
 
 
-export const lambdaHandler = async (event: DynamoDBStreamEvent, context: Context): Promise<DynamoDBBatchResponse> => {
+export const lambdaHandler = async (event: DynamoDBStreamEvent): Promise<DynamoDBBatchResponse> => {
 
     const errors: DynamoDBRecord[] = [];
 

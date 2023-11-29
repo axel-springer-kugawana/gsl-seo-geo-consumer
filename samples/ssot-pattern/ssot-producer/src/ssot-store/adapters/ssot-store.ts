@@ -1,16 +1,30 @@
 import { DeleteItemCommand, DynamoDBClient, GetItemCommand, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
+import { SsotEntity } from "@shared/models/ssot-entity/models";
 import { config } from "ssot-store/config/configuration-provider";
-import { SSoTEntity } from "@shared/models/ssot-entity/1.0.0/ssot-model";
 
 const ddbClient = new DynamoDBClient({});
 
-const createSSoTEntity = async (entity: SSoTEntity): Promise<SSoTEntity> => {
+
+const addLastUpdateDateToMetadata = (entity: SsotEntity) => {
+  return {
+    ...entity,
+    metadata: {
+      ...entity.metadata,
+      lastUpdateDate: new Date().toISOString()
+    }
+  }
+}
+
+const createSSoTEntity = async (entity: SsotEntity): Promise<SsotEntity> => {
+
+  const entityWithLastUpdateDate = addLastUpdateDateToMetadata(entity);
+  entityWithLastUpdateDate.metadata.objectVersion = 1;
 
   const result = await ddbClient.send(new UpdateItemCommand({
     TableName: config.get("ssotTable"),
     Key: {
       "id": {
-        "S": entity.id
+        "S": entityWithLastUpdateDate.id
       }
     },
     UpdateExpression: `
@@ -22,19 +36,19 @@ const createSSoTEntity = async (entity: SSoTEntity): Promise<SSoTEntity> => {
     ConditionExpression: "#PKATTN <> :PKATTV",
     ExpressionAttributeValues: {
       ":DATAATTV": {
-        "S": JSON.stringify(entity)
+        "S": JSON.stringify(entityWithLastUpdateDate)
       },
       ":DATAVERSIONATTV": {
-        "S": entity.metadata.dataModelVersion
+        "S": entityWithLastUpdateDate.metadata.dataModelVersion
       },
       ":VERSIONATTV": {
         "N": "1"
       },
       ":PKATTV": {
-        "S": entity.id
+        "S": entityWithLastUpdateDate.id
       },
       ":DATAPARTITIONATTV": {
-        "S": entity.metadata.partition 
+        "S": entityWithLastUpdateDate.metadata.partition
       }
     },
     ExpressionAttributeNames: {
@@ -48,50 +62,53 @@ const createSSoTEntity = async (entity: SSoTEntity): Promise<SSoTEntity> => {
   }));
 
   if (result.$metadata.httpStatusCode !== 200) {
-    throw new Error(`Error creating item of id: ${entity.id}`, {
+    throw new Error(`Error creating item of id: ${entityWithLastUpdateDate.id}`, {
       cause: result.$metadata
     });
   }
 
-  entity.metadata.objectVersion = 1;
+  entityWithLastUpdateDate.metadata.objectVersion = 1;
 
   return {
-    ...entity
+    ...entityWithLastUpdateDate
   }
 }
 
-const updateSSoTEntity = async (entity: SSoTEntity) : Promise<SSoTEntity> => {
+const updateSSoTEntity = async (entity: SsotEntity): Promise<SsotEntity> => {
 
+  const entityWithLastUpdateDate = addLastUpdateDateToMetadata(entity);
+  // incremet object version
+  entityWithLastUpdateDate.metadata.objectVersion += 1; 
 
   const result = await ddbClient.send(new UpdateItemCommand({
     TableName: config.get("ssotTable"),
     "Key": {
       "id": {
-        "S": entity.id
+        "S": entityWithLastUpdateDate.id
       }
     },
     UpdateExpression: `
       SET 
         #DATAATTN = :DATAATTV, 
-        #VERSIONATTN = :VERSIONATTN + :VERSIONATTINCV, 
+        #VERSIONATTN = #VERSIONATTN + :VERSIONATTINCV, 
         #DATAVERSIONATTN = :DATAVERSIONATTV, 
         #DATAPARTITIONATTN = :DATAPARTITIONATTV`,
     ConditionExpression: "#VERSIONATTN = :VERSIONATTCURRV",
     ExpressionAttributeValues: {
       ":DATAATTV": {
-        "S": JSON.stringify(entity)
+        "S": JSON.stringify(entityWithLastUpdateDate)
       },
       ":DATAVERSIONATTV": {
-        "S": entity.metadata.dataModelVersion
+        "S": entityWithLastUpdateDate.metadata.dataModelVersion
       },
       ":VERSIONATTINCV": {
         "N": "1"
       },
       ":VERSIONATTCURRV": {
-        "N": entity.metadata.objectVersion?.toString() 
+        "N": entityWithLastUpdateDate.metadata.objectVersion?.toString()
       },
       ":DATAPARTITIONATTV": {
-        "S": entity.metadata.partition
+        "S": entityWithLastUpdateDate.metadata.partition
       }
     },
     ExpressionAttributeNames: {
@@ -99,23 +116,27 @@ const updateSSoTEntity = async (entity: SSoTEntity) : Promise<SSoTEntity> => {
       "#VERSIONATTN": "version",
       "#DATAVERSIONATTN": "dataModelVersion",
       "#DATAPARTITIONATTN": "partition"
-    }
+    },
+    ReturnValues: "UPDATED_NEW"
   }));
 
-
   if (result.$metadata.httpStatusCode !== 200) {
-    throw new Error(`Error updating item of id ${entity.id}`, {
+    throw new Error(`Error updating item of id ${entityWithLastUpdateDate.id}`, {
       cause: result.$metadata
     });
+
+
   }
 
-  return entity;
+  const updatedValue = result.Attributes!.data.S!;
+
+  return JSON.parse(updatedValue) as SsotEntity;
 
 }
 
 const deleteSSoTEntity = async (id: string) => {
   await ddbClient.send(new DeleteItemCommand({
-    Key: { pk: { S: id } },
+    Key: { id: { S: id } },
     TableName: config.get("ssotTable")
   }))
 }
@@ -127,7 +148,7 @@ const getSSoTEntityById = async (id: string) => {
     TableName: config.get("ssotTable")
   }));
 
-  if(result.Item == null) {
+  if (result.Item == null) {
     return null;
   }
 
