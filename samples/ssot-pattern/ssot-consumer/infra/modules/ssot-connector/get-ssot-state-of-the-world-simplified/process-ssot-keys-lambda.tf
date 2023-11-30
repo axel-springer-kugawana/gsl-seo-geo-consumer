@@ -81,7 +81,6 @@ module "process_ssot_keys_lambda" {
   lambda_handler       = var.process_ssot_keys_lambda.handler
   lambda_function_name = "${var.application}-${var.environment}-${var.ssot_name}-process-ssot-keys"
   lambda_dist_dir      = var.process_ssot_keys_lambda.dist_dir
-  runtime              = "nodejs18.x"
   lambda_role_arn      = aws_iam_role.lambda_role.arn
   memory_size          = "512"
   timeout              = 60

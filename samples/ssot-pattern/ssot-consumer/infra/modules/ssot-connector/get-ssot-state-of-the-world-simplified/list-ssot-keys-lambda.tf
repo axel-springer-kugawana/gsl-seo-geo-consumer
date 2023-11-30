@@ -60,7 +60,6 @@ module "list_ssot_keys_lambda" {
   lambda_handler       = var.list_ssot_keys_lambda.handler
   lambda_function_name = "${var.application}-${var.environment}-${var.ssot_name}-list-ssot-keys"
   lambda_dist_dir      = var.list_ssot_keys_lambda.dist_dir
-  runtime              = "nodejs18.x"
   lambda_role_arn      = aws_iam_role.list_lambda_role.arn
   memory_size          = "2048"
   timeout              = 14 * 60

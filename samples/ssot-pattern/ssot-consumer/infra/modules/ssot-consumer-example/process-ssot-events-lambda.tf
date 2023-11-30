@@ -72,7 +72,6 @@ module "process_ssot_events_lambda" {
   lambda_handler       = var.process_ssot_events_lambda.handler
   lambda_function_name = "${var.application}-${var.environment}-process-ssot-events"
   lambda_dist_dir      = var.process_ssot_events_lambda.dist_dir
-  runtime              = "nodejs18.x"
   lambda_role_arn      = aws_iam_role.lambda_role.arn
   memory_size          = "512"
   timeout              = 29
