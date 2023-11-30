@@ -1,3 +1,13 @@
+resource "aws_lambda_event_source_mapping" "lambda_event_source" {
+  event_source_arn        = var.ssot_consumer_queue.arn
+  function_name           = module.process_ssot_events_lambda.function_name
+  function_response_types = ["ReportBatchItemFailures"]
+  scaling_config {
+    maximum_concurrency = var.process_ssot_events_lambda.queue_esm_max_concurrency
+  }
+}
+
+
 resource "aws_iam_role" "lambda_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -29,19 +39,21 @@ data "aws_iam_policy_document" "lambda_policy" {
   statement {
     effect = "Allow"
     actions = [
-      "s3:getObject",
-    ]
-    resources = [
-      "${var.ssot_sotw_bucket.arn}/*"
-    ]
-  }
-   statement {
-    effect = "Allow"
-    actions = [
-      "sqs:SendMessage",
+      "sqs:ReceiveMessage",
+      "sqs:DeleteMessage",
+      "sqs:GetQueueAttributes"
     ]
     resources = [
       "${var.ssot_consumer_queue.arn}"
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "dynamodb:UpdateItem"
+    ]
+     resources = [
+      "${aws_dynamodb_table.consumer_materialized_view_table.arn}"
     ]
   }
 }
@@ -55,17 +67,17 @@ resource "aws_iam_role_policy_attachment" "attach_iam_policy_to_iam_role" {
   policy_arn = aws_iam_policy.iam_policy_for_lambda.arn
 }
 
-module "process_ssot_items_lambda" {
-  source               = "../../constructs/lambda"
-  lambda_handler       = var.process_ssot_items_lambda.handler
-  lambda_function_name = "${var.application}-${var.environment}-${var.ssot_name}-process-ssot-entities"
-  lambda_dist_dir      = var.process_ssot_items_lambda.dist_dir
+module "process_ssot_events_lambda" {
+  source               = "../constructs/lambda"
+  lambda_handler       = var.process_ssot_events_lambda.handler
+  lambda_function_name = "${var.application}-${var.environment}-process-ssot-events"
+  lambda_dist_dir      = var.process_ssot_events_lambda.dist_dir
   runtime              = "nodejs18.x"
   lambda_role_arn      = aws_iam_role.lambda_role.arn
   memory_size          = "512"
-  timeout = 60
+  timeout              = 29
   env_variables = {
-    SSOT_SOTW_BUCKET_NAME = var.ssot_sotw_bucket.id,
-    INTERNAL_SSOT_EVENTS_QUEUE = var.ssot_consumer_queue.id
+    MV_TABLE_NAME = aws_dynamodb_table.consumer_materialized_view_table.name
+
   }
 }

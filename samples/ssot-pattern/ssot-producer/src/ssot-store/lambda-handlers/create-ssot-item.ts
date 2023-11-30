@@ -2,7 +2,7 @@ import { enableLambdaPowertoolsLoggingAndMetrics } from "@shared/cross-cutting/l
 import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
 import { createSSoTEntity } from "ssot-store/adapters/ssot-store";
 import createCommand from "@shared/models/ssot-entity/create-command";
-import { uuid } from 'uuidv4';
+import { v4 as uuidv4 } from 'uuid';
 
 export const lambdaHandler = async (event: APIGatewayProxyEvent, context: Context): Promise<APIGatewayProxyResult> => {
 
@@ -10,7 +10,7 @@ export const lambdaHandler = async (event: APIGatewayProxyEvent, context: Contex
     
     if (command.success) {
         const item = await createSSoTEntity({
-            id: uuid(),
+            id: uuidv4(),
             ...command.data
         });
 

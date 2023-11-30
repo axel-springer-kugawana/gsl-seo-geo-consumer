@@ -13,10 +13,6 @@ type InvocationPayload = {
 
 export const lambdaHandler = async (payload: InvocationPayload, context: Context) => {
 
-    logger.info("Lambda invocation from sfn", {
-        payload
-    })
-
     let { keyBatchingSize, nextContinuationToken, prefix } = payload;
 
     let keysCount = 0;

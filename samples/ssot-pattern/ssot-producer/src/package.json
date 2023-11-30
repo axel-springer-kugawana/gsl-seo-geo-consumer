@@ -1,5 +1,5 @@
 {
-  "name": "event-producer-consumer",
+  "name": "ssot-producer",
   "scripts": {
     "build:lambdas": "node esbuild.config.js",
     "watch": "tsc --noEmit --watch",
@@ -39,7 +39,7 @@
     "@aws-sdk/util-dynamodb": "^3.382.0",
     "@middy/core": "^4.6.0",
     "convict": "^6.2.4",
-    "uuidv4": "^6.2.13",
+    "uuid": "^9.0.1",
     "zod": "^3.22.4"
   }
 }

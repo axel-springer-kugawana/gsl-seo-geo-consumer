@@ -3,7 +3,6 @@
   "scripts": {
     "build:lambdas": "node esbuild.config.js",
     "watch": "tsc --noEmit --watch",
-    "start:list-ssot-keys": "ts-node --project ./ssot-connector/sotw-inventory/tsconfig.json ./ssot-connector/sotw-inventory/list-ssot-sotw-bucket-by-prefix.ts",
     "local": "ts-node --project ./local/tsconfig.local.json ./local/local-lambda-invoke.ts",
     "test": "jest"
   },
@@ -35,6 +34,6 @@
     "convict": "^6.2.4",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "uuidv4": "^6.2.13"
+    "uuid": "^9.0.1"
   }
 }

@@ -18,7 +18,7 @@ variable "ssot_sotw_bucket" {
 }
 
 
-variable "process_ssot_keys_lambda" {
+  variable "process_ssot_keys_lambda" {
   type = object({
     dist_dir = string
     handler  = string
@@ -46,4 +46,9 @@ variable "ssot_consumer_queue" {
     arn = string
     id = string
   })
+}
+
+variable "get_state_of_the_world_key_batch_size" {
+  type = number
+  default = 30
 }

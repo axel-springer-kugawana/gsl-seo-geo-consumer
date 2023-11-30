@@ -19,13 +19,7 @@ const configSchema = {
         format: String,
         default: "INTERNAL_SSOT_EVENTS_QUEUE",
         env: 'INTERNAL_SSOT_EVENTS_QUEUE',
-    },
-    ssotName: {
-        doc: 'SSoT Name',
-        format: String,
-        default: "SSOT_NAME",
-        env: 'SSOT_NAME',
-    },
+    }
 }
 export const config = convict(configSchema).validate({ allowed: 'strict' });
 

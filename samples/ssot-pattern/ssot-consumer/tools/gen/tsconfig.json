@@ -1,0 +1,35 @@
+{
+    "compilerOptions": {
+        "target": "ES2020",
+        "lib": ["ESNext"],
+        "module":"CommonJS",
+        "outDir": "./dist",
+        "typeRoots": ["node_modules/@types"],
+        "baseUrl": "./",
+        "paths": {
+            "@shared/*": ["shared/*"],
+            "@events-producers/*": ["events-producers/*"],
+            "@events-consumers/*": ["events-consumers/*"]
+        },
+        "skipLibCheck": true,
+        "removeComments": true,
+        "inlineSourceMap": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "strict": true
+    },
+
+    "exclude": [
+        "esbuild.config.js",
+        "node_modules", 
+        "**/*.spec.ts"],
+    "require": [
+        "ts-node/register/transpile-only"
+    ],
+    "ts-node": {
+        "require": ["tsconfig-paths/register"]
+    }
+}

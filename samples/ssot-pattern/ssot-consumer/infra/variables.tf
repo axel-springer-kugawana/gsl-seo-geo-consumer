@@ -1,9 +1,3 @@
-variable "application" {
-  description = "Application name"
-  type        = string
-  default     = "ssot-consumer"
-}
-
 variable "environment" {
   description = "The environment of the application"
   type        = string

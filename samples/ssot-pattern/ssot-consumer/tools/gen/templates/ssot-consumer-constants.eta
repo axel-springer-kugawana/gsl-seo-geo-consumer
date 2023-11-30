@@ -1,0 +1,2 @@
+export const SSoTConsumerName = "<%= it.SSoTConsumerName %>";
+export const SSotEntityName = "<%= it.SSoTEntityName %>";

@@ -1,7 +1,7 @@
 data "archive_file" "zip_the_lambda_code" {
   type        = "zip"
   source_dir  = var.lambda_dist_dir
-  output_path = "${var.lambda_dist_dir}-${var.lambda_function_name}.zip"
+  output_path = "${path.root}/.terraform/tmp/lambda-dist-zips/${var.lambda_function_name}.zip"
 }
 
 resource "aws_lambda_function" "lambda_function" {

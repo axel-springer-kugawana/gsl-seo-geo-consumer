@@ -9,7 +9,8 @@ import { generateTsTypesFromAsyncAPISpec } from './gen-types-schema-from-asyncap
 
 const destDirs = {
     src :  {
-        models: `${__dirname}/../../src/shared/models/ssot-entity`
+        models: `${__dirname}/../../src/shared/models/ssot-entity`,
+        constants: `${__dirname}/../../src/shared/models`
     },
     apidocs: {
         asyncapi:  `${__dirname}/../../api-docs`
@@ -138,7 +139,17 @@ const generateSSotSharedModels = async (ssotModelSchema: any, ssotMetadataSchema
     });
 
     fs.writeFileSync(path.join(destDirs.src.models, "models.ts"), ssotEntityType);
+    
     return ssotEntitySchema;
+}
+
+const generateSSoTConstants = (eta: Eta, ssotName: string, ssotEntityName: string) => {
+    const constants = eta.render("./ssot-constants", {
+        SSoTName: ssotName.toLowerCase(),
+        SSoTEntityName: ssotEntityName.toLowerCase(),
+    });
+
+    fs.writeFileSync(path.join(destDirs.src.constants, "ssot-constants.ts"), constants, "utf-8");
 }
 
 
@@ -161,11 +172,13 @@ const generateSSotSharedModels = async (ssotModelSchema: any, ssotMetadataSchema
 
 
     const eta = new Eta({ views: path.join(__dirname, "templates"), autoEscape: false });
+    generateSSoTConstants(eta, ssotName, ssotEntityName);
     await generateAsyncAPIDocsAndEventModels(eta, ssotEntityName, ssotName, ssotEntitySchema);
     generateTerraformVars(eta, ssotName);
 
   
 })();
+
 
 
 
