@@ -1,4 +1,4 @@
-import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
+import { DeleteItemCommand, DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 
 const ddbClient = new DynamoDBClient({});
 
@@ -41,6 +41,30 @@ const putItem = async (id: string, data: any): Promise<void> => {
 
 
 
+const deleteItem = async (id: string): Promise<void> => {
+
+  const result = await ddbClient.send(new DeleteItemCommand({
+    TableName: process.env.MV_TABLE_NAME,
+    Key: {
+      "id": {
+        "S": id
+      }
+    }
+   
+  }));
+
+  if (result.$metadata.httpStatusCode !== 200) {
+    throw new Error(`Error creating item of id: ${id}`, {
+      cause: result.$metadata
+    });
+  }
+
+
+}
+
+
+
 export {
-  putItem
+  putItem,
+  deleteItem
 }
