@@ -1,8 +1,6 @@
 import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 
-
 const ddbClient = new DynamoDBClient({});
-
 
 const putItem = async (id: string, data: any): Promise<void> => {
 
@@ -15,14 +13,20 @@ const putItem = async (id: string, data: any): Promise<void> => {
     },
     UpdateExpression: `
       SET 
-        #DATAATTN = :DATAATTV`,
+        #DATAATTN = :DATAATTV,
+        #VERSIONATTN = :VERSIONATTCURRV`,
+    ConditionExpression: "attribute_not_exists(#VERSIONATTN) OR #VERSIONATTN < :VERSIONATTCURRV",
     ExpressionAttributeValues: {
       ":DATAATTV": {
         "S": JSON.stringify(data)
-      }
+      },
+      ":VERSIONATTCURRV": {
+        "N": data.metadata.objectVersion?.toString()
+      },
     },
     ExpressionAttributeNames: {
-      "#DATAATTN": "data"
+      "#DATAATTN": "data",
+      "#VERSIONATTN": "version",
     }
   }));
 
