@@ -47,3 +47,13 @@ module "ssot_consumer_queue" {
   ssot_name   = var.ssot_name
 
 }
+
+
+module "ssot_connector_topic" {
+  source = "./ssot-connector-topic"
+
+  application = var.application
+  environment = var.environment
+  ssot_name   = var.ssot_name
+
+}

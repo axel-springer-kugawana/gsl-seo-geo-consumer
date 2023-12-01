@@ -35,8 +35,6 @@ const putItem = async (id: string, data: any): Promise<void> => {
       cause: result.$metadata
     });
   }
-
-
 }
 
 
