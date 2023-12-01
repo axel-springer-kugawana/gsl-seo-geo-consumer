@@ -1,11 +1,11 @@
-resource "aws_sns_topic" "classified_events_topic" {
+resource "aws_sns_topic" "ssot_events_topic" {
   name = "${var.application}-${var.environment}-ssot-events-topic"
 }
 
 
-resource "aws_sns_topic_policy" "classified_events_topic_policy" {
+resource "aws_sns_topic_policy" "ssot_events_topic_policy" {
   count = length(var.ssot_consumers_accounts) > 0 ? 1 : 0
-  arn = aws_sns_topic.classified_events_topic.arn
+  arn = aws_sns_topic.ssot_events_topic.arn
   policy = data.aws_iam_policy_document.sns_topic_policy.json
 }
 
@@ -20,7 +20,7 @@ data "aws_iam_policy_document" "sns_topic_policy" {
       "SNS:Subscribe",
     ]
     resources = [
-      aws_sns_topic.classified_events_topic.arn,
+      aws_sns_topic.ssot_events_topic.arn,
     ]
 
   }

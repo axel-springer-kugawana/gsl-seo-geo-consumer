@@ -1,4 +1,4 @@
-resource "aws_sqs_queue_policy" "classified_data_subscription" {
+resource "aws_sqs_queue_policy" "ssot_data_subscription" {
   queue_url = var.target_queue_id
   policy    = <<EOF
 {
@@ -27,7 +27,7 @@ EOF
 }
 
 
-resource "aws_sns_topic_subscription" "classified_data_sqs_target" {
+resource "aws_sns_topic_subscription" "ssot_data_sqs_target" {
   topic_arn            = var.source_sns_topic_arn
   protocol             = "sqs"
   endpoint             = var.target_queue_arn

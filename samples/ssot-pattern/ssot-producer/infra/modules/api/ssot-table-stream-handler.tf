@@ -65,7 +65,7 @@ resource "aws_iam_policy" "ssot_table_stream_handler_lambda_iam_policy" {
 
         ]
         Resource = [
-          aws_sns_topic.classified_events_topic.arn,
+          aws_sns_topic.ssot_events_topic.arn,
         ]
       }
     ]
@@ -88,7 +88,7 @@ module "ssot_table_stream_handler_lambda" {
   memory_size          = "512"
   env_variables = {
     STATE_OF_WORLD_BUCKET = aws_s3_bucket.state_of_world_bucket.id
-    SSOT_TOPIC_ARN        = aws_sns_topic.classified_events_topic.arn
+    SSOT_TOPIC_ARN        = aws_sns_topic.ssot_events_topic.arn
   }
 }
 
