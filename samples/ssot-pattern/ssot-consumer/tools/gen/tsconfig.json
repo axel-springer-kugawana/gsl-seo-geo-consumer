@@ -6,11 +6,6 @@
         "outDir": "./dist",
         "typeRoots": ["node_modules/@types"],
         "baseUrl": "./",
-        "paths": {
-            "@shared/*": ["shared/*"],
-            "@events-producers/*": ["events-producers/*"],
-            "@events-consumers/*": ["events-consumers/*"]
-        },
         "skipLibCheck": true,
         "removeComments": true,
         "inlineSourceMap": true,
