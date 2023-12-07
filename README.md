@@ -18,7 +18,8 @@ Promote exchanges and experimentations around distributed systems
 |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [EDA, Event models standards, conventions & guildelines](https://github.com/axel-springer-kugawana/aviv_architecture_distributed_systems_design_guild/tree/main/event-models-standards)      | Holds all code samples supporting the "[event model guidelines & convention](https://avivgroup.atlassian.net/wiki/spaces/AARCH/pages/306220332/DSDG+Event+models+standards)" guild study |
 | [EDA, Idempotent consumers](https://github.com/axel-springer-kugawana/aviv_architecture_distributed_systems_design_guild/tree/main/idempotent-event-consumers) | Code sample demonstrating how to create idempotent event consumers by using lambda-power-tools                                                                                         |
-| [Tutorial: SSOT Pattern](./samples/ssot-pattern/) | Tutorial for the [SSoT Pattern](https://avivgroup.atlassian.net/wiki/spaces/AARCH/pages/321302652/DSDG+SSOT+pattern+and+Event+Replay)                |
+| [SSOT Pattern](./samples/ssot-pattern/) | Complete end to end sample for the [SSoT Pattern](https://avivgroup.atlassian.net/wiki/spaces/AARCH/pages/321302652/DSDG+SSOT+pattern+and+Event+Replay)                |
+| [Classified Management Connector](./samples/classified-management-connector/) | Complete sample on building a Classified management connector |
 
 
 ## ✍️ Contribution
