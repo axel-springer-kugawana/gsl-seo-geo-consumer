@@ -1,0 +1,23 @@
+variable "application" {
+  type = string
+}
+
+variable "environment" {
+  type = string
+}
+
+variable "process_cm_connector_events_lambda" {
+  type = object({
+    dist_dir = string
+    handler  = string
+    queue_esm_max_concurrency = number
+  })
+}
+
+
+variable "cm_connector_consumer_queue" {
+  type = object({
+    arn = string
+    id = string
+  })
+}
