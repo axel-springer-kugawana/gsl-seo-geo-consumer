@@ -1,19 +1,19 @@
 # Getting started
 
-You will find here a concrete implemention of Classified Management consumer.
+You will find here a concrete implemention of a classified SSoT consumer.
 
 By deploying  this application into your account, you will be able:
-*  to consume events from Classified Management 
-* and  to request the current state of the world of classifieds. 
+*  To consume events from Classified Management 
+* And to request the current state of the world of classifieds. 
 
 Along with classified management connector, you will find an example on how to create a materialized view where you can store your own adapted/enriched models of classifieds.
 
+## Architecture overview
 ![CM Consumer](./assets/cm-connector-architecture.gif "CM connector").
-
 
 ## code structure
 * In the `src` dir you will find the code of the lambda functions
-     *  [cm-connector](./src/cm-connector/) all lambda functions that implement classified management connector logic
+     * [cm-connector](./src/cm-connector/) all lambda functions that implement classified management connector logic
      * [cm-consumer-example](./src/cm-consumer-example/) an example on how to consume events to build a materialized view
      * [shared/models](./src/shared/models) you will find the classified model your are consuming
 
@@ -21,9 +21,7 @@ Along with classified management connector, you will find an example on how to c
      * [cm-connector](./infra/modules/cm-connector/) a generic ssot connector infra module
      * [cm-consumer-example](./infra/modules/cm-consumer-example/) terraform module containing a suppoting example on how to consume events to build a materialized view
 
-
 ### On using the classified management terraform connector module
-
 
 Here is an example on how to use [this module](./infra/modules/cm-connector/) in order to consume classified management
 
