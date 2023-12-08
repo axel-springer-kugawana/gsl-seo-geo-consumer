@@ -83,7 +83,7 @@ module "process_ssot_keys_lambda" {
   lambda_dist_dir      = var.process_ssot_keys_lambda.dist_dir
   lambda_role_arn      = aws_iam_role.lambda_role.arn
   memory_size          = "512"
-  timeout              = 60
+  timeout              = 200
   env_variables = {
     SSOT_SOTW_BUCKET_NAME      = var.ssot_sotw_bucket.id,
     CONNECTOR_EVENTS_QUEUE = var.connector_internal_queue.id,

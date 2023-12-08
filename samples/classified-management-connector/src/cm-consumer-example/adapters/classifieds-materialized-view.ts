@@ -1,10 +1,10 @@
-import { DeleteItemCommand, DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { logger } from "@shared/cross-cutting/logger";
 import { Classified } from "@shared/models/classified/1.0.0/classified";
 
 const ddbClient = new DynamoDBClient({});
 
-const putItem = async (id: string, data: Classified): Promise<void> => {
+const createOrUpdateClassified = async (id: string, data: Classified): Promise<void> => {
 
   try {
     await ddbClient.send(new UpdateItemCommand({
@@ -17,7 +17,10 @@ const putItem = async (id: string, data: Classified): Promise<void> => {
       UpdateExpression: `
         SET 
           #DATAATTN = :DATAATTV,
-          #VERSIONATTN = :VERSIONATTCURRV`,
+          #VERSIONATTN = :VERSIONATTCURRV
+        REMOVE
+          #SOFTDELETE, #EXPIREAT
+         `,
       ConditionExpression: "attribute_not_exists(#VERSIONATTN) OR #VERSIONATTN < :VERSIONATTCURRV",
       ExpressionAttributeValues: {
         ":DATAATTV": {
@@ -30,6 +33,8 @@ const putItem = async (id: string, data: Classified): Promise<void> => {
       ExpressionAttributeNames: {
         "#DATAATTN": "data",
         "#VERSIONATTN": "version",
+        "#SOFTDELETE": "softdeleted",
+        "#EXPIREAT": "expireat"
       }
     }));
 
@@ -51,21 +56,46 @@ const putItem = async (id: string, data: Classified): Promise<void> => {
 }
 
 
+const markClassifiedAsDeleted = async (deleteCommand : { classifiedId: string, updateDate: string}): Promise<void> => {
 
-const deleteItem = async (id: string): Promise<void> => {
+  const { classifiedId, updateDate } = deleteCommand;
 
-  const result = await ddbClient.send(new DeleteItemCommand({
+  const onDayInSeconds = 60 * 60 * 24 * 1;
+  const expiryTime = Math.floor(Date.now() / 1000) + onDayInSeconds;
+
+  const result = await ddbClient.send(new UpdateItemCommand({
     TableName: process.env.MV_TABLE_NAME,
     Key: {
       "id": {
-        "S": id
+        "S": classifiedId
       }
+    },
+    UpdateExpression: `
+    SET 
+      #EXPIREAT = :EXPIREAT,
+      #VERSIONATTN = :VERSIONATTCURRV,
+      #SOFTDELETE = :SOFTDELETE`,
+    ConditionExpression: "attribute_not_exists(#VERSIONATTN) OR #VERSIONATTN < :VERSIONATTCURRV",
+    ExpressionAttributeValues: {
+      ":EXPIREAT": {
+        "N": expiryTime.toString()
+      },
+      ":VERSIONATTCURRV": {
+        "S": updateDate?.toString()
+      },
+      ":SOFTDELETE": {
+        "BOOL": true
+      },
+    },
+    ExpressionAttributeNames: {
+      "#EXPIREAT": "expireat",
+      "#VERSIONATTN": "version",
+      "#SOFTDELETE": "softdeleted"
     }
-   
   }));
 
   if (result.$metadata.httpStatusCode !== 200) {
-    throw new Error(`Error deleting item of id: ${id}`, {
+    throw new Error(`Error deleting item of id: ${classifiedId}`, {
       cause: result.$metadata
     });
   }
@@ -76,6 +106,6 @@ const deleteItem = async (id: string): Promise<void> => {
 
 
 export {
-  putItem,
-  deleteItem
+  createOrUpdateClassified,
+  markClassifiedAsDeleted
 }

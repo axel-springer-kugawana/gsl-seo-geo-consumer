@@ -5,15 +5,15 @@ import { BatchProcessor, EventType, processPartialResponse } from "@aws-lambda-p
 import { publishFullClassifiedEvent } from "@cm-connector/adapters/classified-event-publisher";
 import { ClassifiedCreateOrUpdateOrDeleteEvent, ClassifiedEventType } from "@cm-connector/models/1.0.0/classified-events";
 
-export const handleClassifiedEvent = async (event: ClassifiedCreateOrUpdateOrDeleteEvent): Promise<void> => {
-
+const handleClassifiedEvent = async (event: ClassifiedCreateOrUpdateOrDeleteEvent): Promise<void> => {
 
     switch (event.eventType) {
         case ClassifiedEventType.DELETED:
             await publishFullClassifiedEvent({
                 event: "deleted", 
                 data: {
-                    classifiedId: event.classifiedId
+                    classifiedId: event.classifiedId,
+                    updateDate: new Date(event.eventTime).toISOString()
                 }
             });
             break;

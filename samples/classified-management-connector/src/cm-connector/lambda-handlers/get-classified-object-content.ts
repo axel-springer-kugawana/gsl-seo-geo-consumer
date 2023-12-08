@@ -6,12 +6,16 @@ import { publishClassifiedDataAsReplayedEvent } from "@cm-connector/adapters/cla
 
 type ItemsToProcess = { Items: string[] };
 
-export const itemsHandler = async (event: ItemsToProcess): Promise<void> => {
+const itemsHandler = async (event: ItemsToProcess): Promise<void> => {
 
-    await Promise.all(event.Items.map(async key => {
+    for(let i = 0; i < event.Items.length; i++) {
+
+        const key = event.Items[i];
         const classified = await getClassifiedByKey(key);
-        await publishClassifiedDataAsReplayedEvent(classified)
-    }));
+        await publishClassifiedDataAsReplayedEvent(classified);
+
+    }
+
 }
 
 const processor = new BatchProcessor(EventType.SQS);

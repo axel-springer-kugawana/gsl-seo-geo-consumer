@@ -44,7 +44,7 @@ router.post("/:lambda/:handler/", async (req: Request, res: Response) => {
 
   try {
 
-    const result = await lambdaFunctionHandler(req.body.event, createLambdaContextObjectFromContextPayload(req.body.context));
+    const result = await lambdaFunctionHandler(req.body, createLambdaContextObjectFromContextPayload(req.body.context));
     return res.status(200).json(result).end();
 
   } catch (error) {

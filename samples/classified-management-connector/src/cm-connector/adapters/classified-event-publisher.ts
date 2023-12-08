@@ -3,21 +3,23 @@ import { config } from "@cm-connector/config/configuration-provider";
 import { v4 as uuidv4 } from 'uuid';
 import { createHash } from 'crypto';
 import { SSoTConsumerName, SSotEntityName } from "@shared/models/cm-consumer-constants";
+import { Classified } from "@shared/models/classified/1.0.0/classified";
 
 const sqsClient = new SQSClient({});
 
-type ClassifiedFullEvent<TClassifiedData> = {
+type ClassifiedFullEvent= {
     event: "deleted",
     data: {
-        classifiedId: string
+        classifiedId: string,
+        updateDate: string
     }
 } | {
     event: "created" | "updated",
-    data: TClassifiedData
+    data: Classified
 
 }
 
-const publishFullClassifiedEvent = async <TClassifiedData>(fullEvent: ClassifiedFullEvent<TClassifiedData>) => {
+const publishFullClassifiedEvent = async (fullEvent: ClassifiedFullEvent) => {
 
     await sqsClient.send(new SendMessageCommand({
         QueueUrl: config.get("connectorEventsQueue"),

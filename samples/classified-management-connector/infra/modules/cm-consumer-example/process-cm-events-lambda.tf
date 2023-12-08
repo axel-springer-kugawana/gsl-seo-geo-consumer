@@ -75,6 +75,7 @@ module "process_cm_connector_events_lambda" {
   lambda_role_arn      = aws_iam_role.lambda_role.arn
   memory_size          = "512"
   timeout              = 29
+  
   env_variables = {
     MV_TABLE_NAME = aws_dynamodb_table.consumer_materialized_view_table.name
   }

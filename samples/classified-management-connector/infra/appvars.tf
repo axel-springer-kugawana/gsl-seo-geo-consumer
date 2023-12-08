@@ -1,7 +1,7 @@
 variable "application" {
   description = "Application name"
   type        = string
-  default     = "cm-consumer-sample"
+  default     = "cm-sample"
 }
 
 
