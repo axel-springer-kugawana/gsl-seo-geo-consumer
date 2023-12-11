@@ -55,10 +55,10 @@ module "cm_connector" {
 ```
 ## FAQ
 ### Before deploying
-First, you will need to get your account allowed to consume classified management. You will need to create a JIRA ticket as mentioned on this page: https://avivgroup.atlassian.net/wiki/spaces/APE/pages/375620475/Subscribe+to+SSOT+events
+First, you will need to get your AWS account(s) allowed to consume classified management. You will need to create a JIRA ticket as mentioned on this page: https://avivgroup.atlassian.net/wiki/spaces/APE/pages/375620475/Subscribe+to+SSOT+events
 
 ### Running an initialization job
-Once sucessfully deployed, you start getting events from classified management, If you want to run a "Get state of the world" operation in order to get the complete set of classifieds you will need to go to you aws console and execute the `get state of world` state machine (by default this state machine will have this name `cm-consumer-sample-dev-classifieds-get-stow`)
+Once sucessfully deployed, you start getting events from classified management. If you want to run a "Get state of the world" operation in order to get the complete set of classifieds you will need to go to you aws console and execute the `get state of world` state machine (by default this state machine will have this name `cm-consumer-sample-dev-classifieds-get-stow`)
 by specifying this input parameters to the state machine:
 ```
 {
@@ -73,6 +73,11 @@ more precisely, if you want to start reading all IWT active classified you will 
 ```
 
 ![Run get state of the world](./assets/run-state-machine.gif "Run state of the world").
+
+
+Along with the connector, you will find [an example of a lambda function](./src/cm-consumer-example/) that consumes complete classifieds from the connector and save them on a [dynamodb table as a materialized view](./infra/modules/cm-consumer-example/consumer-materialized-view.tf)
+
+![Alt text](./assets/mat-view-ddb-table.png)
 
 
 You will find more about classified management APIs here: 
