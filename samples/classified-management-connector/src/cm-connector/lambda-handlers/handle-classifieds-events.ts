@@ -21,7 +21,7 @@ const handleClassifiedEvent = async (event: ClassifiedCreateOrUpdateOrDeleteEven
         case ClassifiedEventType.UPDATED:
             const classified = await getClassifiedById(event.link);
             await publishFullClassifiedEvent({
-                event: ClassifiedEventType.CREATED ?  "created" : "updated", 
+                event: event.eventType === ClassifiedEventType.CREATED ?  "created" : "updated", 
                 data: {
                     ...classified
                 }

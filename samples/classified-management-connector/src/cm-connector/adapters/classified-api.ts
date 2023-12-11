@@ -1,7 +1,6 @@
 import { config } from "@cm-connector/config/configuration-provider"
 import { Classified } from "@shared/models/classified/1.0.0/classified";
 import { getClassifiedApiSecret } from "./classified-api-secrets";
-import { logger } from "@shared/cross-cutting/logger";
 
 const getClassifiedById = async (link: string): Promise<Classified> => {
     const apiUrl = config.get("cmApiUrl");
@@ -17,12 +16,7 @@ const getClassifiedById = async (link: string): Promise<Classified> => {
     });
 
     const classified = await res.json() as Classified;
-
-
-    logger.info("Classified", {
-        url: `${apiUrl}/${link}`,
-        classified
-    });
+  
 
     return classified;
 
