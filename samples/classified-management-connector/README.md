@@ -74,6 +74,11 @@ more precisely, if you want to start reading all IWT active classified you will 
 
 ![Run get state of the world](./assets/run-state-machine.gif "Run state of the world").
 
+Alternatively, you can trigger the initialization job with aws cli 
+
+```
+aws stepfunctions start-execution --state-machine-arn arn:aws:states:eu-west-1:ACCOUNT_ID:stateMachine:cm-sample-dev-classifieds-get-stow --name SOME_JOB_ID  --input '{ \"prefix\":\"ACTIVE/0/IWT/\" }'
+```
 
 Along with the connector, you will find [an example of a lambda function](./src/cm-consumer-example/) that consumes complete classifieds from the connector and save them on a [dynamodb table as a materialized view](./infra/modules/cm-consumer-example/consumer-materialized-view.tf)
 
