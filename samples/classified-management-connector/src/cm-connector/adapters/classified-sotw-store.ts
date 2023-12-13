@@ -20,10 +20,11 @@ const getClassifiedByKey = async (key: string): Promise<Classified> => {
 
     const content = await data.Body.transformToString('utf-8');
 
-    const { classifiedId, classified } = JSON.parse(content) as { classifiedId: string, classified: Classified };
+    const { classifiedId, updateAt, classified } = JSON.parse(content) as { classifiedId: string, updateAt: number, classified: Classified };
 
     return {
         ...classified,
+        updateAt,
         classifiedId
     }
 
@@ -75,7 +76,7 @@ async function* listKeys(prefix: string, nextContinuationToken: string) {
 
 
 
-   
+
 
 }
 

@@ -9,7 +9,7 @@ module "cm_get_state_of_the_world" {
 
   process_ssot_keys_lambda = {
     dist_dir                  = "../src/dist/cm-connector/lambda-handlers/"
-    handler                   = "get-classified-object-content.queueHandler"
+    handler                   = "process-classified-keys.queueHandler"
     queue_esm_max_concurrency = 100
   }
 

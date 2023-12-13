@@ -8,12 +8,13 @@ import { Context } from "aws-lambda";
 type InvocationPayload = {
     nextContinuationToken: string,
     prefix: string,
-    keyBatchingSize: number
+    keyBatchingSize: number,
+    operation: "upsert" | "delete"
 }
 
 export const lambdaHandler = async (payload: InvocationPayload, context: Context) => {
 
-    let { keyBatchingSize, nextContinuationToken, prefix } = payload;
+    let { keyBatchingSize, nextContinuationToken, prefix, operation } = payload;
 
     let keysCount = 0;
 
@@ -22,14 +23,17 @@ export const lambdaHandler = async (payload: InvocationPayload, context: Context
 
         await Promise.all(chunkArray(keys, keyBatchingSize).map(async items => {
             await publishKeys({
-                Items: items
-            })
+                keys: items, 
+                operation : operation || "upsert"
+            });
         }));
 
+        // stopping lambda when remaining time is less than 10 seconds
         if (context.getRemainingTimeInMillis() <= 10 * 1000) {
             const result = {
                 iterator: { nextContinuationToken: ct },
                 prefix,
+                operation,
                 keyBatchingSize,
                 keysCount
             };
@@ -47,7 +51,8 @@ export const lambdaHandler = async (payload: InvocationPayload, context: Context
             nextContinuationToken: "",
             prefix,
             keyBatchingSize,
-            keysCount
+            keysCount,
+            operation
         }
     }
 

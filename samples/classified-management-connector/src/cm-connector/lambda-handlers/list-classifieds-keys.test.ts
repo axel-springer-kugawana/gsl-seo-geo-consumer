@@ -28,7 +28,8 @@ describe('list classified keys lambda', () => {
         const input = {
             nextContinuationToken: "c29tZSBzMyBuZXh0IGNvbnRpbnVhdGlvbiB0b2tlbg==",
             prefix: "/IWT/0/ACTIVE",
-            keyBatchingSize: 5
+            keyBatchingSize: 5,
+            operation: "upsert"
         };
 
         s3ClientMock
@@ -61,7 +62,8 @@ describe('list classified keys lambda', () => {
         const messageBodyInJson = JSON.parse(sendMessageCommand[0].args[0].input.MessageBody);
 
         expect(messageBodyInJson).toMatchObject({
-            Items: ["IWT/0/ACTIVE/12345.json", "IWT/0/ACTIVE/23456.json"]
+            operation: "upsert",
+            keys: ["IWT/0/ACTIVE/12345.json", "IWT/0/ACTIVE/23456.json"]
         });
     });
 
@@ -72,7 +74,8 @@ describe('list classified keys lambda', () => {
         const input = {
             nextContinuationToken: "c29tZSBzMyBuZXh0IGNvbnRpbnVhdGlvbiB0b2tlbg==",
             prefix: "/IWT/0/ACTIVE",
-            keyBatchingSize: 5
+            keyBatchingSize: 5,
+            operation: "upsert"
         };
 
         s3ClientMock
@@ -105,7 +108,8 @@ describe('list classified keys lambda', () => {
         const messageBodyInJson = JSON.parse(sendMessageCommand[0].args[0].input.MessageBody);
 
         expect(messageBodyInJson).toMatchObject({
-            Items: ["IWT/0/ACTIVE/12345.json", "IWT/0/ACTIVE/23456.json"]
+            operation: "upsert",
+            keys: ["IWT/0/ACTIVE/12345.json", "IWT/0/ACTIVE/23456.json"]
         });
 
         expect(result.iterator.nextContinuationToken).toBe("YSBuZXh0IGNvbnRpbnVhdGlvbiB0b2tlbiByZXR1cm5lZCBhZnRlciB0aGUgY2FsbCB0aGUgczMgbGlzdCBjb21tYW5k");
@@ -120,7 +124,8 @@ describe('list classified keys lambda', () => {
         const input = {
             nextContinuationToken: "",
             prefix: "/IWT/0/ACTIVE",
-            keyBatchingSize: 5
+            keyBatchingSize: 5,
+            operation: "upsert"
         };
 
         s3ClientMock
@@ -153,7 +158,8 @@ describe('list classified keys lambda', () => {
         const messageBodyInJson = JSON.parse(sendMessageCommand[0].args[0].input.MessageBody);
 
         expect(messageBodyInJson).toMatchObject({
-            Items: ["IWT/0/ACTIVE/12345.json", "IWT/0/ACTIVE/23456.json"]
+            operation: "upsert",
+            keys: ["IWT/0/ACTIVE/12345.json", "IWT/0/ACTIVE/23456.json"]
         });
     });
 

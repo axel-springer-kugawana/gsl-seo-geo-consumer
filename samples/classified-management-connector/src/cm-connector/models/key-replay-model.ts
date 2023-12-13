@@ -1,0 +1,1 @@
+export type ClassifiedKeysSync =  { keys : string[] , operation: "upsert" | "delete"};
