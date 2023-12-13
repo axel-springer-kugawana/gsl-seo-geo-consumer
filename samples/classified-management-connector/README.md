@@ -84,7 +84,23 @@ Along with the connector, you will find [an example of a lambda function](./src/
 
 ![Alt text](./assets/mat-view-ddb-table.png)
 
+### Wait ! Why are we using a step function to get the state of the world ?
 
+Lambda functions have a maximum timeout of 15 minutes. Attempting to list and read the S3 state of the world bucket, which holds millions of classifieds, in a single lambda function execution would result in timeouts.
+
+To address this issue, the following solution has been implemented:
+
+1 - The solution leverages a step function that manages object listing by prefix from the bucket. The listing is accomplished within a state machine "loop." In each iteration, a lambda function is invoked with a `NextContinuationToken` obtained from the last `ListObjectsV2Command` command. The initial lambda invocation is executed with an empty `NextContinuationToken`.
+
+2 - The "List sotw keys" lambda execution retrieves the keys listed from the bucket.
+
+3 - The "Read objects & publish as replay events" lambda processes the object keys in parallel to read their content and publish them as replay events."
+
+The solution guarantees that classified sync operation is done as fast as possible given the amount of concurrency the `Read objects & publish as replay events` is assigned
+
+
+
+### Getting access to Classified Management APIs
 You will find more about classified management APIs here: 
 * [REST API](https://classmgt.kind-camel-preview.aws.aviv-internal.eu/docs/stage/v0/index.html)
 * [Classified events docs](https://classdisp.kind-camel-dev.aws.aviv-internal.eu/docs/staging/external/0.1/streams.html)
