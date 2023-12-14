@@ -27,17 +27,7 @@ const getClassifiedByKey = async (key: string): Promise<Classified> => {
         updateAt,
         classifiedId
     }
-
-
-
 }
-
-
-
-
-
-
-
 
 async function* listKeys(prefix: string, nextContinuationToken: string) {
 
@@ -65,7 +55,6 @@ async function* listKeys(prefix: string, nextContinuationToken: string) {
                 nextContinuationToken: NextContinuationToken
             }
 
-
         } while (isTruncated);
 
     } catch (error) {
@@ -74,16 +63,7 @@ async function* listKeys(prefix: string, nextContinuationToken: string) {
         })
     }
 
-
-
-
-
 }
-
-
-
-
-
 
 export {
     getClassifiedByKey,
