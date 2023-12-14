@@ -6,7 +6,7 @@ import { logger } from "@shared/cross-cutting/logger";
 import { SsotEntity } from "@shared/models/ssot-entity/models";
 import { SsotInternalEvent } from "@shared/models/internal-events";
 
-const asSSOTEvent = (ddbRecord: DynamoDBRecord) : SsotInternalEvent | undefined => {
+const asSsotInternalEvent = (ddbRecord: DynamoDBRecord) : SsotInternalEvent | undefined => {
     switch (ddbRecord.eventName) {
         case "INSERT":
         case "MODIFY":
@@ -17,10 +17,8 @@ const asSSOTEvent = (ddbRecord: DynamoDBRecord) : SsotInternalEvent | undefined 
                     entity : {
                         ...JSON.parse(ssotItemData) as SsotEntity,
                     },
-                    
                 };
             }
-
         case "REMOVE":
             {
                 const ssotItemData = ddbRecord.dynamodb?.OldImage?.data.S!;
@@ -37,7 +35,7 @@ const asSSOTEvent = (ddbRecord: DynamoDBRecord) : SsotInternalEvent | undefined 
 
 export const recordHandler = async (record: DynamoDBRecord): Promise<void> => {
 
-    const evt = asSSOTEvent(record);
+    const evt = asSsotInternalEvent(record);
 
     if (evt == null) {
         return;

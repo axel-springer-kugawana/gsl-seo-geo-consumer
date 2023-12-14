@@ -7,7 +7,6 @@ import { SSoTEntityEvents } from "@shared/models/ssot-entity/event-models";
 import { SsotInternalEvent } from "@shared/models/internal-events";
 import { SSoTName, SSoTEntityName } from "@shared/models/ssot-constants";
 
-
 const snsClient = new SNSClient({});
 
 const publishSSOTEvent = async (ssotEvent: SsotInternalEvent) => {
