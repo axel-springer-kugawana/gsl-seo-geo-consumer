@@ -1,6 +1,5 @@
 # API Documentation
 
-
 ## MUST provide API documentation using OpenAPI
 
 - The API documentation **MUST** be written in a clear and concise language that is easy to understand for both technical and non-technical audiences.
@@ -11,22 +10,6 @@
     - the responses
     - the error messages
 
-- The API documenation **SHOULD** also include the following sections :
-    - an introduction expliciting what the API is about
-    - a contact email
-    - an authentication part expliciting :
-        - the authentication scheme(s) used by the API
-        - the list of scopes needed to use the API if relevant
-    - an API overview expliciting :
-        - the naming conventions
-        - the glossary
-        - the versioning strategy
-        - the supported HTTP status codes
-        - any specific information about the API
-    - the list of custom errors expliciting with an human readable documentation
-    - a changelog
-    - a migration guide from the previous relevant version
-
 - The API documentaiton **MUST** include the following field : `x-aviv-service`. The value **MUST** conform to this format `<Domain>.<Capability or Experience>.<Context>`.
 
 Examples : `seeker.classified-details.classified-details-service`  or `seeker.seo.link-box`.
@@ -35,7 +18,7 @@ Examples : `seeker.classified-details.classified-details-service`  or `seeker.se
 
 - OpenAPI **MUST** be used as a standard way to define REST API documentations.
 
-- REST API design **MUST** be made using a self-contained YAML file.
+- The API documentation **MUST** be written using a self-contained YAML file.
 
 - OpenAPI version 3 and more **MUST** be used.
 
@@ -54,6 +37,28 @@ Examples : `seeker.classified-details.classified-details-service`  or `seeker.se
 > [!NOTE]
 > To help design easily API documentations, it is *RECOMMENDED* to use [Swagger Editor](https://editor.swagger.io/) and the [OpenAPI mind map](https://openapi-map.apihandyman.io/?version=3.0).
 
-- The API documentation **SHOULD** be available on the [AVIV Service Catalog](https://aviv.roadie.so/)
+- The API documentation **MUST** be available on the [AVIV Service Catalog](https://aviv.roadie.so/)
 
 - The raw API documentation specification **MUST** be able to be downloaded from the HTML bundled file.
+
+## MUST provide an API overview documentation using Markdown
+
+- The API overview documentation **MUST** be written in a clear and concise language that is easy to understand for both technical and non-technical audiences.
+- The API overview documentation **MUST** be provided as a separate file from the API documentation.
+- The API overview documenation **SHOULD** also include the following sections :
+    - an introduction expliciting what the API is about
+    - a contact email
+    - an authentication part expliciting :
+        - the authentication scheme(s) used by the API
+        - the list of scopes needed to use the API if relevant
+    - an API overview expliciting :
+        - the naming conventions
+        - the glossary
+        - the versioning strategy
+        - the supported HTTP status codes
+        - any specific information about the API
+    - the list of custom errors expliciting with an human readable documentation
+    - a changelog
+    - a migration guide from the previous relevant version
+- The API overview documentation **MUST** be up-to-date and reflect any changes that are made to the API.
+- The API overview documentation **MUST** be available on the [AVIV Service Catalog](https://aviv.roadie.so/)
