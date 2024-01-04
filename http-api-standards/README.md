@@ -1,6 +1,6 @@
 # Intro
 
-This folder holds all the supporting documents & samples regarding the HTTP API standards study
+This folder holds all the supporting documents & samples for HTTP API standards guidelines
 
 ## Why defining standards on our event models ?
 
