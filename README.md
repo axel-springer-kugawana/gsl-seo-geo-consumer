@@ -20,7 +20,7 @@ Promote exchanges and experimentations around distributed systems
 | [EDA, Idempotent consumers](https://github.com/axel-springer-kugawana/aviv_architecture_distributed_systems_design_guild/tree/main/idempotent-event-consumers) | Code sample demonstrating how to create idempotent event consumers by using lambda-power-tools                                                                                         |
 | [SSOT Pattern](./samples/ssot-pattern/) | Complete end to end sample for the [SSoT Pattern](https://avivgroup.atlassian.net/wiki/spaces/AARCH/pages/321302652/DSDG+SSOT+pattern+and+Event+Replay)                |
 | [Classified Management Connector](./samples/classified-management-connector/) | Complete sample on building a Classified management connector |
-
+| [How to setup a lambda](./samples/how-to-setup-a-lambda/) | Complete sample on how to setup a lambda with Terraform
 
 ## ✍️ Contribution
 
