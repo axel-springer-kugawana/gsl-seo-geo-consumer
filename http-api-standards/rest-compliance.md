@@ -189,10 +189,15 @@ paths:
 - Headers **MUST** be part of list of non-obselete RFC (see [the list of standard HTTP headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers)).
 - Headers **MUST** have a description.
 - Headers **MUST NOT** be prefixed with `X-`, `x-` or any other custom naming.
+- Headers **MUST** Every HTTP Header should use `Hyphenated-Pascal-Case` format.
+
+```yaml
+Some-Request-Metadata-Header: FooBar42
+```
 
 ### Request headers
 
-- Every request **MUST** define an *optional* `traceparent` header. The traceparent header is defined as such :
+- Every request **MAY** define an *optional* `traceparent` header. The traceparent header is defined as such :
 
 ```yaml
 components:
@@ -232,3 +237,8 @@ components:
 ```
 The value is a string defined by the API server for each requests answered, base either on the traceparent header value provided by the client if applicable or a new value randomly generated.
 - Every request response **MUST** define a required `Content-Type` header. The value **MUST** always be `application/json; charset=utf-8`.
+
+
+### Query parameters
+
+- query parameters 
