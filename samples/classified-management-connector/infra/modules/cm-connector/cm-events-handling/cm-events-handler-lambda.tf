@@ -7,7 +7,6 @@ resource "aws_lambda_event_source_mapping" "cm_events_lambda_event_source" {
   }
 }
 
-
 resource "aws_iam_role" "handle_cm_events_lambda_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -65,8 +64,8 @@ data "aws_iam_policy_document" "handle_cm_events_lambda_policy" {
       "${aws_secretsmanager_secret.cm-api-secret.arn}"
     ]
   }
-   statement {
-    effect  = "Allow"
+  statement {
+    effect = "Allow"
     actions = [
       "ec2:CreateNetworkInterface",
       "ec2:DescribeNetworkInterfaces",
