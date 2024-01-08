@@ -30,7 +30,7 @@ variable "capability" {
 variable "component" {
   description = "Application component"
   type        = string
-  default     = "cm-connector"
+  default     = "ssot-producer"
 }
 
 variable "contact" {

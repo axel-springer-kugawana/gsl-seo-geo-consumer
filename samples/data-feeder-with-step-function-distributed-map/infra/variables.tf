@@ -15,11 +15,34 @@ variable "environment" {
   }
 }
 
-
 variable "costCenter" {
   description = "cost center of workloads"
   type        = string
   default     = "aviv"
+}
+
+variable "domain" {
+  description = "The actor domain name"
+  type        = string
+  default     = "architecture"
+}
+
+variable "capability" {
+  description = "The actor capability name"
+  type        = string
+  default     = "Not Applicable"
+}
+
+variable "component" {
+  description = "Application component"
+  type        = string
+  default     = "distributed-map-test-sample"
+}
+
+variable "contact" {
+  description = "List of contact slack channels or emails"
+  type        = string
+  default     = "aviv_backend_guild"
 }
 
 variable "team" {
@@ -28,16 +51,14 @@ variable "team" {
   default     = "architecture"
 }
 
-variable "component" {
-  description = "Application purpose"
-  type        = string
-  default     = "distributed-map-test-sample"
-}
-
 variable "taggingVersion" {
   description = "tagging version"
   type        = string
-  default     = "1.0.0"
+  default     = "2.0.0"
 }
 
-
+variable "dataClassification" {
+  description = "Resource data classificatrion"
+  type        = string
+  default     = "internal"
+}

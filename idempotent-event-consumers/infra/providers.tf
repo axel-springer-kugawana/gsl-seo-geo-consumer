@@ -13,12 +13,17 @@ provider "aws" {
   region = "eu-west-1"
   default_tags {
     tags = {
-      costCenter     = "aviv"
-      application    = var.application
-      environment    = var.environment
-      owner          = "architecture-backend-guild"
-      managed        = "terraform"
-      taggingVersion = "1.0.0"
+      costCenter         = var.costCenter
+      domain             = var.domain
+      capability         = var.capability
+      component          = var.component
+      contact            = var.contact
+      application        = var.application
+      environment        = var.environment
+      team               = var.team
+      managed            = "terraform"
+      taggingVersion     = var.taggingVersion
+      dataClassification = var.dataClassification
     }
   }
 }
