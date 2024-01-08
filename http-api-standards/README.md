@@ -1,4 +1,4 @@
-# Intro
+## Intro
 
 This folder holds all the supporting documents & samples for HTTP API standards guidelines
 
@@ -8,6 +8,17 @@ The main goal of this topic is to work on defining HTTP API standards for Aviv. 
 * Discovrability and documentation
 * Standard way presenting api documentation
 * Applying best practices when building REST API
+
+
+## Topics
+
+| Topic                                                                                                                                                                                   | Description                                                                                                                                                                              |
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [RESTful API Design principles](./api-design-principles.md)      | High level API design principles & good practices |
+| [RESTFul APIs compliance](./rest-compliance.md) | Rules on building compliant RESTFul APIs                |
+| [RESTful API Documentation](./api-doc.md) | Guidelines on crafting RESTful API docs                                                                                         |
+
+
 
 
 ## Conventions used in these guidelines
