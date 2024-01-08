@@ -16,6 +16,7 @@ provider "aws" {
       costCenter         = var.costCenter
       domain             = var.domain
       capability         = var.capability
+      component          = var.component
       contact            = var.contact
       application        = var.application
       environment        = var.environment

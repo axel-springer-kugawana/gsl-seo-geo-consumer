@@ -27,6 +27,12 @@ variable "capability" {
   default     = "Not Applicable"
 }
 
+variable "component" {
+  description = "Application component"
+  type        = string
+  default     = "cm-connector"
+}
+
 variable "contact" {
   description = "List of contact slack channels or emails"
   type        = string
@@ -54,11 +60,5 @@ variable "defaultRegion" {
 variable "dataClassification" {
   description = "Resource data classificatrion"
   type        = string
-  default     = "public"
-}
-
-variable "component" {
-  description = "Application component"
-  type        = string
-  default     = "cm-connector"
+  default     = "internal"
 }
