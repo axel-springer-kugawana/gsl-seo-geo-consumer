@@ -15,6 +15,24 @@ variable "costCenter" {
   default     = "aviv"
 }
 
+variable "domain" {
+  description = "The actor domain name"
+  type        = string
+  default     = "architecture"
+}
+
+variable "capability" {
+  description = "The actor capability name"
+  type        = string
+  default     = "Not Applicable"
+}
+
+variable "contact" {
+  description = "List of contact slack channels or emails"
+  type        = string
+  default     = "aviv_backend_guild"
+}
+
 variable "team" {
   description = "team name"
   type        = string
@@ -31,30 +49,6 @@ variable "defaultRegion" {
   description = "default region"
   type        = string
   default     = "eu-west-1"
-}
-
-variable "domain" {
-  description = "The actor domain name"
-  type        = string
-  default     = "architecture"
-}
-
-variable "capability" {
-  description = "The actor capability name"
-  type        = string
-  default     = "Not Applicable"
-}
-
-variable "domain" {
-  description = "The actor domain name"
-  type        = string
-  default     = "architecture"
-}
-
-variable "contact" {
-  description = "List of contact slack channels or emails"
-  type        = string
-  default     = "aviv_backend_guild"
 }
 
 variable "dataClassification" {
