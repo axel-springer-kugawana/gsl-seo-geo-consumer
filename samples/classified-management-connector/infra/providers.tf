@@ -13,18 +13,18 @@ provider "aws" {
   region = "eu-west-1"
   default_tags {
     tags = {
-      costCenter         = "aviv"
-      domain             = "architecture"
-      capability         = "Not Applicable"
-      contact            = "aviv_architecture"
+      costCenter         = var.costCenter
+      domain             = var.domain
+      capability         = var.capability
+      component          = var.component
+      contact            = var.contact
       application        = var.application
       environment        = var.environment
-      team               = "architecture"
+      team               = var.team
       managed            = "terraform"
-      taggingVersion     = "1.2"
-      dataClassification = "internal"
-      awsApplication =  "${var.application}-${var.environment}" 
+      taggingVersion     = var.taggingVersion
+      dataClassification = var.dataClassification
+      awsApplication     = "${var.application}-${var.environment}"
     }
   }
 }
-
