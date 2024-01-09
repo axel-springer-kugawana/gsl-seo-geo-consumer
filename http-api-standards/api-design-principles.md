@@ -67,7 +67,7 @@ Idempotency ensures that performing the same operation multiple times has the sa
    * **GET** requests are read operations and **MUST NOT** produce side effects.
    * **MUST**: Design **PUT** requests to be idempotent. Subsequent identical requests should have the same effect as a single request.
    * **MUST**: Make **DELETE** requests idempotent. Repeating the same request should not have additional side effects.
-* Non idempotent HTTP Methods (POST & PATCH)
+* Non idempotent HTTP Methods **POST** & **PATCH**
    * **SHOULD**: Strive to make non-safe methods idempotent where possible.
    * **MUST**: Clearly document the idempotent behavior of each non-safe method.
 
