@@ -1,6 +1,6 @@
 ### Robustness principle 
 
-Every API **MUST** follow robustness principles AKA postel'law principle:
+Every API **MUST** follow robustness principles AKA Postel's law principle:
 
 > Be conservative in what you send, be liberal in what you accept.
 
