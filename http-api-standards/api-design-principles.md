@@ -1,6 +1,6 @@
 ### Robustness principle 
 
-Every API **MUST** follow robustness principles AKA Postel's law principle:
+Every API **MUST** follow robustness principles AKA [Postel's law principle](https://en.wikipedia.org/wiki/Robustness_principle):
 
 > Be conservative in what you send, be liberal in what you accept.
 
@@ -81,8 +81,17 @@ Idempotency ensures that performing the same operation multiple times has the sa
    * **MUST** : Clearly document which API endpoints and operations are idempotent.
    * **SHOULD**: Include examples and use cases demonstrating idempotency in API documentation.
    * **SHOULD**: Document expiration based on idempotency key
-     
-        
+
+### Pagination
+
+When exposing a collection resource, incorporating pagination into your API design is essential. In fact, predicting the precise amount of data to be returned is often not straightforward. 
+Therefore, APIs **SHOULD** handle of resource pagination, including specifying default values in cases where they are not explicitly provided by the client. 
+
+A collection resource **SHOULD** provide navigation links for navigating within the collection. This links enable clients to navigate through the paginated results. Simplifying client's job in constructing URLs for subsequent requests.
+
+
+
+
 
 
 
