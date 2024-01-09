@@ -87,7 +87,38 @@ Idempotency ensures that performing the same operation multiple times has the sa
 When exposing a collection resource, incorporating pagination into your API design is essential. In fact, predicting the precise amount of data to be returned is often not straightforward. 
 Therefore, APIs **SHOULD** handle of resource pagination, including specifying default values in cases where they are not explicitly provided by the client. 
 
-A collection resource **SHOULD** provide navigation links for navigating within the collection. This links enable clients to navigate through the paginated results. Simplifying client's job in constructing URLs for subsequent requests.
+when possible, a collection resource **SHOULD** provide navigation links for navigating within the collection. These links enable clients to navigate through the paginated results. Simplifying client's job in constructing URLs for subsequent requests.
+
+#### Offset vs Token based pagination
+
+* Offset-based pagination relies on specifying a numerical offset, and generally a limit, to determine where a set of results should begin, allowing clients to request subsequent pages by incrementing or decrementing this offset.
+
+* Offset-based pagination is simple to implement, it is most suited in these cases:
+
+    * Ordered data 
+    * Small dataset
+
+    Example
+
+    ```
+    GET /classifieds?offset=20&limit=15
+    ```
+
+* In token-based pagination, a unique token is used to represent a specific point in the dataset, enabling clients to retrieve subsequent pages by providing this token rather than relying on numerical offsets.
+
+* Token based pagination is most suited in these cases:
+
+    * Large datasets
+    * Cursor stability is required, * i.e.* Cursors remain valid even if the underlying data changes, as long as the cursor points to a valid position in the dataset
+
+    Example
+
+    ```
+    GET /classifieds?start=VGhpcyBpcyBhIHBhZ2luYXRpb24gdG9rZW4=&limit=50
+    ```
+
+
+
 
 
 
