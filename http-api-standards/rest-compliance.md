@@ -221,21 +221,23 @@ The value is a string defined by the client for each requests made.
 
 ### Response headers
 
-- Every defined request response **MUST** provide a `traceparent` header. The traceparent header is defined as such :
+- Every defined request response **SHOULD** provide a `traceparent` header only when responding to systems that participated in the trace. The traceparent header is defined as such:
 
 ```yaml
 components:
     headers:
         traceparent:
             description: Identifies the request in the tracing system
-            required: true
+            required: false
             example: 00-0af7651916cd43dd8448eb211c80319c-b9c7c989f97918e1-01
             schema:
                 type: string
                 minLength: 0
                 pattern: ^[\da-f]{2}-[\da-f]{32}-[\da-f]{16}-[\da-f]{2}$
 ```
+
 The value is a string defined by the API server for each requests answered, base either on the traceparent header value provided by the client if applicable or a new value randomly generated.
+
 - Every request response **MUST** define a required `Content-Type` header. The value **MUST** always be `application/json; charset=utf-8`.
 
 
