@@ -25,6 +25,8 @@
     "@aws-lambda-powertools/logger": "^1.12.1",
     "@aws-lambda-powertools/metrics": "^1.12.1",
     "@middy/core": "^4.6.0",
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1",
     "cloudevents": "^8.0.0",
     "uuid": "^9.0.0"
   }
