@@ -57,6 +57,17 @@ module "cm_connector" {
 ### Before deploying
 First, you will need to get your AWS account(s) allowed to consume classified management. You will need to create a JIRA ticket as mentioned on this page: https://avivgroup.atlassian.net/wiki/spaces/APE/pages/375620475/Subscribe+to+SSOT+events
 
+### Classified Management API secrets
+[The connector creates a secret](./infra/modules/cm-connector/cm-events-handling/cm-api-secret.tf) that must contain the API ClientId & Authorization in order to be able to call Classified Management API.
+
+**An important step**: Once your account is authorized to consume classifieds, you will need to set these values into the secret :
+
+```
+{"ClientId":"<Client Id provided by CM>","Authorization":"<Authorization provided by CM>"}
+
+```
+
+
 ### Running an initialization job
 Once sucessfully deployed, you start getting events from classified management. If you want to run a "Get state of the world" operation in order to get the complete set of classifieds you will need to go to you aws console and execute the `get state of world` state machine (by default this state machine will have this name `cm-consumer-sample-dev-classifieds-get-stow`)
 by specifying this input parameters to the state machine:
