@@ -43,15 +43,16 @@ Modifications to existing internal APIs **SHOULD** avoid breaking changes and **
         * API clients **MUST** be noticed. They **SHOULD** be informed about the migration path and alternatives for the deprecated feature.
 *  API Version **MUST** be visible on the request path and **MUST** be the first element on the resource path
  
-  ```
-  GET /<major-version>/<resource>/...
-  GET /v1/classifieds
-   ```
+    ```
+    GET /<major-version>/<resource>/...
+    GET /v1/classifieds
+    ```
+
 * For internal APIs, environment names **SHOULD** be included in the subdomain name:
 
-  ```
-  https://<capability?>-<api-name>-<env>.<account>.aws.aviv-internal.eu/
-  ``` 
+    ```
+    https://<capability?>-<api-name>-<env>.<account>.aws.aviv-internal.eu/
+    ``` 
 
 ### JSON based payloads
 
