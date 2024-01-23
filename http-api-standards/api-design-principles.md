@@ -23,23 +23,35 @@ Every API **MUST** follow robustness principles AKA [Postel's law principle](htt
 ### API Versioning
 
 Modifications to existing internal APIs **SHOULD** avoid breaking changes and **SHOULD** maintain backward compatibility:
+
 * APIs **MUST** use semantic versioning to indicate the level of changes
 
 * No breaking changes: 
-    * News minor versions of API contracts **SHOULD** be processed by older versions of clients without breaking
+    * News minor versions of API contracts **SHOULD** be processed by older versions of clients without breaking.
     * A change is considered backwards compatible when optional new features are added to an API. A Client must tolerate such minor updates.
-    * APIs **MUST** avoid renaming or removing or changing field types when possible.
-    * APIs **MUST NOT** make optional things required
-    * Any new addition **MUST** be optional 
+    * APIs **MUST** avoid renaming or removing or changing field types when possible (otherwise, this is a breaking change).
+    * APIs **MUST NOT** make optional things required.
+    * Any new addition **MUST** be optional.
 
 * In the case of breaking change, APIs **MUST** support multiple versions with a clear and agreed upon deprecation strategy for older version:
     * Deprecation strategy **MUST** be documented by API owners and communicated to their clients.
-    * internal APIs owners **SHOULD** maintain 2 API versions at max.
+    * Internal APIs owners **MUST** maintain 2 API versions at max. 
 
 * Sunsetting old API Versions:
     * A sunset notice **SHOULD** be clearly indicated both in the documentation and at runtime.
         * At runtime, [HTTP Sunset header](https://datatracker.ietf.org/doc/html/rfc8594) **MUST** be used
         * API clients **MUST** be noticed. They **SHOULD** be informed about the migration path and alternatives for the deprecated feature.
+*  API Version **MUST** be visible on the request path and **MUST** be the first element on the resource path
+ 
+  ```
+  GET /<major-version>/<resource>/...
+  GET /v1/classifieds
+   ```
+* For internal APIs, environment names **SHOULD** be included in the subdomain name:
+
+  ```
+  https://<capability?>-<api-name>-<env>.<account>.aws.aviv-internal.eu/
+  ``` 
 
 ### JSON based payloads
 
