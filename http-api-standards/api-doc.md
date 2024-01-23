@@ -30,9 +30,11 @@ Examples : `seeker.classified-details.classified-details-service`  or `seeker.se
 
 - OpenAPI version 3.0.x **SHOULD** be used as support for 3.1.x is not sufficient.
 
-- REST API documentations **MUST** be exposed both internally and publicly via a bundled HTMl file.
+- An API **MUST** provide a documentation per version and environment
 
-- This bundled HTML file **MUST** be generated either by using [Redoc](https://github.com/Redocly/redoc) or [Swagger UI](https://github.com/swagger-api/swagger-ui).
+- REST API documentations **MUST** be exposed  internally via a bundled HTMl file.
+
+- This bundled HTML file **MUST** be generated using[Swagger UI](https://github.com/swagger-api/swagger-ui).
 
 > [!NOTE]
 > To help design easily API documentations, it is *RECOMMENDED* to use [Swagger Editor](https://editor.swagger.io/) and the [OpenAPI mind map](https://openapi-map.apihandyman.io/?version=3.0).
@@ -62,3 +64,4 @@ Examples : `seeker.classified-details.classified-details-service`  or `seeker.se
     - a migration guide from the previous relevant version
 - The API overview documentation **MUST** be up-to-date and reflect any changes that are made to the API.
 - The API overview documentation **MUST** be available on the [AVIV Service Catalog](https://aviv.roadie.so/)
+
