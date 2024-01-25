@@ -62,3 +62,19 @@ variable "dataClassification" {
   type        = string
   default     = "internal"
 }
+
+
+variable "classified_management_sync_bucket" {
+  description = "classified management sync bucket name"
+  type        = string
+}
+
+variable "classified_management_events_topic" {
+  description = "classified management events topic arn"
+  type        = string
+}
+
+variable "classified_management_api" {
+  description = "classified management api"
+  type        = string
+}

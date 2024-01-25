@@ -1,56 +1,17 @@
 version: 2.1
 
-jobs:
-  generate-api-doc:
-      docker:
-        - image: cimg/python:3.10.12-node
-      parameters:
-        OPENAPI_PATH:
-          type: string
-      working_directory: ~/project
-      steps:
-        - checkout
-        - attach_workspace:
-            at: ./
-        - run:
-            name: Install dependencies
-            command: |
-              pip install setuptools
-              pip install PyYAML
-        - run:
-            name: Generate bundled html files
-            command: |
-              npx @redocly/cli build-docs << parameters.OPENAPI_PATH >> -o ./redoc-openapi.html
-              python http-api-standards/src/api-doc/scripts/swagger-yaml-to-html.py < << parameters.OPENAPI_PATH >> > swagger-openapi.html
-        - store_artifacts:
-            path: ~/project/redoc-openapi.html
-            destination: redoc-openapi.html
-        - store_artifacts:
-            path: ~/project/swagger-openapi.html
-            destination: swagger-openapi.html
-  api-doc-lint:
-    docker:
-      - image: cimg/node:18.18.1
-    parameters:
-        OPENAPI_PATH:
-          type: string
-        RULESET_FILE_PATH:
-          type: string
-    working_directory: ~/project
-    steps:
-        - checkout
-        - attach_workspace:
-            at: ./
-        - run:
-            name: Lint openapi doc
-            command: |
-              npx @stoplight/spectral-cli lint << parameters.OPENAPI_PATH >> --ruleset << parameters.RULESET_FILE_PATH >>
+setup: true
+
+orbs:
+  path-filtering: circleci/path-filtering@0.1.1
 
 workflows:
-  http-api-standards:
+  always-run:
     jobs:
-      - generate-api-doc:
-          OPENAPI_PATH: "http-api-standards/src/api-doc/openapi.yaml"
-      - api-doc-lint:
-          OPENAPI_PATH: "http-api-standards/src/api-doc/openapi.yaml"
-          RULESET_FILE_PATH: "http-api-standards/src/api-doc/.spectral.yaml"
+      - path-filtering/filter:
+          name: check-updated-files
+          mapping: |
+            http-api-standards/.* run-http-api-standards-job true
+            samples/classified-management-connector/.* run-classified-management-connector-job true
+          base-revision: main
+          config-path: .circleci/job-configs.yml

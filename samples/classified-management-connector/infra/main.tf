@@ -2,15 +2,15 @@ module "cm_connector" {
   source = "./modules/cm-connector"
   
   bucket = {
-    id = "aviv-classdisp-dev-staging-resync-bucket"
+    id = var.classified_management_sync_bucket
   }
   
   events_topic = {
-    arn = "arn:aws:sns:eu-west-1:272575627684:classdisp-staging-dispatch-classified-event-topic"
+    arn = var.classified_management_events_topic
   }
 
   api = {
-    url = "https://classmgt-staging-api.kind-camel-dev.aws.aviv-internal.eu"
+    url = var.classified_management_api
   }
 
   application = var.application

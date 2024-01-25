@@ -14,13 +14,10 @@ export const recordHandler = async (record: SQSRecord): Promise<void> => {
     const classifiedId = e.data.classifiedId;
 
     if (e.type === `${SSotEntityName}.deleted.v1`) {
-        logger.warn("Deleting item", {
-            info: e.data
-        });
+      
         await markClassifiedAsDeleted({
             classifiedId, updateDate: e.data.updateDate
-        }
-        );
+        });
     }
     else {
         await createOrUpdateClassified(classifiedId, e.data);

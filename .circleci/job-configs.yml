@@ -1,0 +1,147 @@
+version: 2.1
+
+parameters:
+  run-http-api-standards-job:
+    type: boolean
+    default: false
+  run-classified-management-connector-job:
+    type: boolean
+    default: false
+
+orbs:
+  aws-cli: circleci/aws-cli@4.1.2
+  aws-s3: circleci/aws-s3@3.1.1
+  terraform: circleci/terraform@3.2.1
+
+jobs:
+########################################
+# Classified management connector jobs #
+########################################
+
+  build-classified-management-connector:
+    docker:
+      - image: cimg/node:20.11.0
+    working_directory: ~/project
+    steps:
+      - checkout
+      - restore_cache:
+          name: Restore pnpm Package Cache
+          keys:
+            - pnpm-packages-{{ checksum "pnpm-lock.yaml" }}
+      - run:
+          name: Install pnpm package manager
+          command: |
+            sudo corepack enable
+            sudo corepack prepare --activate
+      - aws-cli/setup:
+          aws_access_key_id: AWS_ACCESS_KEY_ID_DEV
+          aws_secret_access_key: AWS_SECRET_ACCESS_KEY_DEV
+      - run:
+          name: Install Dependencies
+          command: pnpm install
+      - save_cache:
+          name: Save pnpm Package Cache
+          key: pnpm-packages-{{ checksum "pnpm-lock.yaml" }}
+          paths:
+            - node_modules
+      - run:
+          name: Test
+          command: pnpm -C samples/classified-management-connector/src/ run test
+      - run:
+          name: Build
+          command: pnpm -C samples/classified-management-connector/src/ run build:lambdas
+      - persist_to_workspace:
+          paths:
+            - "."
+          root: "~/project"
+            
+  deploy-classified-management-connector:
+    executor: 
+      name: terraform/default
+      tag: "1.5.7"
+    parameters:
+      ENV:
+        type: string
+    working_directory: ~/project
+    steps:
+      - aws-cli/setup:
+          aws_access_key_id: AWS_ACCESS_KEY_ID_DEV
+          aws_secret_access_key: AWS_SECRET_ACCESS_KEY_DEV
+      - attach_workspace:
+          at: ./
+      - terraform/init:
+          path: ./samples/classified-management-connector/infra
+      - terraform/plan:
+          path: ./samples/classified-management-connector/infra
+          var_file: ./dev.tfvars
+          
+      
+  
+      
+########################################
+# API Generation jobs #
+########################################
+
+  generate-api-doc:
+      docker:
+        - image: cimg/python:3.10.12-node
+      parameters:
+        OPENAPI_PATH:
+          type: string
+      working_directory: ~/project
+      steps:
+        - checkout
+        - attach_workspace:
+            at: ./
+        - run:
+            name: Install dependencies
+            command: |
+              pip install setuptools
+              pip install PyYAML
+        - run:
+            name: Generate bundled html files
+            command: |
+              npx @redocly/cli build-docs << parameters.OPENAPI_PATH >> -o ./redoc-openapi.html
+              python http-api-standards/src/api-doc/scripts/swagger-yaml-to-html.py < << parameters.OPENAPI_PATH >> > swagger-openapi.html
+        - store_artifacts:
+            path: ~/project/redoc-openapi.html
+            destination: redoc-openapi.html
+        - store_artifacts:
+            path: ~/project/swagger-openapi.html
+            destination: swagger-openapi.html
+  api-doc-lint:
+    docker:
+      - image: cimg/node:18.18.1
+    parameters:
+        OPENAPI_PATH:
+          type: string
+        RULESET_FILE_PATH:
+          type: string
+    working_directory: ~/project
+    steps:
+        - checkout
+        - attach_workspace:
+            at: ./
+        - run:
+            name: Lint openapi doc
+            command: |
+              npx @stoplight/spectral-cli lint << parameters.OPENAPI_PATH >> --ruleset << parameters.RULESET_FILE_PATH >>
+
+workflows:
+  http-api-standards:
+    when: << pipeline.parameters.run-http-api-standards-job >>
+    jobs:
+      - generate-api-doc:
+          OPENAPI_PATH: "http-api-standards/src/api-doc/openapi.yaml"
+      - api-doc-lint:
+          OPENAPI_PATH: "http-api-standards/src/api-doc/openapi.yaml"
+          RULESET_FILE_PATH: "http-api-standards/src/api-doc/.spectral.yaml"
+
+  classified-management-connector:
+    when: << pipeline.parameters.run-classified-management-connector-job >>
+    jobs:
+      - build-classified-management-connector
+      - deploy-classified-management-connector:
+          ENV: "dev"
+          requires:
+            - build-classified-management-connector
