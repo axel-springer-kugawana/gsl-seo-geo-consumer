@@ -61,7 +61,7 @@ JSON-based message **MUST** conform to these rules:
 * Fields **MUST** follow `camelCase` convention
 * Bool fields **MUST NOT** be of null value
 * Null fields value **SHOULD** be omitted
-* Empty arrays and **SHOULD NOT**  be null (e.g. they should be `[]`)
+* Empty arrays and **SHOULD NOT**  be null (e.g. they should be `[]` or should be omitted when the property is null)
 * Fields of type array  **SHOULD** be plural (e.g. `classifieds: [...]`, `agencies: [...]`)
 
 ###  Concurrency control and optimistic locking
