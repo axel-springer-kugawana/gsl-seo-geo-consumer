@@ -130,26 +130,42 @@ when possible, a collection resource **SHOULD** provide navigation links for nav
     GET /classifieds?start=VGhpcyBpcyBhIHBhZ2luYXRpb24gdG9rZW4=&limit=50
     ```
 * Paginated Response Payload
+    * *Offset based pagination*
 
-    ```
-    {
+        ```
+        {
+            "meta": {
+                "count": "The total count of the items. (Optional)"
+            },
+            "links": {
+                "prev": "relative url to get to previous page (When applicable)",
+                "next": "relative url get to next page",
+                "first": "relative url to get to the first page (Should)",
+                "last": "relative url to get to the last page (When applicable)"
+            },
+            "classifieds": [{
+                ...object
+            }, {
+                ...object
+            }]
+        }
+        ```
+    * *Token based pagination*
+        ```
+        {
+            "links": {
+                "next": "relative url get to next page",
+                "first": "relative url to get to the first page (Optional)"
+            },
+            "classifieds": [{
+                ...object
+            }, {
+                ...object
+            }]
+        }
+        ```
+    
 
-        "meta": {
-            "count": "The total count of the items. (Applicable on offset pagination, Optional)"
-        },
-        "links": {
-            "prev": "relative url to get to previous page (When applicable)",
-            "next": "relative url get to next page",
-            "first": "relative url to get to the first page (Should)",
-            "last": "relative url to get to the last page (When applicable)"
-        },
-        "classifieds": [{
-            ...object
-        }, {
-            ...object
-        }]
-    }
-    ```
 
 
 
