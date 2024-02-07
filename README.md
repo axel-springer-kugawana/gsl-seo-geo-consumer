@@ -2,8 +2,8 @@
 <p align="center" style="text-align:center;">
 <a target="_blank" href="https://architecture.avivgroup.co"><img src="https://user-images.githubusercontent.com/10498826/228766580-4d2a1070-f254-476e-94bd-1938057c429a.svg" alt="Architecture website" title="https://architecture.avivgroup.co" width="180" /></a>
 <br>
-Architecture distributed systems design guild<br>
-Promote exchanges and experimentations around distributed systems
+Aviv Backend guild<br>
+
 <br>
 <a href="https://avivgroup.atlassian.net/wiki/spaces/AARCH/pages/202900508/Distributed+Systems+Design+Guild"><strong>Confluence space »</strong></a>
 </p>
