@@ -80,7 +80,7 @@ module "process_ssot_keys_lambda" {
   source               = "../../constructs/lambda"
   lambda_handler       = var.process_ssot_keys_lambda.handler
   lambda_function_name = "${var.application}-${var.environment}-${var.ssot_name}-process-ssot-keys"
-  lambda_dist_dir      = var.process_ssot_keys_lambda.dist_dir
+  lambda_dist_file      = var.process_ssot_keys_lambda.dist_file
   lambda_role_arn      = aws_iam_role.lambda_role.arn
   memory_size          = "512"
   timeout              = 200

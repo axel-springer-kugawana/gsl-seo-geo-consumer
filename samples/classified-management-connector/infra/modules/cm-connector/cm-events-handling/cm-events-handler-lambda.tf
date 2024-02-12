@@ -85,14 +85,14 @@ resource "aws_iam_role_policy_attachment" "attach_iam_policy_to_iam_role_cm_even
 }
 
 module "handle_cm_events_lambda" {
-  source               = "../../constructs/lambda"
-  lambda_handler       = var.handle_cm_events_lambda.handler
-  lambda_function_name = "${var.application}-${var.environment}-${var.ssot_name}-events-handler"
-  lambda_dist_dir      = var.handle_cm_events_lambda.dist_dir
-  lambda_role_arn      = aws_iam_role.handle_cm_events_lambda_role.arn
-  memory_size          = "512"
-  timeout              = 25
-  is_lambda_vpc        = true
+  source                           = "../../constructs/lambda"
+  lambda_handler                   = var.handle_cm_events_lambda.handler
+  lambda_function_name             = "${var.application}-${var.environment}-${var.ssot_name}-events-handler"
+  lambda_dist_file                 = var.handle_cm_events_lambda.dist_file
+  lambda_role_arn                  = aws_iam_role.handle_cm_events_lambda_role.arn
+  memory_size                      = "512"
+  timeout                          = 25
+  is_lambda_vpc                    = true
   enable_secrets_manager_extension = true
   env_variables = {
     CM_API_URL             = var.cm_api_url,

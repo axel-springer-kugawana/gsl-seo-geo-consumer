@@ -42,7 +42,7 @@ resource "aws_security_group_rule" "allow_https" {
 
 data "archive_file" "zip_the_lambda_code" {
   type        = "zip"
-  source_dir  = var.lambda_dist_dir
+  source_file  = var.lambda_dist_file
   output_path = "${path.root}/.terraform/tmp/lambda-dist-zips/${var.lambda_function_name}.zip"
 }
 

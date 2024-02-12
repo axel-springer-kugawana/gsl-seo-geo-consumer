@@ -8,16 +8,15 @@ variable "environment" {
 
 variable "process_cm_connector_events_lambda" {
   type = object({
-    dist_dir = string
-    handler  = string
+    dist_file                 = string
+    handler                   = string
     queue_esm_max_concurrency = number
   })
 }
 
-
 variable "cm_connector_consumer_queue" {
   type = object({
     arn = string
-    id = string
+    id  = string
   })
 }
