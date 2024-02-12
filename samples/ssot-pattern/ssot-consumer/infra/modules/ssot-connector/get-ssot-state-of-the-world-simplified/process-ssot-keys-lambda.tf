@@ -7,7 +7,6 @@ resource "aws_lambda_event_source_mapping" "lambda_event_source" {
   }
 }
 
-
 resource "aws_iam_role" "lambda_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -80,14 +79,13 @@ module "process_ssot_keys_lambda" {
   source               = "../../constructs/lambda"
   lambda_handler       = var.process_ssot_keys_lambda.handler
   lambda_function_name = "${var.application}-${var.environment}-${var.ssot_name}-process-ssot-keys"
-  lambda_dist_dir      = var.process_ssot_keys_lambda.dist_dir
+  lambda_dist_file     = var.process_ssot_keys_lambda.dist_file
   lambda_role_arn      = aws_iam_role.lambda_role.arn
   memory_size          = "512"
   timeout              = 60
   env_variables = {
     SSOT_SOTW_BUCKET_NAME      = var.ssot_sotw_bucket.id,
     INTERNAL_SSOT_EVENTS_QUEUE = var.ssot_consumer_queue.id,
-    SSOT_NAME = var.ssot_name
+    SSOT_NAME                  = var.ssot_name
   }
 }
-

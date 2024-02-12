@@ -8,14 +8,14 @@ module "ssot_consumer_get_state_of_the_world_simplified" {
   }
 
   process_ssot_keys_lambda = {
-    dist_dir                  = "../src/dist/ssot-connector/lambda-handlers/"
+    dist_file                 = "../src/dist/ssot-connector/lambda-handlers/get-ssot-items-content.js"
     handler                   = "get-ssot-items-content.queueHandler"
     queue_esm_max_concurrency = 100
   }
 
   list_ssot_keys_lambda = {
-    dist_dir = "../src/dist/ssot-connector/lambda-handlers/"
-    handler  = "list-ssot-items.handler"
+    dist_file = "../src/dist/ssot-connector/lambda-handlers/list-ssot-items.js"
+    handler   = "list-ssot-items.handler"
   }
 
   ssot_consumer_queue = {

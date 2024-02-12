@@ -17,19 +17,18 @@ variable "ssot_sotw_bucket" {
   })
 }
 
-
-  variable "process_ssot_keys_lambda" {
+variable "process_ssot_keys_lambda" {
   type = object({
-    dist_dir = string
-    handler  = string
+    dist_file                 = string
+    handler                   = string
     queue_esm_max_concurrency = string
   })
 }
 
 variable "list_ssot_keys_lambda" {
   type = object({
-    dist_dir = string
-    handler  = string
+    dist_file = string
+    handler   = string
   })
 }
 
@@ -44,11 +43,11 @@ variable "account_data" {
 variable "ssot_consumer_queue" {
   type = object({
     arn = string
-    id = string
+    id  = string
   })
 }
 
 variable "get_state_of_the_world_key_batch_size" {
-  type = number
+  type    = number
   default = 30
 }
