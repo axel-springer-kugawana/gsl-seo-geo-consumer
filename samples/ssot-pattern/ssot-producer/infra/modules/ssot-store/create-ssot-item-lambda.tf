@@ -29,14 +29,13 @@ resource "aws_iam_policy" "create_or_update_ssot_item_lambda_iam_policy" {
       {
         Effect = "Allow"
         Action = [
-            "dynamodb:UpdateItem"
+          "dynamodb:UpdateItem"
         ]
         Resource = ["${aws_dynamodb_table.state_of_world_table.arn}"]
       }
     ]
   })
 }
-
 
 resource "aws_iam_role_policy_attachment" "create_or_update_ssot_item_policy_to_role_attachment" {
   role       = aws_iam_role.create_or_update_ssot_item_lambda_role.name
@@ -48,7 +47,7 @@ module "create_ssot_item_lambda" {
   lambda_function_name = "${var.application}-${var.environment}-create-ssot-item"
   lambda_handler       = var.create_ssot_item_lambda.handler
   lambda_role_arn      = aws_iam_role.create_or_update_ssot_item_lambda_role.arn
-  lambda_dist_dir      = var.create_ssot_item_lambda.dist_dir
+  lambda_dist_file     = var.create_ssot_item_lambda.dist_file
   timeout              = 5
   memory_size          = "512"
   env_variables = {
@@ -61,7 +60,7 @@ module "update_ssot_item_lambda" {
   lambda_function_name = "${var.application}-${var.environment}-update-ssot-item"
   lambda_handler       = var.update_ssot_item_lambda.handler
   lambda_role_arn      = aws_iam_role.create_or_update_ssot_item_lambda_role.arn
-  lambda_dist_dir      = var.update_ssot_item_lambda.dist_dir
+  lambda_dist_file     = var.update_ssot_item_lambda.dist_file
   timeout              = 5
   memory_size          = "512"
   env_variables = {

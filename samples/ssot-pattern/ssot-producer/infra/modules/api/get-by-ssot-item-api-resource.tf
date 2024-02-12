@@ -8,7 +8,7 @@ resource "aws_api_gateway_method" "get_method" {
   rest_api_id      = aws_api_gateway_rest_api.private_api.id
   resource_id      = aws_api_gateway_resource.ssot_entity_id.id
   http_method      = local.http_methods.GET
-  api_key_required = true 
+  api_key_required = true
   authorization    = "NONE"
 
   request_parameters = {
@@ -23,7 +23,6 @@ resource "aws_api_gateway_integration" "lambda_integration" {
   integration_http_method = local.http_methods.POST
   type                    = "AWS_PROXY"
   uri                     = module.get_ssot_item_lambda.function_invoke_arn
-
 }
 
 resource "aws_api_gateway_integration_response" "lambda_integration_response" {

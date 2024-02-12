@@ -29,14 +29,13 @@ resource "aws_iam_policy" "delete_ssot_item_lambda_iam_policy" {
       {
         Effect = "Allow"
         Action = [
-            "dynamodb:DeleteItem"
+          "dynamodb:DeleteItem"
         ]
         Resource = ["${aws_dynamodb_table.state_of_world_table.arn}"]
       }
     ]
   })
 }
-
 
 resource "aws_iam_role_policy_attachment" "delete_ssot_item_policy_to_role_attachment" {
   role       = aws_iam_role.delete_ssot_item_lambda_role.name
@@ -48,7 +47,7 @@ module "delete_ssot_item_lambda" {
   lambda_function_name = "${var.application}-${var.environment}-delete-ssot-item"
   lambda_handler       = var.delete_ssot_item_lambda.handler
   lambda_role_arn      = aws_iam_role.delete_ssot_item_lambda_role.arn
-  lambda_dist_dir      = var.delete_ssot_item_lambda.dist_dir
+  lambda_dist_file     = var.delete_ssot_item_lambda.dist_file
   timeout              = 5
   memory_size          = "512"
   env_variables = {

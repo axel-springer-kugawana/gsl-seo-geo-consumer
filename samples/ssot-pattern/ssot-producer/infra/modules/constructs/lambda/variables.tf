@@ -26,12 +26,12 @@ variable "memory_size" {
 }
 
 variable "runtime" {
-    type   = string
-    default = "nodejs20.x"
+  type    = string
+  default = "nodejs20.x"
 }
 
-variable "lambda_dist_dir" {
-    type   = string
+variable "lambda_dist_file" {
+  type = string
 }
 
 variable "cloudwatch_log_retention" {
@@ -39,4 +39,3 @@ variable "cloudwatch_log_retention" {
   default     = 7
   description = "Number of days for log retention"
 }
-
