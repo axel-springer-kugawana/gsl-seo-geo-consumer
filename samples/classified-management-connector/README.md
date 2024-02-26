@@ -60,12 +60,12 @@ First, you will need to get your AWS account(s) allowed to consume classified ma
 ### Classified Management API secrets
 [The connector creates a secret](./infra/modules/cm-connector/cm-events-handling/cm-api-secret.tf) that must contain the API ClientId & Authorization in order to be able to call Classified Management API.
 
-**An important step**: Once your account is authorized to consume classifieds, you will need to set these values into the secret :
-
-```
-{"ClientId":"<Client Id provided by CM>","Authorization":"<Authorization provided by CM>"}
-
-```
+> [!IMPORTANT]  
+> **An important step**: Once your account is authorized > to consume classifieds, you will need to set these > values into the secret :
+> ```
+> {"ClientId":"<Client Id provided by CM>",> "Authorization":"<Authorization provided by CM>"}
+> 
+> ```
 
 
 ### Running an initialization job
