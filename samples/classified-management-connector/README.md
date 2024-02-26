@@ -63,7 +63,10 @@ First, you will need to get your AWS account(s) allowed to consume classified ma
 > [!IMPORTANT]  
 > **An important step**: Once your account is authorized > to consume classifieds, you will need to set these > values into the secret :
 > ```
-> {"ClientId":"<Client Id provided by CM>",> "Authorization":"<Authorization provided by CM>"}
+> {
+>   "ClientId":"<Client Id provided by CM>",
+>   "Authorization":"<Authorization provided by CM>"
+> }
 > 
 > ```
 
