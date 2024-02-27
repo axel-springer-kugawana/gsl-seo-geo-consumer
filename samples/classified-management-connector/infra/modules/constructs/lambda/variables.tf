@@ -30,7 +30,7 @@ variable "runtime" {
     default = "nodejs20.x"
 }
 
-variable "lambda_dist_dir" {
+variable "lambda_dist_file" {
     type   = string
 }
 

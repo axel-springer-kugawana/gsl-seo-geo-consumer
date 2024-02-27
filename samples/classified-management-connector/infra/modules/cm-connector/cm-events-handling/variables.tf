@@ -19,7 +19,7 @@ variable "cm_topic" {
 variable "connector_events_queue" {
   type = object({
     arn = string
-    id = string
+    id  = string
   })
 }
 
@@ -29,8 +29,8 @@ variable "cm_api_url" {
 
 variable "handle_cm_events_lambda" {
   type = object({
-    dist_dir = string
-    handler  = string
+    dist_file                 = string
+    handler                   = string
     queue_esm_max_concurrency = string
   })
 }

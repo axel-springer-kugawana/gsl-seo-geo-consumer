@@ -29,14 +29,13 @@ resource "aws_iam_policy" "get_ssot_item_lambda_iam_policy" {
       {
         Effect = "Allow"
         Action = [
-            "dynamodb:GetItem",
+          "dynamodb:GetItem",
         ]
         Resource = ["${var.state_of_world_table.arn}"]
       }
     ]
   })
 }
-
 
 resource "aws_iam_role_policy_attachment" "get_ssot_item_policy_to_role_attachment" {
   role       = aws_iam_role.get_ssot_item_lambda_role.name
@@ -48,11 +47,10 @@ module "get_ssot_item_lambda" {
   lambda_function_name = "${var.application}-${var.environment}-get-ssot-item"
   lambda_handler       = var.get_ssot_item_lambda.handler
   lambda_role_arn      = aws_iam_role.get_ssot_item_lambda_role.arn
-  lambda_dist_dir      = var.get_ssot_item_lambda.dist_dir
+  lambda_dist_file     = var.get_ssot_item_lambda.dist_file
   timeout              = 5
   memory_size          = "512"
   env_variables = {
     SSOT_TABLE_NAME = var.state_of_world_table.name
   }
 }
-

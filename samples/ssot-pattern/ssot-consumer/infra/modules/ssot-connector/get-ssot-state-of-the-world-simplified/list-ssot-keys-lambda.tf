@@ -32,7 +32,7 @@ data "aws_iam_policy_document" "list_lambda_policy" {
       "s3:ListBucket"
     ]
     resources = [
-       var.ssot_sotw_bucket.arn
+      var.ssot_sotw_bucket.arn
     ]
   }
   statement {
@@ -59,12 +59,12 @@ module "list_ssot_keys_lambda" {
   source               = "../../constructs/lambda"
   lambda_handler       = var.list_ssot_keys_lambda.handler
   lambda_function_name = "${var.application}-${var.environment}-${var.ssot_name}-list-ssot-keys"
-  lambda_dist_dir      = var.list_ssot_keys_lambda.dist_dir
+  lambda_dist_file     = var.list_ssot_keys_lambda.dist_file
   lambda_role_arn      = aws_iam_role.list_lambda_role.arn
   memory_size          = "2048"
   timeout              = 14 * 60
   env_variables = {
-    SSOT_SOTW_BUCKET_NAME      = var.ssot_sotw_bucket.id,
-    SSOT_KEYS_QUEUE = module.ssot_keys_queue.queue_id
+    SSOT_SOTW_BUCKET_NAME = var.ssot_sotw_bucket.id,
+    SSOT_KEYS_QUEUE       = module.ssot_keys_queue.queue_id
   }
 }

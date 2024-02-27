@@ -8,8 +8,8 @@ variable "environment" {
 
 variable "process_ssot_events_lambda" {
   type = object({
-    dist_dir = string
-    handler  = string
+    dist_file                 = string
+    handler                   = string
     queue_esm_max_concurrency = number
   })
 }
@@ -18,6 +18,6 @@ variable "process_ssot_events_lambda" {
 variable "ssot_consumer_queue" {
   type = object({
     arn = string
-    id = string
+    id  = string
   })
 }

@@ -8,21 +8,20 @@ module "ssot_connector_classifieds" {
   }
   application = var.application
   environment = var.environment
-  ssot_name =  "${var.ssot_name}"
+  ssot_name   = var.ssot_name
 }
-
 
 module "ssot_consumer_example" {
   source = "./modules/ssot-consumer-example"
   process_ssot_events_lambda = {
-    dist_dir                  = "../src/dist/ssot-consumer-example/lambda-handlers/"
+    dist_file                 = "../src/dist/ssot-consumer-example/lambda-handlers/process-ssot-events.js"
     handler                   = "process-ssot-events.handler"
     queue_esm_max_concurrency = 30
   }
 
   ssot_consumer_queue = {
     arn = module.ssot_connector_classifieds.queue_arn
-    id = module.ssot_connector_classifieds.queue_id
+    id  = module.ssot_connector_classifieds.queue_id
   }
 
   application = var.application

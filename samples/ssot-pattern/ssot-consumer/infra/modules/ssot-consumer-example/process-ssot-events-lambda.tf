@@ -7,7 +7,6 @@ resource "aws_lambda_event_source_mapping" "lambda_event_source" {
   }
 }
 
-
 resource "aws_iam_role" "lambda_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -52,7 +51,7 @@ data "aws_iam_policy_document" "lambda_policy" {
     actions = [
       "dynamodb:UpdateItem"
     ]
-     resources = [
+    resources = [
       "${aws_dynamodb_table.consumer_materialized_view_table.arn}"
     ]
   }
@@ -71,12 +70,11 @@ module "process_ssot_events_lambda" {
   source               = "../constructs/lambda"
   lambda_handler       = var.process_ssot_events_lambda.handler
   lambda_function_name = "${var.application}-${var.environment}-process-ssot-events"
-  lambda_dist_dir      = var.process_ssot_events_lambda.dist_dir
+  lambda_dist_file     = var.process_ssot_events_lambda.dist_file
   lambda_role_arn      = aws_iam_role.lambda_role.arn
   memory_size          = "512"
   timeout              = 29
   env_variables = {
     MV_TABLE_NAME = aws_dynamodb_table.consumer_materialized_view_table.name
-
   }
 }

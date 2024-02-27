@@ -72,7 +72,6 @@ resource "aws_iam_policy" "ssot_table_stream_handler_lambda_iam_policy" {
   })
 }
 
-
 resource "aws_iam_role_policy_attachment" "ssot_table_stream_handler_policy_to_role_attachment" {
   role       = aws_iam_role.ssot_table_stream_handler_lambda_role.name
   policy_arn = aws_iam_policy.ssot_table_stream_handler_lambda_iam_policy.arn
@@ -83,7 +82,7 @@ module "ssot_table_stream_handler_lambda" {
   lambda_function_name = "${var.application}-${var.environment}-ssot-table-stream-handler"
   lambda_handler       = var.ssot_table_stream_handler_lambda.handler
   lambda_role_arn      = aws_iam_role.ssot_table_stream_handler_lambda_role.arn
-  lambda_dist_dir      = var.ssot_table_stream_handler_lambda.dist_dir
+  lambda_dist_file     = var.ssot_table_stream_handler_lambda.dist_file
   timeout              = 5
   memory_size          = "512"
   env_variables = {
@@ -97,5 +96,4 @@ resource "aws_lambda_event_source_mapping" "ssot_table_stream_handler_event_sour
   function_name           = module.ssot_table_stream_handler_lambda.function_name
   starting_position       = "TRIM_HORIZON"
   function_response_types = ["ReportBatchItemFailures"]
-
 }

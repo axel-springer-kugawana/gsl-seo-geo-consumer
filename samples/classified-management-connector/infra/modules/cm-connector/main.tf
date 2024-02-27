@@ -8,14 +8,14 @@ module "cm_get_state_of_the_world" {
   }
 
   process_ssot_keys_lambda = {
-    dist_dir                  = "../src/dist/cm-connector/lambda-handlers/"
+    dist_file                 = "../src/dist/cm-connector/lambda-handlers/process-classified-keys.js"
     handler                   = "process-classified-keys.queueHandler"
     queue_esm_max_concurrency = 100
   }
 
   list_ssot_keys_lambda = {
-    dist_dir = "../src/dist/cm-connector/lambda-handlers/"
-    handler  = "list-classified-keys.handler"
+    dist_file = "../src/dist/cm-connector/lambda-handlers/list-classified-keys.js"
+    handler   = "list-classified-keys.handler"
   }
 
   connector_internal_queue = {
@@ -34,18 +34,16 @@ module "cm_get_state_of_the_world" {
   ssot_name   = var.ssot_name
 }
 
-
-
 module "cm_events_handling" {
   source = "./cm-events-handling"
 
   cm_topic = {
-     arn = var.events_topic.arn
+    arn = var.events_topic.arn
   }
 
   handle_cm_events_lambda = {
-    dist_dir = "../src/dist/cm-connector/lambda-handlers/"
-    handler = "handle-classifieds-events.queueHandler"
+    dist_file                 = "../src/dist/cm-connector/lambda-handlers/handle-classifieds-events.js"
+    handler                   = "handle-classifieds-events.queueHandler"
     queue_esm_max_concurrency = 100
   }
 
@@ -53,18 +51,15 @@ module "cm_events_handling" {
 
   connector_events_queue = {
     arn = module.connector_internal_queue.queue_arn
-    id = module.connector_internal_queue.queue_id
+    id  = module.connector_internal_queue.queue_id
   }
 
   application = var.application
   environment = var.environment
   ssot_name   = var.ssot_name
-  
 }
-
 
 module "connector_internal_queue" {
   source            = "../constructs/consumer-queue-with-dlq"
   consumer_sqs_name = "${var.application}-${var.environment}-${var.ssot_name}-connector-events"
 }
-
