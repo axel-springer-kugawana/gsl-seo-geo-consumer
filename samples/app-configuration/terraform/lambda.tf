@@ -42,8 +42,8 @@ resource "aws_cloudwatch_log_group" "tsfunc" {
 
 data "archive_file" "csfunc" {
   type        = "zip"
-  source_dir  = "../src/csfunc/bin/Release/net8.0/"
-  output_path = "../src/csfunc/bin/Release/CsFunc.zip"
+  source_dir  = "../src/csfunc/CsFunc/bin/Release/net8.0/"
+  output_path = "../src/csfunc/CsFunc/bin/Release/CsFunc.zip"
 }
 
 resource "aws_lambda_function" "csfunc" {

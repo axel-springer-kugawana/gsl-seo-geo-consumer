@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsFunc", "CsFunc.csproj", "{25D53334-7631-455A-9D9A-293FB843C70D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsFunc", "CsFunc\CsFunc.csproj", "{25D53334-7631-455A-9D9A-293FB843C70D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsFunc.Tests", "CsFunc.Tests\CsFunc.Tests.csproj", "{4776C237-9D42-4AE6-8781-61D54D8DC511}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +20,9 @@ Global
 		{25D53334-7631-455A-9D9A-293FB843C70D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{25D53334-7631-455A-9D9A-293FB843C70D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{25D53334-7631-455A-9D9A-293FB843C70D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4776C237-9D42-4AE6-8781-61D54D8DC511}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4776C237-9D42-4AE6-8781-61D54D8DC511}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4776C237-9D42-4AE6-8781-61D54D8DC511}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4776C237-9D42-4AE6-8781-61D54D8DC511}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

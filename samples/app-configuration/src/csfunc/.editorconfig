@@ -5,12 +5,10 @@ end_of_line = lf
 indent_style = space
 indent_size = 2
 
-[*.ts]
-indent_size = 4
-
 [*.cs]
 indent_size = 4
 dotnet_sort_system_directives_first = true
 csharp_style_namespace_declarations = file_scoped:error
 #csharp_using_directive_placement = inside_namespace
-
+csharp_style_var_when_type_is_apparent = true:silent
+csharp_style_var_elsewhere = true:silent

@@ -7,12 +7,12 @@
     "resolveJsonModule": true,
     "moduleDetection": "force",
     "isolatedModules": true,
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "module": "NodeNext",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "sourceMap": false,
-    "noEmit": true,
+    "noEmit": true
   },
   "exclude": [
     "node_modules",

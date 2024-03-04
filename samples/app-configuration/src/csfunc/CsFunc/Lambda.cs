@@ -1,3 +1,6 @@
+using System.Net;
+using System.Net.Mime;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Amazon.Lambda.Annotations;
 using Amazon.Lambda.Annotations.APIGateway;
@@ -44,7 +47,7 @@ public sealed class Functions
 
     [LambdaFunction]
     [RestApi(LambdaHttpMethod.Get, "/")]
-    public IHttpResult Handler([FromServices] IOptionsMonitor<TeamConfig> teamConfig)
+    public APIGatewayProxyResponse Handler([FromServices] IOptionsMonitor<TeamConfig> teamConfig)
     {
         Body body =
             new()
@@ -55,7 +58,12 @@ public sealed class Functions
                 TeamConfig = teamConfig.CurrentValue,
             };
 
-        return HttpResults.Ok(body);
+        return new APIGatewayProxyResponse
+        {
+            StatusCode = (int)HttpStatusCode.OK,
+            Headers = new Dictionary<string, string> { ["content-type"] = MediaTypeNames.Application.Json },
+            Body = JsonSerializer.Serialize(body, LambdaJsonSerializerContext.Default.Body),
+        };
     }
 }
 

@@ -6,6 +6,7 @@
 # DotNet
 bin/
 obj/
+*.DotSettings.*
 
 # Node
 node_modules/

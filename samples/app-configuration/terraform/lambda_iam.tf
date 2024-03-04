@@ -34,7 +34,7 @@ data "aws_iam_policy_document" "lambda_deps" {
     ]
   }
   statement {
-    resources = ["arn:aws:ssm:*:*:parameter/*"]
+    resources = ["arn:aws:ssm:*:*:parameter/aft/account-request/custom-fields/*"]
     effect    = "Allow"
     actions = [
       "ssm:GetParameter",
