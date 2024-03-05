@@ -1,0 +1,33 @@
+{
+  "name": "discovery_appconfig",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "test": "jest",
+    "watch": "jest --watch",
+    "lint": "biome lint './*.ts'",
+    "format": "biome format . --write",
+    "check": "biome check .",
+    "compile": "tsc",
+    "publish": "node esbuild.config.mjs"
+  },
+  "dependencies": {
+    "@aws-lambda-powertools/commons": "^1.18.1",
+    "@aws-lambda-powertools/logger": "^1.18.1",
+    "@aws-lambda-powertools/parameters": "^1.18.1",
+    "@aws-sdk/client-appconfigdata": "^3.525.0",
+    "@aws-sdk/client-ssm": "^3.525.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.5.3",
+    "@types/aws-lambda": "^8.10.134",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.20",
+    "aws-sdk-client-mock": "^3.0.1",
+    "esbuild": "^0.20.1",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
