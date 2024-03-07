@@ -1,10 +1,10 @@
 ## Intro
 
-This folder holds all the supporting documents & samples for HTTP API standards guidelines
+This folder holds all the supporting documents & samples for REST API standards guidelines
 
 ## Why defining standards on our event models ?
 
-The main goal of this topic is to work on defining HTTP API standards for Aviv. By Implementing these standards we can provide many benefits to the team:
+The main goal of this topic is to work on defining REST API standards for Aviv. By Implementing these standards we can provide many benefits to the team:
 * Discovrability and documentation
 * Standard way presenting api documentation
 * Applying best practices when building REST API
