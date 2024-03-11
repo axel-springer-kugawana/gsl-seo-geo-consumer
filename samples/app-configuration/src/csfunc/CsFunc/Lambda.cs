@@ -29,10 +29,10 @@ public sealed class Startup
             .Build();
         services.AddSingleton<IConfiguration>(config);
 
-        var teamConfig = new ConfigurationBuilder()
-            .AddAppConfig(serviceName, "default", config["team"])
+        var progressiveRollout = new ConfigurationBuilder()
+            .AddAppConfig(serviceName, "default", "ProgressiveRollout")
             .Build();
-        services.Configure<TeamConfig>(teamConfig);
+        services.Configure<ProgressiveRollout>(progressiveRollout);
     }
 }
 
@@ -47,15 +47,15 @@ public sealed class Functions
 
     [LambdaFunction]
     [RestApi(LambdaHttpMethod.Get, "/")]
-    public APIGatewayProxyResponse Handler([FromServices] IOptionsMonitor<TeamConfig> teamConfig)
+    public APIGatewayProxyResponse Handler([FromServices] IOptionsMonitor<ProgressiveRollout> progressiveRollout)
     {
         Body body =
             new()
             {
                 Message = $"Hello {_conf["account_name"]}",
                 Team = _conf["team"] ?? "",
-                Planet = _conf["planet"] ?? "",
-                TeamConfig = teamConfig.CurrentValue,
+                Domain = _conf["domain"] ?? "",
+                ProgressiveRollout = progressiveRollout.CurrentValue,
             };
 
         return new APIGatewayProxyResponse
@@ -76,12 +76,12 @@ public sealed class Body
 {
     public required string Message { get; init; }
     public required string Team { get; init; }
-    public required string Planet { get; init; }
-    public required TeamConfig TeamConfig { get; init; }
+    public required string Domain { get; init; }
+    public required ProgressiveRollout ProgressiveRollout { get; init; }
 }
 
-public sealed class TeamConfig
+public sealed class ProgressiveRollout
 {
-    public string Base { get; set; } = null!;
-    public IReadOnlyCollection<string> Members { get; set; } = Array.Empty<string>();
+    public bool Enabled { get; set; }
+    public IReadOnlyCollection<int> WhiteListedIds { get; set; } = Array.Empty<int>();
 }

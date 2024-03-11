@@ -22,8 +22,11 @@ data "aws_iam_policy_document" "lambda_deps" {
       "${aws_cloudwatch_log_group.tsfunc.arn}:*",
       "${aws_cloudwatch_log_group.csfunc.arn}:*",
     ]
-    effect  = "Allow"
-    actions = ["logs:CreateLogStream", "logs:PutLogEvents"]
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
   }
   statement {
     resources = ["${module.appconfig_freeform.application_arn}/*"]

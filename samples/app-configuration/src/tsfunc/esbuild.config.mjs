@@ -1,7 +1,7 @@
 import esbuild from "esbuild"
 
 await esbuild.build({
-	entryPoints: ["index.ts"],
+	entryPoints: ["lambda.ts"],
 	bundle: true,
 	platform: "node",
 	outdir: "./dist",

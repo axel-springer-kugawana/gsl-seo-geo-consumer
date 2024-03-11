@@ -1,19 +1,19 @@
 locals {
   team   = "Avengers"
-  planet = "Earth"
+  domain = "Earth"
 }
 
 #=== tsfunc lambda
 
 data "archive_file" "tsfunc" {
   type        = "zip"
-  source_file = "../src/tsfunc/dist/index.js"
-  output_path = "../src/tsfunc/dist/index.zip"
+  source_file = "../src/tsfunc/dist/lambda.js"
+  output_path = "../src/tsfunc/dist/lambda.zip"
 }
 
 resource "aws_lambda_function" "tsfunc" {
   function_name    = "${var.service_name}_tsfunc"
-  handler          = "index.handler"
+  handler          = "lambda.handler"
   runtime          = "nodejs20.x"
   filename         = data.archive_file.tsfunc.output_path
   role             = aws_iam_role.allow_lambda.arn
@@ -28,7 +28,7 @@ resource "aws_lambda_function" "tsfunc" {
     variables = {
       POWERTOOLS_SERVICE_NAME = var.service_name
       APP_TEAM                = local.team
-      APP_PLANET              = local.planet
+      APP_DOMAIN              = local.domain
     }
   }
 }
@@ -64,7 +64,7 @@ resource "aws_lambda_function" "csfunc" {
       POWERTOOLS_SERVICE_NAME = var.service_name
       ANNOTATIONS_HANDLER     = "Handler"
       APP_TEAM                = local.team
-      APP_PLANET              = local.planet
+      APP_DOMAIN              = local.domain
     }
   }
 }

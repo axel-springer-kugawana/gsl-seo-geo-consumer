@@ -12,9 +12,9 @@ public class LambdaShould
         var conf = Substitute.For<IConfiguration>();
         conf["account_name"].Returns("MyAccount");
         conf["team"].Returns("MyTeam");
-        conf["planet"].Returns("MyPlanet");
-        var options = Substitute.For<IOptionsMonitor<TeamConfig>>();
-        options.CurrentValue.Returns(new TeamConfig { Base = "MyBase" });
+        conf["domain"].Returns("MyDomain");
+        var options = Substitute.For<IOptionsMonitor<ProgressiveRollout>>();
+        options.CurrentValue.Returns(new ProgressiveRollout { Enabled = true });
         var func = new Functions(conf);
 
         var result = func.Handler(options);
@@ -23,10 +23,10 @@ public class LambdaShould
         {
             Message = "Hello MyAccount",
             Team = "MyTeam",
-            Planet = "MyPlanet",
-            TeamConfig = new TeamConfig
+            Domain = "MyDomain",
+            ProgressiveRollout = new ProgressiveRollout
             {
-                Base = "MyBase",
+                Enabled = false,
             }
         };
         Assert.Equivalent(expected, JsonSerializer.Deserialize<Body>(result.Body));
