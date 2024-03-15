@@ -1,6 +1,6 @@
-## API design principles
+# API design principles
 
-# Robustness principle
+## Robustness principle
 
 Every API **MUST** follow robustness principles AKA [Postel's law principle](https://en.wikipedia.org/wiki/Robustness_principle):
 
@@ -9,7 +9,7 @@ Every API **MUST** follow robustness principles AKA [Postel's law principle](htt
 * APIs should not send more data than required.
 * Clients should be tolerant when consuming other services.
 
-# API Surface
+## API Surface
 
 * Every API **MUST** follow YAGNI principle:
 
@@ -22,7 +22,7 @@ Every API **MUST** follow robustness principles AKA [Postel's law principle](htt
 * Clients **SHOULD NOT** depend upon implicit interface
 
 
-# API Versioning
+## API Versioning
 
 Modifications to existing internal APIs **SHOULD** avoid breaking changes and **SHOULD** maintain backward compatibility:
 
@@ -56,7 +56,7 @@ Modifications to existing internal APIs **SHOULD** avoid breaking changes and **
     https://<capability?>-<api-name>-<env>.<account>.aws.aviv-internal.eu/
     ```
 
-# JSON based payloads
+## JSON based payloads
 
 JSON-based message **MUST** conform to these rules:
 
@@ -66,7 +66,7 @@ JSON-based message **MUST** conform to these rules:
 * Empty arrays and **SHOULD NOT**  be null (e.g. they should be `[]` or should be omitted when the property is null)
 * Fields of type array  **SHOULD** be plural (e.g. `classifieds: [...]`, `agencies: [...]`)
 
-# Concurrency control and optimistic locking
+## Concurrency control and optimistic locking
 
 To avoid the [lost update problem](https://en.wikipedia.org/wiki/Concurrency_control#Why_is_concurrency_control_needed?:~:text=The%20lost%20update%20problem), APIs **MAY** consider implementing [optimistic locking](https://en.wikipedia.org/wiki/Optimistic_concurrency_control). APIs owners **SHOULD**  use *ETag* header and [conditional HTTP requests](https://developer.mozilla.org/en-US/docs/Web/HTTP/Conditional_requests): 
 * APIs **MUST** manage a concurrency token associated to the resource (e.g. version or hash)
@@ -74,7 +74,7 @@ To avoid the [lost update problem](https://en.wikipedia.org/wiki/Concurrency_con
 * Clients **MUST** execute write operations with an `If-Match` header containing the value of `Etag` header handled by the last read operation. The API is then required to verify that the provided `If-Match` value corresponds to the resource's concurrency token in it's data store before approving the changes.
 * `If-Match` header can be used with `POST`, `PUT`, `PATCH`and `DELETE` operations.
 
-# Idempotency
+## Idempotency
 
 Idempotency ensures that performing the same operation multiple times has the same result as performing it once. Idempotency is a crucial concept for designing robust, fault tolerant and predictable APIs.
 
@@ -97,7 +97,7 @@ Idempotency ensures that performing the same operation multiple times has the sa
    * **SHOULD**: Include examples and use cases demonstrating idempotency in API documentation.
    * **SHOULD**: Document expiration based on idempotency key
 
-# Pagination
+## Pagination
 
 When exposing a collection resource, incorporating pagination into your API design is essential. In fact, predicting the precise amount of data to be returned is often not straightforward.
 Therefore, APIs **SHOULD** handle of resource pagination, including specifying default values in cases where they are not explicitly provided by the client.
