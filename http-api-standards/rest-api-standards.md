@@ -10,7 +10,7 @@
     * the responses
     * the error messages
 
-* The API documentaiton **MUST** include the following field : `x-aviv-service`. The value **MUST** conform to this format `<Domain>.<Capability or Experience>.<Context>`.
+* The API documentaiton **MUST** include the following field : `aviv-service`. The value **MUST** conform to this format `<Domain>.<Capability or Experience>.<Context>`.
 
 Examples : `seeker.classified-details.classified-details-service`  or `seeker.seo.link-box`.
 
@@ -32,12 +32,13 @@ Examples : `seeker.classified-details.classified-details-service`  or `seeker.se
 
 * An API **MUST** provide a documentation per version and environment
 
-* REST API documentations **MUST** be exposed  internally via a bundled HTMl file.
+* REST API documentations **MUST** be exposed internally via a bundled HTMl file.
 
-* This bundled HTML file **MUST** be generated using[Swagger UI](https://github.com/swagger-api/swagger-ui).
+* This bundled HTML file **MUST** be generated using [Swagger UI](https://github.com/swagger-api/swagger-ui).
+    * The bundle HTML file **MAY** be generated using [Redoc](https://github.com/Redocly/redoc) in addition of the one generated using Swagger
 
 > [!NOTE]
-> To help design easily API documentations, it is *RECOMMENDED* to use [Swagger Editor](https://editor.swagger.io/) and the [OpenAPI mind map](https://openapi-map.apihandyman.io/?version=3.0).
+> To help design easily API documentations, it is *RECOMMENDED* to use [Swagger Editor](https://editor-next.swagger.io/) and the [OpenAPI mind map](https://openapi-map.apihandyman.io/?version=3.0).
 
 * The API documentation **MUST** be available on the [AVIV Service Catalog](https://aviv.roadie.so/)
 
@@ -78,7 +79,7 @@ Examples : `seeker.classified-details.classified-details-service`  or `seeker.se
 
 ## API Surface
 
-* Every API **MUST** follow the YAGNI principle:
+* Every API **MUST** follow the **[YAGNI](https://en.wikipedia.org/wiki/You_aren%27t_gonna_need_it)** principle:
 
     * APIs **SHOULD** be Minimal with a minimal surface while adhering to to product requirements
     * APIs **SHOULD NOT** expose unnecessary resources, relations, actions or data.
@@ -91,7 +92,10 @@ Examples : `seeker.classified-details.classified-details-service`  or `seeker.se
 
 ## API Versioning
 
-*  API Version **MUST** be visible on the request path and **MUST** be the first element on the resource path
+* The API **MUST** use [semantic versioning](https://semver.org/) to indicate the level of changes.
+* The API Version **MUST** be visible on the request path.
+    * The API **MUST** only expose its **major** version.
+* The API version **MUST** be the first element on the resource path.
 
     `GET /<major-version>/<resource>/...`
 
@@ -99,22 +103,39 @@ Examples : `seeker.classified-details.classified-details-service`  or `seeker.se
 
     `GET /v1/classifieds`
 
+    * The API version **MUST** be part of the server declaration in the OpenAPI documentation and **MUST NOT** be part of the operation paths.
+
+
 ### Version upgrade
 
-* Modifications to existing APIs **MUST** avoid breaking changes and **MUST** maintain backward compatibility:
-
-    * APIs **MUST** use semantic versioning to indicate the level of changes.
-
-    * No breaking changes:
-        * News minor versions of API contracts **SHOULD** be processed by older versions of clients without breaking.
-        * A change is considered backwards compatible when optional new features are added to an API. A Client **MUST** tolerate such minor updates.
-        * APIs **MUST** avoid renaming, removing or changing field types when possible (otherwise, this is a breaking change).
-        * APIs **MUST NOT** make optional things required.
-        * Any new addition **MUST** be optional.
-
+* A new minor API version **MUST NOT** create breaking changes.
 * In the case of breaking change, APIs **MUST** support multiple versions with a clear and agreed upon deprecation strategy for older version:
     * Deprecation strategy **MUST** be documented by API owners and communicated to their clients.
     * Internal APIs owners **MUST** maintain 2 API versions at max.
+
+#### Breaking change definition
+
+This table defines the modifications of the API contrat that cause a breaking change :
+
+| Change | Breaking | What must be done to avoid the breaking change |
+|---|---|---|
+| Renaming a field | ☑️ | - Mark the field as `deprecated`<br>- Create a new field using the new name |
+| Removing a field | ☑️ | Mark the field as `deprecated` |
+| Changing a field value type | ☑️ | - Mark the field as `deprecated`<br>- Create a new field with the new definition |
+| Adding a mandatory field | ☑️ | - Mark the field as optional |
+| Adding an optional field |  |  |
+| Adding an operation path |  |  |
+| Changing an operation path identifier | ☑️ | Do not make the change |
+| Removing an operation path | ☑️ | - Mark the operation path as `deprecated` |
+| Adding a value to an enum |  |  |
+| Removing a value from an enum | ☑️ | Keep the value |
+| Renaming a value from an enum | ☑️ | Add the new value while keeping the old one |
+
+> [!NOTE]
+> It is expected from API clients to support a new value in an enum.
+
+
+* For every breaking change committed in the next major release in development, a new deprecation message **MUST** be added into the next minor release.
 
 ### Deprecation and sunset of old API versions
 
@@ -359,8 +380,10 @@ paths:
 * Supported headers **MUST** be explicitly specified in the API documentation.
 * Headers **MUST** be part of list of non-obselete RFC (see [the list of standard HTTP headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers)).
 * Headers **MUST** have a description.
-* Headers **MUST NOT** be prefixed with `X-`, `x-` or any other custom naming.
-* Headers **MUST** Every HTTP Header should use `kebab-case` format.
+* Headers **SHOULD NOT** be prefixed with `X-`, `x-` or any other custom naming.
+* Headers **MUST** use the `Hyphenated-Pascal-Case` format.
+
+Good example :
 
 ```yaml
 Some-Request-Metadata-Header: FooBar42
@@ -368,7 +391,7 @@ Some-Request-Metadata-Header: FooBar42
 
 ### Request headers
 
-* Every request **MAY** define an *optional* `traceparent` header. The traceparent header is defined as such :
+* Every request **MUST** define an *optional* `traceparent` header.
 
 ```yaml
 components:
@@ -381,10 +404,16 @@ components:
             example: a-random-string
             schema:
                 type: string
-                minLength: 0
+                minLength: 1
                 maxLenght: 32
+                nullable: false
 ```
+
 The value is a string defined by the client for each requests made.
+
+The API **MUST** support this header and use the value as a correlation identifier in the logs.
+
+
 * Every request **MUST** define, if applicable, at least one required `Content-Type` header. The value **MUST** always be one of the following :
     * `application/json; charset=utf-8`
     * `application/json-patch+json; charset=utf-8`
@@ -403,7 +432,8 @@ components:
             example: 00-0af7651916cd43dd8448eb211c80319c-b9c7c989f97918e1-01
             schema:
                 type: string
-                minLength: 0
+                minLength: 1
+                nullable: false
                 pattern: ^[\da-f]{2}-[\da-f]{32}-[\da-f]{16}-[\da-f]{2}$
 ```
 
@@ -414,7 +444,31 @@ The value is a string defined by the API server for each requests answered, base
 
 ## Query parameters
 
-* query parameters
+* Query parameters **MUST** use the `camelCase` format.
+* Query parameters **MUST** be declared using an `form` style and using the `explode` annotation. This creates the following expectations :
+    * for an array on a /users endpoint (Array id = [3, 4, 5]) : `/users?id=3&id=4&id=5`
+    * for an object (Object `{"role": "admin", "firstName": "Alex"}`) on a /users endpoint : `/users?role=admin&firstName=Alex`
+
+Example of openapi declaration :
+
+```yaml
+- in: query
+    name: portal
+    schema:
+    type: array
+    items:
+        type: string
+        enum:
+        - SL
+        - BUCOM
+        - BD
+        - LR
+        - LI
+    description: Portals where the classified is published
+    explode: true
+    style: form
+```
+* Query parameters **MUST NOT** be used to describe API keys. OpenAPI' `securitySchemes` **MUST** be used instead.
 
 
 # Error handling
@@ -563,11 +617,16 @@ Here are some common response codes:
 
 ## Concurrency control and optimistic locking
 
-To avoid the [lost update problem](https://en.wikipedia.org/wiki/Concurrency_control#Why_is_concurrency_control_needed?:~:text=The%20lost%20update%20problem), APIs **MAY** consider implementing [optimistic locking](https://en.wikipedia.org/wiki/Optimistic_concurrency_control). APIs owners **SHOULD**  use *ETag* header and [conditional HTTP requests](https://developer.mozilla.org/en-US/docs/Web/HTTP/Conditional_requests): 
-* APIs **MUST** manage a concurrency token associated to the resource (e.g. version or hash)
-* This concurrency token **MUST** be exposed by the API as the `ETag` header on read operations.
-* Clients **MUST** execute write operations with an `If-Match` header containing the value of `Etag` header handled by the last read operation. The API is then required to verify that the provided `If-Match` value corresponds to the resource's concurrency token in it's data store before approving the changes.
-* `If-Match` header can be used with `POST`, `PUT`, `PATCH`and `DELETE` operations.
+* To avoid the [lost update problem](https://en.wikipedia.org/wiki/Concurrency_control#Why_is_concurrency_control_needed?:~:text=The%20lost%20update%20problem), APIs **SHOULD** implement [optimistic locking](https://en.wikipedia.org/wiki/Optimistic_concurrency_control).
+
+* If optimistic locking is implemented :
+
+    * APIs owners **MUST** use *ETag* header and [conditional HTTP requests](https://developer.mozilla.org/en-US/docs/Web/HTTP/Conditional_requests):
+    * APIs **MUST** manage a concurrency token associated to the resource (e.g. `version`, `revision` or `hash`).
+    * This concurrency token **MUST** be exposed by the API as the `ETag` header on read operations.
+    * Clients **MUST** execute write operations with an `If-Match` header containing the value of `Etag` header handled by the last read operation. The API **MUST** verify that the provided `If-Match` value corresponds to the resource's concurrency token in it's data store before approving the changes.
+        * If the `If-Match` header value is not accepted by the API, the API **MUST** respond with a `412 Precondition Failed` error.
+    * `If-Match` header **MAY** be used with `POST`, `PUT`, `PATCH`and `DELETE` operations.
 
 ## Idempotency
 

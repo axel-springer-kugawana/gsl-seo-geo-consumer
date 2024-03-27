@@ -2,23 +2,12 @@
 
 This folder holds all the supporting documents & samples for REST API standards guidelines
 
-## Why defining standards on our event models ?
+## Why defining standards on our REST APIs ?
 
 The main goal of this topic is to work on defining REST API standards for Aviv. By Implementing these standards we can provide many benefits to the team:
 * Discovrability and documentation
 * Standard way presenting api documentation
 * Applying best practices when building REST API
-
-
-## Topics
-
-| Topic                                                                                                                                                                                   | Description                                                                                                                                                                              |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [RESTful API Design principles](./api-design-principles.md)      | High level API design principles & good practices |
-| [RESTFul APIs compliance](./rest-compliance.md) | Rules on building compliant RESTFul APIs                |
-| [RESTful API Documentation](./api-doc.md) | Guidelines on crafting RESTful API docs                                                                                         |
-
-
 
 
 ## Conventions used in these guidelines
@@ -66,7 +55,7 @@ NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY", and
 
 A standard API documentation linter is provided with a set of rules that can be extended
 
-To run the linter use the following command : 
+To run the linter use the following command :
 
 ```bash
 npx @stoplight/spectral-cli lint <oepnapi-file> [--ruleset <ruleset-file>]
