@@ -1,5 +1,5 @@
 {
-	"name": "lambda-blueprint",
+	"name": "api-with-lambda-template",
 	"scripts": {
 		"format": "prettier --config .prettierrc './**/*.ts' --write",
 		"lint": "eslint . --ext .ts",
