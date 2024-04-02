@@ -1,4 +1,4 @@
-## Lambda Blueprint
+## Lambda-based API template
 You will find here a blueprint of an API based on lambda functions & API Gateway. This blueprint can help you kick start you project with a complete code example and intrastructure as code
 
 ## Overview
