@@ -3,8 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "packageManager": "pnpm@8.7.5",
-  // "scripts": {
-  // }
   "scripts": {
     "build:lambdas": "node esbuild.config.js",
     "watch": "tsc --noEmit --watch",
