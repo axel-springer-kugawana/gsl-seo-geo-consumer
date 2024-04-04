@@ -14,10 +14,6 @@ orbs:
   terraform: circleci/terraform@3.2.1
 
 jobs:
-########################################
-# Classified management connector jobs #
-########################################
-
   build-classified-management-connector:
     docker:
       - image: cimg/node:20.11.0
@@ -46,10 +42,10 @@ jobs:
             - node_modules
       - run:
           name: Test
-          command: pnpm -C samples/classified-management-connector/src/ run test
+          command: pnpm -C src/ run test
       - run:
           name: Build
-          command: pnpm -C samples/classified-management-connector/src/ run build:lambdas
+          command: pnpm -C src/ run build:lambdas
       - persist_to_workspace:
           paths:
             - "."
@@ -70,73 +66,13 @@ jobs:
       - attach_workspace:
           at: ./
       - terraform/init:
-          path: ./samples/classified-management-connector/infra
+          path: ./infra
       - terraform/plan:
-          path: ./samples/classified-management-connector/infra
+          path: ./infra
           var_file: ./dev.tfvars
           
-      
-  
-      
-########################################
-# API Generation jobs #
-########################################
-
-  generate-api-doc:
-      docker:
-        - image: cimg/python:3.10.12-node
-      parameters:
-        OPENAPI_PATH:
-          type: string
-      working_directory: ~/project
-      steps:
-        - checkout
-        - attach_workspace:
-            at: ./
-        - run:
-            name: Install dependencies
-            command: |
-              pip install setuptools
-              pip install PyYAML
-        - run:
-            name: Generate bundled html files
-            command: |
-              npx @redocly/cli build-docs << parameters.OPENAPI_PATH >> -o ./redoc-openapi.html
-              python http-api-standards/src/api-doc/scripts/swagger-yaml-to-html.py < << parameters.OPENAPI_PATH >> > swagger-openapi.html
-        - store_artifacts:
-            path: ~/project/redoc-openapi.html
-            destination: redoc-openapi.html
-        - store_artifacts:
-            path: ~/project/swagger-openapi.html
-            destination: swagger-openapi.html
-  api-doc-lint:
-    docker:
-      - image: cimg/node:18.18.1
-    parameters:
-        OPENAPI_PATH:
-          type: string
-        RULESET_FILE_PATH:
-          type: string
-    working_directory: ~/project
-    steps:
-        - checkout
-        - attach_workspace:
-            at: ./
-        - run:
-            name: Lint openapi doc
-            command: |
-              npx @stoplight/spectral-cli lint << parameters.OPENAPI_PATH >> --ruleset << parameters.RULESET_FILE_PATH >>
 
 workflows:
-  http-api-standards:
-    when: << pipeline.parameters.run-http-api-standards-job >>
-    jobs:
-      - generate-api-doc:
-          OPENAPI_PATH: "http-api-standards/src/api-doc/openapi.yaml"
-      - api-doc-lint:
-          OPENAPI_PATH: "http-api-standards/src/api-doc/openapi.yaml"
-          RULESET_FILE_PATH: "http-api-standards/src/api-doc/.spectral.yaml"
-
   classified-management-connector:
     when: << pipeline.parameters.run-classified-management-connector-job >>
     jobs:

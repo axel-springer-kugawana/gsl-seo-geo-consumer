@@ -11,7 +11,6 @@ workflows:
       - path-filtering/filter:
           name: check-updated-files
           mapping: |
-            http-api-standards/.* run-http-api-standards-job true
-            samples/classified-management-connector/.* run-classified-management-connector-job true
+            .* run-classified-management-connector-job true
           base-revision: main
           config-path: .circleci/job-configs.yml

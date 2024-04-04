@@ -1,2 +1,0 @@
-export const SSoTName = "<%= it.SSoTName %>";
-export const SSoTEntityName = "<%= it.SSoTEntityName %>";

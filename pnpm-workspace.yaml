@@ -1,4 +1,2 @@
 packages:
-  - event-models-standards/**
-  - idempotent-event-consumers/**
-  - samples/**
+  - classified-management-connector/**
