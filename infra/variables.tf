@@ -18,31 +18,31 @@ variable "costCenter" {
 variable "domain" {
   description = "The actor domain name"
   type        = string
-  default     = "architecture"
+  default     = "seeker"
 }
 
 variable "capability" {
   description = "The actor capability name"
   type        = string
-  default     = "Not Applicable"
+  default     = "Whitelabel"
 }
 
 variable "component" {
   description = "Application component"
   type        = string
-  default     = "cm-connector"
+  default     = "seo-cm-connector"
 }
 
 variable "contact" {
   description = "List of contact slack channels or emails"
   type        = string
-  default     = "aviv_backend_guild"
+  default     = "aphrodite"
 }
 
 variable "team" {
   description = "team name"
   type        = string
-  default     = "architecture"
+  default     = "aphrodite"
 }
 
 variable "taggingVersion" {
