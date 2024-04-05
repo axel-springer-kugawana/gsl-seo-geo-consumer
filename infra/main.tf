@@ -1,5 +1,5 @@
 module "cm_connector" {
-  source = "./modules/cm-connector-example"
+  source = "./modules/cm-connector"
 
   bucket = {
     id = var.classified_management_sync_bucket
