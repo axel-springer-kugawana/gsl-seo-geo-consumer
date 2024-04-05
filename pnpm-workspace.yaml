@@ -1,2 +1,2 @@
 packages:
-  - classified-management-connector/**
+  - src/**
