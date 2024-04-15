@@ -1,17 +1,13 @@
 import { logger } from "@shared/cross-cutting/logger";
 import { Classified } from "@shared/models/classified/1.0.0/classified";
 import { randomInt } from "crypto";
-import { Connection } from 'postgresql-client';
-import { DataTypeOIDs } from 'postgresql-client';
 import { Client } from 'pg';
 
 
 const createOrUpdateClassified = async (id: string, data: Classified): Promise<void> => {
   //	docker run -itd -e POSTGRES_USER=user -e POSTGRES_PASSWORD=user -p 5432:5432 -v /data:/var/lib/postgresql/data --name postgresql postgres
   try {
-    // const connection = new Connection({
 
-    // });
     // const client = new Client();
     const client = new Client({
       host: 'localhost',
@@ -19,9 +15,7 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
       user: 'user',
       password: 'user',
       database: 'ssot',
-      // timezone: 'Europe/Amsterdam'
     });
-
 
     await client.connect()
 
@@ -48,7 +42,7 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
     const values = [
       randomInt(45514),
       data.metadata.brand,
-      data.visibility.requests.map(item => item.portal),
+      data.visibility.requests,
       data.data.estateType,
       data.data.estateSubType,
       data.data.distributionType,
