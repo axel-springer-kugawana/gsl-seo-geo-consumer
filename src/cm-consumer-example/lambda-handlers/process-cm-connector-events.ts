@@ -3,28 +3,22 @@ import { enableLambdaPowertoolsLoggingAndMetrics } from "@shared/cross-cutting/l
 import { logger } from "@shared/cross-cutting/logger";
 import { SSotEntityName } from "@shared/models/cm-consumer-constants";
 import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
-import { markClassifiedAsDeleted, createOrUpdateClassified } from "cm-consumer-example/adapters/classifieds-materialized-view";
+import { createOrUpdateClassifiedPostGre } from "cm-consumer-example/adapters/classifieds-materialized-postgre";
+import { createFakeSQSEnvelope } from 'cm-connector/lambda-handlers/fakes/create-fake-sqs-envelope';
+import * as fs from 'fs';
+
 
 const processor = new BatchProcessor(EventType.SQS);
 
 export const recordHandler = async (record: SQSRecord): Promise<void> => {
 
-    const e = JSON.parse(record.body);
+    const data = fs.readFileSync("cm-consumer-example/lambda-handlers/fakes/231116WBR1KI.json", "utf8");
+    var jsonData = JSON.parse(data);
+    const recordFake = createFakeSQSEnvelope("231116WBR1KI", jsonData);
+    const e = JSON.parse(recordFake.body);
 
-    const classifiedId = e.data.classifiedId;
-
-    if (e.type === `${SSotEntityName}.deleted.v1`) {
-      
-        await markClassifiedAsDeleted({
-            classifiedId, updateDate: e.data.updateDate
-        });
-    }
-    else {
-        await createOrUpdateClassified(classifiedId, e.data);
-    }
-
-
-
+    const classifiedId = e.classifiedId;
+        await createOrUpdateClassifiedPostGre(classifiedId, e.classified);
 }
 
 export const lambdaHandler = async (event: SQSEvent, context: Context): Promise<SQSBatchResponse> => {
