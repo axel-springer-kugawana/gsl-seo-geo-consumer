@@ -84,7 +84,7 @@ variable "aws_account_name" {
   description = "AWS account name or workspace."
 }
 
-variable "rds_aurora_name"{
+variable "rds_aurora_name" {
   description = "The name of the aurora cluster"
   type        = string
   default     = "aviv-seeker-whitelabel-seo-ssot-db"
@@ -111,7 +111,7 @@ variable "rds_aurora_port" {
 variable "rds_engine_mode" {
   description = "The instance type of the aurora cluster"
   type        = string
-  default     = "db.serverless"
+  default     = "serverless"
 }
 
 variable "rds_aurora_postgres_version" {
@@ -122,13 +122,13 @@ variable "rds_aurora_postgres_version" {
 
 variable "rds_acu_min" {
   description = "min acu for serverless configuration"
-  type        = string 
-  default     = 4 
+  type        = string
+  default     = 4
 }
 
 variable "rds_acu_max" {
   description = "max acu for serverless configuration"
-  type        = string 
+  type        = string
   default     = 128
 }
 
