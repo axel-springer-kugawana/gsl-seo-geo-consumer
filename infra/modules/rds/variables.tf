@@ -1,37 +1,37 @@
+variable "environment" {
+  description = "The name of the environment"
+  type        = string
+
+  validation {
+    condition     = contains(["sandbox", "dev", "preview", "live"], var.environment)
+    error_message = "Valid values for var: environment_variable are (sandbox, dev, preview, live)."
+  }
+}
+
 variable "application" {
-  description = "Application name"
+  description = "The name of the application"
   type        = string
-  default     = "cm-sample"
 }
 
-variable "ssot_name" {
-  description = "SSoT name"
-  type        = string
-  default     = "classifieds"
-}
-
-variable "rds_aurora_name"{
+variable "rds_aurora_name" {
   description = "The name of the aurora cluster"
   type        = string
-  default     = "aviv-seeker-whitelabel-seo-ssot-db"
 }
 
 variable "rds_aurora_username" {
   description = "The username of the admin user of the aurora cluster"
   type        = string
-  default     = "main_user"
 }
 
 variable "rds_aurora_database" {
   description = "The database name of the aurora cluster"
   type        = string
-  default     = "ssot"
 }
 
 variable "rds_aurora_port" {
   description = "The port name of the aurora cluster"
   type        = string
-  default     = 5432
+  default     = "5432"
 }
 
 variable "rds_engine_mode" {
@@ -43,7 +43,13 @@ variable "rds_engine_mode" {
 variable "rds_aurora_postgres_version" {
   description = "The postgres version of the aurora cluster"
   type        = string
-  default     = "16.1"
+  default     = "15.3"
+}
+
+variable "rds_enable_proxy" {
+  description = "Should we enable RDS Proxies"
+  type        = bool
+  default     = "false"
 }
 
 variable "rds_acu_min" {
@@ -56,4 +62,24 @@ variable "rds_acu_max" {
   description = "max acu for serverless configuration"
   type        = string 
   default     = 128
+}
+
+variable "vpc_id" {
+  description = "The vpc id used by the database"
+  type        = string
+}
+
+variable "subnets" {
+  description = "The subnet ids used by the database"
+  type        = list(string)
+}
+
+variable "env_cidr" {
+  description = "The cidrs used by the database"
+  type        = list(string)
+}
+
+variable "suffix" {
+  type    = string
+  default = ""
 }

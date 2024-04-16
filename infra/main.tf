@@ -34,3 +34,21 @@ module "cm_consumer_example" {
   application = var.application
   environment = var.environment
 }
+
+module "rds" {
+  source                      = "./modules/rds"
+  application                 = "seo-ssot-classified"
+  environment                 = var.environment
+  rds_aurora_name             = var.rds_aurora_name
+  rds_aurora_username         = var.rds_aurora_username
+  rds_aurora_database         = var.rds_aurora_database
+  rds_aurora_port             = var.rds_aurora_port
+  rds_engine_mode             = var.rds_engine_mode
+  rds_aurora_postgres_version = var.rds_aurora_postgres_version
+  rds_acu_min                 = var.rds_acu_min
+  rds_acu_max                 = var.rds_acu_max
+  vpc_id                      = data.aws_vpc.foundation_vpc.id
+  subnets                     = data.aws_subnets.foundation_data_subnets.ids
+  env_cidr                    = data.aws_ec2_managed_prefix_list.env_cidr.entries[*].cidr
+  suffix                      = var.suffix
+}
