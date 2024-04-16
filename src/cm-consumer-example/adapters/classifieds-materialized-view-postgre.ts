@@ -2,7 +2,7 @@ import { logger } from "@shared/cross-cutting/logger";
 import { Classified } from "@shared/models/classified/1.0.0/classified";
 import { randomInt } from "crypto";
 import { Client } from 'pg';
-import { mapPrice } from '../utils/mappingHelpers';
+import { mapFeatures, mapPrice } from '../utils/mappingHelpers';
 
 
 const createOrUpdateClassified = async (id: string, data: Classified): Promise<void> => {
@@ -10,6 +10,7 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
 
   const price = mapPrice(data) ?? undefined;
 
+  const features = mapFeatures(data);
 
   //Mapping : https://avivgroup.atlassian.net/browse/WLSEO-501
   const values = [
@@ -28,7 +29,6 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
     data.data?.management?.rent?.certificateOfEligibilityNeeded,  // p CertificateOfEligibilityNeeded
     data.data.structure.building.locationInBuilding,  // q LocationInBuilding
 
-
     // r Balcony_Terrace
     // s Cellar
     // t Commission_Free
@@ -36,13 +36,13 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
     // v Kitchen_Fully_Equipped
     // w Parking_Garage
     // x Reduce_Mobility_Access
+    features
 
-    data.metadata.brand,
-    data.visibility.requests,
-    data.data.location.country,
-    data.data.location.postalcode,
+    // data.metadata.brand,
+    // data.visibility.requests,
+    // data.data.location.country,
+    // data.data.location.postalcode,
 
-    data.data.features,
   ];
 
   try {
@@ -70,16 +70,9 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
         Furnished,
         YearOfConstruction,
         CertificateOfEligibilityNeeded,
-        LocationInBuilding
-       
-
-        Brand, 
-        Portals, 
-      
-        Country, 
-        PostalCode,
-        FeaturesIncluded,
-     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`;
+        LocationInBuilding,
+        FeaturesIncluded
+     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
 
 
     const res = await client.query(query, values);

@@ -1,19 +1,47 @@
 
 export enum Portal {
-    SL = 'SL',
-    LI = 'LI',
-    LR = 'LR',
-    BD = 'BD',
-    BUCOM = 'BUCOM',
-    IWB = 'IWB',
-    IWT = 'IWT',
-    IMMONET = 'IMMONET',
-  }
-  
-  export enum DistributionType {
-    BUY = 'BUY',
-    RENT = 'RENT',
-    COMPULSORY_AUCTION = 'COMPULSORY_AUCTION',
-    BUY_AUCTION = 'BUY_AUCTION',
-  }
-  
+  SL = 'SL',
+  LI = 'LI',
+  LR = 'LR',
+  BD = 'BD',
+  BUCOM = 'BUCOM',
+  IWB = 'IWB',
+  IWT = 'IWT',
+  IMMONET = 'IMMONET',
+}
+
+export enum DistributionType {
+  BUY = 'BUY',
+  RENT = 'RENT',
+  COMPULSORY_AUCTION = 'COMPULSORY_AUCTION',
+  BUY_AUCTION = 'BUY_AUCTION',
+}
+
+export enum Features {
+  KITCHEN_FULLY_EQUIPPED = 'KITCHEN_FULLY_EQUIPPED',
+  GARDEN = 'GARDEN',
+  BATHROOM_WINDOW = 'BATHROOM_WINDOW',
+  PARKING_GARAGE = 'PARKING_GARAGE',
+  BALCONY_TERRACE = 'BALCONY_TERRACE',
+  REDUCE_MOBILITY_ACCESS = 'REDUCE_MOBILITY_ACCESS',
+  PETS_ALLOWED = 'PETS_ALLOWED',
+  VACANT = 'VACANT',
+  CELLAR = 'CELLAR',
+  BATHTUB = 'BATHTUB',
+  ELEVATOR = 'ELEVATOR',
+  COMMISSION_FREE = 'COMMISSION_FREE',
+  NO_MEDIA = 'NO_MEDIA',
+}
+
+export enum KitchenEquipment {
+  NONE = 'NONE',
+  STORAGE = 'STORAGE',
+  FULLY_EQUIPPED = 'FULLY_EQUIPPED',
+}
+
+export enum Validation {
+  YES = 'YES',
+  NO = 'NO',
+  PART = 'PART',
+  NOT_APPLICABLE = 'NOT_APPLICABLE',
+}
