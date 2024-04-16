@@ -8,7 +8,7 @@ module "aurora_cluster" {
   //https://stackoverflow.com/questions/56626196/aws-rds-engine-mode-currently-unavailable
   engine_mode    = "provisioned"
   instance_class = "db.serverless"
-  engine_version = "15.2"
+  engine_version = "16.1"
 
   vpc_id = var.vpc_id
 
@@ -38,4 +38,5 @@ module "aurora_cluster" {
     seconds_until_auto_pause = 300
     timeout_action           = "ForceApplyCapacityChange"
   }
+  skip_final_snapshot = true
 }
