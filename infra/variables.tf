@@ -78,3 +78,52 @@ variable "classified_management_api" {
   description = "classified management api"
   type        = string
 }
+
+
+variable "rds_aurora_name" {
+  description = "The name of the aurora cluster"
+  type        = string
+}
+
+variable "rds_aurora_username" {
+  description = "The username of the admin user of the aurora cluster"
+  type        = string
+}
+
+variable "rds_aurora_database" {
+  description = "The database name of the aurora cluster"
+  type        = string
+}
+
+variable "rds_aurora_port" {
+  description = "The port name of the aurora cluster"
+  type        = string
+}
+
+variable "rds_engine_mode" {
+  description = "The instance type of the aurora cluster"
+  type        = string
+  default      = "db.serverless"
+}
+
+variable "rds_aurora_postgres_version" {
+  description = "The postgres version of the aurora cluster"
+  type        = string
+}
+
+variable "rds_acu_min" {
+  description = "min acu for serverless configuration"
+  type        = string 
+  default     = 4 
+}
+
+variable "rds_acu_max" {
+  description = "max acu for serverless configuration"
+  type        = string 
+  default     = 128
+}
+
+variable "aws_account_name" {
+  type        = string
+  description = "AWS account name or workspace."
+}
