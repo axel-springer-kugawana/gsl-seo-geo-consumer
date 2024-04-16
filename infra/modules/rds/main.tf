@@ -4,9 +4,8 @@ module "aurora_cluster" {
 
   name   = "${var.rds_aurora_name}${var.suffix}"
   engine = "aurora-postgresql"
-  # engine_mode    = var.rds_engine_mode
-  # engine_version = var.rds_aurora_postgres_version
 
+  //https://stackoverflow.com/questions/56626196/aws-rds-engine-mode-currently-unavailable
   engine_mode    = "provisioned"
   instance_class = "db.serverless"
   engine_version = "15.2"
@@ -24,9 +23,8 @@ module "aurora_cluster" {
 
   master_username = var.rds_aurora_username
   master_password = random_password.rds_aurora_password.result
-  # database_name          = var.rds_aurora_database
-  database_name = ""
-  port          = var.rds_aurora_port
+  database_name   = var.rds_aurora_database
+  port            = var.rds_aurora_port
 
   enabled_cloudwatch_logs_exports = ["postgresql"]
   monitoring_interval             = 60
@@ -40,5 +38,4 @@ module "aurora_cluster" {
     seconds_until_auto_pause = 300
     timeout_action           = "ForceApplyCapacityChange"
   }
-
 }
