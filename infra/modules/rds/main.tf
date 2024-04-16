@@ -2,10 +2,14 @@ module "aurora_cluster" {
   source  = "terraform-aws-modules/rds-aurora/aws"
   version = "9.3.1"
 
-  name           = "${var.rds_aurora_name}${var.suffix}"
-  engine         = "aurora-postgresql"
-  engine_mode    = var.rds_engine_mode
-  engine_version = var.rds_aurora_postgres_version
+  name   = "${var.rds_aurora_name}${var.suffix}"
+  engine = "aurora-postgresql"
+  # engine_mode    = var.rds_engine_mode
+  # engine_version = var.rds_aurora_postgres_version
+
+  engine_mode    = "provisioned"
+  instance_class = "db.serverless"
+  engine_version = "15.2"
 
   vpc_id = var.vpc_id
 
@@ -28,12 +32,13 @@ module "aurora_cluster" {
   monitoring_interval             = 60
   storage_encrypted               = true
   performance_insights_enabled    = false
-  # serverlessv2_scaling_configuration = {
-  #   min_capacity = var.rds_acu_min
-  #   max_capacity = var.rds_acu_max
-  # }
 
-  # lifecycle {
-  #   prevent_destroy = true
-  # }
+  scaling_configuration = {
+    auto_pause               = true
+    min_capacity             = var.rds_acu_min
+    max_capacity             = var.rds_acu_max
+    seconds_until_auto_pause = 300
+    timeout_action           = "ForceApplyCapacityChange"
+  }
+
 }
