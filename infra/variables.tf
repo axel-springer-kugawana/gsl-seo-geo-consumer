@@ -111,13 +111,13 @@ variable "rds_aurora_port" {
 variable "rds_engine_mode" {
   description = "The instance type of the aurora cluster"
   type        = string
-  default     = "serverless"
+  default     = "provisioned"
 }
 
 variable "rds_aurora_postgres_version" {
   description = "The postgres version of the aurora cluster"
   type        = string
-  default     = "11.21"
+  default     = "15.4"
 }
 
 variable "rds_acu_min" {
