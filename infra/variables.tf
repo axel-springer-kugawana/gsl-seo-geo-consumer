@@ -131,3 +131,8 @@ variable "rds_acu_max" {
   type        = string 
   default     = 128
 }
+
+variable "suffix" {
+  type    = string
+  default = ""
+}
