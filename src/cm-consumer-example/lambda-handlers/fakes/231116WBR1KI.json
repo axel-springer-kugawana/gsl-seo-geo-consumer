@@ -1,1 +1,61 @@
-{"requestTime":1711639183852,"updateDate":"2024-03-28T15:11:25.614Z","classifiedId":"231116WBR1KI","technicalData":{"correlationId":"dbffb915-bcf7-4ff1-bd54-37d87869ce99","blockDispatching":false},"requestDate":"2024-03-28T15:19:43.852Z","externalId":"198409953","updateAt":1711638685614,"classified":{"metadata":{"offererMarketingKey":"1264624","classifiedBusiness":"PROFESSIONAL","updateDate":"2024-03-28T15:11:25.614Z","offererEstateId":"1303652","customerId":"RC-638890","externalId":"198409953","creationDate":"2023-02-20T19:59:00Z","brand":"GSL"},"data":{"features":{"security":{"custodian":"NO","buildingIntercom":"YES","intruderAlarm":"NO","digitalLock":"NO"},"residential":{"swimmingPool":"NO"},"furnished":"NO"},"estateType":"APARTMENT","distributionType":"BUY","texts":{"description":{"fr":"iad France - Camille DÉCHERIT vous propose : A Gien, un APPARTEMENT de type F2 - en rez-de-chaussée - comprenant une entrée, une cuisine séparée aménagée et équipée avec accès à une cour commune, un salon/salle à manger, une chambre, une salle d'eau et un WC séparé.\r\nInterphone, volets persiennes métalliques, radiateurs électriques, chauffe-eau électrique, double-vitrage et tout à l'égout.\r\nLE PLUS: Une cave privée de 11 m² environ et une cour commune.\r\n\r\nPossibilité de stationner dans la rue (emplacements gratuits).\r\nAppartement situé au cOEur du centre-ville de Gien, dans une petite copropriété. Faibles charges annuelles.\r\n\r\nIdéal pour un jeune couple, logement secondaire ou investissement locatif.\r\nProche de toutes commodités: à quelques pas des commerces et des écoles, à 6 minutes de la gare (en voiture), à 15 minutes de l'A77 et à 13 minutes du CNPE de Dampierre en Burly.\r\n\r\nUne visite s'impose!\r\nJe reste à votre écoute pour tout complément d'information.\r\n\r\nLa présente annonce immobilière vise 1 lot principal situé dans une copropriété formant 4 lots au total ne faisant l'objet d'aucune procédure en cours et d'un montant de charges d'environ 20.09 euros par mois (soit 241.08 euros annuel) déclaré par le vendeur.Honoraires d'agence à la charge du vendeur.Information d'affichage énergétique sur ce bien : classe ENERGIE G indice 640 et classe CLIMAT C indice 21. Les informations sur les risques auxquels ce bien est exposé sont disponibles sur le site Géorisques :  La présente annonce immobilière a été rédigée sous la responsabilité éditoriale de Mlle Camille DÉCHERIT EI (ID 43919), mandataire indépendant en immobilier (sans détention de fonds), agent commercial de la SAS I@D France immatriculé au RSAC de ORLEANS sous le numéro 880734967, titulaire de la carte de démarchage immobilier pour le compte de la société I@D France SAS."},"headline":{"fr":"Vente Appartement 2 pièces"}},"management":{"countrySpecific":{"fr":{"numberOfUnits":7,"operatingCostsPerYear":241.08,"isSyndicProcedure":false,"isCondo":true}},"heritageProtected":"NO"},"spaces":{"overallSpace":46,"residential":{"livingRoomSpace":15},"spaceMeasureUnit":"SQUARE_METER"},"location":{"avivGeoId":"NBH2FR3388","country":"FRA","city":"Gien","postalcode":"45500","street":"12 Rue Bernard Palissy - Appt Rdc","floorNumber":0,"geometry":{"coordinates":[2.62727,47.685629],"type":"Point"},"countrySpecific":{"fr":{"inseeCode":"450155"}}},"countrySpecific":{"fr":{"agentMandate":{"mandateType":"EXCLUSIVE"}}},"prices":{"buy":{"price":{"amount":65000,"isVatIncluded":true}},"brokerageFee":{"feeFor":"SELLER_OR_LANDLORD"}},"structure":{"rooms":{"numberOfBedRooms":1,"numberOfRooms":2,"numberOfShowerRooms":1},"building":{"cellar":"YES","elevator":{"person":"NO"},"numberOfFloors":2,"kitchen":{"kitchenEquipment":"FULLY_EQUIPPED","kitchenType":{"separated":true}}}},"energy":{"energyType":{"heatMethod":"INDIVIDUAL","heatForm":{"radiator":true},"energySource":{"electric":true}},"countrySpecific":{"fr":{"energyCertificate":{"GHGEmission":21,"overallEnergyNeed":640,"efficiencyClass":"G","GHGEmissionClass":"C","energyConsumptionCostMin":1780,"dateOfConsumptionCostEstimation":"2020-12-31","energyConsumptionCostMax":2450,"certificateType":"DPE_V07_2021"}}}}},"visibility":{"requests":[{"portal":"SL"},{"portal":"LI"}],"validations":[{"portal":"SL"},{"portal":"LI"}]},"enrichedData":{"censorship":{"globalStatus":false}},"media":[{"avivMediaId":"d4e006a7-7005-4627-ad8f-dc5e0feee4d6"},{"avivMediaId":"cd867ec9-e02f-4fc2-aaed-c8dac2ae1a49"},{"avivMediaId":"0ee47c92-8df8-408b-a4cc-6c262ad97ce5"},{"avivMediaId":"9619460c-c26e-4b65-a0e5-c247bb089df9"},{"avivMediaId":"c3a1eaad-e81d-4982-b23a-0c7d5db8e1e2"},{"avivMediaId":"b151822d-a07b-45f7-b24b-242af5533340"},{"avivMediaId":"1c53c675-12fe-48b1-9ed0-80390efb0027"},{"avivMediaId":"8774bcb2-3c76-4950-9561-7a5f6fb11a9b"},{"avivMediaId":"a35e6064-b3fa-4844-815e-78b76ea01263"},{"avivMediaId":"f242a0bb-e632-4c2e-b6f4-a1cd2e587fa6"},{"avivMediaId":"5ea71ab0-425c-4856-85de-a3f839d9af94"},{"avivMediaId":"28bcfb5e-375e-4d9e-bc25-efb9a609fd87"},{"avivMediaId":"c1d98357-3184-4fa1-ab3e-1f4800e38c89"}]},"state":"UPDATED","version":"0"}
+{
+    "id": "bd287471-c2a3-4530-a73a-6f59fff17cce",
+    "idempotencykey": "9b543a09cb73adbb742b7b6cb1ca530f",
+    "specversion": "1.0",
+    "source": "classified-management-connector",
+    "type": "classified.updated.v1",
+    "data": {
+        "metadata": {
+            "customerId": "4092940",
+            "classifiedBusiness": "PROFESSIONAL",
+            "externalId": "00000000-0000-0000-0002-000000000000",
+            "updateDate": "2024-04-17T15:56:50.945Z",
+            "creationDate": "2020-11-05T10:15:34.547Z",
+            "brand": "IWT"
+        },
+        "media": [],
+        "data": {
+            "location": {
+                "country": "ATA",
+                "city": "Pinguin Town",
+                "postalcode": "8340",
+                "street": "Nordostpark",
+                "houseNumber": "9",
+                "geometry": {
+                    "coordinates": [
+                        113.66070556640625,
+                        -79.88951873779297
+                    ],
+                    "type": "Point"
+                },
+                "showAddress": false
+            },
+            "estateType": "APARTMENT",
+            "distributionType": "RENT",
+            "estateSubType": {
+                "apartment": "LOFT"
+            },
+            "texts": {
+                "headline": {
+                    "de": "Testobjekt/Heartbeat"
+                },
+                "extendedInformation": {
+                    "de": "<b>Test timestamp</b>\\n 1713369404443"
+                }
+            },
+            "prices": {
+                "rent": {
+                    "baseRent": {
+                        "amount": 999999999
+                    }
+                },
+                "currency": "EUR"
+            }
+        },
+        "visibility": {
+            "requests": [],
+            "validations": []
+        },
+        "classifiedId": "23NM8IIQXH5P"
+    }
+}

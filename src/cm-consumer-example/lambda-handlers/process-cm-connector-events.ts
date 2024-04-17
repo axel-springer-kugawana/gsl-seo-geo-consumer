@@ -13,10 +13,12 @@ const processor = new BatchProcessor(EventType.SQS);
 
 export const recordHandler = async (record: SQSRecord): Promise<void> => {
 
+    // const body = fs.readFileSync("cm-consumer-example/lambda-handlers/fakes/231116WBR1KI.json", "utf8");
+
     const e = JSON.parse(record.body);
     const classifiedId = e.data.classifiedId;
 
-    // const data = fs.readFileSync("cm-consumer-example/lambda-handlers/fakes/231116WBR1KI.json", "utf8");
+
     // var jsonData = JSON.parse(data);
     // const recordFake = createFakeSQSEnvelope("231116WBR1KI", jsonData);
     // const e = JSON.parse(recordFake.body);
@@ -30,10 +32,7 @@ export const recordHandler = async (record: SQSRecord): Promise<void> => {
         // else {    
         logger.warn("body => " + record.body);
         await createOrUpdateClassified(classifiedId, e.data);
-
-
     }
-
 }
 
 export const lambdaHandler = async (event: SQSEvent, context: Context): Promise<SQSBatchResponse> => {
