@@ -47,14 +47,14 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
 
   try {
 
-    const client = new Client();
-    // const client = new Client({
-    //   host: 'aviv-seeker-whitelabel-seo-ssot-db.cluster-ca5oh2kzqupc.eu-west-1.rds.amazonaws.com',
-    //   port: 5432,
-    //   user: 'main_user',
-    //   password: 'ag.Nng{9}h8?}_z<E+G(IS*E)_dO',
-    //   database: 'ssot',
-    // });
+    // const client = new Client();
+    const client = new Client({
+      host: 'aviv-seeker-whitelabel-seo-ssot-db.cluster-ca5oh2kzqupc.eu-west-1.rds.amazonaws.com',
+      port: 5432,
+      user: 'main_user',
+      password: 'ag.Nng{9}h8?}_z<E+G(IS*E)_dO',
+      database: 'ssot',
+    });
 
     await client.connect()
 
