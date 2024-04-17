@@ -11,10 +11,8 @@ resource "aws_dynamodb_table" "consumer_materialized_view_table" {
     type = "S"
   }
 
-
   ttl {
     attribute_name = "expireat"
     enabled        = true
   }
-
 }

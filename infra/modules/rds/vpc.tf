@@ -33,9 +33,6 @@ data "aws_ec2_managed_prefix_list" "vpn_access_prefix_list" {
   name = "internal.gsl.aws.vpc.central-network-svpc-central-v5"
 }
 
-
-
-
 resource "aws_security_group_rule" "rds_cluster_vpn_in" {
   count             = var.aws_environment == "dev" ? 1 : 0
   description       = "Allow enterprise VPN groups to connect to RDS Cluster"
