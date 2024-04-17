@@ -33,8 +33,18 @@ data "aws_ec2_managed_prefix_list" "vpn_access_prefix_list" {
   name = "internal.gsl.aws.vpc.central-network-svpc-central-v5"
 }
 
+resource "aws_security_group" "rds_cluster" {
+  name        = "rds-cluster"
+  description = "Traffic from/to RDS cluster"
+  vpc_id      = var.vpc_id
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+
 resource "aws_security_group_rule" "rds_cluster_vpn_in" {
-  # count             = var.aws_environment == "dev" ? 1 : 0
   count             = var.aws_environment == "dev" ? 1 : 0
   description       = "Allow enterprise VPN groups to connect to RDS Cluster"
   type              = "ingress"
@@ -44,4 +54,3 @@ resource "aws_security_group_rule" "rds_cluster_vpn_in" {
   security_group_id = aws_security_group.rds_cluster.id
   prefix_list_ids   = [data.aws_ec2_managed_prefix_list.vpn_access_prefix_list.id]
 }
-
