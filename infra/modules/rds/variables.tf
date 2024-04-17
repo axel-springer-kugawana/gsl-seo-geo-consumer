@@ -54,13 +54,13 @@ variable "rds_enable_proxy" {
 
 variable "rds_acu_min" {
   description = "min acu for serverless configuration"
-  type        = string 
-  default     = 4 
+  type        = string
+  default     = 4
 }
 
 variable "rds_acu_max" {
   description = "max acu for serverless configuration"
-  type        = string 
+  type        = string
   default     = 128
 }
 
@@ -83,3 +83,10 @@ variable "suffix" {
   type    = string
   default = ""
 }
+
+
+variable "aws_environment" {
+  type    = string
+  default = "dev"
+}
+
