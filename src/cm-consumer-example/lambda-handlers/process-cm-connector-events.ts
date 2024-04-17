@@ -22,14 +22,17 @@ export const recordHandler = async (record: SQSRecord): Promise<void> => {
     // const e = JSON.parse(recordFake.body);
     // const classifiedId = e.classifiedId;
 
-    //  if (e.type === `${SSotEntityName}.deleted.v1`) {
-    //      await markClassifiedAsDeleted({
-    //          classifiedId, updateDate: e.data.updateDate
-    //      });
-    //  }
-    // // else {
-    await createOrUpdateClassified(classifiedId, e.classified);
-    // }
+    if (!(e.type === `${SSotEntityName}.deleted.v1`)) {
+        //     await markClassifiedAsDeleted({
+        //         classifiedId, updateDate: e.data.updateDate
+        //     });
+        // }
+        // else {    
+        logger.warn("body => " + record.body);
+        await createOrUpdateClassified(classifiedId, e.data);
+
+
+    }
 
 }
 
