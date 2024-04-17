@@ -23,12 +23,12 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
       data.data.estateSubType,//l EstateSubType
 
 
-      data.data.structure.rooms.numberOfRooms,   // m NumberOfRooms
-      data.data.features.furnished,  // n Furnished
+      data.data?.structure?.rooms?.numberOfRooms,   // m NumberOfRooms
+      data.data?.features?.furnished,  // n Furnished
 
       data.data?.conditions?.yearOfConstruction,// o YearOfConstruction
       data.data?.management?.rent?.certificateOfEligibilityNeeded,  // p CertificateOfEligibilityNeeded
-      data.data.structure.building.locationInBuilding,  // q LocationInBuilding
+      data.data?.structure?.building?.locationInBuilding,  // q LocationInBuilding
 
       // r Balcony_Terrace
       // s Cellar
@@ -80,6 +80,8 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
     await client.end();
   }
   catch (e) {
+    logger.error("data : " + JSON.stringify(data));
+
 
     if (e.name === "ConditionalCheckFailedException") {
       logger.warn("Conditional Check failed on lastUpdate date. Classified won't be updated", {
