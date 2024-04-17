@@ -5,7 +5,7 @@ export const mapPrice = (
     data: Classified
 ): number | null => {
 
-    const portals = data.visibility.requests;
+    const portals = data?.visibility?.requests;
     const distributionType = data.data.distributionType;
     const prices = data.data.prices;
 
