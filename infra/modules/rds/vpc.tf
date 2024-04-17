@@ -33,15 +33,7 @@ data "aws_ec2_managed_prefix_list" "vpn_access_prefix_list" {
   name = "internal.gsl.aws.vpc.central-network-svpc-central-v5"
 }
 
-resource "aws_security_group" "rds_cluster" {
-  name        = "rds-cluster"
-  description = "Traffic from/to RDS cluster"
-  vpc_id      = var.vpc_id
 
-  lifecycle {
-    create_before_destroy = true
-  }
-}
 
 
 resource "aws_security_group_rule" "rds_cluster_vpn_in" {
@@ -51,6 +43,6 @@ resource "aws_security_group_rule" "rds_cluster_vpn_in" {
   from_port         = 5432
   to_port           = 5432
   protocol          = "tcp"
-  security_group_id = aws_security_group.rds_cluster.id
+  security_group_id = aws_security_group.allow_postgres.id
   prefix_list_ids   = [data.aws_ec2_managed_prefix_list.vpn_access_prefix_list.id]
 }
