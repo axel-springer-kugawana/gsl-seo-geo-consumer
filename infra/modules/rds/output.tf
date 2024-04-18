@@ -1,12 +1,9 @@
 output "rds_aurora_username" {
   value = var.rds_aurora_username
 }
-
-//https://github.com/search?q=repo%3Acloudposse%2Fterraform-aws-rds-cluster%20is_regional_cluster%20&type=code
+# https://github.com/terraform-aws-modules/terraform-aws-rds-aurora/blob/v9.3.1/examples/serverless/outputs.tf
 output "arn" {
-  # value       = module.aurora_cluster.cluster_endpoint
-  # value       = local.is_regional_cluster ? join("", module.aurora_cluster.aws_rds_cluster.primary[*].arn) : join("", module.aurora_cluster.aws_rds_cluster.secondary[*].arn)
-  value       = join("", module.aurora_cluster.aws_rds_cluster.primary[*].arn)
+  value       = module.aurora_cluster.cluster_arn
   description = "Amazon Resource Name (ARN) of the cluster"
 }
 
