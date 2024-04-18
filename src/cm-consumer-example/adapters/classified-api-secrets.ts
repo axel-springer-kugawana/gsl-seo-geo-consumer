@@ -5,7 +5,6 @@ import { stringify } from "querystring";
 const AWS_SECRETS_EXTENTION_SERVER_ENDPOINT = `http://localhost:2773/secretsmanager/get?secretId=`;
 
 const getSecretValue = async (secretName: string) => {
-  logger.warn("step a")
   const url = `${AWS_SECRETS_EXTENTION_SERVER_ENDPOINT}${secretName}`;
   const response = await fetch(url, {
     method: "GET",
@@ -27,12 +26,11 @@ const getSecretValue = async (secretName: string) => {
   return secretContent.SecretString;
 };
 
-
-
 const getClassifiedApiSecret = async () => {
   const secretName = config.get("cmApiSecret");
   const secretValue = await getSecretValue(secretName);
   const secret = JSON.parse(secretValue) as {
+    Port: number;
     Host: string;
     Username: string;
     Password: string;

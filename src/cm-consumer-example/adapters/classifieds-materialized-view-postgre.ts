@@ -10,13 +10,9 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
   //	docker run -itd -e POSTGRES_USER=user -e POSTGRES_PASSWORD=user -p 5432:5432 -v /data:/var/lib/postgresql/data --name postgresql postgres
 
   try {
-    logger.warn("step1");
-
     const price = mapPrice(data) ?? undefined;
-    logger.warn("step2");
 
     const features = mapFeatures(data);
-    logger.warn("step3");
 
     //Mapping : https://avivgroup.atlassian.net/browse/WLSEO-501
     const values = [
@@ -50,24 +46,23 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
       // data.data.location.postalcode,
 
     ];
-    logger.warn("step4");
     const apisecrets = await getClassifiedApiSecret();
 
-    logger.warn("step5");
-    // const client = new Client();
+
+    logger.warn("secret : " + JSON.stringify(apisecrets));
     const client = new Client({
-      host: apisecrets.Host,//'aviv-seeker-whitelabel-seo-ssot-db.cluster-ca5oh2kzqupc.eu-west-1.rds.amazonaws.com',
-      port: 5432,
-      user: apisecrets.Username,//'main_user',
-      password: apisecrets.Password,//'ag.Nng{9}h8?}_z<E+G(IS*E)_dO',
+      host: apisecrets.Host,
+      port: apisecrets.Port,
+      user: apisecrets.Username,
+      password: apisecrets.Password,
       database: apisecrets.Database
     });
     logger.warn("step6");
-    logger.error("debog dlient : " + JSON.stringify(apisecrets));
 
     logger.warn("step7");
     await client.connect()
 
+    logger.warn("client connected");
     const query = `
     INSERT INTO Classified (
         ClassifiedId, 

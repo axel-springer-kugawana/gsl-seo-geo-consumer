@@ -67,12 +67,9 @@ data "aws_iam_policy_document" "lambda_policy" {
   statement {
     effect = "Allow"
     actions = [
-      "rds-data:ExecuteSql",
-      "rds-data:ExecuteStatement",
-      "rds-data:BatchExecuteStatement",
-      "rds-data:BeginTransaction",
-      "rds-data:CommitTransaction",
-      "rds-data:RollbackTransaction",
+      "rds-db:connect",
+      "rds:*",
+      "rds-data:*",
     ]
     resources = [var.rds_arn]
   }
