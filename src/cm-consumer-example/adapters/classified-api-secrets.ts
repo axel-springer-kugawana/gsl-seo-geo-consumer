@@ -4,6 +4,7 @@ import { logger } from "@shared/cross-cutting/logger";
 const AWS_SECRETS_EXTENTION_SERVER_ENDPOINT = `http://localhost:2773/secretsmanager/get?secretId=`;
 
 const getSecretValue = async (secretName: string) => {
+  logger.warn("step a")
   const url = `${AWS_SECRETS_EXTENTION_SERVER_ENDPOINT}${secretName}`;
   const response = await fetch(url, {
     method: "GET",
