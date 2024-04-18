@@ -12,5 +12,5 @@ output "rds_cluster_port" {
 }
 
 output "aws_secretsmanager_secret_arn" {
-  value = module.aws_secretsmanager_secret.postgres_uri.arn
+  value = aws_secretsmanager_secret.postgres_uri.arn
 }
