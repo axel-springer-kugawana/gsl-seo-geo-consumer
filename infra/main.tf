@@ -54,6 +54,6 @@ module "cm_consumer_example" {
   application                   = var.application
   environment                   = var.environment
   rds_arn                       = module.rds.arn
-  aws_secretsmanager_secret_arn = module.rds.aws_secretsmanager_secret_arn
+  aws_secretsmanager_secret_arn = module.rds.secret_arn
 
 }

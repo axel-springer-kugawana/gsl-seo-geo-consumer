@@ -15,6 +15,9 @@ output "rds_cluster_port" {
   value = module.aurora_cluster.cluster_port
 }
 
-output "aws_secretsmanager_secret_arn" {
+output "secret_arn" {
   value = aws_secretsmanager_secret.postgres_uri.arn
+}
+output "secret_name" {
+  value = aws_secretsmanager_secret.postgres_uri.name
 }

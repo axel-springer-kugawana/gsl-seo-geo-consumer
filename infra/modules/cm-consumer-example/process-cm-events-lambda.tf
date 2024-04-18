@@ -93,6 +93,6 @@ module "process_cm_connector_events_lambda" {
 
   env_variables = {
     MV_TABLE_NAME      = aws_dynamodb_table.consumer_materialized_view_table.name
-    CM_API_SECRET_NAME = "${var.application}-${var.environment}-${var.ssot_name}-postgres_writer-secret"
+    CM_API_SECRET_NAME = module.rds.secret_name
   }
 }
