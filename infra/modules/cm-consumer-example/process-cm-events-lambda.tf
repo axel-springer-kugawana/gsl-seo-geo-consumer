@@ -92,10 +92,10 @@ module "process_cm_connector_events_lambda" {
   lambda_role_arn      = aws_iam_role.lambda_role.arn
   memory_size          = "512"
   timeout              = 29
-
+  is_lambda_vpc        = true
   enable_secrets_manager_extension = true
   env_variables = {
-    MV_TABLE_NAME      = aws_dynamodb_table.consumer_materialized_view_table.name
+    MV_TABLE_NAME                  = aws_dynamodb_table.consumer_materialized_view_table.name
     CM_API_SECRET_NAME = var.secret_name
   }
 }
