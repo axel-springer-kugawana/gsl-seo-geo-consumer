@@ -22,6 +22,9 @@ resource "aws_iam_role" "lambda_role" {
     ]
   })
 }
+data "aws_secretsmanager_secret" "by-name" {
+  name = "${var.application}-${var.environment}-${var.ssot_name}-postgres_writer-secret"
+}
 
 data "aws_iam_policy_document" "lambda_policy" {
   statement {
@@ -95,7 +98,7 @@ module "process_cm_connector_events_lambda" {
   timeout              = 29
 
   env_variables = {
-    MV_TABLE_NAME = aws_dynamodb_table.consumer_materialized_view_table.name
+    MV_TABLE_NAME      = aws_dynamodb_table.consumer_materialized_view_table.name
     CM_API_SECRET_NAME = "${var.application}-${var.environment}-${var.ssot_name}-postgres_writer-secret"
   }
 }
