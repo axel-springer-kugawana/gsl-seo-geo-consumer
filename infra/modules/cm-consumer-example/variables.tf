@@ -23,3 +23,9 @@ variable "cm_connector_consumer_queue" {
 variable "ssot_name" {
   type = string
 }
+variable "rds_cluster_writer_endpoint" {
+  type = string
+}
+variable "aws_secretsmanager_secret_arn" {
+  type = string
+}

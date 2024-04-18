@@ -22,10 +22,6 @@ resource "aws_iam_role" "lambda_role" {
     ]
   })
 }
-data "aws_secretsmanager_secret" "by-name" {
-  name = "${var.application}-${var.environment}-${var.ssot_name}-postgres_writer-secret"
-}
-
 data "aws_iam_policy_document" "lambda_policy" {
   statement {
     effect = "Allow"
@@ -55,7 +51,7 @@ data "aws_iam_policy_document" "lambda_policy" {
       "secretsmanager:GetSecretValue",
     ]
     resources = [
-      aws_secretsmanager_secret.by-name.arn
+      var.aws_secretsmanager_secret_arn
     ]
   }
   statement {
@@ -74,8 +70,7 @@ data "aws_iam_policy_document" "lambda_policy" {
       "rds-db:connect"
     ]
     resources = [
-      module.aurora_cluster.rds_cluster_writer_endpoint
-    ]
+    var.rds_cluster_writer_endpoint]
   }
 }
 
