@@ -69,8 +69,7 @@ data "aws_iam_policy_document" "lambda_policy" {
     actions = [
       "rds-db:connect"
     ]
-    resources = [
-    var.rds_cluster_writer_endpoint]
+    resources = [var.rds_arn]
   }
 }
 

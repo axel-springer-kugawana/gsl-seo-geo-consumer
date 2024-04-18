@@ -53,7 +53,7 @@ module "cm_consumer_example" {
   ssot_name                     = var.ssot_name
   application                   = var.application
   environment                   = var.environment
-  rds_cluster_writer_endpoint   = module.rds.rds_cluster_writer_endpoint
+  rds_arn                       = module.rds.arn
   aws_secretsmanager_secret_arn = module.rds.aws_secretsmanager_secret_arn
 
 }
