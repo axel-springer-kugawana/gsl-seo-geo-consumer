@@ -90,3 +90,7 @@ variable "aws_environment" {
   default = "dev"
 }
 
+
+variable "ssot_name" {
+  type = string
+}

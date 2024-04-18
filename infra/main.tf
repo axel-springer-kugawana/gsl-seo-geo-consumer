@@ -31,6 +31,7 @@ module "cm_consumer_example" {
     id  = module.cm_connector.queue_id
   }
 
+  ssot_name = var.ssot_name
   application = var.application
   environment = var.environment
 }
@@ -51,4 +52,5 @@ module "rds" {
   subnets                     = data.aws_subnets.foundation_data_subnets.ids
   env_cidr                    = data.aws_ec2_managed_prefix_list.env_cidr.entries[*].cidr
   suffix                      = var.suffix
+  ssot_name                   = var.ssot_name
 }

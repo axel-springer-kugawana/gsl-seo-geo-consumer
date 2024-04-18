@@ -49,10 +49,29 @@ data "aws_iam_policy_document" "lambda_policy" {
   statement {
     effect = "Allow"
     actions = [
-      "dynamodb:UpdateItem"
+      "secretsmanager:GetSecretValue",
     ]
     resources = [
-      "${aws_dynamodb_table.consumer_materialized_view_table.arn}"
+      aws_secretsmanager_secret.by-name.arn
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "ec2:CreateNetworkInterface",
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:DeleteNetworkInterface"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "rds-db:connect"
+    ]
+    resources = [
+      module.aurora_cluster.rds_cluster_writer_endpoint
     ]
   }
 }
@@ -77,5 +96,6 @@ module "process_cm_connector_events_lambda" {
 
   env_variables = {
     MV_TABLE_NAME = aws_dynamodb_table.consumer_materialized_view_table.name
+    CM_API_SECRET_NAME = "${var.application}-${var.environment}-${var.ssot_name}-postgres_writer-secret"
   }
 }

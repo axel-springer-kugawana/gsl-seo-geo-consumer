@@ -21,7 +21,7 @@ resource "aws_secretsmanager_secret_version" "postgres_credentials" {
 }
 
 resource "aws_secretsmanager_secret" "postgres_uri" {
-  name                    = "${var.environment}/${var.application}/postgres_uri${var.suffix}"
+  name                    = "${var.application}-${var.environment}-${var.ssot_name}-postgres_writer-secret"
   recovery_window_in_days = 0
 }
 

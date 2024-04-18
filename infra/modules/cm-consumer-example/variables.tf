@@ -20,3 +20,6 @@ variable "cm_connector_consumer_queue" {
     id  = string
   })
 }
+variable "ssot_name" {
+  type = string
+}
