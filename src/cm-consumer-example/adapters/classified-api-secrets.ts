@@ -1,5 +1,6 @@
 import { config } from "@cm-connector/config/configuration-provider";
 import { logger } from "@shared/cross-cutting/logger";
+import { stringify } from "querystring";
 
 const AWS_SECRETS_EXTENTION_SERVER_ENDPOINT = `http://localhost:2773/secretsmanager/get?secretId=`;
 
@@ -18,8 +19,11 @@ const getSecretValue = async (secretName: string) => {
       `Error occured while requesting secret ${secretName}. Responses status was ${response.status}`
     );
   }
+  logger.warn("json retrieved :" + response);
 
   const secretContent = (await response.json()) as { SecretString: string };
+  logger.warn("step c")
+
   return secretContent.SecretString;
 };
 
