@@ -3,6 +3,7 @@ import { Classified } from "@shared/models/classified/1.0.0/classified";
 import { randomInt } from "crypto";
 import { Client } from 'pg';
 import { mapFeatures, mapPrice } from '../utils/mappingHelpers';
+import { getClassifiedApiSecret } from "./classified-api-secrets";
 
 
 const createOrUpdateClassified = async (id: string, data: Classified): Promise<void> => {
@@ -46,15 +47,16 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
 
     ];
 
-
+    const apisecrets = await getClassifiedApiSecret();
     // const client = new Client();
     const client = new Client({
-      host: 'aviv-seeker-whitelabel-seo-ssot-db.cluster-ca5oh2kzqupc.eu-west-1.rds.amazonaws.com',
+      host: apisecrets.Host,//'aviv-seeker-whitelabel-seo-ssot-db.cluster-ca5oh2kzqupc.eu-west-1.rds.amazonaws.com',
       port: 5432,
-      user: 'main_user',
-      password: 'ag.Nng{9}h8?}_z<E+G(IS*E)_dO',
-      database: 'ssot',
+      user: apisecrets.Username,//'main_user',
+      password: apisecrets.Password,//'ag.Nng{9}h8?}_z<E+G(IS*E)_dO',
+      database: apisecrets.Database
     });
+    logger.error("debog dlient : " + JSON.stringify(apisecrets));
 
     await client.connect()
 

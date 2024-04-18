@@ -18,12 +18,6 @@ export const recordHandler = async (record: SQSRecord): Promise<void> => {
     const e = JSON.parse(record.body);
     const classifiedId = e.data.classifiedId;
 
-
-    // var jsonData = JSON.parse(data);
-    // const recordFake = createFakeSQSEnvelope("231116WBR1KI", jsonData);
-    // const e = JSON.parse(recordFake.body);
-    // const classifiedId = e.classifiedId;
-
     if (!(e.type === `${SSotEntityName}.deleted.v1`)) {
         //     await markClassifiedAsDeleted({
         //         classifiedId, updateDate: e.data.updateDate
