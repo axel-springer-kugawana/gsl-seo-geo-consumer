@@ -51,7 +51,7 @@ data "aws_iam_policy_document" "lambda_policy" {
       "secretsmanager:GetSecretValue",
     ]
     resources = [
-      var.aws_secretsmanager_secret_arn
+      var.secret_arn
     ]
   }
   statement {
@@ -93,6 +93,6 @@ module "process_cm_connector_events_lambda" {
 
   env_variables = {
     MV_TABLE_NAME      = aws_dynamodb_table.consumer_materialized_view_table.name
-    CM_API_SECRET_NAME = module.rds.secret_name
+    CM_API_SECRET_NAME = var.secret_name
   }
 }

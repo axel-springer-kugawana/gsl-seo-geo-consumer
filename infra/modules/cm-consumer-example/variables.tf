@@ -26,6 +26,10 @@ variable "ssot_name" {
 variable "rds_arn" {
   type = string
 }
-variable "aws_secretsmanager_secret_arn" {
+variable "secret_arn" {
+  type = string
+}
+
+variable "secret_name" {
   type = string
 }

@@ -50,10 +50,10 @@ module "cm_consumer_example" {
     id  = module.cm_connector.queue_id
   }
 
-  ssot_name                     = var.ssot_name
-  application                   = var.application
-  environment                   = var.environment
-  rds_arn                       = module.rds.arn
-  aws_secretsmanager_secret_arn = module.rds.secret_arn
-
+  ssot_name   = var.ssot_name
+  application = var.application
+  environment = var.environment
+  rds_arn     = module.rds.arn
+  secret_arn  = module.rds.secret_arn
+  secret_name = module.rds.secret_name
 }
