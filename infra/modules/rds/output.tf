@@ -4,7 +4,7 @@ output "rds_aurora_username" {
 
 
 output "rds_cluster_writer_endpoint" {
-  value = module.aurora_cluster.cluster_endpoint
+  value = module.aurora_cluster.cluster_endpoint.arn
 }
 
 output "rds_cluster_port" {
