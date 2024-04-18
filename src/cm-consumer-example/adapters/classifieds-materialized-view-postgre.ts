@@ -10,9 +10,13 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
   //	docker run -itd -e POSTGRES_USER=user -e POSTGRES_PASSWORD=user -p 5432:5432 -v /data:/var/lib/postgresql/data --name postgresql postgres
 
   try {
+    logger.warn("step1");
+
     const price = mapPrice(data) ?? undefined;
+    logger.warn("step2");
 
     const features = mapFeatures(data);
+    logger.warn("step3");
 
     //Mapping : https://avivgroup.atlassian.net/browse/WLSEO-501
     const values = [
@@ -46,8 +50,10 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
       // data.data.location.postalcode,
 
     ];
-
+    logger.warn("step4");
     const apisecrets = await getClassifiedApiSecret();
+
+    logger.warn("step5");
     // const client = new Client();
     const client = new Client({
       host: apisecrets.Host,//'aviv-seeker-whitelabel-seo-ssot-db.cluster-ca5oh2kzqupc.eu-west-1.rds.amazonaws.com',
@@ -56,8 +62,10 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
       password: apisecrets.Password,//'ag.Nng{9}h8?}_z<E+G(IS*E)_dO',
       database: apisecrets.Database
     });
+    logger.warn("step6");
     logger.error("debog dlient : " + JSON.stringify(apisecrets));
 
+    logger.warn("step7");
     await client.connect()
 
     const query = `
@@ -76,14 +84,12 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
         FeaturesIncluded
      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
 
-
+    logger.warn("step8");
     const res = await client.query(query, values);
-
+    logger.warn("step9");
     await client.end();
   }
   catch (e) {
-    logger.error("data : " + JSON.stringify(data));
-
 
     if (e.name === "ConditionalCheckFailedException") {
       logger.warn("Conditional Check failed on lastUpdate date. Classified won't be updated", {

@@ -24,6 +24,7 @@ export const recordHandler = async (record: SQSRecord): Promise<void> => {
         //     });
         // }
         // else {    
+        logger.warn("type => " + e.type);
         logger.warn("body => " + record.body);
         await createOrUpdateClassified(classifiedId, e.data);
     }
