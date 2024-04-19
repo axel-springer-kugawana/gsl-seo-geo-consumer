@@ -13,6 +13,6 @@ resource "aws_db_proxy" "rds_proxy" {
     auth_scheme = "SECRETS"
     description = "Authentication credentials for rds proxy"
     iam_auth    = "DISABLED"
-    secret_arn  = aws_secretsmanager_secret.postgres_uri.arn
+    secret_arn  = aws_secretsmanager_secret.postgres_credentials_writer.arn
   }
 }
