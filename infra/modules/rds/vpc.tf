@@ -19,23 +19,6 @@ resource "aws_security_group" "allow_postgres" {
     ipv6_cidr_blocks = ["::/0"]
   }
 }
-#testfu
-# resource "aws_vpc_security_group_ingress_rule" "allow_lambda_consumer_sg_to_rds" {
-#   security_group_id            = aws_security_group.allow_postgres.id
-#   referenced_security_group_id = "sg-0b9b49c4a55d47295" #data.aws_security_group.lambda_consumer_sg.id
-#   from_port                    = 5432
-#   ip_protocol                  = "tcp"
-#   to_port                      = 5432
-# }
-
-# resource "aws_security_group_rule" "allow_internal_access_to_others_accounts" {
-#   type              = "ingress"
-#   from_port         = 443
-#   to_port           = 443
-#   protocol          = "tcp"
-#   prefix_list_ids   = data.aws_ec2_managed_prefix_list.this.ids
-#   security_group_id = aws_security_group.allow_postgres.id
-# }
 
 # Needs to be done in the bastion modules
 #resource "aws_security_group_rule" "bastion_db_access" {
@@ -50,13 +33,10 @@ data "aws_ec2_managed_prefix_list" "vpn_access_prefix_list" {
   name = "internal.gsl.aws.vpc.central-network-svpc-central-v5"
 }
 
-resource "aws_security_group_rule" "rds_cluster_vpn_in" {
-  count             = var.aws_environment == "dev" ? 1 : 0
-  description       = "Allow enterprise VPN groups to connect to RDS Cluster"
-  type              = "ingress"
-  from_port         = 5432
-  to_port           = 5432
-  protocol          = "tcp"
+resource "aws_vpc_security_group_ingress_rule" "rds_cluster_vpn_ingress" {
   security_group_id = aws_security_group.allow_postgres.id
-  prefix_list_ids   = [data.aws_ec2_managed_prefix_list.vpn_access_prefix_list.id]
+  prefix_list_id    = data.aws_ec2_managed_prefix_list.vpn_access_prefix_list.id
+  from_port         = 5432
+  ip_protocol       = "tcp"
+  to_port           = 5432
 }
