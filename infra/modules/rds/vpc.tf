@@ -20,12 +20,21 @@ resource "aws_security_group" "allow_postgres" {
   }
 }
 
-resource "aws_vpc_security_group_ingress_rule" "allow_lambda_consumer_sg_to_rds" {
-  security_group_id            = aws_security_group.allow_postgres.id
-  referenced_security_group_id = "sg-0b9b49c4a55d47295" #data.aws_security_group.lambda_consumer_sg.id
-  from_port                    = 5432
-  ip_protocol                  = "tcp"
-  to_port                      = 5432
+# resource "aws_vpc_security_group_ingress_rule" "allow_lambda_consumer_sg_to_rds" {
+#   security_group_id            = aws_security_group.allow_postgres.id
+#   referenced_security_group_id = "sg-0b9b49c4a55d47295" #data.aws_security_group.lambda_consumer_sg.id
+#   from_port                    = 5432
+#   ip_protocol                  = "tcp"
+#   to_port                      = 5432
+# }
+
+resource "aws_security_group_rule" "allow_internal_access_to_others_accounts" {
+  type              = "ingress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  prefix_list_ids   = data.aws_ec2_managed_prefix_list.this.ids
+  security_group_id = aws_security_group.allow_postgres.id
 }
 
 # Needs to be done in the bastion modules
