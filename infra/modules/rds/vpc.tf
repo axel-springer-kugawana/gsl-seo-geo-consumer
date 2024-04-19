@@ -34,6 +34,7 @@ data "aws_ec2_managed_prefix_list" "vpn_access_prefix_list" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "rds_cluster_vpn_ingress" {
+  description       = "allow vpn traffic"
   security_group_id = aws_security_group.allow_postgres.id
   prefix_list_id    = data.aws_ec2_managed_prefix_list.vpn_access_prefix_list.id
   from_port         = 5432
