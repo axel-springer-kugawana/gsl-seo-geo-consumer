@@ -47,14 +47,16 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
 
     ];
     const apisecrets = await getClassifiedApiSecret();
-
+    
 
     const client = new Client({
       host: apisecrets.Host,
       port: apisecrets.Port,
       user: apisecrets.Username,
       password: apisecrets.Password,
-      database: apisecrets.Database
+      database: apisecrets.Database,
+      ssl: true,
+      connectionTimeoutMillis: 3000
     });
 
     logger.warn("step7");
