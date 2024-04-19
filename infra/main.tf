@@ -38,7 +38,7 @@ module "rds" {
 }
 
 module "cm_consumer_example" {
-  depends_on = [module.cm_connector, module.rds]
+  depends_on = [module.rds]
   source     = "./modules/cm-consumer-example"
   process_cm_connector_events_lambda = {
     dist_file                 = "../src/dist/cm-consumer-example/lambda-handlers/process-cm-connector-events.js"
