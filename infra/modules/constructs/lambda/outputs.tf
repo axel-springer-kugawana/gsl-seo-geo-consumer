@@ -8,5 +8,5 @@ output "function_name" {
 
 #testfu
 output "sg_id" {
-  value = aws_security_group.lambda_vpc_sg[count.index].id
+  value = aws_security_group.lambda_vpc_sg[*].id
 }
