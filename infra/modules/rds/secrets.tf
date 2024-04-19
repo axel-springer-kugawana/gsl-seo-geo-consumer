@@ -5,7 +5,7 @@ resource "random_password" "rds_aurora_password" {
 }
 
 resource "aws_secretsmanager_secret" "postgres_credentials_writer" {
-  name                    = "${var.application}-postgres_credentials-secret"
+  name                    = "${var.application}-postgres_credentials_writer_secret"
   recovery_window_in_days = 0
 }
 
