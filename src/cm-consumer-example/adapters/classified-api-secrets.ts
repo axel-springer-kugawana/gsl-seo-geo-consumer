@@ -18,7 +18,6 @@ const getSecretValue = async (secretName: string) => {
       `Error occured while requesting secret ${secretName}. Responses status was ${response.status}`
     );
   }
-  logger.warn("json retrieved :" + JSON.stringify(response));
 
   const secretContent = (await response.json()) as { SecretString: string };
 

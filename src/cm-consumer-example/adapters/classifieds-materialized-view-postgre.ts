@@ -49,7 +49,6 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
     const apisecrets = await getClassifiedApiSecret();
 
 
-    logger.warn("secret : " + JSON.stringify(apisecrets));
     const client = new Client({
       host: apisecrets.Host,
       port: apisecrets.Port,
