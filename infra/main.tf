@@ -56,4 +56,5 @@ module "cm_consumer_example" {
   rds_arn     = module.rds.arn
   secret_arn  = module.rds.secret_arn
   secret_name = module.rds.secret_name
+  rds_sg_id   = module.rds.sg_id
 }
