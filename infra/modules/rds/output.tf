@@ -17,3 +17,9 @@ output "secret_arn" {
 output "secret_name" {
   value = aws_secretsmanager_secret.postgres_credentials_writer.name
 }
+
+#testfu
+output "sg_id" {
+  description = "The ID of the security group"
+  value       = aws_security_group.allow_postgres.id
+}
