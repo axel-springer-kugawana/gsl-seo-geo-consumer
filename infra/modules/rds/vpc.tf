@@ -15,6 +15,15 @@ resource "aws_security_group" "allow_postgres" {
     prefix_list_ids = [data.aws_ec2_managed_prefix_list.vpn_access_prefix_list.id] # cidr_blocks = var.env_cidr
   }
 
+  ingress {
+    description                  = "allow lambda_consumer_sg_to_rds"
+    security_group_id            = var.rds_sg_id
+    referenced_security_group_id = module.process_cm_connector_events_lambda.sg_id
+    from_port                    = 5432
+    to_port                      = 5432
+    protocol                     = "tcp"
+  }
+
   egress {
     from_port        = 0
     to_port          = 0
@@ -22,15 +31,6 @@ resource "aws_security_group" "allow_postgres" {
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
-}
-
-resource "aws_vpc_security_group_ingress_rule" "allow_lambda_consumer_sg_to_rds2" {
-  description                  = "allow lambda_consumer_sg_to_rds"
-  security_group_id            = var.rds_sg_id                                   #"sg-09f4cd64832e4faac"
-  referenced_security_group_id = module.process_cm_connector_events_lambda.sg_id #sg-0b9b49c4a55d47295" #data.aws_security_group.lambda_consumer_sg.id
-  from_port                    = 5432
-  ip_protocol                  = "tcp"
-  to_port                      = 5432
 }
 
 # Needs to be done in the bastion modules
