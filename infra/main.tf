@@ -38,13 +38,13 @@ module "rds" {
 }
 
 module "cm_consumer_example" {
-  source = "./modules/cm-consumer-example"
+  depends_on = [module.cm_connector, module.rds]
+  source     = "./modules/cm-consumer-example"
   process_cm_connector_events_lambda = {
     dist_file                 = "../src/dist/cm-consumer-example/lambda-handlers/process-cm-connector-events.js"
     handler                   = "process-cm-connector-events.handler"
     queue_esm_max_concurrency = 30
   }
-
   cm_connector_consumer_queue = {
     arn = module.cm_connector.queue_arn
     id  = module.cm_connector.queue_id
