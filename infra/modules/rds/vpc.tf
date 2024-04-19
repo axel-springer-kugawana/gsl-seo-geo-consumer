@@ -27,6 +27,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_lambda_consumer_sg_to_rds"
   to_port           = 5432
 }
 
+
 # Needs to be done in the bastion modules
 #resource "aws_security_group_rule" "bastion_db_access" {
 #type                     = "ingress"

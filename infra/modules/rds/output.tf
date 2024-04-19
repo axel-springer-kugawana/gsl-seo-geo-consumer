@@ -7,17 +7,13 @@ output "arn" {
   description = "Amazon Resource Name (ARN) of the cluster"
 }
 
-# output "arn" {
-#   value       = local.is_regional_cluster ? join("", aws_rds_cluster.primary[*].arn) : join("", aws_rds_cluster.secondary[*].arn)
-#   description = "Amazon Resource Name (ARN) of the cluster"
-# }
 output "rds_cluster_port" {
   value = module.aurora_cluster.cluster_port
 }
 
 output "secret_arn" {
-  value = aws_secretsmanager_secret.postgres_uri.arn
+  value = aws_secretsmanager_secret.postgres_credentials_writer.arn
 }
 output "secret_name" {
-  value = aws_secretsmanager_secret.postgres_uri.name
+  value = aws_secretsmanager_secret.postgres_credentials_writer.name
 }
