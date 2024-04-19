@@ -21,9 +21,6 @@ resource "aws_security_group" "allow_postgres" {
 }
 
 
-data "aws_security_group" "lambda_consumer_sg" {
-  name = "cm-sample-dev-process-cm-connector-events-vpc-sg"
-}
 
 resource "aws_vpc_security_group_ingress_rule" "allow_lambda_consumer_sg_to_rds" {
   security_group_id = aws_security_group.lambda_consumer_sg.id
