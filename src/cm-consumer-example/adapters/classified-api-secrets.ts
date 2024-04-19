@@ -21,7 +21,6 @@ const getSecretValue = async (secretName: string) => {
   logger.warn("json retrieved :" + JSON.stringify(response));
 
   const secretContent = (await response.json()) as { SecretString: string };
-  logger.warn("step c")
 
   return secretContent.SecretString;
 };

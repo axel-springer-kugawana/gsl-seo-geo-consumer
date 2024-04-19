@@ -57,7 +57,6 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
       password: apisecrets.Password,
       database: apisecrets.Database
     });
-    logger.warn("step6");
 
     logger.warn("step7");
     await client.connect()
