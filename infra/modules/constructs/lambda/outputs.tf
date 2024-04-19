@@ -7,6 +7,11 @@ output "function_name" {
 }
 
 #testfu
+# output "sg_id" {
+#   value = aws_security_group.lambda_vpc_sg[0].id
+# }
+
 output "sg_id" {
-  value = aws_security_group.lambda_vpc_sg[0].sg_id
+  description = "The ID of the security group"
+  value       = try(aws_security_group.lambda_vpc_sg[0].id, aws_security_group.lambda_vpc_sg[0].id, "")
 }
