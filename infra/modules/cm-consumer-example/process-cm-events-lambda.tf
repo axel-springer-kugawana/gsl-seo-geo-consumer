@@ -85,17 +85,26 @@ resource "aws_iam_role_policy_attachment" "attach_iam_policy_to_iam_role" {
 }
 
 module "process_cm_connector_events_lambda" {
-  source               = "../constructs/lambda"
-  lambda_handler       = var.process_cm_connector_events_lambda.handler
-  lambda_function_name = "${var.application}-${var.environment}-process-cm-connector-events"
-  lambda_dist_file     = var.process_cm_connector_events_lambda.dist_file
-  lambda_role_arn      = aws_iam_role.lambda_role.arn
-  memory_size          = "512"
-  timeout              = 29
-  is_lambda_vpc        = true
+  source                           = "../constructs/lambda"
+  lambda_handler                   = var.process_cm_connector_events_lambda.handler
+  lambda_function_name             = "${var.application}-${var.environment}-process-cm-connector-events"
+  lambda_dist_file                 = var.process_cm_connector_events_lambda.dist_file
+  lambda_role_arn                  = aws_iam_role.lambda_role.arn
+  memory_size                      = "512"
+  timeout                          = 29
+  is_lambda_vpc                    = true
   enable_secrets_manager_extension = true
   env_variables = {
-    MV_TABLE_NAME                  = aws_dynamodb_table.consumer_materialized_view_table.name
+    MV_TABLE_NAME      = aws_dynamodb_table.consumer_materialized_view_table.name
     CM_API_SECRET_NAME = var.secret_name
   }
+}
+
+#testfu
+resource "aws_vpc_security_group_ingress_rule" "allow_lambda_consumer_sg_to_rds" {
+  security_group_id            = "sg-09f4cd64832e4faac"
+  referenced_security_group_id = process_cm_connector_events_lambda.sg_id #sg-0b9b49c4a55d47295" #data.aws_security_group.lambda_consumer_sg.id
+  from_port                    = 5432
+  ip_protocol                  = "tcp"
+  to_port                      = 5432
 }
