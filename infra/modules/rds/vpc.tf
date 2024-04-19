@@ -17,7 +17,7 @@ resource "aws_security_group" "allow_postgres" {
 
   ingress {
     description                  = "allow lambda_consumer_sg_to_rds"
-    referenced_security_group_id = "sg-0b9b49c4a55d47295"
+    security_group_id            = "sg-0b9b49c4a55d47295"
     from_port                    = 5432
     to_port                      = 5432
     protocol                     = "tcp"
