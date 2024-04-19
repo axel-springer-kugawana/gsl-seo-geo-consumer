@@ -8,11 +8,19 @@ resource "aws_security_group" "allow_postgres" {
   vpc_id      = var.vpc_id
 
   ingress {
-    description     = "Postgres from VPC"
+    description     = "Postgres from VPN"
     from_port       = var.rds_aurora_port
     to_port         = var.rds_aurora_port
     protocol        = "tcp"
     prefix_list_ids = [data.aws_ec2_managed_prefix_list.vpn_access_prefix_list.id] # cidr_blocks = var.env_cidr
+  }
+
+  ingress {
+    description = "Postgres from VPC"
+    from_port   = var.rds_aurora_port
+    to_port     = var.rds_aurora_port
+    protocol    = "tcp"
+    cidr_blocks = var.env_cidr
   }
 
   ingress {
