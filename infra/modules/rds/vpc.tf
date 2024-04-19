@@ -27,6 +27,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_lambda_consumer_sg_to_rds"
   from_port         = 5432
   ip_protocol       = "tcp"
   to_port           = 5432
+  cidr_ipv4         = ["0.0.0.0/0"]
 }
 
 # Needs to be done in the bastion modules
