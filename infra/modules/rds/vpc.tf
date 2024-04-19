@@ -21,7 +21,7 @@ resource "aws_security_group" "allow_postgres" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "allow_lambda_consumer_sg_to_rds" {
-  security_group_id = aws_security_group.lambda_vpc_sg[0].id
+  security_group_id = module.cm_consumer_example.aws_security_group.lambda_vpc_sg[0].id
   from_port         = 5432
   ip_protocol       = "tcp"
   to_port           = 5432
