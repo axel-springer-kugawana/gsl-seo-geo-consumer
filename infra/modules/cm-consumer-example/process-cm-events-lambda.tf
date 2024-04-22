@@ -102,7 +102,7 @@ module "process_cm_connector_events_lambda" {
 
 resource "aws_security_group_rule" "allow_postgre" {
   type              = "egress"
-  description       = "HTTPS egress"
+  description       = "Postgre TCP egress"
   from_port         = 5432
   to_port           = 5432
   protocol          = "tcp"
