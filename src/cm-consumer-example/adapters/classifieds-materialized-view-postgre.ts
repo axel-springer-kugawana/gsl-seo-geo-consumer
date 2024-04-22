@@ -51,8 +51,8 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
 
     //Mapping : https://avivgroup.atlassian.net/browse/WLSEO-501
     const values = [
-      id,//a. Classified ID (primary key) A
-      price,//  b. Price
+      id,
+      price,
       data.data.location.avivGeoId,//c=>i geoId
       data.data.distributionType,//j DistributionType
       data.data.estateType,//k EstateType
@@ -62,16 +62,11 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
       data.data?.conditions?.yearOfConstruction,// o YearOfConstruction
       data.data?.management?.rent?.certificateOfEligibilityNeeded,  // p CertificateOfEligibilityNeeded
       data.data?.structure?.building?.locationInBuilding,  // q LocationInBuilding
-      // r Balcony_Terrace
-      // s Cellar
-      // t Commission_Free
-      // u Garden
-      // v Kitchen_Fully_Equipped
-      // w Parking_Garage
-      // x Reduce_Mobility_Access
-      features
-      // data.metadata.brand,
-      // data.visibility.requests,
+      features,
+      data.data.location.country,
+
+      data.metadata.brand,
+      data.visibility.requests,
       // data.data.location.country,
       // data.data.location.postalcode,
 
@@ -101,8 +96,11 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
       YearOfConstruction,
       CertificateOfEligibilityNeeded,
       LocationInBuilding,
-      FeaturesIncluded
-   ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      FeaturesIncluded,
+      Country,
+      Brand,
+      Portals
+   ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
 ON CONFLICT (ClassifiedId) DO UPDATE 
       SET Price = $2,
           AvivGeoId= $3, 
@@ -114,7 +112,11 @@ ON CONFLICT (ClassifiedId) DO UPDATE
           YearOfConstruction= $9,
           CertificateOfEligibilityNeeded= $10,
           LocationInBuilding= $11,
-          FeaturesIncluded= $12;`;
+          FeaturesIncluded= $12
+          Country = $13,
+          Brand = $14,
+          Portals = $15
+          ;`;
 
     const res = await client.query(query, values);
 
