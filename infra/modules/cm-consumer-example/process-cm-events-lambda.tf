@@ -110,3 +110,12 @@ resource "aws_security_group_rule" "allow_postgre" {
   ipv6_cidr_blocks  = ["::/0"]
   security_group_id = module.process_cm_connector_events_lambda.sg_id
 }
+
+
+resource "aws_vpc_security_group_ingress_rule" "allow_lambda_consumer_sg_to_rds" {
+  security_group_id            = module.rds.sg_id                                #"sg-09f4cd64832e4faac"
+  referenced_security_group_id = module.process_cm_connector_events_lambda.sg_id #sg-0b9b49c4a55d47295" #data.aws_security_group.lambda_consumer_sg.id
+  from_port                    = 5432
+  ip_protocol                  = "tcp"
+
+}
