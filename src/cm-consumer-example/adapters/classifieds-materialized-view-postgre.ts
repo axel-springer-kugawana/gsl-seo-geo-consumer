@@ -50,24 +50,43 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
     ];
     const apisecrets = await getClassifiedApiSecret();
 
-    const server = new Telnet();
 
-    // display server response
-    server.on("data", function (data) {
-      console.log('' + data);
-    });
 
-    // login when connected
-    server.on("connect", function () {
-      server.write("login <user> <pass>\r\n");
-    });
-    ///logger.warn(" connect to server");
-    // connect to server
-    server.connect({
-      host: apisecrets.Host,
-      port: apisecrets.Port
-    });
-    logger.warn("telnet connected");
+    async function testConnection() {
+      const params = {
+        host: apisecrets.Host,
+        port: 5432 // Le port par défaut pour PostgreSQL
+      };
+      const connection = new Telnet();
+      try {
+        await connection.connect(params);
+        console.log('Connexion réussie !');
+      } catch (error) {
+        console.error('Erreur lors de la connexion :', error);
+      } finally {
+        connection.end();
+      }
+    }
+    testConnection();
+
+    // const server = new Telnet();
+
+    // // display server response
+    // server.on("data", function (data) {
+    //   console.log('' + data);
+    // });
+
+    // // login when connected
+    // server.on("connect", function () {
+    //   server.write("login <user> <pass>\r\n");
+    // });
+    // ///logger.warn(" connect to server");
+    // // connect to server
+    // server.connect({
+    //   host: apisecrets.Host,
+    //   port: apisecrets.Port
+    // });
+    // logger.warn("telnet connected");
 
     const client = new Client({
       host: apisecrets.Host,
