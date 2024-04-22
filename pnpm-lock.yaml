@@ -43,6 +43,9 @@ importers:
       postgresql-client:
         specifier: ^2.10.6
         version: 2.10.6
+      telnet-client:
+        specifier: 2.2.0
+        version: 2.2.0
       uuid:
         specifier: ^9.0.1
         version: 9.0.1
@@ -3217,6 +3220,10 @@ packages:
     resolution: {integrity: sha512-brpv4KTeC4g0Fx2FeIKytLd4UGn1zBQq5Lauy7zEWT9oqkaj5mgsxblEZIAOf1HHLlXxzr6adGViiBy5Z39/CA==}
     dev: true
 
+  /emitter-component@1.1.2:
+    resolution: {integrity: sha512-QdXO3nXOzZB4pAjM0n6ZE+R9/+kPpECA/XSELIcc54NeYVnBqIk+4DFiBgK+8QbV3mdvTG6nedl7dTYgO+5wDw==}
+    dev: false
+
   /emittery@0.13.1:
     resolution: {integrity: sha512-DeWwawk6r5yR9jFgnDKYt4sLS0LmHJJi3ZOnb5/JdbYwj3nW+FxQnHIjhBKz8YLC7oRNPVM9NQ47I3CVx34eqQ==}
     engines: {node: '>=12'}
@@ -4386,6 +4393,10 @@ packages:
     engines: {node: '>= 0.6'}
     dev: true
 
+  /net@1.0.2:
+    resolution: {integrity: sha512-kbhcj2SVVR4caaVnGLJKmlk2+f+oLkjqdKeQlmUtz6nGzOpbcobwVIeSURNgraV/v3tlmGIX82OcPCl0K6RbHQ==}
+    dev: false
+
   /nise@5.1.9:
     resolution: {integrity: sha512-qOnoujW4SV6e40dYxJOb3uvuoPHtmLzIk4TFo+j0jPJoC+5Z9xja5qH5JZobEPsa8+YYphMrOSwnrshEhG2qww==}
     dependencies:
@@ -4955,6 +4966,12 @@ packages:
     engines: {node: '>= 0.8'}
     dev: true
 
+  /stream@0.0.2:
+    resolution: {integrity: sha512-gCq3NDI2P35B2n6t76YJuOp7d6cN/C7Rt0577l91wllh0sY9ZBuw9KaSGqH/b0hzn3CWWJbpbW0W0WvQ1H/Q7g==}
+    dependencies:
+      emitter-component: 1.1.2
+    dev: false
+
   /strict-typed-events@2.3.3:
     resolution: {integrity: sha512-Vc8/N5giCVpO2n5BCskqDD9ns7RkdEq0pFd4yQk1ROULusJDbjORNvbtyEPxxK7Xqn9/NdW8XHLxv/PvUTgFsA==}
     engines: {node: '>=16.0'}
@@ -5052,6 +5069,13 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
     dev: true
+
+  /telnet-client@2.2.0:
+    resolution: {integrity: sha512-mr/z2Jsk2KmjjN2gwowdtWE8rNl/OqJ9raBBvzsP3Kd5rLtIcGaZYMzF21PppCK54wL2Dx+YPoFfjO9CCLUElQ==}
+    dependencies:
+      net: 1.0.2
+      stream: 0.0.2
+    dev: false
 
   /test-exclude@6.0.0:
     resolution: {integrity: sha512-cAGWPIyOHU6zlmg88jwm7VRyXnMN7iV68OGAbYDk/Mh/xC/pzVPlQtY6ngoIH/5/tciuhGfvESU8GrHrcxD56w==}

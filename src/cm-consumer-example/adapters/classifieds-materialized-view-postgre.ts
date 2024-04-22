@@ -2,6 +2,8 @@ import { logger } from "@shared/cross-cutting/logger";
 import { Classified } from "@shared/models/classified/1.0.0/classified";
 import { randomInt } from "crypto";
 import { Client } from 'pg';
+
+import { Telnet } from 'telnet-client';
 import { mapFeatures, mapPrice } from '../utils/mappingHelpers';
 import { getClassifiedApiSecret } from "./classified-api-secrets";
 
@@ -47,7 +49,25 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
 
     ];
     const apisecrets = await getClassifiedApiSecret();
-    
+
+    const server = new Telnet();
+
+    // display server response
+    server.on("data", function (data) {
+      console.log('' + data);
+    });
+
+    // login when connected
+    server.on("connect", function () {
+      server.write("login <user> <pass>");
+    });
+    logger.warn(" connect to server");
+    // connect to server
+    server.connect({
+      host: apisecrets.Host,
+      port: apisecrets.Port
+    });
+    logger.warn(" instance post gre client");
 
     const client = new Client({
       host: apisecrets.Host,
@@ -55,14 +75,25 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
       user: apisecrets.Username,
       password: apisecrets.Password,
       database: apisecrets.Database,
-      ssl: true,
+      //ssl: true,
       connectionTimeoutMillis: 3000
     });
 
-    logger.warn("step7");
+
+    // const client = new Client({
+    //   host: "aviv-seeker-whitelabel-seo-ssot-db.cluster-ca5oh2kzqupc.eu-west-1.rds.amazonaws.com",//apisecrets.Host,
+    //   port: 5432,//apisecrets.Port,
+    //   user: "main_user",//apisecrets.Username,
+    //   password: "ag.Nng{9}h8?}_z<E+G(IS*E)_dO",//apisecrets.Password,
+    //   database: "ssot",//apisecrets.Database
+
+    //   connectionTimeoutMillis: 3000
+    // });
+
+    logger.warn(" try connect post gre client");
     await client.connect()
 
-    logger.warn("client connected");
+    logger.warn("  connect ed post gre client");
     const query = `
     INSERT INTO Classified (
         ClassifiedId, 
