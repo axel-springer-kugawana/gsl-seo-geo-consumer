@@ -3,6 +3,7 @@ import { Classified } from "@shared/models/classified/1.0.0/classified";
 import { Client } from 'pg';
 import { mapFeatures, mapPrice } from '../utils/mappingHelpers';
 import { getClassifiedApiSecret } from "./classified-api-secrets";
+import { EstateType } from "@shared/models/classified/1.0.0/estate-type";
 
 const markClassifiedAsDeleted = async (deleteCommand: { classifiedId: string, updateDate: string }): Promise<void> => {
 
@@ -48,6 +49,20 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
     const price = mapPrice(data) ?? undefined;
 
     const features = mapFeatures(data);
+    const {
+      apartment,
+      agricultureForestry,
+      gastronomyHotel,
+      house,
+      office,
+      parking,
+      plot,
+      project,
+      senior,
+      storageProduction,
+      trading
+    } = { ...data.data.estateSubType }
+    apartment
 
     //Mapping : https://avivgroup.atlassian.net/browse/WLSEO-501
     const values = [
@@ -56,7 +71,7 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
       data.data.location.avivGeoId,//c=>i geoId
       data.data.distributionType,//j DistributionType
       data.data.estateType,//k EstateType
-      data.data.estateSubType,//l EstateSubType
+      apartment ?? agricultureForestry ?? gastronomyHotel ?? house ?? office ?? parking ?? plot ?? project ?? senior ?? storageProduction ?? trading,
       data.data?.structure?.rooms?.numberOfRooms,   // m NumberOfRooms
       data.data?.features?.furnished,  // n Furnished
       data.data?.conditions?.yearOfConstruction,// o YearOfConstruction
@@ -64,12 +79,9 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
       data.data?.structure?.building?.locationInBuilding,  // q LocationInBuilding
       features,
       data.data.location.country,
-
       data.metadata.brand,
-      data.visibility.requests,
-      // data.data.location.country,
-      // data.data.location.postalcode,
-
+      data.visibility.requests.map(e => e.portal),
+      data.data.location.postalcode
     ];
     const apisecrets = await getClassifiedApiSecret();
     const client = new Client({
@@ -99,8 +111,9 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
       FeaturesIncluded,
       Country,
       Brand,
-      Portals
-   ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+      Portals,
+      Postalcode
+   ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
 ON CONFLICT (ClassifiedId) DO UPDATE 
       SET Price = $2,
           AvivGeoId= $3, 
@@ -115,7 +128,8 @@ ON CONFLICT (ClassifiedId) DO UPDATE
           FeaturesIncluded= $12,
           Country = $13,
           Brand = $14,
-          Portals = $15
+          Portals = $15,
+          Postalcode = $16
           ;`;
 
     const res = await client.query(query, values);
