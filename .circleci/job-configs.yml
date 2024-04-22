@@ -34,7 +34,7 @@ jobs:
           aws_secret_access_key: AWS_SECRET_ACCESS_KEY_DEV
       - run:
           name: Install Dependencies
-          command: pnpm install
+          command: pnpm install --no-frozen-lockfile
       - save_cache:
           name: Save pnpm Package Cache
           key: pnpm-packages-{{ checksum "pnpm-lock.yaml" }}
