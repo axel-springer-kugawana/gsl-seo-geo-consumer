@@ -80,13 +80,13 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
     // server.on("connect", function () {
     //   server.write("login <user> <pass>\r\n");
     // });
-    // ///logger.warn(" connect to server");
+    // ///console.log(" connect to server");
     // // connect to server
     // server.connect({
     //   host: apisecrets.Host,
     //   port: apisecrets.Port
     // });
-    // logger.warn("telnet connected");
+    // console.log("telnet connected");
 
     const client = new Client({
       host: apisecrets.Host,
@@ -109,10 +109,10 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
     //   connectionTimeoutMillis: 3000
     // });
 
-    // logger.warn(" try connect post gre client");
+    // console.log(" try connect post gre client");
     await client.connect()
 
-    logger.warn("connected to postgre client");
+    console.log("connected to postgre client");
     const query = `
     INSERT INTO Classified (
         ClassifiedId, 
@@ -129,19 +129,19 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
         FeaturesIncluded
      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`;
 
-    logger.warn("step8");
+    console.log("step8");
     const res = await client.query(query, values);
-    logger.warn("step9");
+    console.log("step9");
     await client.end();
   }
   catch (e) {
 
     if (e.name === "ConditionalCheckFailedException") {
-      logger.warn("Conditional Check failed on lastUpdate date. Classified won't be updated", {
+      console.log("Conditional Check failed on lastUpdate date. Classified won't be updated", {
         classified: data
       })
     } else {
-      logger.warn(e);
+      console.log(e);
 
     }
 
