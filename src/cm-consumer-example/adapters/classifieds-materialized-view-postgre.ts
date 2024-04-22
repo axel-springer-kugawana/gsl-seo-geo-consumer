@@ -1,6 +1,5 @@
 import { logger } from "@shared/cross-cutting/logger";
 import { Classified } from "@shared/models/classified/1.0.0/classified";
-import { randomInt } from "crypto";
 import { Client } from 'pg';
 import { mapFeatures, mapPrice } from '../utils/mappingHelpers';
 import { getClassifiedApiSecret } from "./classified-api-secrets";
@@ -47,56 +46,34 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
 
     ];
     const apisecrets = await getClassifiedApiSecret();
-
-
-    // const server = new Telnet();
-
-    // // display server response
-    // server.on("data", function (data) {
-    //   console.log('' + data);
-    // });
-
-    // // login when connected
-    // server.on("connect", function () {
-    //   server.write("login <user> <pass>\r\n");
-    // });
-    // ///console.log(" connect to server");
-    // // connect to server
-    // server.connect({
-    //   host: apisecrets.Host,
-    //   port: apisecrets.Port
-    // });
-    // console.log("telnet connected");
-
     const client = new Client({
       host: apisecrets.Host,
       port: apisecrets.Port,
       user: apisecrets.Username,
       password: apisecrets.Password,
       database: apisecrets.Database,
-      //ssl: true,
       connectionTimeoutMillis: 3000
     });
 
-
-    // const client = new Client({
-    //   host: "aviv-seeker-whitelabel-seo-ssot-db.cluster-ca5oh2kzqupc.eu-west-1.rds.amazonaws.com",//apisecrets.Host,
-    //   port: 5432,//apisecrets.Port,
-    //   user: "main_user",//apisecrets.Username,
-    //   password: "ag.Nng{9}h8?}_z<E+G(IS*E)_dO",//apisecrets.Password,
-    //   database: "ssot",//apisecrets.Database
-
-    //   connectionTimeoutMillis: 3000
-    // });
-
-    // console.log(" try connect post gre client");
     await client.connect()
 
-    // console.log("connected to postgre client");
     const query = `
-    IF EXISTS (SELECT * FROM invoices WHERE invoiceid = $1)
-      UPDATE Classified SET billed = 'TRUE' 
-          Price = $2,
+    INSERT INTO Classified (
+      ClassifiedId, 
+      Price,
+      AvivGeoId, 
+      DistributionType, 
+      EstateType, 
+      EstateSubType, 
+      NumberOfRooms,
+      Furnished,
+      YearOfConstruction,
+      CertificateOfEligibilityNeeded,
+      LocationInBuilding,
+      FeaturesIncluded
+   ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+ON CONFLICT (ClassifiedId) DO UPDATE 
+      SET Price = $2,
           AvivGeoId= $3, 
           DistributionType= $4, 
           EstateType= $5, 
@@ -106,41 +83,20 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
           YearOfConstruction= $9,
           CertificateOfEligibilityNeeded= $10,
           LocationInBuilding= $11,
-          FeaturesIncluded= $12
-      WHERE invoiceid = $1
-    ELSE
+          FeaturesIncluded= $12;`;
 
-    INSERT INTO Classified (
-        ClassifiedId, 
-        Price,
-        AvivGeoId, 
-        DistributionType, 
-        EstateType, 
-        EstateSubType, 
-        NumberOfRooms,
-        Furnished,
-        YearOfConstruction,
-        CertificateOfEligibilityNeeded,
-        LocationInBuilding,
-        FeaturesIncluded
-     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)     
-     END IF
-     `;
-
-    console.log("step8");
     const res = await client.query(query, values);
-    console.log("step9");
+
     await client.end();
   }
   catch (e) {
 
     if (e.name === "ConditionalCheckFailedException") {
-      console.log("Conditional Check failed on lastUpdate date. Classified won't be updated", {
+      logger.error("Conditional Check failed on lastUpdate date. Classified won't be updated", {
         classified: data
       })
     } else {
-      console.log(e);
-
+      logger.error(e);
     }
 
   }
