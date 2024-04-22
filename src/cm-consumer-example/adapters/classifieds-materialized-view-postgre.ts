@@ -112,7 +112,7 @@ ON CONFLICT (ClassifiedId) DO UPDATE
           YearOfConstruction= $9,
           CertificateOfEligibilityNeeded= $10,
           LocationInBuilding= $11,
-          FeaturesIncluded= $12
+          FeaturesIncluded= $12,
           Country = $13,
           Brand = $14,
           Portals = $15
