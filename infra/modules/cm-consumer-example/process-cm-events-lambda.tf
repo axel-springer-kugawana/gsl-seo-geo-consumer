@@ -110,4 +110,3 @@ resource "aws_security_group_rule" "allow_postgre" {
   ipv6_cidr_blocks  = ["::/0"]
   security_group_id = module.process_cm_connector_events_lambda.sg_id
 }
-
