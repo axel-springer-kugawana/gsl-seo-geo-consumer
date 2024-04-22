@@ -59,15 +59,15 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
 
     // login when connected
     server.on("connect", function () {
-      server.write("login <user> <pass>");
+      server.write("login <user> <pass>\r\n");
     });
-    logger.warn(" connect to server");
+    ///logger.warn(" connect to server");
     // connect to server
     server.connect({
       host: apisecrets.Host,
       port: apisecrets.Port
     });
-    logger.warn(" instance post gre client");
+    logger.warn("telnet connected");
 
     const client = new Client({
       host: apisecrets.Host,
@@ -90,10 +90,10 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
     //   connectionTimeoutMillis: 3000
     // });
 
-    logger.warn(" try connect post gre client");
+    // logger.warn(" try connect post gre client");
     await client.connect()
 
-    logger.warn("  connect ed post gre client");
+    logger.warn("connected to postgre client");
     const query = `
     INSERT INTO Classified (
         ClassifiedId, 
