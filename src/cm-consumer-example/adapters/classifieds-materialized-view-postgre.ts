@@ -47,26 +47,32 @@ const markClassifiedAsDeleted = async (deleteCommand: { classifiedId: string, up
 const createOrUpdateClassified = async (id: string, classified: Classified): Promise<void> => {
 
   try {
+
+    const apisecrets = await getClassifiedApiSecret();
+    const client = new Client({
+      host: apisecrets.Host,
+      port: apisecrets.Port,
+      user: apisecrets.Username,
+      password: apisecrets.Password,
+      database: apisecrets.Database,
+      connectionTimeoutMillis: 3000
+    });
+
     const price = mapPrice(classified) ?? undefined;
     const features = mapFeatures(classified);
     const geo = await mapGeo(classified);
-
 
     let avivGeoId = classified.data?.location.avivGeoId;
     let geoLevel = null
     if (avivGeoId === undefined && geo !== undefined) {
       if (geo[geo.length - 1] === undefined) {
-        console.log("error for lat lon classified : " + id)
         const [lon, lat] = classified.data.location.geometry.coordinates;
-
-        console.log("lat : " + lat + "lon:" + lon)
       }
       avivGeoId = geo[geo.length - 1]?.id;
       geoLevel = geo[geo.length - 1]?.level;
     }
     else {
-
-      geoLevel = single(geo.filter(x => x.id === avivGeoId)).level;
+      geoLevel = single(geo.filter(x => x.id === avivGeoId))?.level;
     }
     let countryId = null;
     let regionId = null;
@@ -78,43 +84,30 @@ const createOrUpdateClassified = async (id: string, classified: Classified): Pro
     let blocId = null;
     //https://www.postgresql.org/docs/current/ltree.html
     if (geo != null) {
-      geo.forEach(function (value) {
-        if (value.level == 200) {
-          countryId = value.id
-        }
-        else if (value.level == 400) {
-          regionId = value.id
-        }
-        else if (value.level == 500) {
-          microregionId = value.id
-        }
-        else if (value.level == 600) {
-          provinceId = value.id
-        } else if (value.level == 800) {
-          municipalityID = value.id
-        } else if (value.level == 900) {
-          boroughID = value.id
-        } else if (value.level == 1000) {
-          neighborhoodId = value.id
-        } else if (value.level == 1200) {
-          blocId = value.id
-        }
-      })
+      countryId = single(geo.filter(x => x.level === 200))?.id;
+      regionId = single(geo.filter(x => x.level === 400))?.id;
+      microregionId = single(geo.filter(x => x.level === 500))?.id;
+      provinceId = single(geo.filter(x => x.level === 600))?.id;
+      municipalityID = single(geo.filter(x => x.level === 800))?.id;
+      boroughID = single(geo.filter(x => x.level === 900))?.id;
+      neighborhoodId = single(geo.filter(x => x.level === 1000))?.id;
+      blocId = single(geo.filter(x => x.level === 1100))?.id;
     }
 
-    const geoValue = [
-      avivGeoId,
-      geoLevel,
-      countryId,
-      regionId,
-      microregionId,
-      provinceId,
-      municipalityID,
-      boroughID,
-      neighborhoodId,
-      blocId
-    ]
-    const geoQuery = `
+    if (avivGeoId !== undefined) {
+      const geoValue = [
+        avivGeoId,
+        geoLevel,
+        countryId,
+        regionId,
+        microregionId,
+        provinceId,
+        municipalityID,
+        boroughID,
+        neighborhoodId,
+        blocId
+      ]
+      const geoQuery = `
     INSERT INTO geo (
       avivGeoId,
       geoLevel,
@@ -138,6 +131,9 @@ ON CONFLICT (avivGeoId) DO UPDATE
       boroughID= $9,
       neighborhoodId= $9,
       blocId= $10;`;
+
+      const res2 = await client.query(geoQuery, geoValue);
+    }
     //Mapping : https://avivgroup.atlassian.net/browse/WLSEO-501
     const classifiedValue = [
       id,
@@ -157,15 +153,7 @@ ON CONFLICT (avivGeoId) DO UPDATE
       classified.visibility.requests.map(e => e.portal),
       classified.data.location.postalcode
     ];
-    const apisecrets = await getClassifiedApiSecret();
-    const client = new Client({
-      host: apisecrets.Host,
-      port: apisecrets.Port,
-      user: apisecrets.Username,
-      password: apisecrets.Password,
-      database: apisecrets.Database,
-      connectionTimeoutMillis: 3000
-    });
+
 
     await client.connect()
 
@@ -207,7 +195,6 @@ ON CONFLICT (ClassifiedId) DO UPDATE
           ;`;
 
     const res = await client.query(classifiedQuery, classifiedValue);
-    const res2 = await client.query(geoQuery, geoValue);
 
     await client.end();
   }
@@ -219,6 +206,8 @@ ON CONFLICT (ClassifiedId) DO UPDATE
     } else {
       logger.error(e);
     }
+
+    logger.error(JSON.stringify(classified))
   }
 }
 
