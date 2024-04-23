@@ -55,8 +55,14 @@ const createOrUpdateClassified = async (id: string, classified: Classified): Pro
     let avivGeoId = classified.data?.location.avivGeoId;
     let geoLevel = null
     if (avivGeoId === undefined && geo !== undefined) {
-      avivGeoId = geo[geo.length - 1].id;
-      geoLevel = geo[geo.length - 1].level;
+      if (geo[geo.length - 1] === undefined) {
+        console.log("error for lat lon classified : " + id)
+        const [lon, lat] = classified.data.location.geometry.coordinates;
+
+        console.log("lat : " + lat + "lon:" + lon)
+      }
+      avivGeoId = geo[geo.length - 1]?.id;
+      geoLevel = geo[geo.length - 1]?.level;
     }
     let countryId = null;
     let regionId = null;
