@@ -227,8 +227,8 @@ async function mapGeo(classified: Classified): Promise<Feature[] | undefined> {
 
   // Path params
   //https://github.com/axel-springer-kugawana/aviv_seeker_classified_search_composer/blob/main/lambdas/src/classified-enrichment/get-geo-hierarchy/main.ts#L37
-  // const { avivGeoId, geometry } = classified?.data?.location ?? {};
-  let avivGeoId = "BLOCFR5111";
+  const { avivGeoId, geometry } = classified?.data?.location ?? {};
+  //let avivGeoId = "BLOCFR5111";
   if (avivGeoId !== undefined) {
     const {
       data, // only present if 2XX response
