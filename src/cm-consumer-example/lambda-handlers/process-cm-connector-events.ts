@@ -5,7 +5,7 @@ import { SSotEntityName } from "@shared/models/cm-consumer-constants";
 import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
 
 import { markClassifiedAsDeleted, createOrUpdateClassified } from "cm-consumer-example/adapters/classifieds-materialized-view-postgre";
-// import * as fs from 'fs';
+import * as fs from 'fs';
 const processor = new BatchProcessor(EventType.SQS);
 
 export const recordHandler = async (record: SQSRecord): Promise<void> => {
@@ -20,6 +20,10 @@ export const recordHandler = async (record: SQSRecord): Promise<void> => {
     }
     else {
         await createOrUpdateClassified(classifiedId, e.data);
+
+        if (e.data.location.avivGeoId === "BLOCFR1088907") {
+            console.log(JSON.stringify(record))
+        }
     }
 }
 
