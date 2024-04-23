@@ -3,10 +3,11 @@ import { Classified } from "@shared/models/classified/1.0.0/classified";
 import { Client } from 'pg';
 import { mapFeatures, mapPrice } from '../utils/mappingHelpers';
 import { getClassifiedApiSecret } from "./classified-api-secrets";
-import { EstateType } from "@shared/models/classified/1.0.0/estate-type";
+import { paths, components } from '../../shared/models/geo-api';
+
+import createClient from 'openapi-fetch';
 
 const markClassifiedAsDeleted = async (deleteCommand: { classifiedId: string, updateDate: string }): Promise<void> => {
-
   const { classifiedId, updateDate } = deleteCommand;
   try {
     const values = [classifiedId];
@@ -43,45 +44,108 @@ const markClassifiedAsDeleted = async (deleteCommand: { classifiedId: string, up
   }
 }
 
-const createOrUpdateClassified = async (id: string, data: Classified): Promise<void> => {
+const createOrUpdateClassified = async (id: string, classified: Classified): Promise<void> => {
 
   try {
-    const price = mapPrice(data) ?? undefined;
+    const price = mapPrice(classified) ?? undefined;
+    const features = mapFeatures(classified);
+    const geo = await mapGeo(classified);
 
-    const features = mapFeatures(data);
-    const {
-      apartment,
-      agricultureForestry,
-      gastronomyHotel,
-      house,
-      office,
-      parking,
-      plot,
-      project,
-      senior,
-      storageProduction,
-      trading
-    } = { ...data.data.estateSubType }
-    apartment
 
+    let avivGeoId = classified.data?.location.avivGeoId;
+    let geoLevel = null
+    if (avivGeoId === undefined && geo !== undefined) {
+      avivGeoId = geo[geo.length - 1].id;
+      geoLevel = geo[geo.length - 1].level;
+    }
+    let countryId = null;
+    let regionId = null;
+    let microregionId = null;
+    let provinceId = null;
+    let municipalityID = null;
+    let boroughID = null;
+    let neighborhoodId = null;
+    let blocId = null;
+    //https://www.postgresql.org/docs/current/ltree.html
+    if (geo != null) {
+      geo.forEach(function (value) {
+        if (value.level == 200) {
+          countryId = value.id
+        }
+        else if (value.level == 400) {
+          regionId = value.id
+        }
+        else if (value.level == 500) {
+          microregionId = value.id
+        }
+        else if (value.level == 600) {
+          provinceId = value.id
+        } else if (value.level == 800) {
+          municipalityID = value.id
+        } else if (value.level == 900) {
+          boroughID = value.id
+        } else if (value.level == 1000) {
+          neighborhoodId = value.id
+        } else if (value.level == 1200) {
+          blocId = value.id
+        }
+      })
+    }
+
+    const geoValue = [
+      avivGeoId,
+      geoLevel,
+      countryId,
+      regionId,
+      microregionId,
+      provinceId,
+      municipalityID,
+      boroughID,
+      neighborhoodId,
+      blocId
+    ]
+    const geoQuery = `
+    INSERT INTO geo (
+      avivGeoId,
+      geoLevel,
+      countryId,
+      regionId,
+      microregionId,
+      provinceId,
+      municipalityID,
+      boroughID,
+      neighborhoodId,
+      blocId
+   ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+ON CONFLICT (avivGeoId) DO UPDATE 
+      SET    
+      geoLevel = $2,
+      countryId = $3,
+      regionId= $5,
+      microregionId= $5,
+      provinceId= $6,
+      municipalityID= $7,
+      boroughID= $9,
+      neighborhoodId= $9,
+      blocId= $10;`;
     //Mapping : https://avivgroup.atlassian.net/browse/WLSEO-501
-    const values = [
+    const classifiedValue = [
       id,
       price,
-      data.data.location.avivGeoId,//c=>i geoId
-      data.data.distributionType,//j DistributionType
-      data.data.estateType,//k EstateType
-      apartment ?? agricultureForestry ?? gastronomyHotel ?? house ?? office ?? parking ?? plot ?? project ?? senior ?? storageProduction ?? trading,
-      data.data?.structure?.rooms?.numberOfRooms,   // m NumberOfRooms
-      data.data?.features?.furnished,  // n Furnished
-      data.data?.conditions?.yearOfConstruction,// o YearOfConstruction
-      data.data?.management?.rent?.certificateOfEligibilityNeeded,  // p CertificateOfEligibilityNeeded
-      data.data?.structure?.building?.locationInBuilding,  // q LocationInBuilding
+      geoLevel,
+      classified.data.distributionType,
+      classified.data.estateType,
+      Object.values(classified.data?.estateSubType)?.[0],
+      classified.data?.structure?.rooms?.numberOfRooms,
+      classified.data?.features?.furnished,
+      classified.data?.conditions?.yearOfConstruction,
+      classified.data?.management?.rent?.certificateOfEligibilityNeeded,
+      classified.data?.structure?.building?.locationInBuilding,
       features,
-      data.data.location.country,
-      data.metadata.brand,
-      data.visibility.requests.map(e => e.portal),
-      data.data.location.postalcode
+      classified.data.location.country,
+      classified.metadata.brand,
+      classified.visibility.requests.map(e => e.portal),
+      classified.data.location.postalcode
     ];
     const apisecrets = await getClassifiedApiSecret();
     const client = new Client({
@@ -95,7 +159,7 @@ const createOrUpdateClassified = async (id: string, data: Classified): Promise<v
 
     await client.connect()
 
-    const query = `
+    const classifiedQuery = `
     INSERT INTO Classified (
       ClassifiedId, 
       Price,
@@ -132,20 +196,19 @@ ON CONFLICT (ClassifiedId) DO UPDATE
           Postalcode = $16
           ;`;
 
-    const res = await client.query(query, values);
+    const res = await client.query(classifiedQuery, classifiedValue);
+    const res2 = await client.query(geoQuery, geoValue);
 
     await client.end();
   }
   catch (e) {
-
     if (e.name === "ConditionalCheckFailedException") {
       logger.error("Conditional Check failed on lastUpdate date. Classified won't be updated", {
-        classified: data
+        classified: classified
       })
     } else {
       logger.error(e);
     }
-
   }
 }
 
@@ -153,3 +216,55 @@ export {
   createOrUpdateClassified,
   markClassifiedAsDeleted
 }
+
+async function mapGeo(classified: Classified): Promise<Feature[] | undefined> {
+  const apiKey = "SMu5gT10PR3MSjzDwgMRS6uyB2WZ5EfNa5EwmT0x"
+  //https://avivgroup.atlassian.net/wiki/spaces/AGRS/pages/204505110/AVIV+Geo+Services
+  const cliApi = createClient<paths>({
+    baseUrl: "https://place-api.cosmic-bullfrog-dev.aws.aviv.eu/",
+    headers: { "Content-Type": "application/json", Accept: "application/json", "X-Api-Key": apiKey }
+
+  })
+
+  // Path params
+  //https://github.com/axel-springer-kugawana/aviv_seeker_classified_search_composer/blob/main/lambdas/src/classified-enrichment/get-geo-hierarchy/main.ts#L37
+  const { avivGeoId, geometry } = classified?.data?.location ?? {};
+  if (avivGeoId !== undefined) {
+    const {
+      data, // only present if 2XX response
+      error, // only present if 4XX or 5XX response
+    } = await cliApi.GET("/v1/places/{place_id}", {
+      params: {
+        path: { place_id: avivGeoId },
+      }
+    });
+
+    if (data != null) {
+      return [...(data.item.parents ?? []), data.item]
+    }
+  }
+
+  if (classified?.data?.location?.geometry?.coordinates?.length == 2) {
+    // if (geometry?.type === "Point") {
+    const [lon, lat] = classified.data.location.geometry.coordinates;
+    const {
+      data, // only present if 2XX response
+      error, // only present if 4XX or 5XX response
+    } = await cliApi.GET("/v1/places/point/{longitude}/{latitude}",
+      {
+        params: {
+          path: {
+            latitude: lat,
+            longitude: lon
+          },
+        }
+      });
+
+    if (data != null) {
+      return data.items
+    }
+  }
+  return null
+}
+
+type Feature = components['schemas']['Feature'];
