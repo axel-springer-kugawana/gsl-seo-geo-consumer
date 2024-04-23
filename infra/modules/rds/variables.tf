@@ -46,12 +46,6 @@ variable "rds_aurora_postgres_version" {
   default     = "15.3"
 }
 
-variable "rds_enable_proxy" {
-  description = "Should we enable RDS Proxies"
-  type        = bool
-  default     = "false"
-}
-
 variable "rds_acu_min" {
   description = "min acu for serverless configuration"
   type        = string

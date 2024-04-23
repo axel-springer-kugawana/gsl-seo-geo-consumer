@@ -1,5 +1,4 @@
 resource "aws_db_proxy" "rds_proxy" {
-  count                  = var.rds_enable_proxy ? 1 : 0
   name                   = "${var.application}-proxy-${var.environment}"
   debug_logging          = true
   engine_family          = "POSTGRESQL"
