@@ -132,7 +132,7 @@ ON CONFLICT (avivGeoId) DO UPDATE
     const classifiedValue = [
       id,
       price,
-      geoLevel,
+      avivGeoId,
       classified.data.distributionType,
       classified.data.estateType,
       Object.values(classified.data?.estateSubType)?.[0],
