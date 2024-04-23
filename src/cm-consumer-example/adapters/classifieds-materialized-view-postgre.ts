@@ -64,6 +64,10 @@ const createOrUpdateClassified = async (id: string, classified: Classified): Pro
       avivGeoId = geo[geo.length - 1]?.id;
       geoLevel = geo[geo.length - 1]?.level;
     }
+    else {
+
+      geoLevel = single(geo.filter(x => x.id === avivGeoId)).level;
+    }
     let countryId = null;
     let regionId = null;
     let microregionId = null;
@@ -234,7 +238,8 @@ async function mapGeo(classified: Classified): Promise<Feature[] | undefined> {
 
   // Path params
   //https://github.com/axel-springer-kugawana/aviv_seeker_classified_search_composer/blob/main/lambdas/src/classified-enrichment/get-geo-hierarchy/main.ts#L37
-  const { avivGeoId, geometry } = classified?.data?.location ?? {};
+  // const { avivGeoId, geometry } = classified?.data?.location ?? {};
+  let avivGeoId = "BLOCFR5111";
   if (avivGeoId !== undefined) {
     const {
       data, // only present if 2XX response
@@ -274,3 +279,9 @@ async function mapGeo(classified: Classified): Promise<Feature[] | undefined> {
 }
 
 type Feature = components['schemas']['Feature'];
+
+function single<T>(a: ReadonlyArray<T>, fallback?: T): T {
+  if (a.length === 1) return a[0];
+  if (a.length === 0 && fallback !== void 0) return fallback;
+  throw new Error();
+}
