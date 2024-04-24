@@ -37,15 +37,6 @@ resource "aws_security_group" "rds_proxy" {
   }
 
   ingress {
-    description     = "allow lambda_consumer_sg_to_proxy"
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
-    security_group_id        = aws_security_group.allow_postgres.id
-    source_security_group_id = aws_security_group.rds_proxy.id
-  }
-
-  ingress {
     description     = "Allow RDS Proxy to connect to RDS cluster"
     security_groups = [aws_security_group.allow_postgres.id]
     from_port       = 5432
