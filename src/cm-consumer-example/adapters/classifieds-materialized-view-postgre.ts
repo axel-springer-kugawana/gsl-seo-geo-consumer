@@ -64,7 +64,7 @@ const createOrUpdateClassified = async (id: string, classified: Classified): Pro
     const geo = await mapGeo(classified);
 
     let avivGeoId = classified.data?.location.avivGeoId;
-    if (geo != null) {
+    if (geo.length > 0) {
 
       let geoLevel = null
       if (avivGeoId === undefined) {
@@ -84,22 +84,22 @@ const createOrUpdateClassified = async (id: string, classified: Classified): Pro
       let neighborhoodId = single(geo.filter(x => x.level === 1000))?.id;
       let blocId = single(geo.filter(x => x.level === 1200))?.id;
 
-      if (avivGeoId !== undefined) {
-        const geoValue = [
-          avivGeoId,
-          geoLevel,
-          countryId,
-          regionId,
-          microregionId,
-          provinceId,
-          municipalityID,
-          boroughID,
-          neighborhoodId,
-          blocId
-        ]
-        const geoQuery = `
+
+      const geoValue = [
+        avivGeoId,
+        geoLevel,
+        countryId,
+        regionId,
+        microregionId,
+        provinceId,
+        municipalityID,
+        boroughID,
+        neighborhoodId,
+        blocId
+      ]
+      const geoQuery = `
     INSERT INTO geo (
-      avivGeoId,
+      avivgeoId,
       geoLevel,
       countryId,
       regionId,
@@ -110,7 +110,7 @@ const createOrUpdateClassified = async (id: string, classified: Classified): Pro
       neighborhoodId,
       blocId
    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-ON CONFLICT (avivGeoId) DO UPDATE 
+ON CONFLICT (avivgeoId) DO UPDATE 
       SET    
       geoLevel = $2,
       countryId = $3,
@@ -122,8 +122,7 @@ ON CONFLICT (avivGeoId) DO UPDATE
       neighborhoodId= $9,
       blocId= $10;`;
 
-        await client.query(geoQuery, geoValue);
-      }
+      await client.query(geoQuery, geoValue);
     }
     else {
 
@@ -170,7 +169,7 @@ ON CONFLICT (avivGeoId) DO UPDATE
    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
 ON CONFLICT (ClassifiedId) DO UPDATE 
       SET Price = $2,
-          AvivGeoId= $3, 
+          avivgeoId= $3, 
           DistributionType= $4, 
           EstateType= $5, 
           EstateSubType= $6, 

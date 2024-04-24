@@ -20,10 +20,6 @@ export const recordHandler = async (record: SQSRecord): Promise<void> => {
     }
     else {
         await createOrUpdateClassified(classifiedId, e.data);
-
-        if (e.data.location.avivGeoId === "BLOCFR1088907") {
-            console.log(JSON.stringify(record))
-        }
     }
 }
 
