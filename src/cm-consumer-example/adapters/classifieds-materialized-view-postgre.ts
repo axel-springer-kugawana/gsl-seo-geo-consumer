@@ -6,6 +6,8 @@ import { getClassifiedApiSecret } from "./classified-api-secrets";
 import { paths, components } from '../../shared/models/geo-api';
 
 import createClient from 'openapi-fetch';
+import { Middleware } from 'openapi-fetch';
+
 
 const markClassifiedAsDeleted = async (deleteCommand: { classifiedId: string, updateDate: string }): Promise<void> => {
   const { classifiedId, updateDate } = deleteCommand;
@@ -64,7 +66,7 @@ const createOrUpdateClassified = async (id: string, classified: Classified): Pro
     const geo = await mapGeo(classified);
 
     let avivGeoId = classified.data?.location.avivGeoId;
-    if (geo.length > 0) {
+    if (geo?.length ?? 0 > 0) {
 
       let geoLevel = null
       if (avivGeoId === undefined) {
@@ -83,7 +85,6 @@ const createOrUpdateClassified = async (id: string, classified: Classified): Pro
       let boroughID = single(geo.filter(x => x.level === 900))?.id;
       let neighborhoodId = single(geo.filter(x => x.level === 1000))?.id;
       let blocId = single(geo.filter(x => x.level === 1200))?.id;
-
 
       const geoValue = [
         avivGeoId,
@@ -161,7 +162,7 @@ ON CONFLICT (avivgeoId) DO UPDATE
       YearOfConstruction,
       CertificateOfEligibilityNeeded,
       LocationInBuilding,
-      FeaturesIncluded,
+      Features,
       Country,
       Brand,
       Portals,
@@ -178,7 +179,7 @@ ON CONFLICT (ClassifiedId) DO UPDATE
           YearOfConstruction= $9,
           CertificateOfEligibilityNeeded= $10,
           LocationInBuilding= $11,
-          FeaturesIncluded= $12,
+          Features= $12,
           Country = $13,
           Brand = $14,
           Portals = $15,
@@ -208,13 +209,30 @@ export {
 }
 
 async function mapGeo(classified: Classified): Promise<Feature[] | undefined> {
+
   const apiKey = "SMu5gT10PR3MSjzDwgMRS6uyB2WZ5EfNa5EwmT0x"
   //https://avivgroup.atlassian.net/wiki/spaces/AGRS/pages/204505110/AVIV+Geo+Services
   const cliApi = createClient<paths>({
     baseUrl: "https://place-api.cosmic-bullfrog-dev.aws.aviv.eu/",
-    headers: { "Content-Type": "application/json", Accept: "application/json", "X-Api-Key": apiKey }
 
   })
+
+
+  const myMiddleware: Middleware = {
+    async onRequest(req, options) {
+      // set "foo" header
+      req.headers.set("X-Api-Key", apiKey);
+      return req;
+    },
+    // async onResponse(res, options) {
+    //   const { body, ...resOptions } = res;
+    //   // change status of response
+    //   return new Response(body, { ...resOptions, status: 200 });
+    // },
+  };
+  cliApi.use(myMiddleware);
+
+
 
   // Path params
   //https://github.com/axel-springer-kugawana/aviv_seeker_classified_search_composer/blob/main/lambdas/src/classified-enrichment/get-geo-hierarchy/main.ts#L37
@@ -244,8 +262,8 @@ async function mapGeo(classified: Classified): Promise<Feature[] | undefined> {
       {
         params: {
           path: {
-            latitude: lat,
-            longitude: lon
+            longitude: lon,
+            latitude: lat
           },
         }
       });
