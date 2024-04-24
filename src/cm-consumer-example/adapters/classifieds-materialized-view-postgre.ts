@@ -56,8 +56,7 @@ const createOrUpdateClassified = async (id: string, classified: Classified): Pro
       port: apisecrets.Port,
       user: apisecrets.Username,
       password: apisecrets.Password,
-      database: apisecrets.Database,
-      connectionTimeoutMillis: 3000
+      database: apisecrets.Database
     });
     client.connect()
 
