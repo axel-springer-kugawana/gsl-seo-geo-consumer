@@ -57,57 +57,47 @@ const createOrUpdateClassified = async (id: string, classified: Classified): Pro
       database: apisecrets.Database,
       connectionTimeoutMillis: 3000
     });
+    client.connect()
 
     const price = mapPrice(classified) ?? undefined;
     const features = mapFeatures(classified);
     const geo = await mapGeo(classified);
 
     let avivGeoId = classified.data?.location.avivGeoId;
-    let geoLevel = null
-    if (avivGeoId === undefined && geo !== undefined) {
-      if (geo[geo.length - 1] === undefined) {
-        const [lon, lat] = classified.data.location.geometry.coordinates;
-      }
-      avivGeoId = geo[geo.length - 1]?.id;
-      geoLevel = geo[geo.length - 1]?.level;
-    }
-    else {
-      geoLevel = single(geo.filter(x => x.id === avivGeoId))?.level;
-    }
-    let countryId = null;
-    let regionId = null;
-    let microregionId = null;
-    let provinceId = null;
-    let municipalityID = null;
-    let boroughID = null;
-    let neighborhoodId = null;
-    let blocId = null;
-    //https://www.postgresql.org/docs/current/ltree.html
     if (geo != null) {
-      countryId = single(geo.filter(x => x.level === 200))?.id;
-      regionId = single(geo.filter(x => x.level === 400))?.id;
-      microregionId = single(geo.filter(x => x.level === 500))?.id;
-      provinceId = single(geo.filter(x => x.level === 600))?.id;
-      municipalityID = single(geo.filter(x => x.level === 800))?.id;
-      boroughID = single(geo.filter(x => x.level === 900))?.id;
-      neighborhoodId = single(geo.filter(x => x.level === 1000))?.id;
-      blocId = single(geo.filter(x => x.level === 1100))?.id;
-    }
 
-    if (avivGeoId !== undefined) {
-      const geoValue = [
-        avivGeoId,
-        geoLevel,
-        countryId,
-        regionId,
-        microregionId,
-        provinceId,
-        municipalityID,
-        boroughID,
-        neighborhoodId,
-        blocId
-      ]
-      const geoQuery = `
+      let geoLevel = null
+      if (avivGeoId === undefined) {
+        avivGeoId = geo[geo.length - 1]?.id;
+        geoLevel = geo[geo.length - 1]?.level;
+      }
+      else {
+        geoLevel = single(geo.filter(x => x.id === avivGeoId))?.level;
+      }
+
+      let countryId = single(geo.filter(x => x.level === 200))?.id;
+      let regionId = single(geo.filter(x => x.level === 400))?.id;
+      let microregionId = single(geo.filter(x => x.level === 500))?.id;
+      let provinceId = single(geo.filter(x => x.level === 600))?.id;
+      let municipalityID = single(geo.filter(x => x.level === 800))?.id;
+      let boroughID = single(geo.filter(x => x.level === 900))?.id;
+      let neighborhoodId = single(geo.filter(x => x.level === 1000))?.id;
+      let blocId = single(geo.filter(x => x.level === 1200))?.id;
+
+      if (avivGeoId !== undefined) {
+        const geoValue = [
+          avivGeoId,
+          geoLevel,
+          countryId,
+          regionId,
+          microregionId,
+          provinceId,
+          municipalityID,
+          boroughID,
+          neighborhoodId,
+          blocId
+        ]
+        const geoQuery = `
     INSERT INTO geo (
       avivGeoId,
       geoLevel,
@@ -132,7 +122,12 @@ ON CONFLICT (avivGeoId) DO UPDATE
       neighborhoodId= $9,
       blocId= $10;`;
 
-      const res2 = await client.query(geoQuery, geoValue);
+        await client.query(geoQuery, geoValue);
+      }
+    }
+    else {
+
+      console.log("cannot retrieve geo for classified : " + JSON.stringify(classified))
     }
     //Mapping : https://avivgroup.atlassian.net/browse/WLSEO-501
     const classifiedValue = [
@@ -153,9 +148,6 @@ ON CONFLICT (avivGeoId) DO UPDATE
       classified.visibility.requests.map(e => e.portal),
       classified.data.location.postalcode
     ];
-
-
-    await client.connect()
 
     const classifiedQuery = `
     INSERT INTO Classified (
@@ -194,7 +186,7 @@ ON CONFLICT (ClassifiedId) DO UPDATE
           Postalcode = $16
           ;`;
 
-    const res = await client.query(classifiedQuery, classifiedValue);
+    await client.query(classifiedQuery, classifiedValue);
 
     await client.end();
   }
@@ -228,7 +220,6 @@ async function mapGeo(classified: Classified): Promise<Feature[] | undefined> {
   // Path params
   //https://github.com/axel-springer-kugawana/aviv_seeker_classified_search_composer/blob/main/lambdas/src/classified-enrichment/get-geo-hierarchy/main.ts#L37
   const { avivGeoId, geometry } = classified?.data?.location ?? {};
-  //let avivGeoId = "BLOCFR5111";
   if (avivGeoId !== undefined) {
     const {
       data, // only present if 2XX response
@@ -272,5 +263,5 @@ type Feature = components['schemas']['Feature'];
 function single<T>(a: ReadonlyArray<T>, fallback?: T): T {
   if (a.length === 1) return a[0];
   if (a.length === 0 && fallback !== void 0) return fallback;
-  throw new Error();
+  return null;
 }
