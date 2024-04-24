@@ -1,3 +1,7 @@
+resource "aws_secretsmanager_secret" "rds_proxy_credentials" {
+  name = "${var.application}-${var.environment}-${var.ssot_name}-rds_proxy_credentials"
+}
+
 resource "aws_db_proxy" "rds_proxy" {
   name                   = "${var.application}-proxy-${var.environment}"
   debug_logging          = true
@@ -28,7 +32,7 @@ resource "aws_db_proxy_default_target_group" "rds_proxy_default_target_group" {
     max_connections_percent      = var.proxy_max_connections_percent
     max_idle_connections_percent = var.proxy_max_idle_connections_percent
     connection_borrow_timeout    = var.proxy_connection_borrow_timeout
-    session_pinning_filters      = var.proxy_session_pinning_filters
+    # session_pinning_filters      = var.proxy_session_pinning_filters
   }
 }
 

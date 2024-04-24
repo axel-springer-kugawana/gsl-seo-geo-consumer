@@ -16,6 +16,7 @@
         "media": [],
         "data": {
             "location": {
+                "avivGeoId": "BLOCDE231513",
                 "country": "ATA",
                 "city": "Pinguin Town",
                 "postalcode": "8340",
