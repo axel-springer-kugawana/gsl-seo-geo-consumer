@@ -1,13 +1,8 @@
 import { logger } from "@shared/cross-cutting/logger";
-import { Classified } from "@shared/models/classified/1.0.0/classified";
+import { Classified, Location } from "@shared/models/classified/1.0.0/classified";
 import { Client } from 'pg';
-import { mapFeatures, mapPrice } from '../utils/mappingHelpers';
+import { mapFeatures, mapPrice, mapGeoAsync } from '../utils/mappingHelpers';
 import { getClassifiedApiSecret } from "./classified-api-secrets";
-import { paths, components } from '../../shared/models/geo-api';
-
-import createClient from 'openapi-fetch';
-import { Middleware } from 'openapi-fetch';
-
 
 const markClassifiedAsDeleted = async (deleteCommand: { classifiedId: string, updateDate: string }): Promise<void> => {
   const { classifiedId, updateDate } = deleteCommand;
@@ -20,18 +15,12 @@ const markClassifiedAsDeleted = async (deleteCommand: { classifiedId: string, up
       port: apisecrets.Port,
       user: apisecrets.Username,
       password: apisecrets.Password,
-      database: apisecrets.Database,
-      connectionTimeoutMillis: 3000
+      database: apisecrets.Database
     });
 
     await client.connect()
-
-    const query = `
-    DELETE FROM Classified 
-    WHERE ClassifiedId=$1`;
-
-    const res = await client.query(query, values);
-
+    const query = `DELETE FROM Classified WHERE ClassifiedId=$1`;
+    await client.query(query, values);
     await client.end();
   }
   catch (e) {
@@ -62,7 +51,7 @@ const createOrUpdateClassified = async (id: string, classified: Classified): Pro
 
     const price = mapPrice(classified) ?? undefined;
     const features = mapFeatures(classified);
-    const geo = await mapGeo(classified);
+    const geo = await mapGeoAsync(classified?.data?.location);
 
     let avivGeoId = classified.data?.location.avivGeoId;
     if (geo?.length ?? 0 > 0) {
@@ -206,75 +195,6 @@ export {
   createOrUpdateClassified,
   markClassifiedAsDeleted
 }
-
-async function mapGeo(classified: Classified): Promise<Feature[] | undefined> {
-
-  const apiKey = "SMu5gT10PR3MSjzDwgMRS6uyB2WZ5EfNa5EwmT0x"
-  //https://avivgroup.atlassian.net/wiki/spaces/AGRS/pages/204505110/AVIV+Geo+Services
-  const cliApi = createClient<paths>({
-    baseUrl: "https://place-api.cosmic-bullfrog-dev.aws.aviv.eu/",
-
-  })
-
-
-  const myMiddleware: Middleware = {
-    async onRequest(req, options) {
-      // set "foo" header
-      req.headers.set("X-Api-Key", apiKey);
-      return req;
-    },
-    // async onResponse(res, options) {
-    //   const { body, ...resOptions } = res;
-    //   // change status of response
-    //   return new Response(body, { ...resOptions, status: 200 });
-    // },
-  };
-  cliApi.use(myMiddleware);
-
-
-
-  // Path params
-  //https://github.com/axel-springer-kugawana/aviv_seeker_classified_search_composer/blob/main/lambdas/src/classified-enrichment/get-geo-hierarchy/main.ts#L37
-  const { avivGeoId, geometry } = classified?.data?.location ?? {};
-  if (avivGeoId !== undefined) {
-    const {
-      data, // only present if 2XX response
-      error, // only present if 4XX or 5XX response
-    } = await cliApi.GET("/v1/places/{place_id}", {
-      params: {
-        path: { place_id: avivGeoId },
-      }
-    });
-
-    if (data != null) {
-      return [...(data.item.parents ?? []), data.item]
-    }
-  }
-
-  if (classified?.data?.location?.geometry?.coordinates?.length == 2) {
-    // if (geometry?.type === "Point") {
-    const [lon, lat] = classified.data.location.geometry.coordinates;
-    const {
-      data, // only present if 2XX response
-      error, // only present if 4XX or 5XX response
-    } = await cliApi.GET("/v1/places/point/{longitude}/{latitude}",
-      {
-        params: {
-          path: {
-            longitude: lon,
-            latitude: lat
-          },
-        }
-      });
-
-    if (data != null) {
-      return data.items
-    }
-  }
-  return null
-}
-
-type Feature = components['schemas']['Feature'];
 
 function single<T>(a: ReadonlyArray<T>, fallback?: T): T {
   if (a.length === 1) return a[0];
