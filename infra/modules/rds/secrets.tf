@@ -13,10 +13,10 @@ resource "aws_secretsmanager_secret_version" "postgres_credentials_writer" {
   secret_id = aws_secretsmanager_secret.postgres_credentials_writer.id
   secret_string = jsonencode({
     "Host"           = module.aurora_cluster.cluster_endpoint
-    "Username"       = var.rds_aurora_username
-    "Password"       = random_password.rds_aurora_password.result
-    "Port"           = var.rds_aurora_port
-    "Database"       = var.rds_aurora_database
+    "Username"       = module.aurora_cluster.cluster_master_username
+    "Password"       = module.aurora_cluster.cluster_master_password
+    "Port"           = module.aurora_cluster.cluster_port
+    "Database"       = module.aurora_cluster.cluster_database_name
     "CommandTimeout" = 2000,
     "Timeout"        = 1024
     "KeepAlive"      = 2000
