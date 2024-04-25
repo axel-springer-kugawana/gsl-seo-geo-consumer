@@ -3,46 +3,49 @@ import { Classified, Location } from "@shared/models/classified/1.0.0/classified
 import { Client } from 'pg';
 import { mapFeatures, mapPrice, mapGeoAsync } from '../utils/mappingHelpers';
 import { getClassifiedApiSecret } from "./classified-api-secrets";
-let apisecrets;
+// let client;
 
-async function main(): Promise<void> {
+// async function main(): Promise<void> {
 
-  apisecrets = await getClassifiedApiSecret()
-  console.log('foo')
-}
+//   const apisecrets = await getClassifiedApiSecret()
+//   console.log('foo')
 
-main()
+//   // const apisecrets = await getClassifiedApiSecret()
+//   client = new Client({
+//     host: apisecrets.Host,
+//     port: apisecrets.Port,
+//     user: apisecrets.Username,
+//     password: apisecrets.Password,
+//     database: apisecrets.Database
+//   });
+
+//   client.connect()
+
+// }
+
+// main()
 
 
-// const apisecrets = await getClassifiedApiSecret()
-const client = new Client({
-  host: apisecrets.Host,
-  port: apisecrets.Port,
-  user: apisecrets.Username,
-  password: apisecrets.Password,
-  database: apisecrets.Database
-});
 
-client.connect()
 
 const markClassifiedAsDeleted = async (deleteCommand: { classifiedId: string, updateDate: string }): Promise<void> => {
   const { classifiedId, updateDate } = deleteCommand;
   try {
     const values = [classifiedId];
-    // const apisecrets = await getClassifiedApiSecret()
-    // const client = new Client({
-    //   host: apisecrets.Host,
-    //   port: apisecrets.Port,
-    //   user: apisecrets.Username,
-    //   password: apisecrets.Password,
-    //   database: apisecrets.Database
-    // });
+    const apisecrets = await getClassifiedApiSecret()
+    const client = new Client({
+      host: apisecrets.Host,
+      port: apisecrets.Port,
+      user: apisecrets.Username,
+      password: apisecrets.Password,
+      database: apisecrets.Database
+    });
 
-    // client.connect()
+    client.connect()
     const query = `DELETE FROM Classified WHERE ClassifiedId=$1`;
     await client.query(query, values);
 
-    // await client.end()
+    await client.end()
   }
   catch (e) {
 
@@ -59,15 +62,15 @@ const markClassifiedAsDeleted = async (deleteCommand: { classifiedId: string, up
 const createOrUpdateClassified = async (id: string, classified: Classified): Promise<void> => {
 
   try {
-    // const apisecrets = await getClassifiedApiSecret()
-    // const client = new Client({
-    //   host: apisecrets.Host,
-    //   port: apisecrets.Port,
-    //   user: apisecrets.Username,
-    //   password: apisecrets.Password,
-    //   database: apisecrets.Database
-    // });
-    // client.connect()
+    const apisecrets = await getClassifiedApiSecret()
+    const client = new Client({
+      host: apisecrets.Host,
+      port: apisecrets.Port,
+      user: apisecrets.Username,
+      password: apisecrets.Password,
+      database: apisecrets.Database
+    });
+    client.connect()
 
     const price = mapPrice(classified) ?? undefined;
     const features = mapFeatures(classified);
@@ -196,7 +199,7 @@ ON CONFLICT (ClassifiedId) DO UPDATE
 
     await client.query(classifiedQuery, classifiedValue);
 
-    // await client.end();
+    await client.end();
   }
   catch (e) {
     if (e.name === "ConditionalCheckFailedException") {
