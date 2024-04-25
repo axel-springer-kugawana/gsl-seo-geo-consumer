@@ -30,4 +30,6 @@ module "aurora_cluster" {
     one = {}
     two = {}
   }
+  manage_master_user_password_rotation = 0
+
 }
