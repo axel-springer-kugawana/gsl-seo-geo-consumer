@@ -1,15 +1,22 @@
 {
     "compilerOptions": {
         "target": "ES2020",
-        "lib": ["ESNext"],
-        "module":"ESNext",
+        "lib": [
+            "ESNext"
+        ],
+        "module": "ESNext",
         "outDir": "./dist",
-        "typeRoots": ["node_modules/@types"],
+        "typeRoots": [
+            "node_modules/@types"
+        ],
         "baseUrl": "./",
         "paths": {
-            "@shared/*": ["shared/*"],
-            "@cm-connector/*": ["cm-connector/*"]
-            
+            "@shared/*": [
+                "shared/*"
+            ],
+            "@cm-connector/*": [
+                "cm-connector/*"
+            ]
         },
         "skipLibCheck": true,
         "removeComments": true,
@@ -20,15 +27,17 @@
         "esModuleInterop": true,
         "resolveJsonModule": true
     },
-
     "exclude": [
         "esbuild.config.js",
-        "node_modules", 
-        "**/*.spec.ts"],
+        "node_modules",
+        "**/*.spec.ts"
+    ],
     "require": [
         "ts-node/register/transpile-only"
     ],
     "ts-node": {
-        "require": ["tsconfig-paths/register"]
+        "require": [
+            "tsconfig-paths/register"
+        ]
     }
 }

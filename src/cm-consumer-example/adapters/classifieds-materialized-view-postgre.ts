@@ -3,17 +3,27 @@ import { Classified, Location } from "@shared/models/classified/1.0.0/classified
 import { Client } from 'pg';
 import { mapFeatures, mapPrice, mapGeoAsync } from '../utils/mappingHelpers';
 import { getClassifiedApiSecret } from "./classified-api-secrets";
-//TODO : restore 
-// const apisecrets = await getClassifiedApiSecret()
-// const client = new Client({
-//   host: apisecrets.Host,
-//   port: apisecrets.Port,
-//   user: apisecrets.Username,
-//   password: apisecrets.Password,
-//   database: apisecrets.Database
-// });
+let apisecrets;
 
-// client.connect()
+async function main(): Promise<void> {
+
+  apisecrets = await getClassifiedApiSecret()
+  console.log('foo')
+}
+
+main()
+
+
+// const apisecrets = await getClassifiedApiSecret()
+const client = new Client({
+  host: apisecrets.Host,
+  port: apisecrets.Port,
+  user: apisecrets.Username,
+  password: apisecrets.Password,
+  database: apisecrets.Database
+});
+
+client.connect()
 
 const markClassifiedAsDeleted = async (deleteCommand: { classifiedId: string, updateDate: string }): Promise<void> => {
   const { classifiedId, updateDate } = deleteCommand;
