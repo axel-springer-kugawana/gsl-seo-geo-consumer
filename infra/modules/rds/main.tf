@@ -21,6 +21,7 @@ module "aurora_cluster" {
   monitoring_interval             = 60
   storage_encrypted               = true
   skip_final_snapshot             = true
+  manage_master_user_password     = false
   serverlessv2_scaling_configuration = {
     min_capacity = var.rds_acu_min
     max_capacity = var.rds_acu_max
@@ -30,6 +31,7 @@ module "aurora_cluster" {
     one = {}
     two = {}
   }
-  manage_master_user_password_rotation = 0
+  # rotation
+  # manage_master_user_password_rotation = t
 
 }
