@@ -37,3 +37,8 @@ variable "secret_name" {
 variable "rds_sg_id" {
   type = string
 }
+
+variable "geo_places_api_url" {
+  type        = string
+  description = "Base URL to the geo places api"
+}

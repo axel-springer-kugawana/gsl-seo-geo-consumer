@@ -50,11 +50,12 @@ module "cm_consumer_example" {
     id  = module.cm_connector.queue_id
   }
 
-  ssot_name   = var.ssot_name
-  application = var.application
-  environment = var.environment
-  rds_arn     = module.rds.arn
-  secret_arn  = module.rds.secret_arn
-  secret_name = module.rds.secret_name
-  rds_sg_id   = module.rds.sg_id
+  ssot_name          = var.ssot_name
+  application        = var.application
+  environment        = var.environment
+  rds_arn            = module.rds.arn
+  secret_arn         = module.rds.secret_arn
+  secret_name        = module.rds.secret_name
+  rds_sg_id          = module.rds.sg_id
+  geo_places_api_url = var.geo_places_api_url
 }

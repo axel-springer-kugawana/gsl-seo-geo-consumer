@@ -95,7 +95,8 @@ module "process_cm_connector_events_lambda" {
   is_lambda_vpc                    = true
   enable_secrets_manager_extension = true
   env_variables = {
-    CM_API_SECRET_NAME = var.secret_name
+    CM_API_SECRET_NAME = var.secret_name,
+    GEO_PLACES_API_URL = var.geo_places_api_url
   }
 }
 
