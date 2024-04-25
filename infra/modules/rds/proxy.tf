@@ -21,7 +21,7 @@ resource "aws_db_proxy" "rds_proxy" {
 
 resource "aws_db_proxy_target" "rds_proxy_target" {
   db_proxy_name         = aws_db_proxy.rds_proxy.name
-  db_cluster_identifier = module.aurora_cluster.cluster_arn
+  db_cluster_identifier = module.aurora_cluster.postgresql_cluster_id
   target_group_name     = aws_db_proxy_default_target_group.rds_proxy_default_target_group.name
 }
 
