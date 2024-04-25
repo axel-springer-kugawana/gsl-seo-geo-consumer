@@ -9,8 +9,8 @@ import * as fs from 'fs';
 const processor = new BatchProcessor(EventType.SQS);
 
 export const recordHandler = async (record: SQSRecord): Promise<void> => {
-    const body = fs.readFileSync("cm-consumer-example/lambda-handlers/fakes/231116WBR1KI.json", "utf8");
-    const e = JSON.parse(body);
+    // const body = fs.readFileSync("cm-consumer-example/lambda-handlers/fakes/231116WBR1KI.json", "utf8");
+    const e = JSON.parse(record.body);
     const classifiedId = e.data.classifiedId;
 
     if ((e.type === `${SSotEntityName}.deleted.v1`)) {
