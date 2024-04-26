@@ -2,6 +2,27 @@ resource "aws_secretsmanager_secret" "rds_proxy_credentials" {
   name = "${var.application}-${var.environment}-${var.ssot_name}-rds_proxy_credentials"
 }
 
+resource "aws_secretsmanager_secret_version" "rds_credentials" {
+  secret_id = aws_secretsmanager_secret.rds_proxy_credentials.id
+ secret_string = jsonencode({
+    "username" = module.aurora_cluster.cluster_master_username
+    "password" = module.aurora_cluster.cluster_master_password
+  })
+}
+
+output "cluster_master_password" {
+  description = "The database master password"
+  value       = try(aws_rds_cluster.this[0].master_password, null)
+  sensitive   = true
+}
+
+output "cluster_master_username" {
+  description = "The database master username"
+  value       = try(aws_rds_cluster.this[0].master_username, null)
+  sensitive   = true
+}
+
+
 resource "aws_db_proxy" "rds_proxy" {
   name                   = "${var.application}-proxy-${var.environment}"
   debug_logging          = true
@@ -13,7 +34,7 @@ resource "aws_db_proxy" "rds_proxy" {
   vpc_subnet_ids         = var.subnets
   auth {
     auth_scheme = "SECRETS"
-    description = "Authentication credentials for rds proxy"
+    description = "RDS Proxy authentication"
     iam_auth    = "DISABLED"
     secret_arn  = aws_secretsmanager_secret.rds_proxy_credentials.arn
   }
