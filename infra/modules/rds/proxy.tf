@@ -10,19 +10,6 @@ resource "aws_secretsmanager_secret_version" "rds_credentials" {
   })
 }
 
-output "cluster_master_password" {
-  description = "The database master password"
-  value       = try(aws_rds_cluster.this[0].master_password, null)
-  sensitive   = true
-}
-
-output "cluster_master_username" {
-  description = "The database master username"
-  value       = try(aws_rds_cluster.this[0].master_username, null)
-  sensitive   = true
-}
-
-
 resource "aws_db_proxy" "rds_proxy" {
   name                   = "${var.application}-proxy-${var.environment}"
   debug_logging          = true
