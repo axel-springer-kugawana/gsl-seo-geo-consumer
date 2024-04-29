@@ -16,16 +16,13 @@ resource "aws_iam_role" "rds_proxy_iam_role" {
 }
 
 data "aws_iam_policy_document" "rds_proxy_policy_document" {
-
   statement {
     sid = "AllowProxyToGetDbCredsFromSecretsManager"
-
     actions = [
       "secretsmanager:GetSecretValue"
     ]
-
     resources = [
-      "arn:aws:secretsmanager:eu-west-1:873542556733:secret:sandbox/autocomplete/pgsql_credentials-Z94BAK"
+      module.aurora_cluster.cluster_arn
     ]
   }
 
