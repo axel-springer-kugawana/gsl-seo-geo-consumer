@@ -147,7 +147,7 @@ ON CONFLICT (avivgeoId) DO UPDATE
       avivGeoId,
       classified.data.distributionType,
       classified.data.estateType,
-      Object.values(classified.data?.estateSubType)?.[0],
+      classified.data?.estateSubType !== undefined ? Object.values(classified.data?.estateSubType)?.[0] : null,
       classified.data?.structure?.rooms?.numberOfRooms,
       classified.data?.features?.furnished,
       classified.data?.conditions?.yearOfConstruction,
