@@ -6,9 +6,10 @@ const getClassifiedById = async (link: string): Promise<Classified> => {
     const apiUrl = config.get("cmApiUrl");
     const apisecrets = await getClassifiedApiSecret();
 
-    const headers =  {
+    const headers = {
         "ClientId": apisecrets.ClientId,
-        "Authorization": apisecrets.Authorization
+        "Authorization": apisecrets.Authorization,
+        "User-Agent": 'wl-seo/1.0.0',
     }
 
     const res = await fetch(`${apiUrl}${link}`, {
@@ -16,7 +17,7 @@ const getClassifiedById = async (link: string): Promise<Classified> => {
     });
 
     const classified = await res.json() as Classified;
-  
+
 
     return classified;
 
