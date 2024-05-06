@@ -7,6 +7,11 @@ output "arn" {
   description = "Amazon Resource Name (ARN) of the cluster"
 }
 
+output "proxy_arn" {
+  value       = aws_db_proxy.rds_proxy.arn
+  description = "Amazon Resource Name (ARN) of the cluster arn "
+}
+
 output "rds_cluster_port" {
   value = module.aurora_cluster.cluster_port
 }
@@ -22,3 +27,4 @@ output "sg_id" {
   description = "The ID of the security group"
   value       = aws_security_group.allow_postgres.id
 }
+
