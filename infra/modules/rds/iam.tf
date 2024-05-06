@@ -22,7 +22,7 @@ data "aws_iam_policy_document" "rds_proxy_policy_document" {
       "secretsmanager:GetSecretValue"
     ]
     resources = [
-      module.aurora_cluster.cluster_arn
+      aws_secretsmanager_secret.rds_proxy_credentials.arn
     ]
   }
 
