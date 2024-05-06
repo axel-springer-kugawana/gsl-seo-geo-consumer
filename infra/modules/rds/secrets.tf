@@ -12,7 +12,8 @@ resource "aws_secretsmanager_secret" "postgres_credentials_writer" {
 resource "aws_secretsmanager_secret_version" "postgres_credentials_writer" {
   secret_id = aws_secretsmanager_secret.postgres_credentials_writer.id
   secret_string = jsonencode({
-    "Host"           = module.aurora_cluster.cluster_endpoint
+    "Host" = aws_db_proxy.rds_proxy.endpoint
+    #module.aurora_cluster.cluster_endpoint
     "Username"       = module.aurora_cluster.cluster_master_username
     "Password"       = module.aurora_cluster.cluster_master_password
     "Port"           = module.aurora_cluster.cluster_port
