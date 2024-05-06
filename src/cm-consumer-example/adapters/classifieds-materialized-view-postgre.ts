@@ -203,14 +203,16 @@ ON CONFLICT (ClassifiedId) DO UPDATE
   }
   catch (e) {
     if (e.name === "ConditionalCheckFailedException") {
-      logger.error("Conditional Check failed on lastUpdate date. Classified won't be updated", {
+      logger.warn("Conditional Check failed on lastUpdate date. Classified won't be updated", {
         classified: classified
       })
-    } else {
-      logger.error(e);
     }
+    else {
+      logger.error('classifiedId : ' + classified)
+      logger.error(e)
 
-    logger.error(JSON.stringify(classified))
+      throw (e);
+    }
   }
 }
 
