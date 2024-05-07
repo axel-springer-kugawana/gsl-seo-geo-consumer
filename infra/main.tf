@@ -53,7 +53,7 @@ module "cm_consumer_example" {
   ssot_name          = var.ssot_name
   application        = var.application
   environment        = var.environment
-  rds_arn            = module.rds.proxy_arn
+  rds_arn            = module.rds.arn #module.rds.proxy_arn
   secret_arn         = module.rds.secret_arn
   secret_name        = module.rds.secret_name
   rds_sg_id          = module.rds.sg_id
