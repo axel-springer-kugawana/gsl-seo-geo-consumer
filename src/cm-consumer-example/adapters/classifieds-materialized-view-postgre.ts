@@ -35,9 +35,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
 
   try {
     context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
-
+    
     const client = await pool.connect()
-
     const price = mapPrice(classified) ?? undefined;
     const features = mapFeatures(classified);
     const geo = await mapGeoAsync(classified?.data?.location);
