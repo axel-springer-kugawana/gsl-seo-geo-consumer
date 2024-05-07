@@ -151,10 +151,6 @@ ON CONFLICT (avivgeoId) DO UPDATE
       }
       catch (e) {
         logger.error(e);
-
-      }
-      finally {
-        await client.release();
       }
     }
     else {
