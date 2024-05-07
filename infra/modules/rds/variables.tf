@@ -110,5 +110,5 @@ variable "proxy_max_idle_connections_percent" {
 variable "proxy_connection_borrow_timeout" {
   type        = number
   description = "The number of seconds for a proxy to wait for a connection to become available in the connection pool"
-  default     = 1
+  default     = 0
 }
