@@ -92,13 +92,13 @@ variable "ssot_name" {
 variable "proxy_idle_client_timeout" {
   type        = number
   description = "The number of seconds that a connection to the proxy can be inactive before the proxy disconnects it"
-  default     = 30
+  default     = 3
   }
 
 variable "proxy_max_connections_percent" {
   type        = number
   description = "The maximum size of the connection pool for each target in a target group"
-  default     = 50
+  default     = 80
 }
 
 variable "proxy_max_idle_connections_percent" {
@@ -110,5 +110,5 @@ variable "proxy_max_idle_connections_percent" {
 variable "proxy_connection_borrow_timeout" {
   type        = number
   description = "The number of seconds for a proxy to wait for a connection to become available in the connection pool"
-  default     = 10
+  default     = 2
 }
