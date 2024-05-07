@@ -1,8 +1,10 @@
 import { logger } from "@shared/cross-cutting/logger";
 import { Classified, Location } from "@shared/models/classified/1.0.0/classified";
-import { Client } from 'pg';
+import { Pool } from "pg";
 import { mapFeatures, mapPrice, mapGeoAsync } from '../utils/mappingHelpers';
 import { getClassifiedApiSecret } from "./classified-api-secrets";
+import { Context } from "aws-lambda";
+
 // let client;
 
 // async function main(): Promise<void> {
@@ -28,27 +30,29 @@ import { getClassifiedApiSecret } from "./classified-api-secrets";
 
 
 
-const markClassifiedAsDeleted = async (deleteCommand: { classifiedId: string, updateDate: string }): Promise<void> => {
+const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classifiedId: string, updateDate: string }): Promise<void> => {
   const { classifiedId, updateDate } = deleteCommand;
+  const apisecrets = await getClassifiedApiSecret()
+  const pool = new Pool({
+    max: 1,
+    min: 0,
+    idleTimeoutMillis: 120000,
+    connectionTimeoutMillis: 10000,
+    host: apisecrets.Host,
+    port: apisecrets.Port,
+    user: apisecrets.Username,
+    password: apisecrets.Password,
+    database: apisecrets.Database
+  });
+  const values = [classifiedId];
+  context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
+  const client = await pool.connect()
+  const query = `DELETE FROM Classified WHERE ClassifiedId=$1`;
+
   try {
-    const values = [classifiedId];
-    const apisecrets = await getClassifiedApiSecret()
-    const client = new Client({
-      host: apisecrets.Host,
-      port: apisecrets.Port,
-      user: apisecrets.Username,
-      password: apisecrets.Password,
-      database: apisecrets.Database
-    });
-
-    client.connect()
-    const query = `DELETE FROM Classified WHERE ClassifiedId=$1`;
     await client.query(query, values);
-
-    await client.end()
   }
   catch (e) {
-
     if (e.name === "ConditionalCheckFailedException") {
       logger.error("Conditional Check failed on lastUpdate date. Classified won't be deleted", {
         classified: classifiedId
@@ -57,20 +61,29 @@ const markClassifiedAsDeleted = async (deleteCommand: { classifiedId: string, up
       logger.error(e);
     }
   }
+  finally {
+    await client.release();
+  }
 }
 
-const createOrUpdateClassified = async (id: string, classified: Classified): Promise<void> => {
+const createOrUpdateClassified = async (context: Context, id: string, classified: Classified): Promise<void> => {
 
   try {
     const apisecrets = await getClassifiedApiSecret()
-    const client = new Client({
+    const pool = new Pool({
+      max: 1,
+      min: 0,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
       host: apisecrets.Host,
       port: apisecrets.Port,
       user: apisecrets.Username,
       password: apisecrets.Password,
       database: apisecrets.Database
     });
-    client.connect()
+    context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
+
+    const client = await pool.connect()
 
     const price = mapPrice(classified) ?? undefined;
     const features = mapFeatures(classified);
@@ -133,8 +146,16 @@ ON CONFLICT (avivgeoId) DO UPDATE
       boroughID= $9,
       neighborhoodId= $9,
       blocId= $10;`;
+      try {
+        await client.query(geoQuery, geoValue);
+      }
+      catch (e) {
+        logger.error(e);
 
-      await client.query(geoQuery, geoValue);
+      }
+      finally {
+        await client.release();
+      }
     }
     else {
 
@@ -196,10 +217,16 @@ ON CONFLICT (ClassifiedId) DO UPDATE
           Portals = $15,
           Postalcode = $16
           ;`;
+    try {
+      await client.query(classifiedQuery, classifiedValue);
+    }
+    catch (e) {
+      logger.error(e);
 
-    await client.query(classifiedQuery, classifiedValue);
-
-    await client.end();
+    }
+    finally {
+      await client.release();
+    }
   }
   catch (e) {
     if (e.name === "ConditionalCheckFailedException") {
