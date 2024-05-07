@@ -21,6 +21,7 @@ module "aurora_cluster" {
   monitoring_interval             = 60
   storage_encrypted               = true
   skip_final_snapshot             = true
+  performance_insights_enabled    = true
   manage_master_user_password     = false
   serverlessv2_scaling_configuration = {
     min_capacity = var.rds_acu_min
