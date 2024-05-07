@@ -98,7 +98,7 @@ variable "proxy_idle_client_timeout" {
 variable "proxy_max_connections_percent" {
   type        = number
   description = "The maximum size of the connection pool for each target in a target group"
-  default     = 100
+  default     = 85
 }
 
 variable "proxy_max_idle_connections_percent" {
