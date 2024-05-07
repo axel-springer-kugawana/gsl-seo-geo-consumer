@@ -30,20 +30,9 @@ import { Context } from "aws-lambda";
 
 
 
-const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classifiedId: string, updateDate: string }): Promise<void> => {
+const markClassifiedAsDeleted = async (pool: Pool ,context: Context, deleteCommand: { classifiedId: string, updateDate: string }): Promise<void> => {
   const { classifiedId, updateDate } = deleteCommand;
   const apisecrets = await getClassifiedApiSecret()
-  const pool = new Pool({
-    max: 1,
-    min: 0,
-    idleTimeoutMillis: 5000,
-    connectionTimeoutMillis: 2000,
-    host: apisecrets.Host,
-    port: apisecrets.Port,
-    user: apisecrets.Username,
-    password: apisecrets.Password,
-    database: apisecrets.Database
-  });
   const values = [classifiedId];
   context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
   const client = await pool.connect()
@@ -66,21 +55,10 @@ const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classi
   }
 }
 
-const createOrUpdateClassified = async (context: Context, id: string, classified: Classified): Promise<void> => {
+const createOrUpdateClassified = async (pool: Pool ,context: Context, id: string, classified: Classified): Promise<void> => {
 
   try {
     const apisecrets = await getClassifiedApiSecret()
-    const pool = new Pool({
-      max: 1,
-      min: 0,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 10000,
-      host: apisecrets.Host,
-      port: apisecrets.Port,
-      user: apisecrets.Username,
-      password: apisecrets.Password,
-      database: apisecrets.Database
-    });
     context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
 
     const client = await pool.connect()

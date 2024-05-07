@@ -5,8 +5,27 @@ import { SSotEntityName } from "@shared/models/cm-consumer-constants";
 import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
 
 import { markClassifiedAsDeleted, createOrUpdateClassified } from "cm-consumer-example/adapters/classifieds-materialized-view-postgre";
+import { getClassifiedApiSecret } from "../adapters/classified-api-secrets";
+
+import { Pool } from "pg";
+
 import * as fs from 'fs';
 const processor = new BatchProcessor(EventType.SQS);
+
+const apisecrets = await getClassifiedApiSecret()
+
+const pool = new Pool({
+    max: 1,
+    min: 0,
+    idleTimeoutMillis: 120000,
+    connectionTimeoutMillis: 10000,
+    host: apisecrets.Host,
+    port: apisecrets.Port,
+    user: apisecrets.Username,
+    password: apisecrets.Password,
+    database: apisecrets.Database
+});
+
 
 export const recordHandler = async (record: SQSRecord, context: Context ): Promise<void> => {
     // const body = fs.readFileSync("cm-consumer-example/lambda-handlers/fakes/231116WBR1KI.json", "utf8");
@@ -14,12 +33,12 @@ export const recordHandler = async (record: SQSRecord, context: Context ): Promi
     const classifiedId = e.data.classifiedId;
 
     if ((e.type === `${SSotEntityName}.deleted.v1`)) {
-        await markClassifiedAsDeleted(context, {
+        await markClassifiedAsDeleted(pool, context, {
             classifiedId, updateDate: e.data.updateDate
         });
     }
     else {
-        await createOrUpdateClassified(context, classifiedId, e.data);
+        await createOrUpdateClassified(pool, context, classifiedId, e.data);
     }
 }
 
