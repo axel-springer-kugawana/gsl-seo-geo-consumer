@@ -12,7 +12,12 @@ import { Pool } from "pg";
 import * as fs from 'fs';
 const processor = new BatchProcessor(EventType.SQS);
 
-const apisecrets = await getClassifiedApiSecret()
+let apisecrets;
+
+(async () => {
+    apisecrets = await getClassifiedApiSecret();
+    // Vous pouvez également effectuer d'autres opérations avec apisecrets ici
+})();
 
 const pool = new Pool({
     max: 1,
