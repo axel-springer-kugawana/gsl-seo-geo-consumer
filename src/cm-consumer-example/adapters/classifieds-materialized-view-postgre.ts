@@ -36,8 +36,8 @@ const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classi
   const pool = new Pool({
     max: 1,
     min: 0,
-    idleTimeoutMillis: 120000,
-    connectionTimeoutMillis: 10000,
+    idleTimeoutMillis: 5000,
+    connectionTimeoutMillis: 2000,
     host: apisecrets.Host,
     port: apisecrets.Port,
     user: apisecrets.Username,
