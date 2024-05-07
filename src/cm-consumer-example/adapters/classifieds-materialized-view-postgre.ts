@@ -1,38 +1,14 @@
 import { logger } from "@shared/cross-cutting/logger";
 import { Classified, Location } from "@shared/models/classified/1.0.0/classified";
-import { Pool } from "pg";
 import { mapFeatures, mapPrice, mapGeoAsync } from '../utils/mappingHelpers';
-import { getClassifiedApiSecret } from "./classified-api-secrets";
+import { pool } from "./connectPostGre";
 import { Context } from "aws-lambda";
 
-// let client;
-
-// async function main(): Promise<void> {
-
-//   const apisecrets = await getClassifiedApiSecret()
-//   console.log('foo')
-
-//   // const apisecrets = await getClassifiedApiSecret()
-//   client = new Client({
-//     host: apisecrets.Host,
-//     port: apisecrets.Port,
-//     user: apisecrets.Username,
-//     password: apisecrets.Password,
-//     database: apisecrets.Database
-//   });
-
-//   client.connect()
-
-// }
-
-// main()
 
 
 
-
-const markClassifiedAsDeleted = async (pool: Pool ,context: Context, deleteCommand: { classifiedId: string, updateDate: string }): Promise<void> => {
+const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classifiedId: string, updateDate: string }): Promise<void> => {
   const { classifiedId, updateDate } = deleteCommand;
-  const apisecrets = await getClassifiedApiSecret()
   const values = [classifiedId];
   context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
   const client = await pool.connect()
@@ -55,10 +31,9 @@ const markClassifiedAsDeleted = async (pool: Pool ,context: Context, deleteComma
   }
 }
 
-const createOrUpdateClassified = async (pool: Pool ,context: Context, id: string, classified: Classified): Promise<void> => {
+const createOrUpdateClassified = async (context: Context, id: string, classified: Classified): Promise<void> => {
 
   try {
-    const apisecrets = await getClassifiedApiSecret()
     context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
 
     const client = await pool.connect()
