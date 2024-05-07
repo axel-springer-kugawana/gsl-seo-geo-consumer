@@ -43,7 +43,7 @@ module "cm_consumer_example" {
   process_cm_connector_events_lambda = {
     dist_file                 = "../src/dist/cm-consumer-example/lambda-handlers/process-cm-connector-events.js"
     handler                   = "process-cm-connector-events.handler"
-    queue_esm_max_concurrency = 2
+    queue_esm_max_concurrency = 5
   }
   cm_connector_consumer_queue = {
     arn = module.cm_connector.queue_arn
