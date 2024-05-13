@@ -208,6 +208,7 @@ ON CONFLICT (ClassifiedId) DO UPDATE
     }
     else {
       logger.error('classifiedId : ' + id)
+      logger.error('payload : ' + JSON.stringify(classified))
       logger.error(e)
 
       throw (e);
