@@ -45,15 +45,13 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
     if (avivGeoIdWkg !== undefined || geometry !== undefined) {
 
       const geoQueryExists = `
-
-select count(*) records
-from(
-select 1 from geo_lat_lon
-where (lat = $1 and lon = $2)  
-union
-select 1 from geo
-where avivgeoid = $3) tmp
-`;
+        select avivgeoid avivgeoid
+        from(
+        select avivgeoid from geo_lat_lon
+        where (lat = $1 and lon = $2)  
+        union
+        select avivgeoid from geo
+        where avivgeoid = $3) tmp`;
 
       const geoValueExists = [
         lat,
@@ -62,8 +60,12 @@ where avivgeoid = $3) tmp
       ]
 
       let existsRecords = (await client.query(geoQueryExists, geoValueExists)).rows[0];
-      if (existsRecords.records > 0) {
-        console.log("reuse geo id  : " + avivGeoIdWkg);
+      if (existsRecords.avivgeoid !== undefined) {
+        if (avivGeoId !== undefined)
+          console.log("reuse geo id  : " + avivGeoId);
+        if (lat !== undefined)
+          console.log("reuse lat : " + lat + "- lon : " + lon)
+        avivGeoIdWkg = existsRecords.avivgeoid
         doGeoMapping = false;
       }
     }
@@ -204,8 +206,7 @@ ON CONFLICT (ClassifiedId) DO UPDATE
           Portals = $15,
           Postalcode = $16,
           lat = $17,
-          lon  = $18
-          ;`;
+          lon  = $18          ;`;
 
     await client.query(classifiedQuery, classifiedValue);
 
