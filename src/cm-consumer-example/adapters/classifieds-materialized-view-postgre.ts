@@ -72,14 +72,20 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
     if (doGeoMapping) {
       const geo = await mapGeoAsync(classified?.data?.location);
       let geoLevel = null
-      if (avivGeoIdWkg === undefined) {
-        avivGeoIdWkg = geo[geo.length - 1]?.id;
-        geoLevel = geo[geo.length - 1]?.level;
+
+      if (geo.length == 0) {
+        geoLevel = 200
+        avivGeoIdWkg = classified.data.location.country
       }
       else {
-        geoLevel = single(geo.filter(x => x.id === avivGeoIdWkg))?.level;
+        if (avivGeoIdWkg === undefined) {
+          avivGeoIdWkg = geo[geo.length - 1]?.id;
+          geoLevel = geo[geo.length - 1]?.level;
+        }
+        else {
+          geoLevel = single(geo.filter(x => x.id === avivGeoIdWkg))?.level;
+        }
       }
-
       let countryId = single(geo.filter(x => x.level === 200))?.id;
       let regionId = single(geo.filter(x => x.level === 400))?.id;
       let microregionId = single(geo.filter(x => x.level === 500))?.id;
