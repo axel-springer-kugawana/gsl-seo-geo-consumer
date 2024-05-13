@@ -48,7 +48,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
     //if (classified.data?.location !== undefined)
     {
       const { avivGeoId, geometry } = classified.data?.location;
-      const [lon, lat] = geometry?.coordinates;
+      const [lon, lat] = geometry?.coordinates ?? [];
 
       avivGeoIdWkg = avivGeoId;
       if (avivGeoIdWkg !== undefined || geometry !== undefined) {
@@ -82,7 +82,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         const geo = await mapGeoAsync(classified?.data?.location);
         let geoLevel = null
 
-        if (geo.length == 0) {
+        if (geo?.length ?? 0 == 0) {
           geoLevel = 200
           avivGeoIdWkg = classified.data.location.country
         }
@@ -95,14 +95,14 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
             geoLevel = single(geo.filter(x => x.id === avivGeoIdWkg))?.level;
           }
         }
-        let countryId = single(geo.filter(x => x.level === 200))?.id;
-        let regionId = single(geo.filter(x => x.level === 400))?.id;
-        let microregionId = single(geo.filter(x => x.level === 500))?.id;
-        let provinceId = single(geo.filter(x => x.level === 600))?.id;
-        let municipalityID = single(geo.filter(x => x.level === 800))?.id;
-        let boroughID = single(geo.filter(x => x.level === 900))?.id;
-        let neighborhoodId = single(geo.filter(x => x.level === 1000))?.id;
-        let blocId = single(geo.filter(x => x.level === 1200))?.id;
+        let countryId = single(geo?.filter(x => x.level === 200))?.id;
+        let regionId = single(geo?.filter(x => x.level === 400))?.id;
+        let microregionId = single(geo?.filter(x => x.level === 500))?.id;
+        let provinceId = single(geo?.filter(x => x.level === 600))?.id;
+        let municipalityID = single(geo?.filter(x => x.level === 800))?.id;
+        let boroughID = single(geo?.filter(x => x.level === 900))?.id;
+        let neighborhoodId = single(geo?.filter(x => x.level === 1000))?.id;
+        let blocId = single(geo?.filter(x => x.level === 1200))?.id;
 
         const geoValue = [
           avivGeoIdWkg,
@@ -253,6 +253,7 @@ export {
 }
 
 function single<T>(a: ReadonlyArray<T>, fallback?: T): T {
+  if (a === undefined) return null;
   if (a.length === 1) return a[0];
   if (a.length === 0 && fallback !== void 0) return fallback;
   return null;

@@ -138,7 +138,7 @@ export const mapGeoAsync = async (location: Location): Promise<Feature[] | undef
 
     // Path params
     //https://github.com/axel-springer-kugawana/aviv_seeker_classified_search_composer/blob/main/lambdas/src/classified-enrichment/get-geo-hierarchy/main.ts#L37
-    const { avivGeoId, geometry } = location ?? {};
+    const { avivGeoId, geometry } = location;
     if (avivGeoId !== undefined) {
         const {
             data, // only present if 2XX response
