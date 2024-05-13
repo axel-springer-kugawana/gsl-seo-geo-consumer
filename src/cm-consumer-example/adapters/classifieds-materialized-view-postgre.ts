@@ -149,8 +149,8 @@ ON CONFLICT (avivgeoId) DO UPDATE
       features,
       classified.data.location.country,
       classified.metadata.brand,
-      classified.visibility.requests.map(e => e.portal),
-      classified.data.location.postalcode
+      classified?.visibility?.requests.map(e => e.portal),
+      classified?.data?.location?.postalcode
     ];
 
     const classifiedQuery = `
