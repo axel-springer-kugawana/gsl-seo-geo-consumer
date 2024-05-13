@@ -6,110 +6,91 @@
     "type": "classified.updated.v1",
     "data": {
         "metadata": {
-            "offererMarketingKey": "65378698",
-            "updateDate": "2023-11-02T13:23:07.261Z",
-            "customerId": "43114",
-            "externalId": "e0069cab-9c55-4ada-aa8c-e575091bbf53",
-            "creationDate": "2013-02-28T10:55:15.33Z",
-            "brand": "IWT"
+            "offererMarketingKey": "-m6-6",
+            "classifiedBusiness": "PROFESSIONAL",
+            "updateDate": "2024-05-10T15:20:35.538Z",
+            "customerId": "RC-368659",
+            "externalId": "159617505",
+            "creationDate": "2021-01-13T17:04:00Z",
+            "brand": "GSL"
         },
+        "media": [
+            {
+                "avivMediaId": "692ffbdf-4843-4cc0-b4af-bebf6458041f",
+                "type": "PICTURE"
+            }
+        ],
         "data": {
-            "features": {
-                "furnished": "NOT_APPLICABLE"
-            },
-            "estateType": "APARTMENT",
-            "distributionType": "RENT",
+            "features": {},
+            "estateType": "HOUSE",
+            "distributionType": "BUY",
             "texts": {
-                "area": {
-                    "de": "Das Bahnhofsviertel ist mit knapp 0,5 Quadratkilometern nach der Altstadt der zweitkleinste Stadtteil von Frankfurt. Die längste Grenzlinie ist gerade einmal knapp einen Kilometer lang. Fast trapezförmig liegt das Viertel zwischen dem Frankfurter Alleenring im Westen, der Mainzer Landstraße im Norden und dem Anlagenring im Osten. Im Süden bildet der Main die natürliche Grenze. Benachbarte Stadtteile sind im Westen das Gutleutviertel und das Gallus mit dem Hauptbahnhof, im Norden das Westend-Süd, im Osten die Frankfurter Innenstadt und im Süden auf der gegenüberliegenden Mainseite Sachsenhausen-Nord. Der Stadtteil liegt zentral im Frankfurter Innenstadtbezirk.<br/>Durch seine zentrale Lage ist das Bahnhofsviertel sehr gut an das Verkehrsnetz angebunden. Der Hauptbahnhof, der selbst nicht mehr zum Stadtteil gehört sondern zum benachbarten Gallus, bietet eine Anbindung an den Regional- und Fernverkehr. Die Straßenbahnen der Linien 11 und 12 durchfahren den Stadtteil auf der Münchener Straße. Der U-Bahnhof Willy-Brandt-Platz (Linien U1U5) und der S-Bahnhof Taunusanlage (Linien S1S6, S8, S9) erschließen den Osten und Nordosten des Viertels."
-                },
-                "features": {
-                    "de": "Erstbezug nach Sanierung<br/>WG geeigent<br/>Geeignet für Unternehmen, die einzelnen Zimmer an ihre Mitarbeiter untervermieten möchten<br/>Teppichboden<br/>190 m² Wohnfläche verteilt auf 6 Zimmern<br/>2 Duschbäder<br/>Kleine Küchenzeile<br/>doppelverglaste Fenster"
-                },
-                "extendedInformation": {
-                    "de": "Stichworte\\nWohnimmobilie, Anzahl der Schlafzimmer: 6, Anzahl der Badezimmer: 2, 6 Etagen"
-                },
                 "description": {
-                    "de": "Dieses 6- Stöckige Objekt befindet sich unweit von der Frankfurter City entfernt, der Niddastraße! Mit ca. 190 m² Wohnfläche, die sich auf 6 Zimmern, 2 Duschbädern und einer Küche verteilen, erwartet sie hier ein Erstbezug nach Sanierung. Ideal geeignet ist dieses Apartment für eine große WG, für Unternehmen die Ihren Mitarbeitern die passende Schlafgelegenheit unter der Woche suchen!!! Natürlich ist diese Wohnung ebenso für Individualisten, die jede Menge Platz zum Leben brauchen geeignet!<br/>Zum 01. Juli 2012 könnten sie bereits Mieter dieser tollen Immobilie werden. Der Bodenbelag besteht aus Teppichboden, die Wände, Türen, Elektroleitungen, doppelverglaste Fenster sind hier Standart und auf dem aktuellsten Stand. Jedes Zimmer ist aus dem Hauptflur begehbar. Die Räume haben alle zwischen 15 - 30 m² Wohnfläche. Zur Innenstadt, wie Alte Oper, Goethestraße, Fressgasse gelangen sie in 5 Gehminuten. Weitere Infos zur Lage, siehe unten! Weiterhin gibt es insgesamt 5 dieser 190 m² großen Apartments in diesem Objekt (1 Wohnung pro Etage)."
+                    "fr": "Description de mon annonce utilisé pour tester le nombre de lots maximums."
                 },
                 "headline": {
-                    "de": "Erstbezug nach Sanierung!WG-geeignet,ideal für Pendler mitten in der City,5 Gehmin.zum Hauptbahnhof!"
+                    "fr": "MaxLotsAnnonceOr"
                 }
             },
             "management": {
-                "rent": {
-                    "isShortTimeRental": false
-                }
+                "heritageProtected": "NO"
             },
             "spaces": {
-                "residential": {
-                    "livingSpace": 190
-                },
+                "overallSpace": 56,
                 "spaceMeasureUnit": "SQUARE_METER"
             },
             "location": {
-                "country": "DE",
-                "city": "Frankfurt am Main",
-                "postalcode": "60329",
-                "street": "Niddastraße",
-                "floorNumber": 2,
+                "avivGeoId": "NBH2FR104",
+                "country": "FRA",
+                "city": "Paris 18ème",
+                "postalcode": "75018",
+                "street": "Rue Ordener",
                 "geometry": {
                     "coordinates": [
-                        8.661694526672363,
-                        50.10871887207031
+                        2.345904,
+                        48.892139
                     ],
                     "type": "Point"
                 },
                 "countrySpecific": {
-                    "de": {}
-                },
-                "showAddress": false
-            },
-            "prices": {
-                "brokerageFee": {
-                    "feeNote": {
-                        "de": "2,38 % inkl. gesetzl. MwSt."
-                    }
-                },
-                "currency": "EUR",
-                "rent": {
-                    "priceTimeUnit": "MONTH",
-                    "operatingCosts": {
-                        "amount": 494
-                    },
-                    "baseRent": {
-                        "amount": 2280
-                    },
-                    "totalRent": {
-                        "amount": 2774
+                    "fr": {
+                        "inseeCode": "750118"
                     }
                 }
             },
-            "conditions": {
-                "yearOfConstruction": 1980
+            "countrySpecific": {
+                "fr": {
+                    "agentMandate": {
+                        "mandateType": "SIMPLE"
+                    }
+                }
+            },
+            "prices": {
+                "buy": {
+                    "price": {
+                        "amount": 500006,
+                        "isVatIncluded": true
+                    }
+                }
             },
             "structure": {
                 "rooms": {
                     "numberOfRooms": 6
-                },
-                "building": {
-                    "elevator": {
-                        "person": "YES"
+                }
+            },
+            "energy": {
+                "countrySpecific": {
+                    "fr": {
+                        "energyCertificate": {}
                     }
                 }
             }
         },
-        "visibility": {
-            "requests": [],
-            "validations": []
-        },
-        "media": [],
-        "specifics": {
-            "de": {
-                "iwtContactId": "38DD65325AB34E05873BDC9FAA82FEA2"
+        "enrichedData": {
+            "censorship": {
+                "globalStatus": true
             }
         },
-        "updateAt": 1698936586854,
-        "classifiedId": "23W8AE7FIMWR"
+        "classifiedId": "24BYS52MH54M"
     }
 }

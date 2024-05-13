@@ -36,67 +36,70 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
     const client = await pool.connect()
     const price = mapPrice(classified) ?? undefined;
     const features = mapFeatures(classified);
-    const geo = await mapGeoAsync(classified?.data?.location);
 
-    let avivGeoId = classified.data?.location.avivGeoId;
-    if (geo?.length ?? 0 > 0) {
+    let doGeoMapping = true;
+    const { avivGeoId, geometry } = classified.data?.location ?? {};
+    const [lon, lat] = geometry?.coordinates;
 
+    let avivGeoIdWkg = avivGeoId;
+    if (avivGeoId !== undefined || geometry !== undefined) {
 
+      const geoQueryExists = `
 
-      //check exists aviv geo Id
-
-      const geoQueryExists = `select * from geo where avivgeoId = $1;`;
+select count(*) records
+from(
+select 1 from geo_lat_lon
+where (lat = $1 and lon = $2)  
+union
+select 1 from geo
+where avivgeoid = $3) tmp
+`;
 
       const geoValueExists = [
+        lat,
+        lon,
         avivGeoId
       ]
-      let existsRecorss = 0;
-      try {
-        existsRecorss = (await client.query(geoQueryExists, geoValueExists)).rowCount;
 
-
-      }
-      catch (e) {
-        logger.error(e);
-      }
-      if (existsRecorss > 0) {
+      let existsRecords = (await client.query(geoQueryExists, geoValueExists)).rows[0];
+      if (existsRecords.records > 0) {
         console.log("reuse geo id  : " + avivGeoId);
-
+        doGeoMapping = false;
+      }
+    }
+    if (doGeoMapping) {
+      const geo = await mapGeoAsync(classified?.data?.location);
+      let geoLevel = null
+      if (avivGeoIdWkg === undefined) {
+        avivGeoIdWkg = geo[geo.length - 1]?.id;
+        geoLevel = geo[geo.length - 1]?.level;
       }
       else {
+        geoLevel = single(geo.filter(x => x.id === avivGeoId))?.level;
+      }
 
+      let countryId = single(geo.filter(x => x.level === 200))?.id;
+      let regionId = single(geo.filter(x => x.level === 400))?.id;
+      let microregionId = single(geo.filter(x => x.level === 500))?.id;
+      let provinceId = single(geo.filter(x => x.level === 600))?.id;
+      let municipalityID = single(geo.filter(x => x.level === 800))?.id;
+      let boroughID = single(geo.filter(x => x.level === 900))?.id;
+      let neighborhoodId = single(geo.filter(x => x.level === 1000))?.id;
+      let blocId = single(geo.filter(x => x.level === 1200))?.id;
 
-        let geoLevel = null
-        if (avivGeoId === undefined) {
-          avivGeoId = geo[geo.length - 1]?.id;
-          geoLevel = geo[geo.length - 1]?.level;
-        }
-        else {
-          geoLevel = single(geo.filter(x => x.id === avivGeoId))?.level;
-        }
-
-        let countryId = single(geo.filter(x => x.level === 200))?.id;
-        let regionId = single(geo.filter(x => x.level === 400))?.id;
-        let microregionId = single(geo.filter(x => x.level === 500))?.id;
-        let provinceId = single(geo.filter(x => x.level === 600))?.id;
-        let municipalityID = single(geo.filter(x => x.level === 800))?.id;
-        let boroughID = single(geo.filter(x => x.level === 900))?.id;
-        let neighborhoodId = single(geo.filter(x => x.level === 1000))?.id;
-        let blocId = single(geo.filter(x => x.level === 1200))?.id;
-
-        const geoValue = [
-          avivGeoId,
-          geoLevel,
-          countryId,
-          regionId,
-          microregionId,
-          provinceId,
-          municipalityID,
-          boroughID,
-          neighborhoodId,
-          blocId
-        ]
-        const geoQuery = `
+      const geoValue = [
+        avivGeoId,
+        geoLevel,
+        countryId,
+        regionId,
+        microregionId,
+        provinceId,
+        municipalityID,
+        boroughID,
+        neighborhoodId,
+        blocId
+      ]
+      const geoQuery = `
     INSERT INTO geo (
       avivgeoId,
       geoLevel,
@@ -120,24 +123,32 @@ ON CONFLICT (avivgeoId) DO UPDATE
       boroughID= $9,
       neighborhoodId= $9,
       blocId= $10;`;
-        try {
-          await client.query(geoQuery, geoValue);
-        }
-        catch (e) {
-          logger.error(e);
-        }
+
+
+
+      await client.query(geoQuery, geoValue);
+
+      if (lat !== undefined) {
+        const geo_lat_lonValue = [
+          lat,
+          lon,
+          avivGeoId
+        ]
+
+        const geo_lat_lon = `
+      INSERT INTO geo_lat_lon (lat, lon, avivgeoId) VALUES ($1, $2, $3)
+  ON CONFLICT (lat,lon) DO UPDATE 
+        SET    
+        avivgeoId = $3`;
+        await client.query(geo_lat_lon, geo_lat_lonValue);
       }
     }
 
-    else {
-
-      console.log("cannot retrieve geo for classified : " + JSON.stringify(classified))
-    }
     //Mapping : https://avivgroup.atlassian.net/browse/WLSEO-501
     const classifiedValue = [
       id,
       price,
-      avivGeoId,
+      avivGeoIdWkg,
       classified.data.distributionType,
       classified.data.estateType,
       classified.data?.estateSubType !== undefined ? Object.values(classified.data?.estateSubType)?.[0] : null,
@@ -150,7 +161,9 @@ ON CONFLICT (avivgeoId) DO UPDATE
       classified.data.location.country,
       classified.metadata.brand,
       classified?.visibility?.requests.map(e => e.portal),
-      classified?.data?.location?.postalcode
+      classified?.data?.location?.postalcode,
+      lat ?? 0,
+      lon ?? 0,
     ];
 
     const classifiedQuery = `
@@ -170,8 +183,10 @@ ON CONFLICT (avivgeoId) DO UPDATE
       Country,
       Brand,
       Portals,
-      Postalcode
-   ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+      Postalcode,
+      lat,
+      lon
+   ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
 ON CONFLICT (ClassifiedId) DO UPDATE 
       SET Price = $2,
           avivgeoId= $3, 
@@ -187,18 +202,15 @@ ON CONFLICT (ClassifiedId) DO UPDATE
           Country = $13,
           Brand = $14,
           Portals = $15,
-          Postalcode = $16
+          Postalcode = $16,
+          lat = $17,
+          lon  = $18
           ;`;
-    try {
-      await client.query(classifiedQuery, classifiedValue);
-    }
-    catch (e) {
-      logger.error(e);
 
-    }
-    finally {
-      await client.release();
-    }
+    await client.query(classifiedQuery, classifiedValue);
+
+
+    await client.release();
   }
   catch (e) {
     if (e.name === "ConditionalCheckFailedException") {
@@ -213,6 +225,8 @@ ON CONFLICT (ClassifiedId) DO UPDATE
 
       throw (e);
     }
+  }
+  finally {
   }
 }
 
