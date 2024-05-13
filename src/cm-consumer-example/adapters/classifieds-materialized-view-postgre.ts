@@ -4,9 +4,6 @@ import { mapFeatures, mapPrice, mapGeoAsync } from '../utils/mappingHelpers';
 import { pool } from "./connectPostGre";
 import { Context } from "aws-lambda";
 
-
-
-
 const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classifiedId: string, updateDate: string }): Promise<void> => {
   const { classifiedId, updateDate } = deleteCommand;
   const values = [classifiedId];
@@ -210,7 +207,7 @@ ON CONFLICT (ClassifiedId) DO UPDATE
       })
     }
     else {
-      logger.error('classifiedId : ' + classified)
+      logger.error('classifiedId : ' + id)
       logger.error(e)
 
       throw (e);
