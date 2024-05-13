@@ -45,7 +45,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
     if (avivGeoIdWkg !== undefined || geometry !== undefined) {
 
       const geoQueryExists = `
-        select avivgeoid avivgeoid
+        select avivgeoid
         from(
         select avivgeoid from geo_lat_lon
         where (lat = $1 and lon = $2)  
@@ -60,7 +60,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       ]
 
       let existsRecords = (await client.query(geoQueryExists, geoValueExists)).rows[0];
-      if (existsRecords.avivgeoid !== undefined) {
+      if (existsRecords?.avivgeoid !== undefined) {
         if (avivGeoId !== undefined)
           console.log("reuse geo id  : " + avivGeoId);
         if (lat !== undefined)
