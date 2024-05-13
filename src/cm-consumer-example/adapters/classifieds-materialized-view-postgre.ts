@@ -35,7 +35,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
 
   try {
     context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
-    
+
     const client = await pool.connect()
     const price = mapPrice(classified) ?? undefined;
     const features = mapFeatures(classified);
@@ -44,37 +44,62 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
     let avivGeoId = classified.data?.location.avivGeoId;
     if (geo?.length ?? 0 > 0) {
 
-      let geoLevel = null
-      if (avivGeoId === undefined) {
-        avivGeoId = geo[geo.length - 1]?.id;
-        geoLevel = geo[geo.length - 1]?.level;
+
+
+      //check exists aviv geo Id
+
+      const geoQueryExists = `select * from geo where avivgeoId = $1;`;
+
+      const geoValueExists = [
+        avivGeoId
+      ]
+      let existsRecorss = 0;
+      try {
+        existsRecorss = (await client.query(geoQueryExists, geoValueExists)).rowCount;
+
+
+      }
+      catch (e) {
+        logger.error(e);
+      }
+      if (existsRecorss > 0) {
+        console.log("reuse geo id  : " + avivGeoId);
+
       }
       else {
-        geoLevel = single(geo.filter(x => x.id === avivGeoId))?.level;
-      }
 
-      let countryId = single(geo.filter(x => x.level === 200))?.id;
-      let regionId = single(geo.filter(x => x.level === 400))?.id;
-      let microregionId = single(geo.filter(x => x.level === 500))?.id;
-      let provinceId = single(geo.filter(x => x.level === 600))?.id;
-      let municipalityID = single(geo.filter(x => x.level === 800))?.id;
-      let boroughID = single(geo.filter(x => x.level === 900))?.id;
-      let neighborhoodId = single(geo.filter(x => x.level === 1000))?.id;
-      let blocId = single(geo.filter(x => x.level === 1200))?.id;
 
-      const geoValue = [
-        avivGeoId,
-        geoLevel,
-        countryId,
-        regionId,
-        microregionId,
-        provinceId,
-        municipalityID,
-        boroughID,
-        neighborhoodId,
-        blocId
-      ]
-      const geoQuery = `
+        let geoLevel = null
+        if (avivGeoId === undefined) {
+          avivGeoId = geo[geo.length - 1]?.id;
+          geoLevel = geo[geo.length - 1]?.level;
+        }
+        else {
+          geoLevel = single(geo.filter(x => x.id === avivGeoId))?.level;
+        }
+
+        let countryId = single(geo.filter(x => x.level === 200))?.id;
+        let regionId = single(geo.filter(x => x.level === 400))?.id;
+        let microregionId = single(geo.filter(x => x.level === 500))?.id;
+        let provinceId = single(geo.filter(x => x.level === 600))?.id;
+        let municipalityID = single(geo.filter(x => x.level === 800))?.id;
+        let boroughID = single(geo.filter(x => x.level === 900))?.id;
+        let neighborhoodId = single(geo.filter(x => x.level === 1000))?.id;
+        let blocId = single(geo.filter(x => x.level === 1200))?.id;
+
+        const geoValue = [
+          avivGeoId,
+          geoLevel,
+          countryId,
+          regionId,
+          microregionId,
+          provinceId,
+          municipalityID,
+          boroughID,
+          neighborhoodId,
+          blocId
+        ]
+        const geoQuery = `
     INSERT INTO geo (
       avivgeoId,
       geoLevel,
@@ -98,13 +123,15 @@ ON CONFLICT (avivgeoId) DO UPDATE
       boroughID= $9,
       neighborhoodId= $9,
       blocId= $10;`;
-      try {
-        await client.query(geoQuery, geoValue);
-      }
-      catch (e) {
-        logger.error(e);
+        try {
+          await client.query(geoQuery, geoValue);
+        }
+        catch (e) {
+          logger.error(e);
+        }
       }
     }
+
     else {
 
       console.log("cannot retrieve geo for classified : " + JSON.stringify(classified))
