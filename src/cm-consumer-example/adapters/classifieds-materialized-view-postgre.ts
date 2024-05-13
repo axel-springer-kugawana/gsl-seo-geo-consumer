@@ -42,7 +42,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
     const [lon, lat] = geometry?.coordinates;
 
     let avivGeoIdWkg = avivGeoId;
-    if (avivGeoId !== undefined || geometry !== undefined) {
+    if (avivGeoIdWkg !== undefined || geometry !== undefined) {
 
       const geoQueryExists = `
 
@@ -58,12 +58,12 @@ where avivgeoid = $3) tmp
       const geoValueExists = [
         lat,
         lon,
-        avivGeoId
+        avivGeoIdWkg
       ]
 
       let existsRecords = (await client.query(geoQueryExists, geoValueExists)).rows[0];
       if (existsRecords.records > 0) {
-        console.log("reuse geo id  : " + avivGeoId);
+        console.log("reuse geo id  : " + avivGeoIdWkg);
         doGeoMapping = false;
       }
     }
@@ -75,7 +75,7 @@ where avivgeoid = $3) tmp
         geoLevel = geo[geo.length - 1]?.level;
       }
       else {
-        geoLevel = single(geo.filter(x => x.id === avivGeoId))?.level;
+        geoLevel = single(geo.filter(x => x.id === avivGeoIdWkg))?.level;
       }
 
       let countryId = single(geo.filter(x => x.level === 200))?.id;
@@ -88,7 +88,7 @@ where avivgeoid = $3) tmp
       let blocId = single(geo.filter(x => x.level === 1200))?.id;
 
       const geoValue = [
-        avivGeoId,
+        avivGeoIdWkg,
         geoLevel,
         countryId,
         regionId,
@@ -132,7 +132,7 @@ ON CONFLICT (avivgeoId) DO UPDATE
         const geo_lat_lonValue = [
           lat,
           lon,
-          avivGeoId
+          avivGeoIdWkg
         ]
 
         const geo_lat_lon = `

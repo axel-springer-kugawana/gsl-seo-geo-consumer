@@ -6,91 +6,56 @@
     "type": "classified.updated.v1",
     "data": {
         "metadata": {
-            "offererMarketingKey": "-m6-6",
+            "customerId": "4092940",
             "classifiedBusiness": "PROFESSIONAL",
-            "updateDate": "2024-05-10T15:20:35.538Z",
-            "customerId": "RC-368659",
-            "externalId": "159617505",
-            "creationDate": "2021-01-13T17:04:00Z",
-            "brand": "GSL"
+            "externalId": "00000000-0000-0000-0002-000000000000",
+            "updateDate": "2024-05-13T11:32:49.902Z",
+            "creationDate": "2020-11-05T10:15:34.547Z",
+            "brand": "IWT"
         },
-        "media": [
-            {
-                "avivMediaId": "692ffbdf-4843-4cc0-b4af-bebf6458041f",
-                "type": "PICTURE"
-            }
-        ],
+        "media": [],
         "data": {
-            "features": {},
-            "estateType": "HOUSE",
-            "distributionType": "BUY",
-            "texts": {
-                "description": {
-                    "fr": "Description de mon annonce utilisé pour tester le nombre de lots maximums."
-                },
-                "headline": {
-                    "fr": "MaxLotsAnnonceOr"
-                }
-            },
-            "management": {
-                "heritageProtected": "NO"
-            },
-            "spaces": {
-                "overallSpace": 56,
-                "spaceMeasureUnit": "SQUARE_METER"
-            },
             "location": {
-                "avivGeoId": "NBH2FR104",
-                "country": "FRA",
-                "city": "Paris 18ème",
-                "postalcode": "75018",
-                "street": "Rue Ordener",
+                "country": "ATA",
+                "city": "Pinguin Town",
+                "postalcode": "8340",
+                "street": "Nordostpark",
+                "houseNumber": "9",
                 "geometry": {
                     "coordinates": [
-                        2.345904,
-                        48.892139
+                        113.66070556640625,
+                        -79.88951873779297
                     ],
                     "type": "Point"
                 },
-                "countrySpecific": {
-                    "fr": {
-                        "inseeCode": "750118"
-                    }
-                }
+                "showAddress": false
             },
-            "countrySpecific": {
-                "fr": {
-                    "agentMandate": {
-                        "mandateType": "SIMPLE"
-                    }
+            "estateType": "APARTMENT",
+            "distributionType": "RENT",
+            "estateSubType": {
+                "apartment": "LOFT"
+            },
+            "texts": {
+                "headline": {
+                    "de": "Testobjekt/Heartbeat"
+                },
+                "extendedInformation": {
+                    "de": "<b>Test timestamp</b>\\n 1715599964487"
                 }
             },
             "prices": {
-                "buy": {
-                    "price": {
-                        "amount": 500006,
-                        "isVatIncluded": true
+                "rent": {
+                    "baseRent": {
+                        "amount": 999999999
                     }
-                }
-            },
-            "structure": {
-                "rooms": {
-                    "numberOfRooms": 6
-                }
-            },
-            "energy": {
-                "countrySpecific": {
-                    "fr": {
-                        "energyCertificate": {}
-                    }
-                }
+                },
+                "currency": "EUR"
             }
         },
-        "enrichedData": {
-            "censorship": {
-                "globalStatus": true
-            }
+        "visibility": {
+            "requests": [],
+            "validations": []
         },
-        "classifiedId": "24BYS52MH54M"
+        "classifiedId": "23NM8IIQXH5P"
     }
 }
