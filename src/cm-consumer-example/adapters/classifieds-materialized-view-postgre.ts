@@ -70,10 +70,10 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
 
         let existsRecords = (await client.query(geoQueryExists, geoValueExists)).rows[0];
         if (existsRecords?.avivgeoid !== undefined) {
-          if (avivGeoId !== undefined)
-            console.log("reuse geo id  : " + avivGeoId);
-          if (lat !== undefined)
-            console.log("reuse lat : " + lat + "- lon : " + lon)
+          // if (avivGeoId !== undefined)
+          //   console.log("reuse geo id  : " + avivGeoId);
+          // if (lat !== undefined)
+          //   console.log("reuse lat : " + lat + "- lon : " + lon)
           avivGeoIdWkg = existsRecords.avivgeoid
           doGeoMapping = false;
         }
