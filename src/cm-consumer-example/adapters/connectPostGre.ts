@@ -1,20 +1,21 @@
 import { Pool } from "pg";
 import { getClassifiedApiSecret } from "./classified-api-secrets";
 
-export const pool = async () => {
-  const apisecrets = await getClassifiedApiSecret();
-  return new Pool({
-    // min: 0,
-    // idleTimeoutMillis: 120000,
-    // connectionTimeoutMillis: 10000,
+//const apisecrets = await getClassifiedApiSecret();
 
-    host: 'aviv-seeker-whitelabel-seo-ssot-db-two.ca5oh2kzqupc.eu-west-1.rds.amazonaws.com',//apisecrets.Host,
-    port: 5432,// #apisecrets.Port,
-    user: 'main_user',//apisecrets.Username,
-    password: 'DUw?5H!{K(xodHYw',//apisecrets.Password,
-    database: 'ssot'//apisecrets.Database
-  });
-}
+// export const pool = async () => {
+
+const pool = new Pool({
+  // min: 0,
+  // idleTimeoutMillis: 120000,
+  // connectionTimeoutMillis: 10000,
+
+  host: 'aviv-seeker-whitelabel-seo-ssot-db-two.ca5oh2kzqupc.eu-west-1.rds.amazonaws.com',//apisecrets.Host,
+  port: 5432,// #apisecrets.Port,
+  user: 'main_user',//apisecrets.Username,
+  password: 'DUw?5H!{K(xodHYw',//apisecrets.Password,
+  database: 'ssot'//apisecrets.Database
+});
 
 // const apisecrets = await getClassifiedApiSecret();
 // const pool = new Pool({
@@ -47,4 +48,4 @@ export const pool = async () => {
 
 
 
-// export { pool };
+export { pool };
