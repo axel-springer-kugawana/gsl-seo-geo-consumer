@@ -8,7 +8,6 @@ const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classi
   const { classifiedId, updateDate } = deleteCommand;
   const values = [classifiedId];
   context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
-  //const client = await pool.connect()
 
   const query = `DELETE FROM Classified WHERE ClassifiedId=$1`;
   const pool = poolInstance.getPool
@@ -30,23 +29,6 @@ const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classi
       client.release();
     }
   })
-
-
-  /*try {
-    await client.query(query, values);
-  }
-  catch (e) {
-    if (e.name === "ConditionalCheckFailedException") {
-      logger.error("Conditional Check failed on lastUpdate date. Classified won't be deleted", {
-        classified: classifiedId
-      })
-    } else {
-      logger.error(e);
-    }
-  }
-  finally {
-    client.release();
-  }*/
 }
 
 const createOrUpdateClassified = async (context: Context, id: string, classified: Classified): Promise<void> => {

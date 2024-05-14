@@ -4,16 +4,15 @@ import { Pool } from "pg";
 import { getClassifiedApiSecret } from "./classified-api-secrets";
 
 class CustomPool {
-  private static abc: CustomPool;
+  private static instance: CustomPool;
   private poolObject: Pool | null = null;
   private constructor() {
-    //
   }
   static getInstance(): CustomPool {
-    if (!CustomPool.abc) {
-      return (CustomPool.abc = new CustomPool());
+    if (!CustomPool.instance) {
+      return (CustomPool.instance = new CustomPool());
     }
-    return CustomPool.abc;
+    return CustomPool.instance;
   }
 
   getPool = async (): Promise<Pool> => {
@@ -21,7 +20,8 @@ class CustomPool {
       const apisecrets = await getClassifiedApiSecret();
 
       this.poolObject = new Pool({
-        // min: 0,
+        min: 0,
+        max: 1,
         // idleTimeoutMillis: 120000,
         // connectionTimeoutMillis: 10000,
         host: apisecrets.Host,
