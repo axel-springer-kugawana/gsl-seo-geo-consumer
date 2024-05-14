@@ -31,7 +31,7 @@ const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classi
 const createOrUpdateClassified = async (context: Context, id: string, classified: Classified): Promise<void> => {
   context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
   try {
-    const client = await pool.connect()
+    const client = await pool().connect()
     const price = mapPrice(classified) ?? undefined;
     const features = mapFeatures(classified);
     let avivGeoIdWkg = ''
