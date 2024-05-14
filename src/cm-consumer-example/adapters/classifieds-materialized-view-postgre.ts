@@ -68,7 +68,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       const geo = await mapGeoAsync(classified?.data?.location);
       let geoLevel = null
 
-      if (geo?.length ?? 0 == 0) {
+      if ((geo == undefined || geo.length == 0)) {
         geoLevel = 200
         avivGeoIdWkg = classified?.data?.location?.country ?? "undefined_country"
       }
