@@ -8,10 +8,31 @@ const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classi
   const { classifiedId, updateDate } = deleteCommand;
   const values = [classifiedId];
   context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
-  const client = await pool.connect()
-  const query = `DELETE FROM Classified WHERE ClassifiedId=$1`;
+  //const client = await pool.connect()
 
-  try {
+  const query = `DELETE FROM Classified WHERE ClassifiedId=$1`;
+  
+  pool().then(async (_pool) => {
+    const client = await _pool.connect();
+    try {
+       client.query(query, values);
+    }
+    catch (e) {
+      if (e.name === "ConditionalCheckFailedException") {
+        logger.error("Conditional Check failed on lastUpdate date. Classified won't be deleted", {
+          classified: classifiedId
+        })
+      } else {
+        logger.error(e);
+      }
+    }
+    finally {
+      client.release();
+    }
+  })
+  
+
+  /*try {
     await client.query(query, values);
   }
   catch (e) {
@@ -25,13 +46,16 @@ const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classi
   }
   finally {
     client.release();
-  }
+  }*/
 }
 
 const createOrUpdateClassified = async (context: Context, id: string, classified: Classified): Promise<void> => {
   context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
   try {
-    const client = await pool.connect()
+    //const client = await pool.connect()
+    pool().then(async (_pool) => {
+    const client = await _pool.connect();
+    
     const price = mapPrice(classified) ?? undefined;
     const features = mapFeatures(classified);
     let avivGeoIdWkg = ''
@@ -214,6 +238,7 @@ ON CONFLICT (ClassifiedId) DO UPDATE
 
 
     await client.release();
+  })
   }
   catch (e) {
     if (e.name === "ConditionalCheckFailedException") {
