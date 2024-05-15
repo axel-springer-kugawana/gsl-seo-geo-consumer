@@ -7,7 +7,19 @@ parameters:
   run-classified-management-connector-job:
     type: boolean
     default: false
-
+aliases:
+  - &previewfilter
+    filters:
+      branches:
+        only: main
+        ignore: /.*/
+  - &livefilter
+    filters:
+      tags:
+        only: /v[0-9]+(\.[0-9]+)*/
+      branches:
+        ignore: /.*/
+        
 orbs:
   aws-cli: circleci/aws-cli@4.1.2
   aws-s3: circleci/aws-s3@3.1.1
@@ -76,7 +88,6 @@ jobs:
           path: ./infra
           var_file: <<parameters.ENV_PATH_FILE>>
           
-
 workflows:
   classified-management-connector-dev:
     when: << pipeline.parameters.run-classified-management-connector-job >>
@@ -88,27 +99,22 @@ workflows:
           requires:
             - build-classified-management-connector
   classified-management-connector-preview:
-    filters:
-      branches:
-        only: main
-        ignore: /.*/
     when: << pipeline.parameters.run-classified-management-connector-job >>
     jobs:
-      - build-classified-management-connector
+      - build-classified-management-connector:
+            <<: *previewfilter
       - deploy-classified-management-connector:
-          ENV: "preview"
-          ENV_PATH_FILE: "./preview.tfvars"
-          requires:
-            - build-classified-management-connector
+            <<: *previewfilter
+            ENV: "preview"
+            ENV_PATH_FILE: "./preview.tfvars"
+            requires:
+              - build-classified-management-connector
   classified-management-connector-live:
-    filters:
-      tags:
-        only: /v[0-9]+(\.[0-9]+)*/
-      branches:
-        ignore: /.*/
     jobs:
-      - build-classified-management-connector
+      - build-classified-management-connector:
+          <<: *livefilter
       - deploy-classified-management-connector:
+          <<: *livefilter
           ENV: "live"
           ENV_PATH_FILE: "./live.tfvars"
           requires:
