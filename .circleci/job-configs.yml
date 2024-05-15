@@ -58,6 +58,8 @@ jobs:
     parameters:
       ENV:
         type: string
+      ENV_PATH_FILE:
+        type: string
     working_directory: ~/project
     steps:
       - aws-cli/setup:
@@ -69,18 +71,45 @@ jobs:
           path: ./infra
       - terraform/plan:
           path: ./infra
-          var_file: ./dev.tfvars
+          var_file: <<parameters.ENV_PATH_FILE>>
       - terraform/apply:
           path: ./infra
-          var_file: ./dev.tfvars
+          var_file: <<parameters.ENV_PATH_FILE>>
           
 
 workflows:
-  classified-management-connector:
+  classified-management-connector-dev:
     when: << pipeline.parameters.run-classified-management-connector-job >>
     jobs:
       - build-classified-management-connector
       - deploy-classified-management-connector:
           ENV: "dev"
+          ENV_PATH_FILE: "./dev.tfvars"
+          requires:
+            - build-classified-management-connector
+  classified-management-connector-preview:
+    filters:
+      branches:
+        only: main
+        ignore: /.*/
+    when: << pipeline.parameters.run-classified-management-connector-job >>
+    jobs:
+      - build-classified-management-connector
+      - deploy-classified-management-connector:
+          ENV: "preview"
+          ENV_PATH_FILE: "./preview.tfvars"
+          requires:
+            - build-classified-management-connector
+  classified-management-connector-live:
+    filters:
+      tags:
+        only: /v[0-9]+(\.[0-9]+)*/
+      branches:
+        ignore: /.*/
+    jobs:
+      - build-classified-management-connector
+      - deploy-classified-management-connector:
+          ENV: "live"
+          ENV_PATH_FILE: "./live.tfvars"
           requires:
             - build-classified-management-connector

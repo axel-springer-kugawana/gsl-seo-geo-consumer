@@ -39,7 +39,6 @@ resource "aws_db_proxy_default_target_group" "rds_proxy_default_target_group" {
     max_connections_percent      = var.proxy_max_connections_percent
     max_idle_connections_percent = var.proxy_max_idle_connections_percent
     connection_borrow_timeout    = var.proxy_connection_borrow_timeout
-    # session_pinning_filters      = var.proxy_session_pinning_filters
   }
 }
 

@@ -20,7 +20,7 @@ const processor = new BatchProcessor(EventType.SQS);
 //       min: 0,
 //       idleTimeoutMillis: 120000,
 //       connectionTimeoutMillis: 10000,
-//       host: apisecrets.Host,
+//       host: apisecrets.HostWriter,
 //       port: apisecrets.Port,
 //       user: apisecrets.Username,
 //       password: apisecrets.Password,

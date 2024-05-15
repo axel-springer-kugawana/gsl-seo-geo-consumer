@@ -15,12 +15,8 @@ output "proxy_arn" {
 output "rds_cluster_port" {
   value = module.aurora_cluster.cluster_port
 }
-
-output "secret_arn" {
-  value = aws_secretsmanager_secret.postgres_credentials_writer.arn
-}
 output "secret_name" {
-  value = aws_secretsmanager_secret.postgres_credentials_writer.name
+  value = aws_secretsmanager_secret.postgres_credentials.name
 }
 
 output "sg_id" {
