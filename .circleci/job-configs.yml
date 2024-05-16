@@ -8,6 +8,13 @@ parameters:
     type: boolean
     default: false
 aliases:
+  - &devfilter
+    filters:
+      branches:
+        only: /.*/
+        ignore:
+          - main
+          - develop
   - &previewfilter
     filters:
       branches:
@@ -93,8 +100,10 @@ workflows:
   classified-management-connector-dev:
     when: << pipeline.parameters.run-classified-management-connector-job >>
     jobs:
-      - build-classified-management-connector
+      - build-classified-management-connector:
+          <<: *devfilter
       - deploy-classified-management-connector:
+          <<: *devfilter
           ENV: "dev"
           ENV_PATH_FILE: "./dev.tfvars"
           requires:
