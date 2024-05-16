@@ -23,7 +23,6 @@ aliases:
         only: /v[0-9]+(\.[0-9]+)*/
       branches:
         ignore: /.*/
-        
 orbs:
   aws-cli: circleci/aws-cli@4.1.2
   aws-s3: circleci/aws-s3@3.1.1
@@ -33,6 +32,9 @@ jobs:
   build-classified-management-connector:
     docker:
       - image: cimg/node:20.11.0
+    parameters:
+      ENV_SECRETS:
+        type: string
     working_directory: ~/project
     steps:
       - checkout
@@ -46,8 +48,8 @@ jobs:
             sudo corepack enable
             sudo corepack prepare --activate
       - aws-cli/setup:
-          aws_access_key_id: AWS_ACCESS_KEY_ID_DEV
-          aws_secret_access_key: AWS_SECRET_ACCESS_KEY_DEV
+          aws_access_key_id: AWS_ACCESS_KEY_ID_<<parameters.ENV_SECRETS>>
+          aws_secret_access_key: AWS_SECRET_ACCESS_KEY_<<parameters.ENV_SECRETS>>
       - run:
           name: Install Dependencies
           command: pnpm install --no-frozen-lockfile
@@ -98,6 +100,7 @@ workflows:
     when: << pipeline.parameters.run-classified-management-connector-job >>
     jobs:
       - build-classified-management-connector:
+          ENV_SECRETS: "DEV"
           <<: *devfilter
       - deploy-classified-management-connector:
           <<: *devfilter
@@ -109,6 +112,7 @@ workflows:
     when: << pipeline.parameters.run-classified-management-connector-job >>
     jobs:
       - build-classified-management-connector:
+          ENV_SECRETS: "PREVIEW"
             <<: *previewfilter
       - deploy-classified-management-connector:
             <<: *previewfilter
@@ -119,6 +123,7 @@ workflows:
   classified-management-connector-live:
     jobs:
       - build-classified-management-connector:
+          ENV_SECRETS: "LIVE"
           <<: *livefilter
       - deploy-classified-management-connector:
           <<: *livefilter
