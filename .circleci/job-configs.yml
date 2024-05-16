@@ -81,7 +81,7 @@ jobs:
           at: ./
       - terraform/init:
           path: ./infra
-          backend_config: "key=ceciestuntest","bucket:testetes"
+          backend_config: "key=ceciestuntest,bucket:testetes"
       - terraform/plan:
           path: ./infra
           var_file: <<parameters.ENV_PATH_FILE>>
