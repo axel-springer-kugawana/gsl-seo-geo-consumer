@@ -81,7 +81,7 @@ jobs:
           at: ./
       - terraform/init:
           path: ./infra
-          backend_config: 'bucket:crazy-penguin-<<parameters.ENV>>-tfstate','key=<<parameters.ENV>>/classified-consumer/terraform.tfstate'
+          backend_config: "bucket=crazy-penguin-<<parameters.ENV>>-tfstate","key=<<parameters.ENV>>/classified-consumer/terraform.tfstate"
       - terraform/plan:
           path: ./infra
           var_file: <<parameters.ENV_PATH_FILE>>
