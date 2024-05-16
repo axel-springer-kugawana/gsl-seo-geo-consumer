@@ -81,14 +81,13 @@ jobs:
           at: ./
       - terraform/init:
           path: ./infra
-          backend_config: "key=ceciestuntest,bucket:testetes"
+          backend_config: "key=<<parameters.ENV_PATH_FILE>>/classified-consumer/terraform.tfstate,bucket:crazy-penguin-<<parameters.ENV_PATH_FILE>>-tfstate"
       - terraform/plan:
           path: ./infra
           var_file: <<parameters.ENV_PATH_FILE>>
       - terraform/apply:
           path: ./infra
           var_file: <<parameters.ENV_PATH_FILE>>
-          
 workflows:
   classified-management-connector-dev:
     when: << pipeline.parameters.run-classified-management-connector-job >>
