@@ -1,0 +1,61 @@
+{
+    "id": "bd287471-c2a3-4530-a73a-6f59fff17cce",
+    "idempotencykey": "9b543a09cb73adbb742b7b6cb1ca530f",
+    "specversion": "1.0",
+    "source": "classified-management-connector",
+    "type": "classified.updated.v1",
+    "data": {
+        "metadata": {
+            "customerId": "4092940",
+            "classifiedBusiness": "PROFESSIONAL",
+            "externalId": "00000000-0000-0000-0002-000000000000",
+            "updateDate": "2024-05-13T11:32:49.902Z",
+            "creationDate": "2020-11-05T10:15:34.547Z",
+            "brand": "IWT"
+        },
+        "media": [],
+        "data": {
+            "location": {
+                "country": "ATA",
+                "city": "Pinguin Town",
+                "postalcode": "8340",
+                "street": "Nordostpark",
+                "houseNumber": "9",
+                "geometry": {
+                    "coordinates": [
+                        113.66070556640625,
+                        -79.88951873779297
+                    ],
+                    "type": "Point"
+                },
+                "showAddress": false
+            },
+            "estateType": "APARTMENT",
+            "distributionType": "RENT",
+            "estateSubType": {
+                "apartment": "LOFT"
+            },
+            "texts": {
+                "headline": {
+                    "de": "Testobjekt/Heartbeat"
+                },
+                "extendedInformation": {
+                    "de": "<b>Test timestamp</b>\\n 1715599964487"
+                }
+            },
+            "prices": {
+                "rent": {
+                    "baseRent": {
+                        "amount": 999999999
+                    }
+                },
+                "currency": "EUR"
+            }
+        },
+        "visibility": {
+            "requests": [],
+            "validations": []
+        },
+        "classifiedId": "23NM8IIQXH5P"
+    }
+}

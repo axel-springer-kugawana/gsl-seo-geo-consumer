@@ -20,3 +20,22 @@ variable "cm_connector_consumer_queue" {
     id  = string
   })
 }
+variable "ssot_name" {
+  type = string
+}
+variable "rds_arn" {
+  type = string
+}
+
+variable "secret_name" {
+  type = string
+}
+
+variable "rds_sg_id" {
+  type = string
+}
+
+variable "geo_places_api_url" {
+  type        = string
+  description = "Base URL to the geo places api"
+}

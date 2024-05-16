@@ -46,21 +46,15 @@ variable "rds_aurora_postgres_version" {
   default     = "15.3"
 }
 
-variable "rds_enable_proxy" {
-  description = "Should we enable RDS Proxies"
-  type        = bool
-  default     = "false"
-}
-
 variable "rds_acu_min" {
   description = "min acu for serverless configuration"
-  type        = string 
-  default     = 4 
+  type        = string
+  default     = 4
 }
 
 variable "rds_acu_max" {
   description = "max acu for serverless configuration"
-  type        = string 
+  type        = string
   default     = 128
 }
 
@@ -82,4 +76,39 @@ variable "env_cidr" {
 variable "suffix" {
   type    = string
   default = ""
+}
+
+
+variable "aws_environment" {
+  type    = string
+  default = "dev"
+}
+
+
+variable "ssot_name" {
+  type = string
+}
+
+variable "proxy_idle_client_timeout" {
+  type        = number
+  description = "The number of seconds that a connection to the proxy can be inactive before the proxy disconnects it"
+  default     = 0
+  }
+
+variable "proxy_max_connections_percent" {
+  type        = number
+  description = "The maximum size of the connection pool for each target in a target group"
+  default     = 85
+}
+
+variable "proxy_max_idle_connections_percent" {
+  type        = number
+  description = "The maximum size of the connection pool for each target in a target group"
+  default     = 10
+}
+
+variable "proxy_connection_borrow_timeout" {
+  type        = number
+  description = "The number of seconds for a proxy to wait for a connection to become available in the connection pool"
+  default     = 0
 }

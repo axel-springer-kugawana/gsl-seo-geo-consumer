@@ -1,6 +1,5 @@
 import convict from 'convict';
 
-
 const configSchema = {
     ssotBucketName: {
         doc: 'Bucket name for CM',

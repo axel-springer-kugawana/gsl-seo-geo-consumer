@@ -17,7 +17,7 @@ const getClassifiedById = async (link: string): Promise<Classified> => {
     });
 
     const classified = await res.json() as Classified;
-  
+
 
     return classified;
 
