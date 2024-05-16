@@ -37,11 +37,11 @@ module "rds" {
   ssot_name                   = var.ssot_name
 }
 
-module "cm_consumer_example" {
+module "cm_consumer" {
   # depends_on = [module.rds]
-  source = "./modules/cm-consumer-example"
+  source = "./modules/cm-consumer"
   process_cm_connector_events_lambda = {
-    dist_file                 = "../src/dist/cm-consumer-example/lambda-handlers/process-cm-connector-events.js"
+    dist_file                 = "../src/dist/cm-consumer/lambda-handlers/process-cm-connector-events.js"
     handler                   = "process-cm-connector-events.handler"
     queue_esm_max_concurrency = 8
   }
@@ -54,7 +54,6 @@ module "cm_consumer_example" {
   application        = var.application
   environment        = var.environment
   rds_arn            = module.rds.arn #module.rds.proxy_arn
-  secret_arn         = module.rds.secret_arn
   secret_name        = module.rds.secret_name
   rds_sg_id          = module.rds.sg_id
   geo_places_api_url = var.geo_places_api_url

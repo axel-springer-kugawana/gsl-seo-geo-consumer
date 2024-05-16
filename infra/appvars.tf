@@ -1,7 +1,7 @@
 variable "application" {
   description = "Application name"
   type        = string
-  default     = "cm-sample"
+  default     = "cm-consumer"
 }
 
 variable "ssot_name" {
