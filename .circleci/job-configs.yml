@@ -11,10 +11,7 @@ aliases:
   - &devfilter
     filters:
       branches:
-        only: /.*/
-        ignore:
-          - main
-          - develop
+        ignore: main
   - &previewfilter
     filters:
       branches:
