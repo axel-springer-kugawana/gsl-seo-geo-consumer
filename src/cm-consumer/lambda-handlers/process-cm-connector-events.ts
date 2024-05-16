@@ -4,7 +4,7 @@ import { enableLambdaPowertoolsLoggingAndMetrics } from "@shared/cross-cutting/l
 import { SSotEntityName } from "@shared/models/cm-consumer-constants";
 import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
 
-import { markClassifiedAsDeleted, createOrUpdateClassified } from "cm-consumer-example/adapters/classifieds-materialized-view-postgre";
+import { markClassifiedAsDeleted, createOrUpdateClassified } from "cm-consumer/adapters/classifieds-materialized-view-postgre";
 import { getClassifiedApiSecret } from "../adapters/classified-api-secrets";
 
 import { Pool } from "pg";
