@@ -100,8 +100,8 @@ workflows:
     when: << pipeline.parameters.run-classified-management-connector-job >>
     jobs:
       - build-classified-management-connector:
-          ENV_SECRETS: "DEV"
           <<: *devfilter
+          ENV_SECRETS: "DEV"
       - deploy-classified-management-connector:
           <<: *devfilter
           ENV: "dev"
@@ -112,7 +112,7 @@ workflows:
     when: << pipeline.parameters.run-classified-management-connector-job >>
     jobs:
       - build-classified-management-connector:
-          ENV_SECRETS: "PREVIEW"
+            ENV_SECRETS: "PREVIEW"
             <<: *previewfilter
       - deploy-classified-management-connector:
             <<: *previewfilter
