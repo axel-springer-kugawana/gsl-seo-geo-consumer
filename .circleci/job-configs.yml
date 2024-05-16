@@ -81,13 +81,12 @@ jobs:
     working_directory: ~/project
     steps:
       - aws-cli/setup:
-          aws_access_key_id: AWS_ACCESS_KEY_ID_DEV
-          aws_secret_access_key: AWS_SECRET_ACCESS_KEY_DEV
+          aws_access_key_id: AWS_ACCESS_KEY_ID_<<parameters.ENV_SECRETS>>
+          aws_secret_access_key: AWS_SECRET_ACCESS_KEY_<<parameters.ENV_SECRETS>>
       - attach_workspace:
           at: ./
       - terraform/init:
           path: ./infra
-          var_file: <<parameters.ENV_PATH_FILE>>
           backend_config: "bucket=crazy-penguin-<<parameters.ENV>>-tfstate,key=<<parameters.ENV>>/classified-consumer/terraform.tfstate,region=eu-west-1,encrypt=true"
       - terraform/plan:
           path: ./infra
