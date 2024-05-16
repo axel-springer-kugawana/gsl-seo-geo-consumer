@@ -78,6 +78,8 @@ jobs:
         type: string
       ENV_PATH_FILE:
         type: string
+      ENV_SECRETS:
+        type: string
     working_directory: ~/project
     steps:
       - aws-cli/setup:
@@ -105,6 +107,7 @@ workflows:
       - deploy-classified-management-connector:
           <<: *devfilter
           ENV: "dev"
+          ENV_SECRETS: "DEV"
           ENV_PATH_FILE: "./dev.tfvars"
           requires:
             - build-classified-management-connector
@@ -117,6 +120,7 @@ workflows:
       - deploy-classified-management-connector:
             <<: *previewfilter
             ENV: "preview"
+            ENV_SECRETS: "PREVIEW"
             ENV_PATH_FILE: "./preview.tfvars"
             requires:
               - build-classified-management-connector
@@ -128,6 +132,7 @@ workflows:
       - deploy-classified-management-connector:
           <<: *livefilter
           ENV: "live"
+          ENV_SECRETS: "LIVE"
           ENV_PATH_FILE: "./live.tfvars"
           requires:
             - build-classified-management-connector
