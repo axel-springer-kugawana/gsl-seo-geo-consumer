@@ -1,38 +1,10 @@
 import { BatchProcessor, EventType, processPartialResponse } from "@aws-lambda-powertools/batch";
 import { enableLambdaPowertoolsLoggingAndMetrics } from "@shared/cross-cutting/lambda-logging-middleware";
-// import { logger } from "@shared/cross-cutting/logger";
 import { SSotEntityName } from "@shared/models/cm-consumer-constants";
 import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
-
 import { markClassifiedAsDeleted, createOrUpdateClassified } from "cm-consumer/adapters/classifieds-materialized-view-postgre";
-import { getClassifiedApiSecret } from "../adapters/classified-api-secrets";
 
-import { Pool } from "pg";
-
-import * as fs from 'fs';
 const processor = new BatchProcessor(EventType.SQS);
-
-// const createPoolWithApiSecrets = async () => {
-//   try {
-//     const apisecrets = await getClassifiedApiSecret();
-//     const pool = new Pool({
-//       max: 1,
-//       min: 0,
-//       idleTimeoutMillis: 120000,
-//       connectionTimeoutMillis: 10000,
-//       host: apisecrets.HostWriter,
-//       port: apisecrets.Port,
-//       user: apisecrets.Username,
-//       password: apisecrets.Password,
-//       database: apisecrets.Database
-//     });
-
-//     return pool;
-//   } catch (error) {
-//     throw new Error('Erreur when create the pool : ' + error.message);
-//   }
-// };
-
 
 export const recordHandler = async (record: SQSRecord, context: Context): Promise<void> => {
   // const body = fs.readFileSync("cm-consumer-example/lambda-handlers/fakes/231116WBR1KI.json", "utf8");

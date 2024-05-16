@@ -3,23 +3,43 @@
 import { Pool } from "pg";
 import { getClassifiedApiSecret } from "./classified-api-secrets";
 
-//const apisecrets = await getClassifiedApiSecret();
+class CustomPool {
+  private static instance: CustomPool;
+  private poolObject: Pool | null = null;
+  private constructor() {
+  }
+  static getInstance(): CustomPool {
+    if (!CustomPool.instance) {
+      return (CustomPool.instance = new CustomPool());
+    }
+    return CustomPool.instance;
+  }
 
-// export const pool = async () => {
-const pool = async (): Promise<Pool> => {
-  const apisecrets = await getClassifiedApiSecret();
-  
-  return new Pool({
-    // min: 0,
-    // idleTimeoutMillis: 120000,
-    // connectionTimeoutMillis: 10000,
+  getPool = async (): Promise<Pool> => {
+    if (!this.poolObject) {
+      const apisecrets = await getClassifiedApiSecret();
 
-    host: "aviv-seeker-whitelabel-seo-ssot-db-two.ca5oh2kzqupc.eu-west-1.rds.amazonaws.com", //apisecrets.Host,
-    port: 5432, // #apisecrets.Port,
-    user: "main_user", //apisecrets.Username,
-    password: "DUw?5H!{K(xodHYw", //apisecrets.Password,
-    database: "ssot", //apisecrets.Database
-  });
-};
+      this.poolObject = new Pool({
+        min: 0,
+        max: 1,
+        // idleTimeoutMillis: 120000,
+        // connectionTimeoutMillis: 10000,
+        host: apisecrets.Host,
+        port: apisecrets.Port,
+        user: apisecrets.Username,
+        password: apisecrets.Password,
+        database: apisecrets.Database
+        // host: "aviv-seeker-whitelabel-seo-ssot-db-two.ca5oh2kzqupc.eu-west-1.rds.amazonaws.com", //apisecrets.Host,
+        // port: 5432, // #apisecrets.Port,
+        // user: "main_user", //apisecrets.Username,
+        // password: "DUw?5H!{K(xodHYw", //apisecrets.Password,
+        // database: "ssot", //apisecrets.Database
+      });
+    }
+    return this.poolObject;
+  };
+}
 
-export { pool };
+const poolInstance = CustomPool.getInstance();
+
+export { poolInstance };
