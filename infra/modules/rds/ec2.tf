@@ -77,7 +77,7 @@ resource "aws_iam_role_policy_attachment" "kms" {
 resource "aws_security_group" "allow_ssm" {
   name        = "allow_ec2_ssm${var.suffix}"
   description = "allow ssm traffic from ec2"
-  vpc_id      = data.aws_vpc.foundation_vpc.id
+  vpc_id      = data.aws_ec2_managed_prefix_list.vpn_access_prefix_list_cloudflare.id #data.aws_vpc.foundation_vpc.id
 
   egress {
     from_port        = 0
