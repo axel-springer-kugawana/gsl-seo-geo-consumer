@@ -1,8 +1,8 @@
-data "aws_subnets" "application_data_subnets" {
+data "aws_subnets" "application_subnets" {
   filter {
-    name = "tag:Name"
-    # values = ["${var.aws_account_name}-application*"]
-    values = ["main*"]
+    name   = "tag:Name"
+    values = ["${var.aws_account_name}-application*"]
+    # values = ["main"]
 
   }
 }
@@ -91,7 +91,7 @@ resource "aws_security_group" "allow_ssm" {
 resource "aws_instance" "port-forwarding" {
   ami                    = data.aws_ami.amazon-linux-2.id
   instance_type          = "t3.nano"
-  subnet_id              = data.aws_subnets.application_data_subnets.ids[0]
+  subnet_id              = data.aws_subnets.application_subnets.ids[0]
   iam_instance_profile   = aws_iam_instance_profile.port-forwarding.name
   vpc_security_group_ids = [aws_security_group.allow_ssm.id]
   user_data              = <<EOF
