@@ -78,7 +78,13 @@ resource "aws_security_group" "allow_ssm" {
   name        = "allow_ec2_ssm${var.suffix}"
   description = "allow ssm traffic from ec2"
   vpc_id      = data.aws_vpc.foundation_vpc.id
-
+  ingress {
+    description = "Proxy from VPN"
+    from_port   = var.rds_aurora_port
+    to_port     = var.rds_aurora_port
+    protocol    = "tcp"
+    cidr_blocks = local.vpn_cidr_blocks_cloudflare #prefix_list_ids = [data.aws_ec2_managed_prefix_list.vpn_access_prefix_list.id] # cidr_blocks = var.env_cidr
+  }
   egress {
     from_port        = 0
     to_port          = 0
