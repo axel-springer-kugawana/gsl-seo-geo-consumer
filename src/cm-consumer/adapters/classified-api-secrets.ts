@@ -29,10 +29,11 @@ const getClassifiedApiSecret = async () => {
   const secretValue = await getSecretValue(secretName);
   const secret = JSON.parse(secretValue) as {
     Port: number;
-    Host: string;
+    HostWriter: string;
     Username: string;
     Password: string;
     Database: string;
+    GeoPlaceApiKey: string;
   };
 
   return secret;

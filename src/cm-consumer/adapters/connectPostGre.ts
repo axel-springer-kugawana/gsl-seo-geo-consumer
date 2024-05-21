@@ -22,7 +22,7 @@ class CustomPool {
       this.poolObject = new Pool({
         min: 0,
         max: 1,
-        host: apisecrets.Host,
+        host: apisecrets.HostWriter,
         port: apisecrets.Port,
         user: apisecrets.Username,
         password: apisecrets.Password,
