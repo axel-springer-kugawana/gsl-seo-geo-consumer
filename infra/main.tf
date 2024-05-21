@@ -35,6 +35,7 @@ module "rds" {
   env_cidr                    = data.aws_ec2_managed_prefix_list.env_cidr.entries[*].cidr
   suffix                      = var.suffix
   ssot_name                   = var.ssot_name
+  aws_account_name            = var.aws_account_name
 }
 
 module "cm_consumer" {

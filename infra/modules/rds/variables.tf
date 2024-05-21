@@ -93,7 +93,7 @@ variable "proxy_idle_client_timeout" {
   type        = number
   description = "The number of seconds that a connection to the proxy can be inactive before the proxy disconnects it"
   default     = 0
-  }
+}
 
 variable "proxy_max_connections_percent" {
   type        = number
@@ -111,4 +111,10 @@ variable "proxy_connection_borrow_timeout" {
   type        = number
   description = "The number of seconds for a proxy to wait for a connection to become available in the connection pool"
   default     = 0
+}
+
+
+variable "aws_account_name" {
+  type        = string
+  description = "AWS account name or workspace."
 }
