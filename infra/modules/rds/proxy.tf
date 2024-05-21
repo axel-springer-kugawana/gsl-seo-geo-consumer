@@ -4,7 +4,7 @@ resource "aws_secretsmanager_secret" "rds_proxy_credentials" {
 
 resource "aws_secretsmanager_secret_version" "rds_credentials" {
   secret_id = aws_secretsmanager_secret.rds_proxy_credentials.id
- secret_string = jsonencode({
+  secret_string = jsonencode({
     "username" = module.aurora_cluster.cluster_master_username
     "password" = module.aurora_cluster.cluster_master_password
   })
@@ -52,7 +52,7 @@ resource "aws_security_group" "rds_proxy" {
     from_port       = var.rds_aurora_port
     to_port         = var.rds_aurora_port
     protocol        = "tcp"
-    prefix_list_ids = [data.aws_ec2_managed_prefix_list.vpn_access_prefix_list.id] # cidr_blocks = var.env_cidr
+    prefix_list_ids = [data.aws_ec2_managed_prefix_list.vpn_access_prefix_list_test.id]
   }
 
   ingress {
