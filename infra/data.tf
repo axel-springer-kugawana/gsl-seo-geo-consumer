@@ -17,7 +17,3 @@ data "aws_subnets" "foundation_data_subnets" {
 data "aws_ec2_managed_prefix_list" "env_cidr" {
   name = "internal.aviv.aws.vpc.${var.aws_account_name}"
 }
-
-data "aws_ec2_managed_prefix_list" "vpn_access_prefix_list_test" {
-  name = "internal.aviv.cloudflare.vpn.private"
-}
