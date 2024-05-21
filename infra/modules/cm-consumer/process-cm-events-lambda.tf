@@ -43,7 +43,7 @@ module "process_cm_connector_events_lambda" {
   is_lambda_vpc                    = true
   enable_secrets_manager_extension = true
   env_variables = {
-    CM_API_SECRET_NAME = var.secret_name,
+    CM_API_SECRET_NAME = "${var.application}-lambda_consumer_credentials" # "${aws_secretsmanager_secret.cm-api-secret.name}"
     GEO_PLACES_API_URL = var.geo_places_api_url
   }
 }
@@ -59,16 +59,16 @@ resource "aws_security_group_rule" "allow_postgre" {
   security_group_id = module.process_cm_connector_events_lambda.sg_id
 }
 
-# resource "aws_secretsmanager_secret" "lambda_consumer_credentials" {
-#   name                    = "${var.application}-lambda_consumer_credentials"
-#   recovery_window_in_days = 0
-# }
+resource "aws_secretsmanager_secret" "lambda_consumer_credentials" {
+  name                    = "${var.application}-lambda_consumer_credentials"
+  recovery_window_in_days = 0
+}
 
-# resource "aws_secretsmanager_secret_version" "postgres_consumer_version" {
-#   secret_id = aws_secretsmanager_secret.lambda_consumer_credentials.id
-#   secret_string = jsonencode({
-#   })
-# }
+resource "aws_secretsmanager_secret_version" "postgres_consumer_version" {
+  secret_id = aws_secretsmanager_secret.lambda_consumer_credentials.id
+  secret_string = jsonencode({
+  })
+}
 
 
 data "aws_iam_policy_document" "lambda_policy" {
@@ -100,8 +100,7 @@ data "aws_iam_policy_document" "lambda_policy" {
       "secretsmanager:GetSecretValue",
     ]
     resources = [
-      var.postgre_secret_arn
-      # aws_secretsmanager_secret.lambda_consumer_credentials.arn,
+      aws_secretsmanager_secret.lambda_consumer_credentials.arn,
 
     ]
   }
