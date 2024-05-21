@@ -97,7 +97,7 @@ resource "aws_instance" "port-forwarding" {
   user_data              = <<EOF
 #!/bin/bash
 sudo yum install -y socat
-sudo nohup socat TCP-LISTEN:${module.rds.rds_cluster_port},reuseaddr,fork TCP4:${module.rds.rds_cluster_writer_endpoint}:${module.rds.rds_cluster_port} &
+sudo nohup socat TCP-LISTEN:${module.aurora_cluster.rds_cluster_port},reuseaddr,fork TCP4:${module.aurora_cluster.rds_cluster_writer_endpoint}:${module.aurora_cluster.rds_cluster_port} &
 EOF
   root_block_device {
     volume_size           = "8"
