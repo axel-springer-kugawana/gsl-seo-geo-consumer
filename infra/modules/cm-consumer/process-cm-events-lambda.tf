@@ -59,16 +59,16 @@ resource "aws_security_group_rule" "allow_postgre" {
   security_group_id = module.process_cm_connector_events_lambda.sg_id
 }
 
-resource "aws_secretsmanager_secret" "lambda_consumer_credentials" {
-  name                    = "${var.application}-lambda_consumer_credentials"
-  recovery_window_in_days = 0
-}
+# resource "aws_secretsmanager_secret" "lambda_consumer_credentials" {
+#   name                    = "${var.application}-lambda_consumer_credentials"
+#   recovery_window_in_days = 0
+# }
 
-resource "aws_secretsmanager_secret_version" "postgres_consumer_version" {
-  secret_id = aws_secretsmanager_secret.lambda_consumer_credentials.id
-  secret_string = jsonencode({
-  })
-}
+# resource "aws_secretsmanager_secret_version" "postgres_consumer_version" {
+#   secret_id = aws_secretsmanager_secret.lambda_consumer_credentials.id
+#   secret_string = jsonencode({
+#   })
+# }
 
 
 data "aws_iam_policy_document" "lambda_policy" {
@@ -100,7 +100,9 @@ data "aws_iam_policy_document" "lambda_policy" {
       "secretsmanager:GetSecretValue",
     ]
     resources = [
-      aws_secretsmanager_secret.lambda_consumer_credentials.arn,
+      var.postgre_secret_arn
+      # aws_secretsmanager_secret.lambda_consumer_credentials.arn,
+
     ]
   }
   statement {

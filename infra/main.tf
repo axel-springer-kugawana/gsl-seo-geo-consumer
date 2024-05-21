@@ -58,4 +58,5 @@ module "cm_consumer" {
   secret_name        = module.rds.secret_name
   rds_sg_id          = module.rds.sg_id
   geo_places_api_url = var.geo_places_api_url
+  postgre_secret_arn = module.rds.postgre_secret_arn
 }
