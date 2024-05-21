@@ -3,6 +3,7 @@ import { enableLambdaPowertoolsLoggingAndMetrics } from "@shared/cross-cutting/l
 import { SSotEntityName } from "@shared/models/cm-consumer-constants";
 import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
 import { markClassifiedAsDeleted, createOrUpdateClassified } from "cm-consumer/adapters/classifieds-materialized-view-postgre";
+import * as fs from 'fs';
 
 const processor = new BatchProcessor(EventType.SQS);
 
