@@ -123,11 +123,8 @@ export const mapGeoAsync = async (location: Location): Promise<Feature[] | undef
 
     const apisecrets = await getClassifiedApiSecret();
 
-    // const apiKey = "SMu5gT10PR3MSjzDwgMRS6uyB2WZ5EfNa5EwmT0x"
-    //https://avivgroup.atlassian.net/wiki/spaces/AGRS/pages/204505110/AVIV+Geo+Services
     const cliApi = createClient<paths>({
-        baseUrl: process.env.GEO_PLACES_API_URL,
-        // baseUrl: "https://place-api.cosmic-bullfrog-dev.aws.aviv.eu/",
+        baseUrl: apisecrets.GeoPlaceApiUrl,
     })
 
     const myMiddleware: Middleware = {

@@ -49,13 +49,3 @@ variable "enable_secrets_manager_extension" {
   type    = bool
   default = false
 }
-
-# variable "kinesis_firehose_arn" {
-#   description = "Kinesis ARN for log stream"
-#   type        = string
-# }
-
-# variable "loggroup_role_arn" {
-#   description = "Role ARN for loggroup (should be able to write to kinesis firehose)"
-#   type        = string
-# }

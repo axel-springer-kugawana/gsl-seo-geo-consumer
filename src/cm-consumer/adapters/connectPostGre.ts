@@ -22,11 +22,11 @@ class CustomPool {
       this.poolObject = new Pool({
         min: 0,
         max: 1,
-        host: apisecrets.HostWriter,
-        port: apisecrets.Port,
-        user: apisecrets.Username,
-        password: apisecrets.Password,
-        database: apisecrets.Database
+        host: apisecrets.DbHostWriter,
+        port: apisecrets.DbPort,
+        user: apisecrets.DbUsername,
+        password: apisecrets.DbPassword,
+        database: apisecrets.DbDatabase
       });
     }
     return this.poolObject;

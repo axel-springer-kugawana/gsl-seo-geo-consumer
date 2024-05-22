@@ -25,15 +25,15 @@ const getSecretValue = async (secretName: string) => {
 };
 
 const getClassifiedApiSecret = async () => {
-  const secretName = config.get("cmApiSecret");
-  const secretValue = await getSecretValue(secretName);
+  const secretValue = await getSecretValue("cm-consumer-lambda_consumer_credentials");
   const secret = JSON.parse(secretValue) as {
-    Port: number;
-    HostWriter: string;
-    Username: string;
-    Password: string;
-    Database: string;
+    DbPort: number;
+    DbHostWriter: string;
+    DbUsername: string;
+    DbPassword: string;
+    DbDatabase: string;
     GeoPlaceApiKey: string;
+    GeoPlaceApiUrl: string;
   };
 
   return secret;
