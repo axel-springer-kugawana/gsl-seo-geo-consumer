@@ -4,6 +4,7 @@ import { paths, components } from '../../shared/models/geo-api';
 import createClient from 'openapi-fetch';
 import { Middleware } from 'openapi-fetch';
 
+import { getClassifiedApiSecret } from "../adapters/classified-api-secrets";
 //https://avivgroup.atlassian.net/wiki/spaces/ATSS/pages/300812851/Search+index+model
 export const mapPrice = (
     data: Classified
@@ -120,17 +121,16 @@ export const mapFeatures = (
 
 export const mapGeoAsync = async (location: Location): Promise<Feature[] | undefined> => {
 
-    const apiKey = "SMu5gT10PR3MSjzDwgMRS6uyB2WZ5EfNa5EwmT0x"
-    //https://avivgroup.atlassian.net/wiki/spaces/AGRS/pages/204505110/AVIV+Geo+Services
+    const apisecrets = await getClassifiedApiSecret();
+
     const cliApi = createClient<paths>({
-        baseUrl: process.env.GEO_PLACES_API_URL,
-        // baseUrl: "https://place-api.cosmic-bullfrog-dev.aws.aviv.eu/",
+        baseUrl: apisecrets.GeoPlaceApiUrl,
     })
 
     const myMiddleware: Middleware = {
         async onRequest(req, options) {
             req.headers.set("accept", "application/json");
-            req.headers.set("X-Api-Key", apiKey);
+            req.headers.set("X-Api-Key", apisecrets.GeoPlaceApiKey);
             return req;
         }
     };

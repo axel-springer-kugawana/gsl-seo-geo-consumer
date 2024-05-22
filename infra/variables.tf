@@ -136,8 +136,3 @@ variable "suffix" {
   type    = string
   default = ""
 }
-
-variable "geo_places_api_url" {
-  type        = string
-  description = "Base URL to the geo places api"
-}

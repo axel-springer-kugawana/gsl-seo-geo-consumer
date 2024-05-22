@@ -57,5 +57,4 @@ module "cm_consumer" {
   rds_arn            = module.rds.arn #module.rds.proxy_arn
   secret_name        = module.rds.secret_name
   rds_sg_id          = module.rds.sg_id
-  geo_places_api_url = var.geo_places_api_url
 }
