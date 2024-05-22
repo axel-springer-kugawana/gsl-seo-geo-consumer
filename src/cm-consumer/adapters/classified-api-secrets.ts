@@ -31,7 +31,7 @@ const getClassifiedApiSecret = async () => {
     DbHostWriter: string;
     DbUsername: string;
     DbPassword: string;
-    DbDatabase: string;
+    DbMainDatabase: string;
     GeoPlaceApiKey: string;
     GeoPlaceApiUrl: string;
   };
