@@ -26,7 +26,7 @@ class CustomPool {
         port: apisecrets.DbPort,
         user: apisecrets.DbUsername,
         password: apisecrets.DbPassword,
-        database: apisecrets.DbDatabase
+        database: apisecrets.DbMainDatabase
       });
     }
     return this.poolObject;
