@@ -13,26 +13,15 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
   const e = JSON.parse(record.body);
 
   switch (e.type) {
-
     case `${SSotEntityName}.deleted.v1`:
       const classifiedId = e.data.classifiedId;
-
-      await markClassifiedAsDeleted(context, {
-        classifiedId, updateDate: e.data.updateDate
-      });
-      break;
-    case `${SSotEntityName}.replayed.v1`:
-    case `${SSotEntityName}.updated.v1`:
-    case `${SSotEntityName}.created.v1`:
-      await createOrUpdateClassified(context, e.data.classifiedId, e.data);
+      await markClassifiedAsDeleted(context, { classifiedId, updateDate: e.data.updateDate });
       break;
     case `${SSotEntityName}.init.v1`:
       await initDatabase();
       break;
     default:
-      throw new Error(
-        `type not managed ${e.type}`
-      );
+      await createOrUpdateClassified(context, e.data.classifiedId, e.data);
   }
 }
 
