@@ -54,12 +54,11 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         from(
         select avivgeoid from geo_lat_lon
         where (lat = $1 and lon = $2)
-        AND updateDate >= NOW() - INTERVAL '30 days'
         union
         select avivgeoid from geo
         where avivgeoid = $3
-        AND updateDate >= NOW() - INTERVAL '30 days'
         ) tmp`;
+        // AND updateDate >= NOW() - INTERVAL '30 days'
 
         const geoValueExists = [
           lat,
@@ -220,19 +219,21 @@ ON CONFLICT (ClassifiedId) DO UPDATE
           lat = $17,
           lon  = $18          ;`;
 
-      await client.query(classifiedQuery, classifiedValue);
 
-
+      console.log('try inserted id : ' + id)
       await client.release();
+
+      console.log('release : ' + id)
     })
   }
   catch (e) {
-    if (e.name === "ConditionalCheckFailedException") {
-      logger.warn("Conditional Check failed on lastUpdate date. Classified won't be updated", {
-        classified: classified
-      })
-    }
-    else {
+    // if (e.name === "ConditionalCheckFailedException") {
+    //   logger.warn("Conditional Check failed on lastUpdate date. Classified won't be updated", {
+    //     classified: classified
+    //   })
+    // }
+    // else
+    {
       logger.error('classifiedId : ' + id)
       logger.error('payload : ' + JSON.stringify(classified))
       logger.error(e)
