@@ -38,6 +38,14 @@ module "rds" {
   aws_account_name            = var.aws_account_name
 }
 
+module "rds_athena_connector" {
+  source      = "./rds-athena-connector"
+  application = var.application
+  environment = var.environment
+  db          = module.rds.properties
+  depends_on  = [module.rds]
+}
+
 module "cm_consumer" {
   # depends_on = [module.rds]
   source = "./modules/cm-consumer"

@@ -24,3 +24,12 @@ output "sg_id" {
   value       = aws_security_group.allow_postgres.id
 }
 
+output "properties" {
+  value = {
+    name              = module.aurora_cluster.cluster_database_name
+    cluster_endpoint  = module.aurora_cluster.cluster_reader_endpoint
+    security_group_id = aws_security_group.allow_postgres.id
+    secret_name       = aws_secretsmanager_secret.postgres_credentials.name
+  }
+}
+
