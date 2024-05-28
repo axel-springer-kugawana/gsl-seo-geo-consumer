@@ -39,7 +39,7 @@ module "rds" {
 }
 
 module "rds_athena_connector" {
-  source      = "./rds-athena-connector"
+  source      = "./modules/rds-athena-connector"
   application = var.application
   environment = var.environment
   db          = module.rds.properties
