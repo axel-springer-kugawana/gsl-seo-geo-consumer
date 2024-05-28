@@ -16,3 +16,12 @@ data "aws_vpc" "foundation_vpc" {
     values = ["${var.aws_account_name}"]
   }
 }
+data "aws_ssm_parameter" "account_name" {
+  name = "/aft/account-request/custom-fields/account_name"
+}
+
+
+data "aws_route53_zone" "main" {
+  name         = "${data.aws_ssm_parameter.account_name.value}.aws.aviv-internal.eu"
+  private_zone = true
+}
