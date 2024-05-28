@@ -26,6 +26,9 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
     console.log('classifiedId : ' + e.type)
     console.log('classifiedId : ' + e.data.classifiedId)
 
+    console.log(JSON.stringify(record.body))
+    
+
     await createOrUpdateClassified(context, e.data.classifiedId, e.data);
 
   }
