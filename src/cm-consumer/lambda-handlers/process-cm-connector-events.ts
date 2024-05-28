@@ -21,6 +21,7 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
         classifiedId, updateDate: e.data.updateDate
       });
       break;
+    case `${SSotEntityName}.replayed.v1`:
     case `${SSotEntityName}.updated.v1`:
     case `${SSotEntityName}.created.v1`:
       await createOrUpdateClassified(context, e.data.classifiedId, e.data);
