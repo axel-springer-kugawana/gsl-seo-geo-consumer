@@ -3,22 +3,35 @@ import { enableLambdaPowertoolsLoggingAndMetrics } from "@shared/cross-cutting/l
 import { SSotEntityName } from "@shared/models/cm-consumer-constants";
 import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
 import { markClassifiedAsDeleted, createOrUpdateClassified } from "cm-consumer/adapters/classifieds-materialized-view-postgre";
+import { initDatabase } from "cm-consumer/adapters/initSql";
 import * as fs from 'fs';
 
 const processor = new BatchProcessor(EventType.SQS);
 
 export const recordHandler = async (record: SQSRecord, context: Context): Promise<void> => {
-  // const body = fs.readFileSync("cm-consumer-example/lambda-handlers/fakes/231116WBR1KI.json", "utf8");
+  //const body = fs.readFileSync("cm-consumer/lambda-handlers/fakes/231116WBR1KI.json", "utf8");
   const e = JSON.parse(record.body);
-  const classifiedId = e.data.classifiedId;
-  // var pool = await createPoolWithApiSecrets();
-  if ((e.type === `${SSotEntityName}.deleted.v1`)) {
-    await markClassifiedAsDeleted(context, {
-      classifiedId, updateDate: e.data.updateDate
-    });
-  }
-  else {
-    await createOrUpdateClassified(context, classifiedId, e.data);
+
+  switch (e.type) {
+
+    case `${SSotEntityName}.deleted.v1`:
+      const classifiedId = e.data.classifiedId;
+
+      await markClassifiedAsDeleted(context, {
+        classifiedId, updateDate: e.data.updateDate
+      });
+      break;
+    case `${SSotEntityName}.updated.v1`:
+    case `${SSotEntityName}.created.v1`:
+      await createOrUpdateClassified(context, e.data.classifiedId, e.data);
+      break;
+    case `${SSotEntityName}.init.v1`:
+      await initDatabase();
+      break;
+    default:
+      throw new Error(
+        `type not managed ${e.type}`
+      );
   }
 }
 

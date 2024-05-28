@@ -13,7 +13,7 @@ export interface ClassifiedCreateOrUpdateOrDeleteEvent {
 export enum ClassifiedEventType {
     CREATED = "CREATED",
     UPDATED = "UPDATED",
-    DELETED = "DELETED",
+    DELETED = "DELETED"
 }
 
 interface Visibility {

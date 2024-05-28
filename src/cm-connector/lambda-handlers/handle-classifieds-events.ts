@@ -6,11 +6,10 @@ import { publishFullClassifiedEvent } from "@cm-connector/adapters/classified-ev
 import { ClassifiedCreateOrUpdateOrDeleteEvent, ClassifiedEventType } from "@cm-connector/models/1.0.0/classified-events";
 
 const handleClassifiedEvent = async (event: ClassifiedCreateOrUpdateOrDeleteEvent): Promise<void> => {
-
     switch (event.eventType) {
         case ClassifiedEventType.DELETED:
             await publishFullClassifiedEvent({
-                event: "deleted", 
+                event: "deleted",
                 data: {
                     classifiedId: event.classifiedId,
                     updateDate: new Date(event.eventTime).toISOString()
@@ -21,13 +20,12 @@ const handleClassifiedEvent = async (event: ClassifiedCreateOrUpdateOrDeleteEven
         case ClassifiedEventType.UPDATED:
             const classified = await getClassifiedById(event.link);
             await publishFullClassifiedEvent({
-                event: event.eventType === ClassifiedEventType.CREATED ?  "created" : "updated", 
+                event: event.eventType === ClassifiedEventType.CREATED ? "created" : "updated",
                 data: {
                     ...classified
                 }
             });
             break;
-    
         default:
 
             break;

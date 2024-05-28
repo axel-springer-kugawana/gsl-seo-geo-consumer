@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS public.geo
     boroughid character varying COLLATE pg_catalog."default",
     neighborhoodid character varying COLLATE pg_catalog."default",
     blocid character varying COLLATE pg_catalog."default",
+    updatedate timestamp without time zone,
     CONSTRAINT pk_geo PRIMARY KEY (avivgeoid)
 )
 TABLESPACE pg_default;
@@ -56,6 +57,7 @@ CREATE TABLE IF NOT EXISTS public.geo_lat_lon
     lon numeric NOT NULL,
     lat numeric NOT NULL,
     avivgeoid character varying COLLATE pg_catalog."default" NOT NULL,
+    updatedate timestamp without time zone,
     CONSTRAINT pk_lat_lon PRIMARY KEY (lat, lon)
 )
 TABLESPACE pg_default;

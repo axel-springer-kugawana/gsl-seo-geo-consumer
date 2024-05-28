@@ -3,6 +3,7 @@ import { Classified, Location } from "@shared/models/classified/1.0.0/classified
 import { mapFeatures, mapPrice, mapGeoAsync } from '../utils/mappingHelpers';
 import { poolInstance } from "./connectPostGre";
 import { Context } from "aws-lambda";
+import * as fs from 'fs';
 
 const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classifiedId: string, updateDate: string }): Promise<void> => {
   const { classifiedId, updateDate } = deleteCommand;
@@ -48,15 +49,17 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
 
       avivGeoIdWkg = avivGeoId;
       if (avivGeoIdWkg !== undefined || geometry !== undefined) {
-
         const geoQueryExists = `
         select avivgeoid
         from(
         select avivgeoid from geo_lat_lon
-        where (lat = $1 and lon = $2)  
+        where (lat = $1 and lon = $2)
+        AND updateDate >= NOW() - INTERVAL '30 days'
         union
         select avivgeoid from geo
-        where avivgeoid = $3) tmp`;
+        where avivgeoid = $3
+        AND updateDate >= NOW() - INTERVAL '30 days'
+        ) tmp`;
 
         const geoValueExists = [
           lat,
@@ -119,8 +122,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       municipalityID,
       boroughID,
       neighborhoodId,
-      blocId
-   ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      blocId,
+      updateDate
+   ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
 ON CONFLICT (avivgeoId) DO UPDATE 
       SET    
       geoLevel = $2,
@@ -131,9 +135,8 @@ ON CONFLICT (avivgeoId) DO UPDATE
       municipalityID= $7,
       boroughID= $9,
       neighborhoodId= $9,
-      blocId= $10;`;
-
-
+      blocId= $10,
+      updateDate= NOW();`;
 
         await client.query(geoQuery, geoValue);
 
@@ -145,10 +148,11 @@ ON CONFLICT (avivgeoId) DO UPDATE
           ]
 
           const geo_lat_lon = `
-      INSERT INTO geo_lat_lon (lat, lon, avivgeoId) VALUES ($1, $2, $3)
-  ON CONFLICT (lat,lon) DO UPDATE 
+      INSERT INTO geo_lat_lon (lat, lon, avivgeoId, updateDate) VALUES ($1, $2, $3, NOW())
+      ON CONFLICT (lat,lon) DO UPDATE 
         SET    
-        avivgeoId = $3`;
+        avivgeoId = $3,
+        updateDate = NOW();`;
           await client.query(geo_lat_lon, geo_lat_lonValue);
         }
       }

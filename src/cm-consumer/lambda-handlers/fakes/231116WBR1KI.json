@@ -3,7 +3,7 @@
     "idempotencykey": "9b543a09cb73adbb742b7b6cb1ca530f",
     "specversion": "1.0",
     "source": "classified-management-connector",
-    "type": "classified.updated.v1",
+    "type": "classified.init.v1",
     "data": {
         "metadata": {
             "customerId": "4092940",
