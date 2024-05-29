@@ -3,7 +3,6 @@ import { Classified, Location } from "@shared/models/classified/1.0.0/classified
 import { mapFeatures, mapPrice, mapGeoAsync } from '../utils/mappingHelpers';
 import { poolInstance } from "./connectPostGre";
 import { Context } from "aws-lambda";
-import * as fs from 'fs';
 
 const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classifiedId: string, updateDate: string }): Promise<void> => {
   const { classifiedId, updateDate } = deleteCommand;
@@ -13,7 +12,7 @@ const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classi
   const query = `DELETE FROM Classified WHERE ClassifiedId=$1`;
   const pool = poolInstance.getPool
   await pool().then(async (_pool) => {
-    _pool.query(query, values);
+    await _pool.query(query, values);
   });
 }
 
@@ -223,7 +222,6 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       logger.error('classifiedId : ' + id)
       logger.error('payload : ' + JSON.stringify(classified))
       logger.error(e)
-
       throw (e);
     }
   }
