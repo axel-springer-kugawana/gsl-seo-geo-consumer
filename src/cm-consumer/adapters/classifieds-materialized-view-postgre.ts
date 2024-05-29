@@ -36,12 +36,11 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
   context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
   try {
     const pool = poolInstance.getPool
-    pool().then(async (_pool) => {
+    await pool().then(async (_pool) => {
       // const client = await _pool.connect();
       // _pool.q
       console.log("step 1 : " + id)
       // _pool.connect().then(async (client) => {
-      console.log("step 2 : " + id)
       const price = mapPrice(classified) ?? undefined;
       const features = mapFeatures(classified);
       let avivGeoIdWkg = ''
@@ -69,7 +68,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           avivGeoIdWkg
         ]
 
+        console.log('geoQueryExists')
         let existsRecords = (await _pool.query(geoQueryExists, geoValueExists)).rows[0];
+
         if (existsRecords?.avivgeoid !== undefined) {
           avivGeoIdWkg = existsRecords.avivgeoid
           doGeoMapping = false;
@@ -141,6 +142,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           blocId= $10,
           updateDate= NOW();`;
 
+
+          console.log('geoQuery')
           await _pool.query(geoQuery, geoValue);
 
           if (lat !== undefined) {
@@ -156,6 +159,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
             SET    
             avivgeoId = $3,
             updateDate = NOW();`;
+
+            console.log('insert geoQuery')
             await _pool.query(geo_lat_lon, geo_lat_lonValue);
           }
         }
@@ -224,7 +229,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
               lon  = $18          ;`;
 
 
-        console.log('step 1/3 inserted id : ' + id)
+
+        console.log('geoQuery')
         await _pool.query(classifiedQuery, classifiedValue);
         console.log('step 2/3 inserted id : ' + id)
         // _pool.release();
