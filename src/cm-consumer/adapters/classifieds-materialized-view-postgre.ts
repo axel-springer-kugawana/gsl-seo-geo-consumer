@@ -12,24 +12,9 @@ const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classi
 
   const query = `DELETE FROM Classified WHERE ClassifiedId=$1`;
   const pool = poolInstance.getPool
-  pool().then(async (_pool) => {
-    const client = await _pool.connect();
-    try {
-      client.query(query, values);
-    }
-    catch (e) {
-      if (e.name === "ConditionalCheckFailedException") {
-        logger.error("Conditional Check failed on lastUpdate date. Classified won't be deleted", {
-          classified: classifiedId
-        })
-      } else {
-        logger.error(e);
-      }
-    }
-    finally {
-      client.release();
-    }
-  })
+  await pool().then(async (_pool) => {
+    _pool.query(query, values);
+  });
 }
 
 const createOrUpdateClassified = async (context: Context, id: string, classified: Classified): Promise<void> => {
@@ -37,10 +22,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
   try {
     const pool = poolInstance.getPool
     await pool().then(async (_pool) => {
-      // const client = await _pool.connect();
-      // _pool.q
-      console.log("step 1 : " + id)
-      // _pool.connect().then(async (client) => {
+
       const price = mapPrice(classified) ?? undefined;
       const features = mapFeatures(classified);
       let avivGeoIdWkg = ''
@@ -56,11 +38,12 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
             from(
             select avivgeoid from geo_lat_lon
             where (lat = $1 and lon = $2)
+            AND updateDate >= NOW() - INTERVAL '30 days'
             union
             select avivgeoid from geo
             where avivgeoid = $3
+            AND updateDate >= NOW() - INTERVAL '30 days'
             ) tmp`;
-        // AND updateDate >= NOW() - INTERVAL '30 days'
 
         const geoValueExists = [
           lat,
@@ -75,7 +58,6 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           avivGeoIdWkg = existsRecords.avivgeoid
           doGeoMapping = false;
         }
-
 
         if (doGeoMapping) {
           const geo = await mapGeoAsync(classified?.data?.location);
@@ -165,7 +147,6 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           }
         }
 
-
         //Mapping : https://avivgroup.atlassian.net/browse/WLSEO-501
         const classifiedValue = [
           id,
@@ -228,35 +209,23 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
               lat = $17,
               lon  = $18          ;`;
 
-
-
-        console.log('geoQuery')
         await _pool.query(classifiedQuery, classifiedValue);
-        console.log('step 2/3 inserted id : ' + id)
-        // _pool.release();
-        console.log('step 3/3 inserted id : ' + id)
       }
     });
-    // });
-
-
-
-    //     })
   }
   catch (e) {
-    // if (e.name === "ConditionalCheckFailedException") {
-    //   logger.warn("Conditional Check failed on lastUpdate date. Classified won't be updated", {
-    //     classified: classified
-    //   })
-    // }
-    // else
+    if (e.name === "ConditionalCheckFailedException") {
+      logger.warn("Conditional Check failed on lastUpdate date. Classified won't be updated", {
+        classified: classified
+      })
+    }
+    else {
+      logger.error('classifiedId : ' + id)
+      logger.error('payload : ' + JSON.stringify(classified))
+      logger.error(e)
 
-    logger.error('classifiedId : ' + id)
-    logger.error('payload : ' + JSON.stringify(classified))
-    logger.error(e)
-
-    throw (e);
-
+      throw (e);
+    }
   }
 }
 
