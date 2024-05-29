@@ -37,69 +37,86 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
   try {
     const pool = poolInstance.getPool
     pool().then(async (_pool) => {
-      const client = await _pool.connect();
+      // const client = await _pool.connect();
 
-      const price = mapPrice(classified) ?? undefined;
-      const features = mapFeatures(classified);
-      let avivGeoIdWkg = ''
-      let doGeoMapping = true;
+      console.log("step 1 : " + id)
+      _pool.connect().then(async (client) => {
+        console.log("step 2 : " + id)
+        const price = mapPrice(classified) ?? undefined;
+        const features = mapFeatures(classified);
+        let avivGeoIdWkg = ''
+        let doGeoMapping = true;
 
-      const { avivGeoId, geometry } = classified.data?.location;
-      const [lon, lat] = geometry?.coordinates ?? [];
+        const { avivGeoId, geometry } = classified.data?.location;
+        const [lon, lat] = geometry?.coordinates ?? [];
 
-      avivGeoIdWkg = avivGeoId;
-      if (avivGeoIdWkg !== undefined || geometry !== undefined) {
-        const geoQueryExists = `
-        select avivgeoid
-        from(
-        select avivgeoid from geo_lat_lon
-        where (lat = $1 and lon = $2)
-        union
-        select avivgeoid from geo
-        where avivgeoid = $3
-        ) tmp`;
-        // AND updateDate >= NOW() - INTERVAL '30 days'
+        avivGeoIdWkg = avivGeoId;
+        if (avivGeoIdWkg !== undefined || geometry !== undefined) {
+          const geoQueryExists = `
+            select avivgeoid
+            from(
+            select avivgeoid from geo_lat_lon
+            where (lat = $1 and lon = $2)
+            union
+            select avivgeoid from geo
+            where avivgeoid = $3
+            ) tmp`;
+          // AND updateDate >= NOW() - INTERVAL '30 days'
 
-        const geoValueExists = [
-          lat,
-          lon,
-          avivGeoIdWkg
-        ]
+          const geoValueExists = [
+            lat,
+            lon,
+            avivGeoIdWkg
+          ]
 
-        let existsRecords = (await client.query(geoQueryExists, geoValueExists)).rows[0];
-        if (existsRecords?.avivgeoid !== undefined) {
-          avivGeoIdWkg = existsRecords.avivgeoid
-          doGeoMapping = false;
-        }
-      }
-      if (doGeoMapping) {
-        const geo = await mapGeoAsync(classified?.data?.location);
-        let geoLevel = null
-
-        if ((geo == undefined || geo.length == 0)) {
-          geoLevel = 200
-          avivGeoIdWkg = classified?.data?.location?.country ?? "undefined_country"
-        }
-        else {
-          if (avivGeoIdWkg === undefined) {
-            avivGeoIdWkg = geo[geo.length - 1]?.id;
-            geoLevel = geo[geo.length - 1]?.level;
+          let existsRecords = (await client.query(geoQueryExists, geoValueExists)).rows[0];
+          if (existsRecords?.avivgeoid !== undefined) {
+            avivGeoIdWkg = existsRecords.avivgeoid
+            doGeoMapping = false;
           }
-          else {
-            geoLevel = single(geo.filter(x => x.id === avivGeoIdWkg))?.level;
-          }
-        }
-        let countryId = single(geo?.filter(x => x.level === 200))?.id;
-        let regionId = single(geo?.filter(x => x.level === 400))?.id;
-        let microregionId = single(geo?.filter(x => x.level === 500))?.id;
-        let provinceId = single(geo?.filter(x => x.level === 600))?.id;
-        let municipalityID = single(geo?.filter(x => x.level === 800))?.id;
-        let boroughID = single(geo?.filter(x => x.level === 900))?.id;
-        let neighborhoodId = single(geo?.filter(x => x.level === 1000))?.id;
-        let blocId = single(geo?.filter(x => x.level === 1200))?.id;
 
-        const geoValue = [
-          avivGeoIdWkg,
+
+          if (doGeoMapping) {
+            const geo = await mapGeoAsync(classified?.data?.location);
+            let geoLevel = null
+
+            if ((geo == undefined || geo.length == 0)) {
+              geoLevel = 200
+              avivGeoIdWkg = classified?.data?.location?.country ?? "undefined_country"
+            }
+            else {
+              if (avivGeoIdWkg === undefined) {
+                avivGeoIdWkg = geo[geo.length - 1]?.id;
+                geoLevel = geo[geo.length - 1]?.level;
+              }
+              else {
+                geoLevel = single(geo.filter(x => x.id === avivGeoIdWkg))?.level;
+              }
+            }
+            let countryId = single(geo?.filter(x => x.level === 200))?.id;
+            let regionId = single(geo?.filter(x => x.level === 400))?.id;
+            let microregionId = single(geo?.filter(x => x.level === 500))?.id;
+            let provinceId = single(geo?.filter(x => x.level === 600))?.id;
+            let municipalityID = single(geo?.filter(x => x.level === 800))?.id;
+            let boroughID = single(geo?.filter(x => x.level === 900))?.id;
+            let neighborhoodId = single(geo?.filter(x => x.level === 1000))?.id;
+            let blocId = single(geo?.filter(x => x.level === 1200))?.id;
+
+            const geoValue = [
+              avivGeoIdWkg,
+              geoLevel,
+              countryId,
+              regionId,
+              microregionId,
+              provinceId,
+              municipalityID,
+              boroughID,
+              neighborhoodId,
+              blocId
+            ]
+            const geoQuery = `
+        INSERT INTO geo (
+          avivgeoId,
           geoLevel,
           countryId,
           regionId,
@@ -108,124 +125,117 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           municipalityID,
           boroughID,
           neighborhoodId,
-          blocId
-        ]
-        const geoQuery = `
-    INSERT INTO geo (
-      avivgeoId,
-      geoLevel,
-      countryId,
-      regionId,
-      microregionId,
-      provinceId,
-      municipalityID,
-      boroughID,
-      neighborhoodId,
-      blocId,
-      updateDate
-   ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
-ON CONFLICT (avivgeoId) DO UPDATE 
-      SET    
-      geoLevel = $2,
-      countryId = $3,
-      regionId= $5,
-      microregionId= $5,
-      provinceId= $6,
-      municipalityID= $7,
-      boroughID= $9,
-      neighborhoodId= $9,
-      blocId= $10,
-      updateDate= NOW();`;
+          blocId,
+          updateDate
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+    ON CONFLICT (avivgeoId) DO UPDATE 
+          SET    
+          geoLevel = $2,
+          countryId = $3,
+          regionId= $5,
+          microregionId= $5,
+          provinceId= $6,
+          municipalityID= $7,
+          boroughID= $9,
+          neighborhoodId= $9,
+          blocId= $10,
+          updateDate= NOW();`;
 
-        await client.query(geoQuery, geoValue);
+            await client.query(geoQuery, geoValue);
 
-        if (lat !== undefined) {
-          const geo_lat_lonValue = [
-            lat,
-            lon,
-            avivGeoIdWkg
-          ]
+            if (lat !== undefined) {
+              const geo_lat_lonValue = [
+                lat,
+                lon,
+                avivGeoIdWkg
+              ]
 
-          const geo_lat_lon = `
-      INSERT INTO geo_lat_lon (lat, lon, avivgeoId, updateDate) VALUES ($1, $2, $3, NOW())
-      ON CONFLICT (lat,lon) DO UPDATE 
-        SET    
-        avivgeoId = $3,
-        updateDate = NOW();`;
-          await client.query(geo_lat_lon, geo_lat_lonValue);
+              const geo_lat_lon = `
+          INSERT INTO geo_lat_lon (lat, lon, avivgeoId, updateDate) VALUES ($1, $2, $3, NOW())
+          ON CONFLICT (lat,lon) DO UPDATE 
+            SET    
+            avivgeoId = $3,
+            updateDate = NOW();`;
+              await client.query(geo_lat_lon, geo_lat_lonValue);
+            }
+          }
+
+
+          //Mapping : https://avivgroup.atlassian.net/browse/WLSEO-501
+          const classifiedValue = [
+            id,
+            price,
+            avivGeoIdWkg,
+            classified.data.distributionType,
+            classified.data.estateType,
+            classified.data?.estateSubType !== undefined ? Object.values(classified.data?.estateSubType)?.[0] : null,
+            classified.data?.structure?.rooms?.numberOfRooms,
+            classified.data?.features?.furnished,
+            classified.data?.conditions?.yearOfConstruction,
+            classified.data?.management?.rent?.certificateOfEligibilityNeeded,
+            classified.data?.structure?.building?.locationInBuilding,
+            features,
+            classified.data?.location?.country,
+            classified.metadata.brand,
+            classified?.visibility?.requests.map(e => e.portal),
+            classified?.data?.location?.postalcode,
+            lat ?? 0,
+            lon ?? 0,
+          ];
+
+          const classifiedQuery = `
+        INSERT INTO Classified (
+          ClassifiedId, 
+          Price,
+          AvivGeoId, 
+          DistributionType, 
+          EstateType, 
+          EstateSubType, 
+          NumberOfRooms,
+          Furnished,
+          YearOfConstruction,
+          CertificateOfEligibilityNeeded,
+          LocationInBuilding,
+          Features,
+          Country,
+          Brand,
+          Portals,
+          Postalcode,
+          lat,
+          lon
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+    ON CONFLICT (ClassifiedId) DO UPDATE 
+          SET Price = $2,
+              avivgeoId= $3, 
+              DistributionType= $4, 
+              EstateType= $5, 
+              EstateSubType= $6, 
+              NumberOfRooms= $7,
+              Furnished= $8,
+              YearOfConstruction= $9,
+              CertificateOfEligibilityNeeded= $10,
+              LocationInBuilding= $11,
+              Features= $12,
+              Country = $13,
+              Brand = $14,
+              Portals = $15,
+              Postalcode = $16,
+              lat = $17,
+              lon  = $18          ;`;
+
+
+          console.log('step 1/3 inserted id : ' + id)
+          await client.query(classifiedQuery, classifiedValue);
+          console.log('step 2/3 inserted id : ' + id)
+          client.release();
+          console.log('step 3/3 inserted id : ' + id)
         }
-      }
+      });
+    });
 
 
-      //Mapping : https://avivgroup.atlassian.net/browse/WLSEO-501
-      const classifiedValue = [
-        id,
-        price,
-        avivGeoIdWkg,
-        classified.data.distributionType,
-        classified.data.estateType,
-        classified.data?.estateSubType !== undefined ? Object.values(classified.data?.estateSubType)?.[0] : null,
-        classified.data?.structure?.rooms?.numberOfRooms,
-        classified.data?.features?.furnished,
-        classified.data?.conditions?.yearOfConstruction,
-        classified.data?.management?.rent?.certificateOfEligibilityNeeded,
-        classified.data?.structure?.building?.locationInBuilding,
-        features,
-        classified.data?.location?.country,
-        classified.metadata.brand,
-        classified?.visibility?.requests.map(e => e.portal),
-        classified?.data?.location?.postalcode,
-        lat ?? 0,
-        lon ?? 0,
-      ];
 
-      const classifiedQuery = `
-    INSERT INTO Classified (
-      ClassifiedId, 
-      Price,
-      AvivGeoId, 
-      DistributionType, 
-      EstateType, 
-      EstateSubType, 
-      NumberOfRooms,
-      Furnished,
-      YearOfConstruction,
-      CertificateOfEligibilityNeeded,
-      LocationInBuilding,
-      Features,
-      Country,
-      Brand,
-      Portals,
-      Postalcode,
-      lat,
-      lon
-   ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
-ON CONFLICT (ClassifiedId) DO UPDATE 
-      SET Price = $2,
-          avivgeoId= $3, 
-          DistributionType= $4, 
-          EstateType= $5, 
-          EstateSubType= $6, 
-          NumberOfRooms= $7,
-          Furnished= $8,
-          YearOfConstruction= $9,
-          CertificateOfEligibilityNeeded= $10,
-          LocationInBuilding= $11,
-          Features= $12,
-          Country = $13,
-          Brand = $14,
-          Portals = $15,
-          Postalcode = $16,
-          lat = $17,
-          lon  = $18          ;`;
-
-
-      console.log('step 1/3 inserted id : ' + id)
-      await client.query(classifiedQuery, classifiedValue);
-      console.log('step 2/3 inserted id : ' + id)
-      client.release();
-      console.log('step 3/3 inserted id : ' + id)
-    })
+    //     })
   }
   catch (e) {
     // if (e.name === "ConditionalCheckFailedException") {
