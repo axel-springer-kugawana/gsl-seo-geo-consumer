@@ -221,6 +221,10 @@ ON CONFLICT (ClassifiedId) DO UPDATE
 
 
       console.log('try inserted id : ' + id)
+
+      await client.query(classifiedQuery, classifiedValue);
+
+
       await client.release();
 
       console.log('release : ' + id)
