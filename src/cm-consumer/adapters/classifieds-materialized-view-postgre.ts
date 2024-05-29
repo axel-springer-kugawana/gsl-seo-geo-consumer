@@ -220,14 +220,11 @@ ON CONFLICT (ClassifiedId) DO UPDATE
           lon  = $18          ;`;
 
 
-      console.log('try inserted id : ' + id)
-
+      console.log('step 1/3 inserted id : ' + id)
       await client.query(classifiedQuery, classifiedValue);
-
-
-      await client.release();
-
-      console.log('release : ' + id)
+      console.log('step 2/3 inserted id : ' + id)
+      client.release();
+      console.log('step 3/3 inserted id : ' + id)
     })
   }
   catch (e) {
@@ -237,13 +234,13 @@ ON CONFLICT (ClassifiedId) DO UPDATE
     //   })
     // }
     // else
-    {
-      logger.error('classifiedId : ' + id)
-      logger.error('payload : ' + JSON.stringify(classified))
-      logger.error(e)
 
-      throw (e);
-    }
+    logger.error('classifiedId : ' + id)
+    logger.error('payload : ' + JSON.stringify(classified))
+    logger.error(e)
+
+    throw (e);
+
   }
 }
 
