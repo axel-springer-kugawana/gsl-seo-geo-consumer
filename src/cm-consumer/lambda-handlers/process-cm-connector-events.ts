@@ -12,17 +12,38 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
   //const body = fs.readFileSync("cm-consumer/lambda-handlers/fakes/231116WBR1KI.json", "utf8");
   const e = JSON.parse(record.body);
 
-  switch (e.type) {
-    case `${SSotEntityName}.deleted.v1`:
-      const classifiedId = e.data.classifiedId;
-      await markClassifiedAsDeleted(context, { classifiedId, updateDate: e.data.updateDate });
-      break;
-    case `${SSotEntityName}.init.v1`:
-      await initDatabase();
-      break;
-    default:
-      await createOrUpdateClassified(context, e.data.classifiedId, e.data);
+  if (e.type == `${SSotEntityName}.deleted.v1`) {
+    const classifiedId = e.data.classifiedId;
+    await markClassifiedAsDeleted(context, { classifiedId, updateDate: e.data.updateDate });
+
   }
+  else if (e.type == `${SSotEntityName}.init.v1`) {
+    await initDatabase();
+
+  }
+  else {
+
+    console.log('classifiedId : ' + e.type)
+    console.log('classifiedId : ' + e.data.classifiedId)
+
+    console.log(JSON.stringify(record.body))
+    
+
+    await createOrUpdateClassified(context, e.data.classifiedId, e.data);
+
+  }
+
+  // switch (e.type) {
+  //   case `${SSotEntityName}.deleted.v1`:
+  //     const classifiedId = e.data.classifiedId;
+  //     await markClassifiedAsDeleted(context, { classifiedId, updateDate: e.data.updateDate });
+  //     break;
+  //   case `${SSotEntityName}.init.v1`:
+  //     await initDatabase();
+  //     break;
+  //   default:
+  //     await createOrUpdateClassified(context, e.data.classifiedId, e.data);
+  // }
 }
 
 export const lambdaHandler = async (event: SQSEvent, context: Context): Promise<SQSBatchResponse> => {

@@ -52,17 +52,17 @@ module "cm_consumer" {
   process_cm_connector_events_lambda = {
     dist_file                 = "../src/dist/cm-consumer/lambda-handlers/process-cm-connector-events.js"
     handler                   = "process-cm-connector-events.handler"
-    queue_esm_max_concurrency = 8
+    queue_esm_max_concurrency = 9
   }
   cm_connector_consumer_queue = {
     arn = module.cm_connector.queue_arn
     id  = module.cm_connector.queue_id
   }
 
-  ssot_name          = var.ssot_name
-  application        = var.application
-  environment        = var.environment
-  rds_arn            = module.rds.arn #module.rds.proxy_arn
-  secret_name        = module.rds.secret_name
-  rds_sg_id          = module.rds.sg_id
+  ssot_name   = var.ssot_name
+  application = var.application
+  environment = var.environment
+  rds_arn     = module.rds.proxy_arn #module.rds.arn #
+  secret_name = module.rds.secret_name
+  rds_sg_id   = module.rds.sg_id
 }
