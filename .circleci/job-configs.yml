@@ -129,6 +129,12 @@ workflows:
       - build-classified-management-connector:
           ENV_SECRETS: "LIVE"
           <<: *livefilter
+      - promote:
+          <<: *livefilter
+          name: Approve deploy to prod 
+          type: approval
+          requires:
+            - build-classified-management-connector
       - deploy-classified-management-connector:
           <<: *livefilter
           ENV: "live"
