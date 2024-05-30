@@ -125,6 +125,7 @@ workflows:
             requires:
               - build-classified-management-connector
   classified-management-connector-live:
+    when: << pipeline.parameters.run-classified-management-connector-job >>
     jobs:
       - build-classified-management-connector:
           ENV_SECRETS: "LIVE"
