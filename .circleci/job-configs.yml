@@ -144,4 +144,4 @@ workflows:
           ENV_PATH_FILE: "./live.tfvars"
           requires:
             - build-classified-management-connector
-            - promote
+            - Approve deploy to prod
