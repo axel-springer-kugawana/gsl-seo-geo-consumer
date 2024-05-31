@@ -5,6 +5,10 @@ import { EstateType } from "./estate-type";
 import { Features } from "./features";
 import { Prices } from "./prices/prices";
 
+
+// KEEP UPDATE FROM https://github.com/axel-springer-kugawana/aviv_architecture_backend_guild/tree/main/samples/classified-management-connector/src
+
+
 export interface MultiLingualText {
   de?: string;
   fr?: string;

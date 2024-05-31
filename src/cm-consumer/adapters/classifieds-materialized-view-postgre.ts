@@ -167,7 +167,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           features,
           classified.data?.location?.country,
           classified.metadata.brand,
-          classified?.visibility?.validations[0]?.portal,
+          classified?.visibility?.validations?.map(e=>e),
           classified?.data?.location?.postalcode,
           isAuthorizedValue,
           isGeoDataValidValue,
