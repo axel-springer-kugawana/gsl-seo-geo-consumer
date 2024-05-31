@@ -15,6 +15,7 @@ export enum DistributionType {
   RENT = 'RENT',
   COMPULSORY_AUCTION = 'COMPULSORY_AUCTION',
   BUY_AUCTION = 'BUY_AUCTION',
+  BUY_RENT = 'BUY_RENT',
 }
 
 export enum Features {
@@ -44,4 +45,12 @@ export enum Validation {
   NO = 'NO',
   PART = 'PART',
   NOT_APPLICABLE = 'NOT_APPLICABLE',
+}
+
+export enum MarketStatus {
+  SOLD = 'SOLD',
+  RENTED = 'RENTED',
+  REFERENCE = 'REFERENCE',
+  RESERVED = 'RESERVED',
+  UNDER_OFFER = 'UNDER_OFFER',
 }
