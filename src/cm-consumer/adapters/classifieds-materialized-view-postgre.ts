@@ -178,7 +178,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         ];
 
         const classifiedQuery = `
-        INSERT INTO Classified (
+        INSERT INTO classified_with_count_improvment (
           ClassifiedId, 
           Price,
           AvivGeoId, 
