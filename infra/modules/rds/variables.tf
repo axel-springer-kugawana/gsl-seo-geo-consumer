@@ -92,7 +92,7 @@ variable "ssot_name" {
 variable "proxy_idle_client_timeout" {
   type        = number
   description = "The number of seconds that a connection to the proxy can be inactive before the proxy disconnects it"
-  default     = 0
+  default     = 3
 }
 
 variable "proxy_max_connections_percent" {
