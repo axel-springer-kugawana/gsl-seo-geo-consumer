@@ -171,8 +171,6 @@ async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], avivGeoIdWkg: str
       blocId= $10,
       updateDate= NOW();`;
 
-
-    console.log('geoQuery')
     await _pool.query(geoQuery, geoValue);
 
     if (lat !== undefined) {
@@ -188,8 +186,6 @@ async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], avivGeoIdWkg: str
         SET    
         avivgeoId = $3,
         updateDate = NOW();`;
-
-        console.log('insert geoQuery')
         await _pool.query(geo_lat_lon, geo_lat_lonValue);
     }
 }

@@ -11,9 +11,12 @@ type DataEligibilityResult = {
 // so in that case it is enough that the portal contains in visibility.validations
 export const isPublished = (classifiedData: Classified): boolean => {
 
-    if (classifiedData.visibility?.validations.length === 0 || classifiedData.visibility?.validations[0].visibilityStatus === undefined) {
+    if (classifiedData?.visibility?.validations === undefined)
         return true;
-    }
+
+    if (classifiedData.visibility.validations.length === 0)
+        return true;
+
 
     return classifiedData.visibility?.validations[0]?.visibilityStatus === VisibilityStatus.PUBLISHED
 }

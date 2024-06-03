@@ -26,8 +26,6 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
     const pool = poolInstance.getPool
     await pool().then(async (_pool) => {
 
-      const { avivGeoId, geometry } = classified.data?.location;
-      const [lon, lat] = geometry?.coordinates;
 
       const price = mapPrice(classified) ?? undefined;
       const features = mapFeatures(classified);
@@ -36,13 +34,24 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       const isMarketStatusEligibleForPublicationValue = isMarketStatusEligibleForPublication(classified)
       const isPublishedValue = isPublished(classified)
 
-      let avivGeoIdWkg = await mapGeo(_pool, classified.data?.location);
+      let newAvivGeoId = '';
+      let oldAvivGeoId = '';
+      let lat = 0;
+      let lon = 0;
+      if (isGeoDataValidValue) {
+        const { avivGeoId, geometry } = classified.data?.location;
+        const [lon2, lat2] = geometry?.coordinates;
+        oldAvivGeoId = avivGeoId;
+        lon = lon2;
+        lat = lat2;
+        newAvivGeoId = await mapGeo(_pool, classified.data?.location);
+      }
 
       //Mapping : https://avivgroup.atlassian.net/browse/WLSEO-501
       const classifiedValue = [
         id,
         price,
-        avivGeoIdWkg,
+        newAvivGeoId,
         classified.data.distributionType,
         classified.data.estateType,
         classified.data?.estateSubType !== undefined ? Object.values(classified.data?.estateSubType)?.[0] : null,
@@ -63,7 +72,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         isPublishedValue,
         lat ?? 0,
         lon ?? 0,
-        avivGeoId,
+        oldAvivGeoId,
       ];
 
       const classifiedQuery = `
