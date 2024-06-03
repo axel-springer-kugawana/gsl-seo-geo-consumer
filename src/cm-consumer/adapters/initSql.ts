@@ -104,7 +104,10 @@ const initDatabase = async () => {
            g.blocid
       FROM classified c
       LEFT JOIN geo g ON g.avivgeoid::text = c.avivgeoid::text
-     WHERE c.brand::text = 'IWT'::text AND ('IMMONET'::text = ANY (c.portals));
+      WHERE c.brand::text = 'IWT'::text AND ('IMMONET'::text = ANY (c.portals))
+      AND c.isauthorized IS TRUE
+      AND c.isgeodatavalid IS TRUE
+      AND c.ismarketstatuseligibleforpublication IS TRUE;
 
     ALTER TABLE v_immonet
         OWNER TO main_user;
