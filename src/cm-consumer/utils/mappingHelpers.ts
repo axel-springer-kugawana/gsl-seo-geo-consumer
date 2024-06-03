@@ -1,10 +1,6 @@
 import { Classified, Location } from "@shared/models/classified/1.0.0/classified";
 import { DistributionType, Portal, Features, KitchenEquipment, Validation } from '../models/classifiedEnums';
-import { paths, components } from '../../shared/models/geo-api';
-import createClient from 'openapi-fetch';
-import { Middleware } from 'openapi-fetch';
 
-import { getClassifiedApiSecret } from "../adapters/classified-api-secrets";
 //https://avivgroup.atlassian.net/wiki/spaces/ATSS/pages/300812851/Search+index+model
 export const mapPrice = (
     data: Classified
@@ -118,63 +114,3 @@ export const mapFeatures = (
 
     return features
 }
-
-export const mapGeoAsync = async (location: Location): Promise<Feature[] | undefined> => {
-
-    const apisecrets = await getClassifiedApiSecret();
-
-    const cliApi = createClient<paths>({
-        baseUrl: apisecrets.GeoPlaceApiUrl,
-    })
-
-    const myMiddleware: Middleware = {
-        async onRequest(req, options) {
-            req.headers.set("accept", "application/json");
-            req.headers.set("X-Api-Key", apisecrets.GeoPlaceApiKey);
-            return req;
-        }
-    };
-    cliApi.use(myMiddleware);
-
-    // Path params
-    //https://github.com/axel-springer-kugawana/aviv_seeker_classified_search_composer/blob/main/lambdas/src/classified-enrichment/get-geo-hierarchy/main.ts#L37
-    const { avivGeoId, geometry } = location;
-    if (avivGeoId !== undefined) {
-        const {
-            data, // only present if 2XX response
-            error, // only present if 4XX or 5XX response
-        } = await cliApi.GET("/v1/places/{place_id}", {
-            params: {
-                path: { place_id: avivGeoId },
-            }
-        });
-
-        if (data != null) {
-            return [...(data.item.parents ?? []), data.item]
-        }
-    }
-
-    if (geometry?.coordinates?.length == 2) {
-        // if (geometry?.type === "Point") {
-        const [lon, lat] = geometry.coordinates;
-        const {
-            data, // only present if 2XX response
-            error, // only present if 4XX or 5XX response
-        } = await cliApi.GET("/v1/places/point/{longitude}/{latitude}",
-            {
-                params: {
-                    path: {
-                        longitude: lon,
-                        latitude: lat
-                    },
-                }
-            });
-
-        if (data != null) {
-            return data.items
-        }
-    }
-    return null
-}
-
-type Feature = components['schemas']['Feature'];

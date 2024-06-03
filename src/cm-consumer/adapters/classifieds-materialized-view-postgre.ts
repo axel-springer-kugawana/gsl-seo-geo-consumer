@@ -1,6 +1,8 @@
 import { logger } from "@shared/cross-cutting/logger";
 import { Classified, Location, VisibilityStatus } from "@shared/models/classified/1.0.0/classified";
-import { mapFeatures, mapPrice, mapGeoAsync } from '../utils/mappingHelpers';
+import { mapFeatures, mapPrice } from '../utils/mappingHelpers';
+import { mapGeo } from '../utils/geoHelpers';
+
 import { poolInstance } from "./connectPostGre";
 import { Context } from "aws-lambda";
 import { isAuthorized, isGeoDataValid, isMarketStatusEligibleForPublication, isPublished } from '../utils/classfiedRulesHelpers';
@@ -20,8 +22,12 @@ const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classi
 const createOrUpdateClassified = async (context: Context, id: string, classified: Classified): Promise<void> => {
   context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
   try {
+
     const pool = poolInstance.getPool
     await pool().then(async (_pool) => {
+
+      const { avivGeoId, geometry } = classified.data?.location;
+      const [lon, lat] = geometry?.coordinates;
 
       const price = mapPrice(classified) ?? undefined;
       const features = mapFeatures(classified);
@@ -29,156 +35,38 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       const isGeoDataValidValue = isGeoDataValid(classified)
       const isMarketStatusEligibleForPublicationValue = isMarketStatusEligibleForPublication(classified)
       const isPublishedValue = isPublished(classified)
-      let avivGeoIdWkg = ''
-      let doGeoMapping = true;
 
-      const { avivGeoId, geometry } = classified.data?.location;
-      const [lon, lat] = geometry?.coordinates ?? [];
+      let avivGeoIdWkg = await mapGeo(_pool, classified.data?.location);
 
-      avivGeoIdWkg = avivGeoId;
-      if (avivGeoIdWkg !== undefined || geometry !== undefined) {
-        const geoQueryExists = `
-            select avivgeoid
-            from(
-            select avivgeoid from geo_lat_lon
-            where (lat = $1 and lon = $2)
-            AND updateDate >= NOW() - INTERVAL '30 days'
-            union
-            select avivgeoid from geo
-            where avivgeoid = $3
-            AND updateDate >= NOW() - INTERVAL '30 days'
-            ) tmp`;
+      //Mapping : https://avivgroup.atlassian.net/browse/WLSEO-501
+      const classifiedValue = [
+        id,
+        price,
+        avivGeoIdWkg,
+        classified.data.distributionType,
+        classified.data.estateType,
+        classified.data?.estateSubType !== undefined ? Object.values(classified.data?.estateSubType)?.[0] : null,
+        classified.data?.structure?.rooms?.numberOfRooms,
+        classified.data?.features?.furnished,
+        classified.data?.conditions?.yearOfConstruction,
+        classified.data?.management?.rent?.certificateOfEligibilityNeeded,
+        classified.data?.structure?.building?.locationInBuilding,
+        features,
+        classified.data?.location?.country,
+        classified.metadata.brand,
+        //classified?.visibility?.validations?.map(e=>e),
+        classified?.visibility?.validations?.map(e => e.portal + '_' + e.visibilityStatus ?? VisibilityStatus.PUBLISHED),
+        classified?.data?.location?.postalcode,
+        isAuthorizedValue,
+        isGeoDataValidValue,
+        isMarketStatusEligibleForPublicationValue,
+        isPublishedValue,
+        lat ?? 0,
+        lon ?? 0,
+        avivGeoId,
+      ];
 
-        const geoValueExists = [
-          lat,
-          lon,
-          avivGeoIdWkg
-        ]
-
-        console.log('geoQueryExists')
-        let existsRecords = (await _pool.query(geoQueryExists, geoValueExists)).rows[0];
-
-        if (existsRecords?.avivgeoid !== undefined) {
-          avivGeoIdWkg = existsRecords.avivgeoid
-          doGeoMapping = false;
-        }
-
-        if (doGeoMapping) {
-          const geo = await mapGeoAsync(classified?.data?.location);
-          let geoLevel = null
-
-          if ((geo == undefined || geo.length == 0)) {
-            geoLevel = 200
-            avivGeoIdWkg = classified?.data?.location?.country ?? "undefined_country"
-          }
-          else {
-            if (avivGeoIdWkg === undefined) {
-              avivGeoIdWkg = geo[geo.length - 1]?.id;
-              geoLevel = geo[geo.length - 1]?.level;
-            }
-            else {
-              geoLevel = single(geo.filter(x => x.id === avivGeoIdWkg))?.level;
-            }
-          }
-          let countryId = single(geo?.filter(x => x.level === 200))?.id;
-          let regionId = single(geo?.filter(x => x.level === 400))?.id;
-          let microregionId = single(geo?.filter(x => x.level === 500))?.id;
-          let provinceId = single(geo?.filter(x => x.level === 600))?.id;
-          let municipalityID = single(geo?.filter(x => x.level === 800))?.id;
-          let boroughID = single(geo?.filter(x => x.level === 900))?.id;
-          let neighborhoodId = single(geo?.filter(x => x.level === 1000))?.id;
-          let blocId = single(geo?.filter(x => x.level === 1200))?.id;
-
-          const geoValue = [
-            avivGeoIdWkg,
-            geoLevel,
-            countryId,
-            regionId,
-            microregionId,
-            provinceId,
-            municipalityID,
-            boroughID,
-            neighborhoodId,
-            blocId
-          ]
-          const geoQuery = `
-        INSERT INTO geo (
-          avivgeoId,
-          geoLevel,
-          countryId,
-          regionId,
-          microregionId,
-          provinceId,
-          municipalityID,
-          boroughID,
-          neighborhoodId,
-          blocId,
-          updateDate
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
-    ON CONFLICT (avivgeoId) DO UPDATE 
-          SET    
-          geoLevel = $2,
-          countryId = $3,
-          regionId= $5,
-          microregionId= $5,
-          provinceId= $6,
-          municipalityID= $7,
-          boroughID= $9,
-          neighborhoodId= $9,
-          blocId= $10,
-          updateDate= NOW();`;
-
-
-          console.log('geoQuery')
-          await _pool.query(geoQuery, geoValue);
-
-          if (lat !== undefined) {
-            const geo_lat_lonValue = [
-              lat,
-              lon,
-              avivGeoIdWkg
-            ]
-
-            const geo_lat_lon = `
-          INSERT INTO geo_lat_lon (lat, lon, avivgeoId, updateDate) VALUES ($1, $2, $3, NOW())
-          ON CONFLICT (lat,lon) DO UPDATE 
-            SET    
-            avivgeoId = $3,
-            updateDate = NOW();`;
-
-            console.log('insert geoQuery')
-            await _pool.query(geo_lat_lon, geo_lat_lonValue);
-          }
-        }
-
-        //Mapping : https://avivgroup.atlassian.net/browse/WLSEO-501
-        const classifiedValue = [
-          id,
-          price,
-          avivGeoIdWkg,
-          classified.data.distributionType,
-          classified.data.estateType,
-          classified.data?.estateSubType !== undefined ? Object.values(classified.data?.estateSubType)?.[0] : null,
-          classified.data?.structure?.rooms?.numberOfRooms,
-          classified.data?.features?.furnished,
-          classified.data?.conditions?.yearOfConstruction,
-          classified.data?.management?.rent?.certificateOfEligibilityNeeded,
-          classified.data?.structure?.building?.locationInBuilding,
-          features,
-          classified.data?.location?.country,
-          classified.metadata.brand,
-          //classified?.visibility?.validations?.map(e=>e),
-          classified?.visibility?.validations?.map(e=>e.portal + '_' + e.visibilityStatus ?? VisibilityStatus.PUBLISHED),
-          classified?.data?.location?.postalcode,
-          isAuthorizedValue,
-          isGeoDataValidValue,
-          isMarketStatusEligibleForPublicationValue,
-          isPublishedValue,
-          lat ?? 0,
-          lon ?? 0,
-        ];
-
-        const classifiedQuery = `
+      const classifiedQuery = `
         INSERT INTO classified_with_count_improvment (
           ClassifiedId, 
           Price,
@@ -201,8 +89,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           isMarketStatusEligibleForPublication,
           isPublished,
           lat,
-          lon
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,$19, $20, $21, $22)
+          lon,
+          avivgeoid_ssot
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,$19, $20, $21, $22,$23)
     ON CONFLICT (ClassifiedId) DO UPDATE 
           SET Price = $2,
               avivgeoId= $3, 
@@ -224,10 +113,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
               isMarketStatusEligibleForPublication = $19,
               isPublished = $20,
               lat = $21,
-              lon  = $22          ;`;
-
-        await _pool.query(classifiedQuery, classifiedValue);
-      }
+              lon  = $22,
+              avivgeoid_ssot = $23;`;
+      await _pool.query(classifiedQuery, classifiedValue);
     });
   }
   catch (e) {

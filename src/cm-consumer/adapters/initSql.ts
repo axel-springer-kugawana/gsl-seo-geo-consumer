@@ -33,6 +33,7 @@ const initDatabase = async () => {
         isPublished boolean,
         lat numeric,
         lon numeric,
+        avivgeoid_ssot character varying COLLATE pg_catalog."default",
         CONSTRAINT "Classified_pkey" PRIMARY KEY (classifiedid)
     )
     TABLESPACE pg_default;
@@ -79,6 +80,7 @@ const initDatabase = async () => {
            c.estatesubtype,
            c.distributiontype,
            c.avivgeoid,
+           c.avivgeoid_ssot,
            c.country,
            c.postalcode,
            c.price,
