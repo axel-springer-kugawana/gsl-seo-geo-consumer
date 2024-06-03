@@ -29,7 +29,6 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
 
       const price = mapPrice(classified) ?? undefined;
       const features = mapFeatures(classified);
-      const isAuthorizedValue = isAuthorized(classified)
       const isGeoDataValidValue = isGeoDataValid(classified)
       const isMarketStatusEligibleForPublicationValue = isMarketStatusEligibleForPublication(classified)
       const isPublishedValue = isPublished(classified)
@@ -55,10 +54,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         features,
         classified.data?.location?.country,
         classified.metadata.brand,
-        //classified?.visibility?.validations?.map(e=>e),
         portalFilter.map(e => e.portal),
         classified?.data?.location?.postalcode,
-        isAuthorizedValue,
         isGeoDataValidValue,
         isMarketStatusEligibleForPublicationValue,
         isPublishedValue,
@@ -85,14 +82,13 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           Brand,
           Portals,
           Postalcode,
-          isAuthorized,
           isGeoDataValid,
           isMarketStatusEligibleForPublication,
           isPublished,
           lat,
           lon,
           avivgeoid_ssot
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,$19, $20, $21, $22,$23)
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,$19, $20, $21, $22)
     ON CONFLICT (ClassifiedId) DO UPDATE 
           SET Price = $2,
               avivgeoId= $3, 
@@ -109,13 +105,12 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
               Brand = $14,
               Portals = $15,
               Postalcode = $16,
-              isAuthorized = $17,
-              isGeoDataValid = $18,
-              isMarketStatusEligibleForPublication = $19,
-              isPublished = $20,
-              lat = $21,
-              lon  = $22,
-              avivgeoid_ssot = $23;`;
+              isGeoDataValid = $17,
+              isMarketStatusEligibleForPublication = $18,
+              isPublished = $19,
+              lat = $20,
+              lon  = $21,
+              avivgeoid_ssot = $22;`;
       await _pool.query(classifiedQuery, classifiedValue);
     });
   }

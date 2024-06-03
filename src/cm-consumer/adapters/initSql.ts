@@ -27,7 +27,6 @@ const initDatabase = async () => {
         yearofconstruction numeric,
         certificateofeligibilityneeded character varying COLLATE pg_catalog."default",
         locationinbuilding character varying COLLATE pg_catalog."default",
-        isAuthorized boolean,
         isGeoDataValid boolean,
         isMarketStatusEligibleForPublication boolean,
         isPublished boolean,
