@@ -78,4 +78,16 @@ resource "aws_athena_data_catalog" "_" {
   }
 }
 
+resource "aws_athena_workgroup" "this" {
+  name = "${var.application}-${var.environment}-${local.db_name}-workgroup"
 
+  configuration {
+    enforce_workgroup_configuration    = true
+    publish_cloudwatch_metrics_enabled = true
+
+    result_configuration {
+      output_location = "s3://${aws_s3_bucket.this.bucket}/${local.db_name}-output/"
+
+    }
+  }
+}
