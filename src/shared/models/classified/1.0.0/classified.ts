@@ -5,6 +5,10 @@ import { EstateType } from "./estate-type";
 import { Features } from "./features";
 import { Prices } from "./prices/prices";
 
+
+// KEEP UPDATE FROM https://github.com/axel-springer-kugawana/aviv_architecture_backend_guild/tree/main/samples/classified-management-connector/src
+
+
 export interface MultiLingualText {
   de?: string;
   fr?: string;
@@ -253,11 +257,33 @@ export interface Classified {
   };
   media?: Media[];
   specifics?: Specifics;
-  visibility?: {
-    requests?: {
-      portal: 'SL' | 'LI' | 'LR' | 'BD' | 'BUCOM' | 'IWB' | 'IWT' | 'IMMONET';
-    }[];
-  };
+  visibility?: Visibility;
+  censorship?: Censorship;
+}
+
+export interface Visibility {
+  validations?: VisibilityProducer[];
+}
+
+export interface VisibilityProducer {
+  portal: Portals;
+  visibilityStatus: VisibilityStatus;
+  onTopProduct?: OnTopProductItem[];
+}
+
+interface OnTopProductItem {
+  onTopProductType: string;
+  onTopProductStatus: OnTopProductStatus;
+}
+
+enum OnTopProductStatus {
+  ACTIVATED = "ACTIVATED",
+  UNACTIVATED = "UNACTIVATED",
+}
+
+export enum VisibilityStatus {
+  PUBLISHED = "PUBLISHED",
+  UNPUBLISHED = "UNPUBLISHED",
 }
 
 export enum Orientation {
@@ -269,6 +295,29 @@ export enum Orientation {
   'SOUTH_EAST' = 'SOUTH_EAST',
   'NORTH_WEST' = 'NORTH_WEST',
   'SOUTH_WEST' = 'SOUTH_WEST',
+}
+
+export interface Censorship {
+  globalStatus?: boolean;
+  unitary?: CensorshipUnitary[];
+  additionalProperties?: Map<string, any>;
+}
+
+export interface CensorshipUnitary {
+  portal?: Portals;
+  reservedStatus?: boolean;
+  details?: string;
+}
+
+enum Portals {
+  SL = "SL",
+  LI = "LI",
+  LR = "LR",
+  BD = "BD",
+  BUCOM = "BUCOM",
+  IWB = "IWB",
+  IWT = "IWT",
+  IMMONET = "IMMONET",
 }
 
 export interface Structure {

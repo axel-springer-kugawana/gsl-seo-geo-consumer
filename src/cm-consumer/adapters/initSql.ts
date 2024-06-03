@@ -27,6 +27,10 @@ const initDatabase = async () => {
         yearofconstruction numeric,
         certificateofeligibilityneeded character varying COLLATE pg_catalog."default",
         locationinbuilding character varying COLLATE pg_catalog."default",
+        isAuthorized boolean,
+        isGeoDataValid boolean,
+        isMarketStatusEligibleForPublication boolean,
+        isPublished boolean,
         lat numeric,
         lon numeric,
         CONSTRAINT "Classified_pkey" PRIMARY KEY (classifiedid)
@@ -84,6 +88,10 @@ const initDatabase = async () => {
            c.certificateofeligibilityneeded,
            c.locationinbuilding,
            c.features,
+           c.isAuthorized,
+           c.isGeoDataValid,
+           c.isMarketStatusEligibleForPublication,
+           c.isPublished,
            g.geolevel,
            g.countryid,
            g.regionid,
@@ -99,35 +107,6 @@ const initDatabase = async () => {
 
     ALTER TABLE v_immonet
         OWNER TO main_user;
-
-        CREATE OR REPLACE VIEW v_immonet AS
-        SELECT c.classifiedid,
-               c.estatetype,
-               c.estatesubtype,
-               c.distributiontype,
-               c.avivgeoid,
-               c.country,
-               c.postalcode,
-               c.price,
-               c.numberofrooms,
-               c.furnished,
-               c.yearofconstruction,
-               c.certificateofeligibilityneeded,
-               c.locationinbuilding,
-               c.features,
-               g.geolevel,
-               g.countryid,
-               g.regionid,
-               g.microregionid,
-               g.provinceid,
-               g.municipalityid,
-               g.boroughid,
-               g.neighborhoodid,
-               g.blocid
-          FROM classified c
-          LEFT JOIN geo g ON g.avivgeoid::text = c.avivgeoid::text
-         WHERE c.brand::text = 'IWT'::text AND ('IMMONET'::text = ANY (c.portals));
-
   `;
 
   const pool = await poolInstance.getPool(); // Ensure you are getting the pool instance correctly

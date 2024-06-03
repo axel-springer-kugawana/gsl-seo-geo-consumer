@@ -28,16 +28,14 @@ resource "aws_security_group" "this" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  lifecycle { create_before_destroy = true }
-}
+  ingress {
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    security_groups = [local.db_security_group_id]
+  }
 
-resource "aws_security_group_rule" "_" {
-  type                     = "ingress"
-  from_port                = 5432
-  to_port                  = 5432
-  protocol                 = "tcp"
-  security_group_id        = local.db_security_group_id
-  source_security_group_id = aws_security_group.this.id
+  lifecycle { create_before_destroy = true }
 }
 
 resource "aws_s3_bucket" "this" {
