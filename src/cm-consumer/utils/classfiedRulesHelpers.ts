@@ -21,7 +21,7 @@ export const isPublished = (classifiedData: Classified): boolean => {
 // For the search engine only authorized portals (MVP -> Immonet & Immowelt) as well as published classifieds must be processed
 export const isAuthorized = (classifiedData: Classified): boolean => {
     if (!classifiedData.visibility?.validations || classifiedData.visibility?.validations.length === 0) {
-        return false
+        return true
     }
     return !(classifiedData.censorship?.globalStatus ?? false)
 }

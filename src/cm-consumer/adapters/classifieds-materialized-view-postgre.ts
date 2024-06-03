@@ -39,7 +39,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       const { avivGeoId, geometry } = classified.data?.location;
       const [lon, lat] = geometry?.coordinates ?? []
 
-      const portalFilter = classified?.visibility?.validations?.filter(e => e.visibilityStatus === VisibilityStatus.PUBLISHED || e.visibilityStatus === undefined)
+      const portalFilter = classified?.visibility?.validations?.filter(e => e.visibilityStatus === VisibilityStatus.PUBLISHED || e.visibilityStatus === undefined)?? []
       const classifiedValue = [
         id,
         price,
