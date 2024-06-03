@@ -34,24 +34,16 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       const isMarketStatusEligibleForPublicationValue = isMarketStatusEligibleForPublication(classified)
       const isPublishedValue = isPublished(classified)
 
-      let newAvivGeoId = '';
-      let oldAvivGeoId = '';
-      let lat = 0;
-      let lon = 0;
-      if (isGeoDataValidValue) {
-        const { avivGeoId, geometry } = classified.data?.location;
-        const [lon2, lat2] = geometry?.coordinates;
-        oldAvivGeoId = avivGeoId;
-        lon = lon2;
-        lat = lat2;
-        newAvivGeoId = await mapGeo(_pool, classified.data?.location);
-      }
+      //map geo by lat lon, then by geoId
+      let mappedAvivGeoId = isGeoDataValidValue ? await mapGeo(_pool, classified.data?.location) : '';
+      const { avivGeoId, geometry } = classified.data?.location;
+      const [lon, lat] = geometry?.coordinates ?? []
 
-      //Mapping : https://avivgroup.atlassian.net/browse/WLSEO-501
+      const portalFilter = classified?.visibility?.validations?.filter(e => e.visibilityStatus === VisibilityStatus.PUBLISHED || e.visibilityStatus === undefined)
       const classifiedValue = [
         id,
         price,
-        newAvivGeoId,
+        mappedAvivGeoId,
         classified.data.distributionType,
         classified.data.estateType,
         classified.data?.estateSubType !== undefined ? Object.values(classified.data?.estateSubType)?.[0] : null,
@@ -64,7 +56,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         classified.data?.location?.country,
         classified.metadata.brand,
         //classified?.visibility?.validations?.map(e=>e),
-        classified?.visibility?.validations?.map(e => e.portal + '_' + e.visibilityStatus ?? VisibilityStatus.PUBLISHED),
+        portalFilter.map(e => e.portal),
         classified?.data?.location?.postalcode,
         isAuthorizedValue,
         isGeoDataValidValue,
@@ -72,11 +64,11 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         isPublishedValue,
         lat ?? 0,
         lon ?? 0,
-        oldAvivGeoId,
+        avivGeoId
       ];
 
       const classifiedQuery = `
-        INSERT INTO classified_with_count_improvment (
+        INSERT INTO classified (
           ClassifiedId, 
           Price,
           AvivGeoId, 

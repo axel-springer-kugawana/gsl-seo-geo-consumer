@@ -7,28 +7,28 @@ import { Location } from '@shared/models/classified/1.0.0/classified';
 
 export const mapGeo = async (_pool: Pool, location: Location): Promise<string> => {
     const { avivGeoId, geometry } = location;
-    let avivGeoIdWkg = undefined;
+    let mappedAvivGeoId = undefined;
     if (geometry?.type?.toUpperCase() === 'POINT') {
-        avivGeoIdWkg = await getGeoHierarchyEnrichmentByCoordinatesByCache(_pool, geometry);
-        if (avivGeoIdWkg === undefined) {
+        mappedAvivGeoId = await getGeoHierarchyEnrichmentByCoordinatesByCache(_pool, geometry);
+        if (mappedAvivGeoId === undefined) {
             let geo = await getGeoHierarchyEnrichmentByCoordinates(geometry);
             if (geo !== undefined) {
-                avivGeoIdWkg = geo[geo.length - 1]?.id;
-                await addGeoToCacheAsync(_pool, geo, avivGeoIdWkg, geometry);
+                mappedAvivGeoId = geo[geo.length - 1]?.id;
+                await addGeoToCacheAsync(_pool, geo, mappedAvivGeoId, geometry);
             }
         }
     }
-    if (avivGeoIdWkg === undefined && avivGeoId !== undefined) {
-        avivGeoIdWkg = await getGeoHierarchyEnrichmentByIdByCache(_pool, avivGeoId);
-        if (avivGeoIdWkg === undefined) {
+    if (mappedAvivGeoId === undefined && avivGeoId !== undefined) {
+        mappedAvivGeoId = await getGeoHierarchyEnrichmentByIdByCache(_pool, avivGeoId);
+        if (mappedAvivGeoId === undefined) {
             let geo = await getGeoHierarchyEnrichmentById(avivGeoId);
             if (geo !== undefined) {
-                avivGeoIdWkg = geo[geo.length - 1]?.id;
-                await addGeoToCacheAsync(_pool, geo, avivGeoIdWkg, geometry);
+                mappedAvivGeoId = geo[geo.length - 1]?.id;
+                await addGeoToCacheAsync(_pool, geo, mappedAvivGeoId, geometry);
             }
         }
     }
-    return avivGeoIdWkg;
+    return mappedAvivGeoId;
 }
 
 async function getGeoHierarchyEnrichmentById(avivGeoId: string): Promise<Feature[] | undefined> {
@@ -45,7 +45,6 @@ async function getGeoHierarchyEnrichmentById(avivGeoId: string): Promise<Feature
         }
     };
     cliApi.use(myMiddleware);
-
     const {
         data, // only present if 2XX response
         error, // only present if 4XX or 5XX response
@@ -106,21 +105,21 @@ function single<T>(a: ReadonlyArray<T>, fallback?: T): T {
     return null;
 }
 
-async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], avivGeoIdWkg: string, geometry: { type: "point"; coordinates: [number, number]; }) {
+async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: string, geometry: { type: "point"; coordinates: [number, number]; }) {
     let geoLevel = null
-    const [lon, lat] = geometry.coordinates;
+    const [lon, lat] = geometry?.coordinates ?? [];
 
     if ((geo == undefined || geo.length == 0)) {
         geoLevel = 200
-        avivGeoIdWkg = "undefined_country"
+        mappedAvivGeoId = "undefined_country"
     }
     else {
-        if (avivGeoIdWkg === undefined) {
-            avivGeoIdWkg = geo[geo.length - 1]?.id;
+        if (mappedAvivGeoId === undefined) {
+            mappedAvivGeoId = geo[geo.length - 1]?.id;
             geoLevel = geo[geo.length - 1]?.level;
         }
         else {
-            geoLevel = single(geo.filter(x => x.id === avivGeoIdWkg))?.level;
+            geoLevel = single(geo.filter(x => x.id === mappedAvivGeoId))?.level;
         }
     }
     let countryId = single(geo?.filter(x => x.level === 200))?.id;
@@ -133,7 +132,7 @@ async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], avivGeoIdWkg: str
     let blocId = single(geo?.filter(x => x.level === 1200))?.id;
 
     const geoValue = [
-        avivGeoIdWkg,
+        mappedAvivGeoId,
         geoLevel,
         countryId,
         regionId,
@@ -177,7 +176,7 @@ async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], avivGeoIdWkg: str
         const geo_lat_lonValue = [
             lat,
             lon,
-            avivGeoIdWkg
+            mappedAvivGeoId
         ]
 
         const geo_lat_lon = `
@@ -194,7 +193,7 @@ async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], avivGeoIdWkg: str
 async function getGeoHierarchyEnrichmentByIdByCache(_pool: Pool, avivGeoId: string): Promise<string> {
     const geoQueryExists = `
     select avivgeoid from geo
-    where avivgeoid = $3
+    where avivgeoid = $1
     AND updateDate >= NOW() - INTERVAL '30 days'`;
     const geoValueExists = [
         avivGeoId
@@ -207,13 +206,10 @@ async function getGeoHierarchyEnrichmentByIdByCache(_pool: Pool, avivGeoId: stri
 async function getGeoHierarchyEnrichmentByCoordinatesByCache(_pool: Pool, geometry: { type: "point"; coordinates: [number, number]; }): Promise<string> {
     const [lon, lat] = geometry?.coordinates ?? [];
 
-    const geoQueryExists = `
-    select avivgeoid
-    from(
+    const geoQueryExists = `   
     select avivgeoid from geo_lat_lon
     where (lat = $1 and lon = $2)
-    AND updateDate >= NOW() - INTERVAL '30 days'
-    ) tmp`;
+    AND updateDate >= NOW() - INTERVAL '30 days'`;
 
     const geoValueExists = [
         lat,
