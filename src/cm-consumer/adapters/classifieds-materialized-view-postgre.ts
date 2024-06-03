@@ -5,7 +5,7 @@ import { mapGeo } from '../utils/geoHelpers';
 
 import { poolInstance } from "./connectPostGre";
 import { Context } from "aws-lambda";
-import { isAuthorized, isGeoDataValid, isMarketStatusEligibleForPublication, isPublished } from '../utils/classfiedRulesHelpers';
+import { isAuthorized, isGeoDataValid, isMarketStatusEligibleForPublication } from '../utils/classfiedRulesHelpers';
 
 const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classifiedId: string, updateDate: string }): Promise<void> => {
   const { classifiedId, updateDate } = deleteCommand;
@@ -31,7 +31,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       const features = mapFeatures(classified);
       const isGeoDataValidValue = isGeoDataValid(classified)
       const isMarketStatusEligibleForPublicationValue = isMarketStatusEligibleForPublication(classified)
-      const isPublishedValue = isPublished(classified)
+      const isAuthorizedValue = isAuthorized(classified)
 
       //map geo by lat lon, then by geoId
       let mappedAvivGeoId = isGeoDataValidValue ? await mapGeo(_pool, classified.data?.location) : '';
@@ -58,7 +58,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         classified?.data?.location?.postalcode,
         isGeoDataValidValue,
         isMarketStatusEligibleForPublicationValue,
-        isPublishedValue,
+        isAuthorizedValue,
         lat ?? 0,
         lon ?? 0,
         avivGeoId
@@ -82,9 +82,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           Brand,
           Portals,
           Postalcode,
+          isAuthorized,
           isGeoDataValid,
           isMarketStatusEligibleForPublication,
-          isPublished,
           lat,
           lon,
           avivgeoid_ssot
@@ -105,9 +105,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
               Brand = $14,
               Portals = $15,
               Postalcode = $16,
-              isGeoDataValid = $17,
-              isMarketStatusEligibleForPublication = $18,
-              isPublished = $19,
+              isAuthorized = $17,
+              isGeoDataValid = $18,
+              isMarketStatusEligibleForPublication = $19,
               lat = $20,
               lon  = $21,
               avivgeoid_ssot = $22;`;
