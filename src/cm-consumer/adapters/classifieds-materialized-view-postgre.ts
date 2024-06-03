@@ -1,5 +1,5 @@
 import { logger } from "@shared/cross-cutting/logger";
-import { Classified, Location } from "@shared/models/classified/1.0.0/classified";
+import { Classified, Location, VisibilityStatus } from "@shared/models/classified/1.0.0/classified";
 import { mapFeatures, mapPrice, mapGeoAsync } from '../utils/mappingHelpers';
 import { poolInstance } from "./connectPostGre";
 import { Context } from "aws-lambda";
@@ -168,7 +168,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           classified.data?.location?.country,
           classified.metadata.brand,
           //classified?.visibility?.validations?.map(e=>e),
-          classified?.visibility?.validations,
+          classified?.visibility?.validations?.map(e=>e.portal + '_' + e.visibilityStatus ?? VisibilityStatus.PUBLISHED),
           classified?.data?.location?.postalcode,
           isAuthorizedValue,
           isGeoDataValidValue,
