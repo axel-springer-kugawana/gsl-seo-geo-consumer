@@ -5,7 +5,7 @@ import { mapGeo } from '../utils/geoHelpers';
 
 import { poolInstance } from "./connectPostGre";
 import { Context } from "aws-lambda";
-import { isAuthorized, isGeoDataValid, isMarketStatusEligibleForPublication, isPublished } from '../utils/classfiedRulesHelpers';
+import { isAuthorized, isGeoDataValid, isMarketStatusEligibleForPublication } from '../utils/classfiedRulesHelpers';
 
 const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classifiedId: string, updateDate: string }): Promise<void> => {
   const { classifiedId, updateDate } = deleteCommand;
@@ -29,10 +29,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
 
       const price = mapPrice(classified) ?? undefined;
       const features = mapFeatures(classified);
-      const isAuthorizedValue = isAuthorized(classified)
       const isGeoDataValidValue = isGeoDataValid(classified)
       const isMarketStatusEligibleForPublicationValue = isMarketStatusEligibleForPublication(classified)
-      const isPublishedValue = isPublished(classified)
+      const isAuthorizedValue = isAuthorized(classified)
 
       //map geo by lat lon, then by geoId
       let mappedAvivGeoId = isGeoDataValidValue ? await mapGeo(_pool, classified.data?.location) : '';
@@ -55,13 +54,11 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         features,
         classified.data?.location?.country,
         classified.metadata.brand,
-        //classified?.visibility?.validations?.map(e=>e),
         portalFilter.map(e => e.portal),
         classified?.data?.location?.postalcode,
-        isAuthorizedValue,
         isGeoDataValidValue,
         isMarketStatusEligibleForPublicationValue,
-        isPublishedValue,
+        isAuthorizedValue,
         lat ?? 0,
         lon ?? 0,
         avivGeoId
@@ -88,11 +85,10 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           isAuthorized,
           isGeoDataValid,
           isMarketStatusEligibleForPublication,
-          isPublished,
           lat,
           lon,
           avivgeoid_ssot
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,$19, $20, $21, $22,$23)
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,$19, $20, $21, $22)
     ON CONFLICT (ClassifiedId) DO UPDATE 
           SET Price = $2,
               avivgeoId= $3, 
@@ -112,10 +108,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
               isAuthorized = $17,
               isGeoDataValid = $18,
               isMarketStatusEligibleForPublication = $19,
-              isPublished = $20,
-              lat = $21,
-              lon  = $22,
-              avivgeoid_ssot = $23;`;
+              lat = $20,
+              lon  = $21,
+              avivgeoid_ssot = $22;`;
       await _pool.query(classifiedQuery, classifiedValue);
     });
   }

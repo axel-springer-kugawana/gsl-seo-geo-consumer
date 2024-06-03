@@ -30,7 +30,6 @@ const initDatabase = async () => {
         isAuthorized boolean,
         isGeoDataValid boolean,
         isMarketStatusEligibleForPublication boolean,
-        isPublished boolean,
         lat numeric,
         lon numeric,
         avivgeoid_ssot character varying COLLATE pg_catalog."default",
@@ -93,7 +92,6 @@ const initDatabase = async () => {
            c.isAuthorized,
            c.isGeoDataValid,
            c.isMarketStatusEligibleForPublication,
-           c.isPublished,
            g.geolevel,
            g.countryid,
            g.regionid,
@@ -105,7 +103,10 @@ const initDatabase = async () => {
            g.blocid
       FROM classified c
       LEFT JOIN geo g ON g.avivgeoid::text = c.avivgeoid::text
-     WHERE c.brand::text = 'IWT'::text AND ('IMMONET'::text = ANY (c.portals));
+      WHERE c.brand::text = 'IWT'::text AND ('IMMONET'::text = ANY (c.portals))
+      AND c.isauthorized IS TRUE
+      AND c.isgeodatavalid IS TRUE
+      AND c.ismarketstatuseligibleforpublication IS TRUE;
 
     ALTER TABLE v_immonet
         OWNER TO main_user;
