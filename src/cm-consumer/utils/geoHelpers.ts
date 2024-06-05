@@ -37,7 +37,7 @@ async function mapGeoFromApi(_pool: Pool, location: Location) {
         geo = await getGeoHierarchyEnrichmentById(avivGeoId);
     }
 
-    if (geo !== undefined) {
+    if (geo !== undefined && geo != null) {
         mappedAvivGeoId = geo[geo.length - 1]?.id;
         await addGeoToCacheAsync(_pool, geo, mappedAvivGeoId, geometry);
     }
@@ -120,22 +120,10 @@ function single<T>(a: ReadonlyArray<T>, fallback?: T): T {
 }
 
 async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: string, geometry: { type: "point"; coordinates: [number, number]; }) {
-    let geoLevel = null
+
     const [lon, lat] = geometry?.coordinates ?? [];
 
-    if ((geo == undefined || geo.length == 0)) {
-        geoLevel = 200
-        mappedAvivGeoId = "undefined_country"
-    }
-    else {
-        if (mappedAvivGeoId === undefined) {
-            mappedAvivGeoId = geo[geo.length - 1]?.id;
-            geoLevel = geo[geo.length - 1]?.level;
-        }
-        else {
-            geoLevel = single(geo.filter(x => x.id === mappedAvivGeoId))?.level;
-        }
-    }
+    let geoLevel = single(geo.filter(x => x.id === mappedAvivGeoId))?.level;
     let countryId = single(geo?.filter(x => x.level === 200))?.id;
     let regionId = single(geo?.filter(x => x.level === 400))?.id;
     let microregionId = single(geo?.filter(x => x.level === 500))?.id;

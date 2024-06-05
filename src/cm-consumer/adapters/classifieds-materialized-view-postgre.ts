@@ -35,11 +35,11 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       const isAuthorizedValue = isAuthorized(classified)
 
       //map geo by lat lon, then by geoId
-      let mappedAvivGeoId = isGeoDataValidValue ? await mapGeo(_pool, classified.data?.location) : '';
+      let mappedAvivGeoId = isGeoDataValidValue ? await mapGeo(_pool, classified?.data?.location) : '';
       const { avivGeoId, geometry } = classified.data?.location;
       const [lon, lat] = geometry?.coordinates ?? []
 
-      const portalFilter = classified?.visibility?.validations?.filter(e => e.visibilityStatus === VisibilityStatus.PUBLISHED || e.visibilityStatus === undefined)?? []
+      const portalFilter = classified?.visibility?.validations?.filter(e => e.visibilityStatus === VisibilityStatus.PUBLISHED || e.visibilityStatus === undefined) ?? []
       const classifiedValue = [
         id,
         price,
