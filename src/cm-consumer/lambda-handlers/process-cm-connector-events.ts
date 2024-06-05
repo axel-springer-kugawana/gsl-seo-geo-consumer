@@ -3,9 +3,8 @@ import { enableLambdaPowertoolsLoggingAndMetrics } from "@shared/cross-cutting/l
 import { SSotEntityName } from "@shared/models/cm-consumer-constants";
 import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
 import { markClassifiedAsDeleted, createOrUpdateClassified } from "cm-consumer/adapters/classifieds-materialized-view-postgre";
-import { initDatabase } from "cm-consumer/adapters/initSql";
-import * as fs from 'fs';
-
+import { initDatabase, patchDatabase } from "cm-consumer/adapters/initSql";
+//import * as fs from 'fs';
 const processor = new BatchProcessor(EventType.SQS);
 
 export const recordHandler = async (record: SQSRecord, context: Context): Promise<void> => {
@@ -19,6 +18,9 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
   }
   else if (e.type == `${SSotEntityName}.init.v1`) {
     await initDatabase();
+
+  } else if (e.type == `${SSotEntityName}.patch.v1`) {
+    await patchDatabase();
 
   }
   else {

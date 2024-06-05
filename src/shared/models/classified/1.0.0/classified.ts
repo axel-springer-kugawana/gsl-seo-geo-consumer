@@ -254,6 +254,8 @@ export interface Classified {
     offererEstateId: string;
     offererMarketingKey: string;
     projectId: string;
+    externalProjectId: string;
+    classifiedBusiness: string;
   };
   media?: Media[];
   specifics?: Specifics;

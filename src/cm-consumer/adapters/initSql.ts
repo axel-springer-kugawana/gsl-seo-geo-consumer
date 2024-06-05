@@ -33,6 +33,7 @@ const initDatabase = async () => {
         lat numeric,
         lon numeric,
         avivgeoid_ssot character varying COLLATE pg_catalog."default",
+        projectTypes text[] COLLATE pg_catalog."default",
         CONSTRAINT "Classified_pkey" PRIMARY KEY (classifiedid)
     )
     TABLESPACE pg_default;
@@ -100,7 +101,8 @@ const initDatabase = async () => {
            g.municipalityid,
            g.boroughid,
            g.neighborhoodid,
-           g.blocid
+           g.blocid,
+           c.projectTypes
       FROM classified c
       LEFT JOIN geo g ON g.avivgeoid::text = c.avivgeoid::text
       WHERE c.brand::text = 'IWT'::text AND ('IMMONET'::text = ANY (c.portals))
@@ -129,4 +131,53 @@ const initDatabase = async () => {
   }
 };
 
-export { initDatabase };
+const patchDatabase = async () => {
+  const sqlDatabase = `alter table if exists classified
+    add if not exists projectTypes text[];
+    
+    CREATE OR REPLACE VIEW v_immonet AS
+    SELECT c.classifiedid,
+           c.estatetype,
+           c.estatesubtype,
+           c.distributiontype,
+           c.avivgeoid,
+           c.avivgeoid_ssot,
+           c.country,
+           c.postalcode,
+           c.price,
+           c.numberofrooms,
+           c.furnished,
+           c.yearofconstruction,
+           c.certificateofeligibilityneeded,
+           c.locationinbuilding,
+           c.features,
+           c.isAuthorized,
+           c.isGeoDataValid,
+           c.isMarketStatusEligibleForPublication,
+           g.geolevel,
+           g.countryid,
+           g.regionid,
+           g.microregionid,
+           g.provinceid,
+           g.municipalityid,
+           g.boroughid,
+           g.neighborhoodid,
+           g.blocid,
+           c.projectTypes
+      FROM classified c
+      LEFT JOIN geo g ON g.avivgeoid::text = c.avivgeoid::text
+      WHERE c.brand::text = 'IWT'::text AND ('IMMONET'::text = ANY (c.portals))
+      AND c.isauthorized IS TRUE
+      AND c.isgeodatavalid IS TRUE
+      AND c.ismarketstatuseligibleforpublication IS TRUE;
+      `;
+
+  try {
+    await poolInstance.getPool().then(_pool => _pool.query(sqlDatabase)); // Ensure you are getting the pool instance correctly
+    console.log('Database patched successfully');
+  } catch (e) {
+    logger.error('Error executing SQL:', e);
+  }
+};
+
+export { initDatabase, patchDatabase };

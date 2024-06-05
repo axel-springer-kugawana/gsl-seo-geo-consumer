@@ -1,5 +1,5 @@
 import { Classified, Location } from "@shared/models/classified/1.0.0/classified";
-import { DistributionType, Portal, Features, KitchenEquipment, Validation } from '../models/classifiedEnums';
+import { DistributionType, Portal, Features, KitchenEquipment, Validation, ProjectType, BuildState } from '../models/classifiedEnums';
 
 //https://avivgroup.atlassian.net/wiki/spaces/ATSS/pages/300812851/Search+index+model
 export const mapPrice = (
@@ -113,4 +113,37 @@ export const mapFeatures = (
     if (media === undefined || media.length === 0) features.push(Features.NO_MEDIA)
 
     return features
+}
+
+export const mapProjectTypes = (
+    classified: Classified
+): string[] => {
+    const { data, metadata } = classified;
+
+
+    const { residential: { flatSharePossible = null } = {} } = {
+        ...data.features,
+    }
+    const { rent: { isShortTimeRental = null } = {}, isForInvestment } = { ...data.management }
+    const projectTypes: string[] = []
+
+    if (metadata?.projectId || metadata?.externalProjectId) projectTypes.push(ProjectType.NEW_BUILD)
+    if (isForInvestment) projectTypes.push(ProjectType.INVESTMENT)
+    if (isShortTimeRental) projectTypes.push(ProjectType.SHORT_TIME_RENTAL)
+    if (data.conditions?.buildState === BuildState.PROJECTED) projectTypes.push(ProjectType.PROJECTED)
+    if (
+        (data.estateSubType && data.estateSubType[data.estateType.toLocaleLowerCase()] === 'FLATSHARING_ROOM') ||
+        flatSharePossible === Validation.YES
+    ) {
+        projectTypes.push(ProjectType.FLATSHARING)
+    }
+    if (projectTypes.length === 0) {
+        if (data.distributionType === DistributionType.RENT) {
+            projectTypes.push(ProjectType.STOCK)
+        } else {
+            projectTypes.push(ProjectType.RESALE)
+        }
+    }
+
+    return projectTypes
 }

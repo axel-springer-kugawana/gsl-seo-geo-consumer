@@ -1,6 +1,6 @@
 import { logger } from "@shared/cross-cutting/logger";
 import { Classified, Location, VisibilityStatus } from "@shared/models/classified/1.0.0/classified";
-import { mapFeatures, mapPrice } from '../utils/mappingHelpers';
+import { mapFeatures, mapPrice, mapProjectTypes } from '../utils/mappingHelpers';
 import { mapGeo } from '../utils/geoHelpers';
 
 import { poolInstance } from "./connectPostGre";
@@ -29,6 +29,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
 
       const price = mapPrice(classified) ?? undefined;
       const features = mapFeatures(classified);
+      const projectTypes = mapProjectTypes(classified);
       const isGeoDataValidValue = isGeoDataValid(classified)
       const isMarketStatusEligibleForPublicationValue = isMarketStatusEligibleForPublication(classified)
       const isAuthorizedValue = isAuthorized(classified)
@@ -61,7 +62,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         isAuthorizedValue,
         lat ?? 0,
         lon ?? 0,
-        avivGeoId
+        avivGeoId,
+        projectTypes,
       ];
 
       const classifiedQuery = `
@@ -87,8 +89,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           isMarketStatusEligibleForPublication,
           lat,
           lon,
-          avivgeoid_ssot
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,$19, $20, $21, $22)
+          avivgeoid_ssot,
+          projectTypes
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,$19, $20, $21, $22, $23)
     ON CONFLICT (ClassifiedId) DO UPDATE 
           SET Price = $2,
               avivgeoId= $3, 
@@ -110,7 +113,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
               isMarketStatusEligibleForPublication = $19,
               lat = $20,
               lon  = $21,
-              avivgeoid_ssot = $22;`;
+              avivgeoid_ssot = $22,
+              projectTypes =$23
+              ;`;
       await _pool.query(classifiedQuery, classifiedValue);
     });
   }
