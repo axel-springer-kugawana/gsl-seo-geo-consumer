@@ -13,42 +13,47 @@ const itemsHandler = async (event: ClassifiedKeysSync): Promise<void> => {
         
         const classified = await getClassifiedByKey(key);
 
+        if (classified === undefined) {
+            logger.error("Classified not found: " + key);
+            return;
+        }
+
 
         switch (event.operation) {
             case "upsert":
                 await publishClassifiedDataAsReplayedEvent(classified);
-                
                 break;
             case "delete":
                 await publishFullClassifiedEvent({
                     data: {
                         classifiedId: classified.classifiedId,
-                        updateDate: new Date(classified.updateAt).toISOString()
+                        updateDate: new Date(classified.updateAt!).toISOString(),
                     },
-                    event: "deleted"
+                    event: "deleted",
                 });
                 break;
             default:
-                logger.warn("Unknown sync operation", {
-                    event
-                });
+                logger.warn("Unknown sync operation", { event });
         }
     }
-}
+};
 
 const processor = new BatchProcessor(EventType.SQS);
 
 export const queueSourceHandler = async (event: SQSEvent, context: Context): Promise<SQSBatchResponse> => {
-
-    return processPartialResponse(event, async (record: SQSRecord) => {
-        const content = JSON.parse(record.body) as ClassifiedKeysSync;
-        return await itemsHandler(content);
-    }, processor, {
-        context,
-    });
-}
+    return processPartialResponse(
+        event,
+        async (record: SQSRecord) => {
+            const content = JSON.parse(record.body) as ClassifiedKeysSync;
+            return await itemsHandler(content);
+        },
+        processor,
+        {
+            context,
+        }
+    );
+};
 
 export const handler = enableLambdaPowertoolsLoggingAndMetrics(itemsHandler);
 
 export const queueHandler = enableLambdaPowertoolsLoggingAndMetrics(queueSourceHandler);
-
