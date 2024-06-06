@@ -38,8 +38,10 @@ async function mapGeoFromApi(_pool: Pool, location: Location) {
     }
 
     if (geo !== undefined && geo != null) {
-        mappedAvivGeoId = geo[geo.length - 1]?.id;
-        await addGeoToCacheAsync(_pool, geo, mappedAvivGeoId, geometry);
+        if (geo.length > 0) {
+            mappedAvivGeoId = geo[geo.length - 1]?.id;
+            await addGeoToCacheAsync(_pool, geo, mappedAvivGeoId, geometry);
+        }
     }
 
     return mappedAvivGeoId
