@@ -1,9 +1,10 @@
 import { enableLambdaPowertoolsLoggingAndMetrics } from "@shared/cross-cutting/lambda-logging-middleware";
-import { logger } from "@shared/cross-cutting/logger";
 import { publishKeys } from "@cm-connector/adapters/classified-keys-publisher";
 import { listKeys } from "@cm-connector/adapters/classified-sotw-store";
 import { chunkArray } from "@cm-connector/utils/chunk-array";
 import { Context } from "aws-lambda";
+import { logger } from "@shared/cross-cutting/logger";
+
 
 type InvocationPayload = {
     nextContinuationToken: string,
@@ -26,6 +27,7 @@ export const lambdaHandler = async (payload: InvocationPayload, context: Context
                 keys: items, 
                 operation : operation || "upsert"
             });
+            logger.info("items "+ items)
         }));
 
         // stopping lambda when remaining time is less than 10 seconds

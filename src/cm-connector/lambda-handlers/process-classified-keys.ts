@@ -21,9 +21,11 @@ const itemsHandler = async (event: ClassifiedKeysSync): Promise<void> => {
 
         switch (event.operation) {
             case "upsert":
+                logger.info("upsert1")
                 await publishClassifiedDataAsReplayedEvent(classified);
                 break;
             case "delete":
+                logger.info("delete")
                 await publishFullClassifiedEvent({
                     data: {
                         classifiedId: classified.classifiedId,

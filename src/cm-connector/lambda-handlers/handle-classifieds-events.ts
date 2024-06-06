@@ -4,6 +4,8 @@ import { getClassifiedById } from "@cm-connector/adapters/classified-api";
 import { BatchProcessor, EventType, processPartialResponse } from "@aws-lambda-powertools/batch";
 import { publishFullClassifiedEvent } from "@cm-connector/adapters/classified-event-publisher";
 import { ClassifiedCreateOrUpdateOrDeleteEvent, ClassifiedEventType } from "@cm-connector/models/1.0.0/classified-events";
+import { logger } from "@shared/cross-cutting/logger";
+
 
 const handleClassifiedEvent = async (event: ClassifiedCreateOrUpdateOrDeleteEvent): Promise<void> => {
     switch (event.eventType) {
@@ -14,6 +16,7 @@ const handleClassifiedEvent = async (event: ClassifiedCreateOrUpdateOrDeleteEven
                     classifiedId: event.classifiedId,
                     updateDate: new Date(event.eventTime).toISOString()
                 }
+                logger.info("handleClassifiedEvent deleted")
             });
             break;
         case ClassifiedEventType.CREATED:
