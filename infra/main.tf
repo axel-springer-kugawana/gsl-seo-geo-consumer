@@ -39,7 +39,7 @@ module "rds" {
 }
 
 module "rds_athena_connector" {
-  # count       = var.environment == "live" ? 0 : 1
+  count       = 1 #var.environment == "live" ? 0 : 1
   source      = "./modules/rds-athena-connector"
   application = var.application
   environment = var.environment
