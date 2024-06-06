@@ -3,7 +3,8 @@ import { logger } from "@shared/cross-cutting/logger";
 
 const initDatabase = async () => {
   const sqlDatabase = `
-    DROP VIEW IF EXISTS v_immonet;
+    DROP VIEW IF EXISTS v_immonet;    
+    DROP VIEW IF EXISTS v_immonet_all;
     DROP TABLE IF EXISTS classified;
     DROP TABLE IF EXISTS geo;
     DROP TABLE IF EXISTS geo_lat_lon;
@@ -112,6 +113,43 @@ const initDatabase = async () => {
 
     ALTER TABLE v_immonet
         OWNER TO main_user;
+        
+    CREATE OR REPLACE VIEW v_immonet_all AS
+    SELECT c.classifiedid,
+           c.estatetype,
+           c.estatesubtype,
+           c.distributiontype,
+           c.avivgeoid,
+           c.avivgeoid_ssot,
+           c.country,
+           c.postalcode,
+           c.price,
+           c.numberofrooms,
+           c.furnished,
+           c.yearofconstruction,
+           c.certificateofeligibilityneeded,
+           c.locationinbuilding,
+           c.features,
+           c.isAuthorized,
+           c.isGeoDataValid,
+           c.isMarketStatusEligibleForPublication,
+           g.geolevel,
+           g.countryid,
+           g.regionid,
+           g.microregionid,
+           g.provinceid,
+           g.municipalityid,
+           g.boroughid,
+           g.neighborhoodid,
+           g.blocid,
+           c.projectTypes
+      FROM classified c
+      LEFT JOIN geo g ON g.avivgeoid::text = c.avivgeoid::text
+      WHERE c.brand::text = 'IWT'::text AND ('IMMONET'::text = ANY (c.portals));
+
+
+    ALTER TABLE v_immonet_all
+    OWNER TO main_user;
   `;
 
   const pool = await poolInstance.getPool(); // Ensure you are getting the pool instance correctly
@@ -170,6 +208,39 @@ const patchDatabase = async () => {
       AND c.isauthorized IS TRUE
       AND c.isgeodatavalid IS TRUE
       AND c.ismarketstatuseligibleforpublication IS TRUE;
+
+    CREATE OR REPLACE VIEW v_immonet_all AS
+    SELECT c.classifiedid,
+           c.estatetype,
+           c.estatesubtype,
+           c.distributiontype,
+           c.avivgeoid,
+           c.avivgeoid_ssot,
+           c.country,
+           c.postalcode,
+           c.price,
+           c.numberofrooms,
+           c.furnished,
+           c.yearofconstruction,
+           c.certificateofeligibilityneeded,
+           c.locationinbuilding,
+           c.features,
+           c.isAuthorized,
+           c.isGeoDataValid,
+           c.isMarketStatusEligibleForPublication,
+           g.geolevel,
+           g.countryid,
+           g.regionid,
+           g.microregionid,
+           g.provinceid,
+           g.municipalityid,
+           g.boroughid,
+           g.neighborhoodid,
+           g.blocid,
+           c.projectTypes
+      FROM classified c
+      LEFT JOIN geo g ON g.avivgeoid::text = c.avivgeoid::text
+      WHERE c.brand::text = 'IWT'::text AND ('IMMONET'::text = ANY (c.portals));
       `;
 
   try {
