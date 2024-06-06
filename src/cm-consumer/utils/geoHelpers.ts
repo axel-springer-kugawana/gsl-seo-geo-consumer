@@ -91,7 +91,6 @@ export const getGeoHierarchyEnrichmentByCoordinates = async (geometry: { type: "
         };
         cliApi.use(myMiddleware);
 
-        // if (geometry?.type === "Point") {
         const [lon, lat] = geometry.coordinates;
         const {
             data, // only present if 2XX response
