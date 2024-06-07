@@ -4,7 +4,7 @@ import { Middleware } from 'openapi-fetch';
 import { Pool } from "pg";
 import { getClassifiedApiSecret } from "../adapters/classified-api-secrets";
 import { Location } from '@shared/models/classified/1.0.0/classified';
-
+import { logger } from "@shared/cross-cutting/logger";
 export const mapGeo = async (_pool: Pool, location: Location): Promise<string> => {
     let avivGeoId = await mapGeoFromCache(_pool, location);
     if (avivGeoId === undefined) {
@@ -69,7 +69,10 @@ async function getGeoHierarchyEnrichmentById(avivGeoId: string): Promise<Feature
             path: { place_id: avivGeoId },
         }
     });
-
+    if (error != null && error != undefined) {
+        logger.error("error while calling api geo" + JSON.stringify(error));
+        throw new Error("error while calling api geo" + JSON.stringify(error));
+    }
     if (data != null) {
         return [...(data.item.parents ?? []), data.item]
     }
@@ -104,6 +107,10 @@ export const getGeoHierarchyEnrichmentByCoordinates = async (geometry: { type: "
                     },
                 }
             });
+        if (error != null && error != undefined) {
+            logger.error("error while calling api geo" + JSON.stringify(error));
+            throw new Error("error while calling api geo" + JSON.stringify(error));
+        }
 
         if (data != null) {
             return data.items
