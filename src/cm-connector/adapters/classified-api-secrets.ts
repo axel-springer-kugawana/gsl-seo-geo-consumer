@@ -22,14 +22,21 @@ const getSecretValue = async (secretName: string) => {
   return secretContent.SecretString;
 };
 
-
-
 const getClassifiedApiSecret = async () => {
-    const secretName = config.get("cmApiSecret");    
-    const secretValue = await getSecretValue(secretName);
-    const apiSecret =  JSON.parse(secretValue) as { ClientId: string, Authorization: string};
+  const secretName = config.get("cmApiSecret");
+  const secretValue = await getSecretValue(secretName);
+  const apiSecret = JSON.parse(secretValue) as {
+    ClientId: string;
+    Authorization: string;
+  };
 
-    return apiSecret;
-}
+  if (!apiSecret.Authorization || !apiSecret.ClientId) {
+    throw new Error(
+      `Failed to get api secret: Secret format incorrect or missing !`
+    );
+  }
+
+  return apiSecret;
+};
 
 export { getClassifiedApiSecret };

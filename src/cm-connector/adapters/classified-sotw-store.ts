@@ -5,67 +5,61 @@ import { Classified } from "@shared/models/classified/1.0.0/classified";
 
 const s3Client = new S3Client({});
 
-const getClassifiedByKey = async (key: string): Promise<Classified> => {
-
-
-    const data = await s3Client.send(new GetObjectCommand({
-        Key: key,
-        Bucket: config.get("ssotBucketName")
-    }));
+const getClassifiedByKey = async (key: string): Promise<Classified | undefined> => {
+    const data = await s3Client.send(
+        new GetObjectCommand({
+            Key: key,
+            Bucket: config.get("ssotBucketName"),
+        })
+    );
 
     if (data.$metadata.httpStatusCode !== 200) {
         // log error
         return;
     }
 
-    const content = await data.Body.transformToString('utf-8');
+    const content = await data.Body!.transformToString("utf-8");
 
-    const { classifiedId, updateAt, classified } = JSON.parse(content) as { classifiedId: string, updateAt: number, classified: Classified };
+    const { classifiedId, updateAt, classified } = JSON.parse(content) as {
+        classifiedId: string;
+        updateAt: number;
+        classified: Classified;
+    };
 
     return {
         ...classified,
         updateAt,
-        classifiedId
-    }
-}
+        classifiedId,
+    };
+};
 
 async function* listKeys(prefix: string, nextContinuationToken: string) {
-
     let isTruncated = false;
     let continuationToken = nextContinuationToken;
 
     try {
-
         do {
-
             const listCommand = new ListObjectsV2Command({
                 Bucket: config.get("ssotBucketName"),
                 Prefix: prefix,
-                ContinuationToken: continuationToken ? continuationToken : null
+                ContinuationToken: continuationToken ? continuationToken : undefined,
             });
 
-            const { Contents, IsTruncated, NextContinuationToken } =
-                await s3Client.send(listCommand);
+            const { Contents, IsTruncated, NextContinuationToken } = await s3Client.send(listCommand);
 
-            isTruncated = IsTruncated;
-            continuationToken = NextContinuationToken;
+            isTruncated = IsTruncated == true;
+            continuationToken = NextContinuationToken!;
 
             yield {
-                keys: Contents.filter(c => c.Key.endsWith("/") === false).map(c => c.Key),
-                nextContinuationToken: NextContinuationToken
-            }
-
+                keys: Contents!.filter((c) => c.Key!.endsWith("/") === false).map((c) => c.Key!),
+                nextContinuationToken: NextContinuationToken!,
+            };
         } while (isTruncated);
-
     } catch (error) {
         logger.error("Error occured while getting bucket keys", {
-            error
-        })
+            error,
+        });
     }
-
 }
 
-export {
-    getClassifiedByKey,
-    listKeys,
-}
+export { getClassifiedByKey, listKeys };

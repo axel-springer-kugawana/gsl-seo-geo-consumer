@@ -13,16 +13,16 @@ const getClassifiedById = async (link: string): Promise<Classified> => {
     }
 
     const res = await fetch(`${apiUrl}${link}`, {
-        headers
-    });
-
-    const classified = await res.json() as Classified;
-
-
-    return classified;
-
-}
-
-export {
-    getClassifiedById
-}
+        headers,
+      });
+    
+      if (!res.ok) {
+        throw new Error(`Failed to fetch classified ${link} : ${res.statusText}`);
+      }
+    
+      const classified = (await res.json()) as Classified;
+    
+      return classified;
+    };
+    
+    export { getClassifiedById };
