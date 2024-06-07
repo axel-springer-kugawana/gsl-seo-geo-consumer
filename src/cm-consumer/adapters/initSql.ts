@@ -31,8 +31,8 @@ const initDatabase = async () => {
         isAuthorized boolean,
         isGeoDataValid boolean,
         isMarketStatusEligibleForPublication boolean,
-        lat numeric,
-        lon numeric,
+        lat float,
+        lon float,
         avivgeoid_ssot character varying COLLATE pg_catalog."default",
         projectTypes text[] COLLATE pg_catalog."default",
         CONSTRAINT "Classified_pkey" PRIMARY KEY (classifiedid)
@@ -64,8 +64,8 @@ const initDatabase = async () => {
 
     CREATE TABLE IF NOT EXISTS public.geo_lat_lon
     (
-        lon numeric NOT NULL,
-        lat numeric NOT NULL,
+        lon float NOT NULL,
+        lat float NOT NULL,
         avivgeoid character varying COLLATE pg_catalog."default" NOT NULL,
         updatedate timestamp without time zone,
         CONSTRAINT pk_lat_lon PRIMARY KEY (lat, lon)
