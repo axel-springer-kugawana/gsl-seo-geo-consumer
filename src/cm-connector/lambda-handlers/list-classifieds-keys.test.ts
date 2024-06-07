@@ -3,7 +3,6 @@ import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
 import { createFakeLambdaContext } from "./fakes/fake-lambda-context";
 import { ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
 import { handler } from "./list-classified-keys";
-import { vi } from "vitest";
 
 describe("list classified keys lambda", () => {
     let s3ClientMock;
@@ -17,7 +16,7 @@ describe("list classified keys lambda", () => {
     afterEach(() => {
         sqsClientMock.reset();
         s3ClientMock.reset();
-        vi.resetAllMocks();
+        jest.resetAllMocks();
     });
 
     test("should list keys with continuation token when a next continuation token is provided in the lambda invocation input", async () => {
