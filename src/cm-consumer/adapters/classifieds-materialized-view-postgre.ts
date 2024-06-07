@@ -35,7 +35,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       const isAuthorizedValue = isAuthorized(classified)
 
       //map geo by lat lon, then by geoId
-      let mappedAvivGeoId = isGeoDataValidValue ? await mapGeo(_pool, classified?.data?.location) : '';
+      await mapGeo(_pool, classified?.data?.location);
       const { avivGeoId, geometry } = classified.data?.location;
       const [lon, lat] = geometry?.coordinates ?? []
 
@@ -43,7 +43,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       const classifiedValue = [
         id,
         price,
-        mappedAvivGeoId,
+        avivGeoId,
         classified.data.distributionType,
         classified.data.estateType,
         classified.data?.estateSubType !== undefined ? Object.values(classified.data?.estateSubType)?.[0] : null,
@@ -62,7 +62,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         isAuthorizedValue,
         lat ?? 0,
         lon ?? 0,
-        avivGeoId,
+        geometry?.type?.toUpperCase() ?? 'AVIV_GEO_ID',
         projectTypes,
       ];
 
@@ -89,7 +89,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           isMarketStatusEligibleForPublication,
           lat,
           lon,
-          avivgeoid_ssot,
+          location_type,
           projectTypes
        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,$19, $20, $21, $22, $23)
     ON CONFLICT (ClassifiedId) DO UPDATE 
@@ -113,7 +113,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
               isMarketStatusEligibleForPublication = $19,
               lat = $20,
               lon  = $21,
-              avivgeoid_ssot = $22,
+              location_type = $22,
               projectTypes =$23
               ;`;
       await _pool.query(classifiedQuery, classifiedValue);

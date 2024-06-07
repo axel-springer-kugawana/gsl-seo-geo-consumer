@@ -33,7 +33,7 @@ const initDatabase = async () => {
         isMarketStatusEligibleForPublication boolean,
         lat float,
         lon float,
-        avivgeoid_ssot character varying COLLATE pg_catalog."default",
+        location_type character varying COLLATE pg_catalog."default",
         projectTypes text[] COLLATE pg_catalog."default",
         CONSTRAINT "Classified_pkey" PRIMARY KEY (classifiedid)
     )
@@ -75,77 +75,90 @@ const initDatabase = async () => {
     ALTER TABLE IF EXISTS public.geo_lat_lon
         OWNER TO main_user;
 
-    CREATE OR REPLACE VIEW v_immonet AS
-    SELECT c.classifiedid,
-           c.estatetype,
-           c.estatesubtype,
-           c.distributiontype,
-           c.avivgeoid,
-           c.avivgeoid_ssot,
-           c.country,
-           c.postalcode,
-           c.price,
-           c.numberofrooms,
-           c.furnished,
-           c.yearofconstruction,
-           c.certificateofeligibilityneeded,
-           c.locationinbuilding,
-           c.features,
-           c.isAuthorized,
-           c.isGeoDataValid,
-           c.isMarketStatusEligibleForPublication,
-           g.geolevel,
-           g.countryid,
-           g.regionid,
-           g.microregionid,
-           g.provinceid,
-           g.municipalityid,
-           g.boroughid,
-           g.neighborhoodid,
-           g.blocid,
-           c.projectTypes
+     CREATE OR REPLACE VIEW v_immonet AS
+      SELECT c.classifiedid,
+        c.estatetype,
+        c.estatesubtype,
+        c.distributiontype,
+        c.avivgeoid,
+        c.location_type,
+        c.country,
+        c.postalcode,
+        c.price,
+        c.numberofrooms,
+        c.furnished,
+        c.yearofconstruction,
+        c.certificateofeligibilityneeded,
+        c.locationinbuilding,
+        c.features,
+        c.isauthorized,
+        c.isgeodatavalid,
+        c.ismarketstatuseligibleforpublication,
+        g.geolevel,
+        g.countryid,
+        g.regionid,
+        g.microregionid,
+        g.provinceid,
+        g.municipalityid,
+        g.boroughid,
+        g.neighborhoodid,
+        g.blocid,
+        c.projecttypes 
       FROM classified c
-      LEFT JOIN geo g ON g.avivgeoid::text = c.avivgeoid::text
-      WHERE c.brand::text = 'IWT'::text AND ('IMMONET'::text = ANY (c.portals))
-      AND c.isauthorized IS TRUE
-      AND c.isgeodatavalid IS TRUE
-      AND c.ismarketstatuseligibleforpublication IS TRUE;
+        LEFT JOIN geo_lat_lon geolatlon 
+      ON c.lat = geolatlon.lat 
+      AND c.lon = geolatlon.lon 
+      AND c.location_type::text = 'POINT'::text
+      LEFT JOIN geo g 
+      ON g.avivgeoid::text = geolatlon.avivgeoid::text 
+      AND 	c.location_type::text = 'POINT'::text 
+        OR g.avivgeoid::text = c.avivgeoid::text AND (c.location_type::text = 'AVIV_GEO_ID'::text)
+      WHERE   c.isauthorized IS TRUE AND c.isgeodatavalid IS TRUE AND c.ismarketstatuseligibleforpublication IS TRUE
+ and c.brand::text = 'IWT'::text AND ('IMMONET'::text = ANY (c.portals));
 
     ALTER TABLE v_immonet
         OWNER TO main_user;
         
     CREATE OR REPLACE VIEW v_immonet_all AS
-    SELECT c.classifiedid,
-           c.estatetype,
-           c.estatesubtype,
-           c.distributiontype,
-           c.avivgeoid,
-           c.avivgeoid_ssot,
-           c.country,
-           c.postalcode,
-           c.price,
-           c.numberofrooms,
-           c.furnished,
-           c.yearofconstruction,
-           c.certificateofeligibilityneeded,
-           c.locationinbuilding,
-           c.features,
-           c.isAuthorized,
-           c.isGeoDataValid,
-           c.isMarketStatusEligibleForPublication,
-           g.geolevel,
-           g.countryid,
-           g.regionid,
-           g.microregionid,
-           g.provinceid,
-           g.municipalityid,
-           g.boroughid,
-           g.neighborhoodid,
-           g.blocid,
-           c.projectTypes
+   SELECT c.classifiedid,
+        c.estatetype,
+        c.estatesubtype,
+        c.distributiontype,
+        c.avivgeoid,
+        c.location_type,
+        c.country,
+        c.postalcode,
+        c.price,
+        c.numberofrooms,
+        c.furnished,
+        c.yearofconstruction,
+        c.certificateofeligibilityneeded,
+        c.locationinbuilding,
+        c.features,
+        c.isauthorized,
+        c.isgeodatavalid,
+        c.ismarketstatuseligibleforpublication,
+        g.geolevel,
+        g.countryid,
+        g.regionid,
+        g.microregionid,
+        g.provinceid,
+        g.municipalityid,
+        g.boroughid,
+        g.neighborhoodid,
+        g.blocid,
+        c.projecttypes 
       FROM classified c
-      LEFT JOIN geo g ON g.avivgeoid::text = c.avivgeoid::text
-      WHERE c.brand::text = 'IWT'::text AND ('IMMONET'::text = ANY (c.portals));
+        LEFT JOIN geo_lat_lon geolatlon 
+      ON c.lat = geolatlon.lat 
+      AND c.lon = geolatlon.lon 
+      AND c.location_type::text = 'POINT'::text
+      LEFT JOIN geo g 
+      ON g.avivgeoid::text = geolatlon.avivgeoid::text 
+      AND 	c.location_type::text = 'POINT'::text 
+        OR g.avivgeoid::text = c.avivgeoid::text AND (c.location_type::text = 'AVIV_GEO_ID'::text)
+      WHERE   c.isauthorized IS TRUE AND c.isgeodatavalid IS TRUE AND c.ismarketstatuseligibleforpublication IS TRUE
+ and c.brand::text = 'IWT'::text AND ('IMMONET'::text = ANY (c.portals));
 
 
     ALTER TABLE v_immonet_all
@@ -170,78 +183,7 @@ const initDatabase = async () => {
 };
 
 const patchDatabase = async () => {
-  const sqlDatabase = `alter table if exists classified
-    add if not exists projectTypes text[];
-    
-    CREATE OR REPLACE VIEW v_immonet AS
-    SELECT c.classifiedid,
-           c.estatetype,
-           c.estatesubtype,
-           c.distributiontype,
-           c.avivgeoid,
-           c.avivgeoid_ssot,
-           c.country,
-           c.postalcode,
-           c.price,
-           c.numberofrooms,
-           c.furnished,
-           c.yearofconstruction,
-           c.certificateofeligibilityneeded,
-           c.locationinbuilding,
-           c.features,
-           c.isAuthorized,
-           c.isGeoDataValid,
-           c.isMarketStatusEligibleForPublication,
-           g.geolevel,
-           g.countryid,
-           g.regionid,
-           g.microregionid,
-           g.provinceid,
-           g.municipalityid,
-           g.boroughid,
-           g.neighborhoodid,
-           g.blocid,
-           c.projectTypes
-      FROM classified c
-      LEFT JOIN geo g ON g.avivgeoid::text = c.avivgeoid::text
-      WHERE c.brand::text = 'IWT'::text AND ('IMMONET'::text = ANY (c.portals))
-      AND c.isauthorized IS TRUE
-      AND c.isgeodatavalid IS TRUE
-      AND c.ismarketstatuseligibleforpublication IS TRUE;
-
-    CREATE OR REPLACE VIEW v_immonet_all AS
-    SELECT c.classifiedid,
-           c.estatetype,
-           c.estatesubtype,
-           c.distributiontype,
-           c.avivgeoid,
-           c.avivgeoid_ssot,
-           c.country,
-           c.postalcode,
-           c.price,
-           c.numberofrooms,
-           c.furnished,
-           c.yearofconstruction,
-           c.certificateofeligibilityneeded,
-           c.locationinbuilding,
-           c.features,
-           c.isAuthorized,
-           c.isGeoDataValid,
-           c.isMarketStatusEligibleForPublication,
-           g.geolevel,
-           g.countryid,
-           g.regionid,
-           g.microregionid,
-           g.provinceid,
-           g.municipalityid,
-           g.boroughid,
-           g.neighborhoodid,
-           g.blocid,
-           c.projectTypes
-      FROM classified c
-      LEFT JOIN geo g ON g.avivgeoid::text = c.avivgeoid::text
-      WHERE c.brand::text = 'IWT'::text AND ('IMMONET'::text = ANY (c.portals));
-      `;
+  const sqlDatabase = ``;
 
   try {
     await poolInstance.getPool().then(_pool => _pool.query(sqlDatabase)); // Ensure you are getting the pool instance correctly
