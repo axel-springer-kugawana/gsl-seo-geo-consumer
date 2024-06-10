@@ -6,6 +6,7 @@ import { Classified } from "@shared/models/classified/1.0.0/classified";
 const s3Client = new S3Client({});
 
 const getClassifiedByKey = async (key: string): Promise<Classified | undefined> => {
+    try{
     const data = await s3Client.send(
         new GetObjectCommand({
             Key: key,
@@ -31,6 +32,12 @@ const getClassifiedByKey = async (key: string): Promise<Classified | undefined> 
         updateAt,
         classifiedId,
     };
+    }
+    catch(error)
+    {
+        logger.error(error);
+        throw error;
+    }
 };
 
 async function* listKeys(prefix: string, nextContinuationToken: string) {
