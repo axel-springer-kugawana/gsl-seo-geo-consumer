@@ -35,7 +35,7 @@ const getClassifiedByKey = async (key: string): Promise<Classified | undefined> 
     }
     catch(error)
     {
-        logger.error(error);
+        logger.error('get classified by key failed :'+ {error,key});
         throw error;
     }
 };
