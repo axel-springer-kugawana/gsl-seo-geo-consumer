@@ -38,7 +38,7 @@ const itemsHandler = async (event: ClassifiedKeysSync): Promise<void> => {
             }
         }
         catch (error) {
-            logger.error('issue on classified for ' + { key, error });
+            logger.error("issue on classified for" + { key, error });
         }
     };
 }
@@ -49,8 +49,8 @@ export const queueSourceHandler = async (event: SQSEvent, context: Context): Pro
     return processPartialResponse(
         event,
         async (record: SQSRecord) => {
-            var filecontent = fs.readFileSync("cm-connector/lambda-handlers/fakes/classifieds.json", "utf8");
-            const content = JSON.parse(filecontent) as ClassifiedKeysSync;
+            //var filecontent = fs.readFileSync("cm-connector/lambda-handlers/fakes/classifieds.json", "utf8");
+            const content = JSON.parse(record.body) as ClassifiedKeysSync;
             //const content = JSON.parse(record.body) as ClassifiedKeysSync;
             return await itemsHandler(content);
         },
