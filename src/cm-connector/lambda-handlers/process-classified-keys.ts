@@ -5,38 +5,43 @@ import { BatchProcessor, EventType, processPartialResponse } from "@aws-lambda-p
 import { publishClassifiedDataAsReplayedEvent, publishFullClassifiedEvent } from "@cm-connector/adapters/classified-event-publisher";
 import { ClassifiedKeysSync } from "@cm-connector/models/key-replay-model";
 import { logger } from "@shared/cross-cutting/logger";
+import * as fs from 'fs';
+
 
 const itemsHandler = async (event: ClassifiedKeysSync): Promise<void> => {
-    for(let i = 0; i < event.keys.length; i++) {
+    for (let i = 0; i < event.keys.length; i++) {
         const key = event.keys[i];
+        try {
+            const classified = await getClassifiedByKey(key);
 
-        
-        const classified = await getClassifiedByKey(key);
+            if (classified === undefined) {
+                logger.error("Classified not found: " + key);
+                return;
+            }
 
-        if (classified === undefined) {
-            logger.error("Classified not found: " + key);
-            return;
+
+            switch (event.operation) {
+                case "upsert":
+                    await publishClassifiedDataAsReplayedEvent(classified);
+                    break;
+                case "delete":
+                    await publishFullClassifiedEvent({
+                        data: {
+                            classifiedId: classified.classifiedId,
+                            updateDate: new Date(classified.updateAt!).toISOString(),
+                        },
+                        event: "deleted",
+                    });
+                    break;
+                default:
+                    logger.warn("Unknown sync operation", { event });
+            }
         }
-
-
-        switch (event.operation) {
-            case "upsert":
-                await publishClassifiedDataAsReplayedEvent(classified);
-                break;
-            case "delete":
-                await publishFullClassifiedEvent({
-                    data: {
-                        classifiedId: classified.classifiedId,
-                        updateDate: new Date(classified.updateAt!).toISOString(),
-                    },
-                    event: "deleted",
-                });
-                break;
-            default:
-                logger.warn("Unknown sync operation", { event });
+        catch (error) {
+            logger.error('issue on classified for ' + { key, error });
         }
-    }
-};
+    };
+}
 
 const processor = new BatchProcessor(EventType.SQS);
 
@@ -44,7 +49,9 @@ export const queueSourceHandler = async (event: SQSEvent, context: Context): Pro
     return processPartialResponse(
         event,
         async (record: SQSRecord) => {
-            const content = JSON.parse(record.body) as ClassifiedKeysSync;
+            var filecontent = fs.readFileSync("cm-connector/lambda-handlers/fakes/classifieds.json", "utf8");
+            const content = JSON.parse(filecontent) as ClassifiedKeysSync;
+            //const content = JSON.parse(record.body) as ClassifiedKeysSync;
             return await itemsHandler(content);
         },
         processor,
