@@ -39,7 +39,6 @@ const itemsHandler = async (event: ClassifiedKeysSync): Promise<void> => {
         }
         catch (error) {
             logger.error("issue on classified for id :" + key +'error:' +  error);
-            throw error
         }
     };
 }
