@@ -5,6 +5,7 @@ const initDatabase = async () => {
   const sqlDatabase = `
     DROP VIEW IF EXISTS v_immonet;    
     DROP VIEW IF EXISTS v_immonet_all;
+    DROP VIEW IF EXISTS v_classified;
     DROP TABLE IF EXISTS classified;
     DROP TABLE IF EXISTS geo;
     DROP TABLE IF EXISTS geo_lat_lon;
@@ -158,6 +159,47 @@ const initDatabase = async () => {
 
     ALTER TABLE v_immonet_all
     OWNER TO main_user;
+
+
+CREATE OR REPLACE VIEW public.v_classified
+ AS
+ SELECT c.classifiedid,
+    c.estatetype,
+    c.estatesubtype,
+    c.distributiontype,
+    c.avivgeoid,
+    c.location_type,
+    c.country,
+    c.postalcode,
+    c.price,
+    c.numberofrooms,
+    c.furnished,
+    c.yearofconstruction,
+    c.certificateofeligibilityneeded,
+    c.locationinbuilding,
+    c.features,
+    c.isauthorized,
+    c.isgeodatavalid,
+    c.ismarketstatuseligibleforpublication,
+    g.geolevel,
+    g.countryid,
+    g.regionid,
+    g.microregionid,
+    g.provinceid,
+    g.municipalityid,
+    g.boroughid,
+    g.neighborhoodid,
+    g.blocid,
+    c.projecttypes,
+    c.brand,
+    c.portals,
+    unnest(c.portals) AS portal
+   FROM classified c
+     LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
+     LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
+
+ALTER TABLE public.v_classified
+    OWNER TO main_user;
   `;
 
   const pool = await poolInstance.getPool(); // Ensure you are getting the pool instance correctly
@@ -179,88 +221,44 @@ const initDatabase = async () => {
 
 const patchDatabase = async () => {
   const sqlDatabase = `
-       CREATE OR REPLACE VIEW v_immonet AS
-      SELECT c.classifiedid,
-        c.estatetype,
-        c.estatesubtype,
-        c.distributiontype,
-        c.avivgeoid,
-        c.location_type,
-        c.country,
-        c.postalcode,
-        c.price,
-        c.numberofrooms,
-        c.furnished,
-        c.yearofconstruction,
-        c.certificateofeligibilityneeded,
-        c.locationinbuilding,
-        c.features,
-        c.isauthorized,
-        c.isgeodatavalid,
-        c.ismarketstatuseligibleforpublication,
-        g.geolevel,
-        g.countryid,
-        g.regionid,
-        g.microregionid,
-        g.provinceid,
-        g.municipalityid,
-        g.boroughid,
-        g.neighborhoodid,
-        g.blocid,
-        c.projecttypes 
-      FROM classified c
-      LEFT JOIN geo_lat_lon geolatlon 
-      ON c.lat = geolatlon.lat 
-      AND c.lon = geolatlon.lon 
-      AND c.location_type::text = 'POINT'::text
-      LEFT JOIN geo g 
-      ON g.avivgeoid::text = coalesce(geolatlon.avivgeoid::text , c.avivgeoid::text)
-      WHERE  c.brand::text = 'IWT'::text AND ('IMMONET'::text = ANY (c.portals))
-      and c.isauthorized IS TRUE AND c.isgeodatavalid IS TRUE AND c.ismarketstatuseligibleforpublication IS TRUE;
+    CREATE OR REPLACE VIEW public.v_classified
+ AS
+ SELECT c.classifiedid,
+    c.estatetype,
+    c.estatesubtype,
+    c.distributiontype,
+    c.avivgeoid,
+    c.location_type,
+    c.country,
+    c.postalcode,
+    c.price,
+    c.numberofrooms,
+    c.furnished,
+    c.yearofconstruction,
+    c.certificateofeligibilityneeded,
+    c.locationinbuilding,
+    c.features,
+    c.isauthorized,
+    c.isgeodatavalid,
+    c.ismarketstatuseligibleforpublication,
+    g.geolevel,
+    g.countryid,
+    g.regionid,
+    g.microregionid,
+    g.provinceid,
+    g.municipalityid,
+    g.boroughid,
+    g.neighborhoodid,
+    g.blocid,
+    c.projecttypes,
+    c.brand,
+    c.portals,
+    unnest(c.portals) AS portal
+   FROM classified c
+     LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
+     LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
 
-    ALTER TABLE v_immonet
-        OWNER TO main_user;
-        
-    CREATE OR REPLACE VIEW v_immonet_all AS
-   SELECT c.classifiedid,
-        c.estatetype,
-        c.estatesubtype,
-        c.distributiontype,
-        c.avivgeoid,
-        c.location_type,
-        c.country,
-        c.postalcode,
-        c.price,
-        c.numberofrooms,
-        c.furnished,
-        c.yearofconstruction,
-        c.certificateofeligibilityneeded,
-        c.locationinbuilding,
-        c.features,
-        c.isauthorized,
-        c.isgeodatavalid,
-        c.ismarketstatuseligibleforpublication,
-        g.geolevel,
-        g.countryid,
-        g.regionid,
-        g.microregionid,
-        g.provinceid,
-        g.municipalityid,
-        g.boroughid,
-        g.neighborhoodid,
-        g.blocid,
-        c.projecttypes 
-      FROM classified c
-        LEFT JOIN geo_lat_lon geolatlon 
-      ON c.lat = geolatlon.lat 
-      AND c.lon = geolatlon.lon 
-      AND c.location_type::text = 'POINT'::text
-      LEFT JOIN geo g 
-      ON g.avivgeoid::text = coalesce(geolatlon.avivgeoid::text , c.avivgeoid::text)
-      WHERE c.brand::text = 'IWT'::text AND ('IMMONET'::text = ANY (c.portals));
-
-
-    ALTER TABLE v_immonet_all
+ALTER TABLE public.v_classified
     OWNER TO main_user;`;
 
   try {
