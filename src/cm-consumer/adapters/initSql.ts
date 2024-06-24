@@ -36,6 +36,8 @@ const initDatabase = async () => {
         lon float,
         location_type character varying COLLATE pg_catalog."default",
         projectTypes text[] COLLATE pg_catalog."default",
+          showAddress boolean,
+          street  character varying COLLATE pg_catalog."default",
         CONSTRAINT "Classified_pkey" PRIMARY KEY (classifiedid)
     )
     TABLESPACE pg_default;
@@ -75,131 +77,49 @@ const initDatabase = async () => {
 
     ALTER TABLE IF EXISTS public.geo_lat_lon
         OWNER TO main_user;
-
-     CREATE OR REPLACE VIEW v_immonet AS
+ 
+    CREATE OR REPLACE VIEW public.v_classified
+    AS
       SELECT c.classifiedid,
-        c.estatetype,
-        c.estatesubtype,
-        c.distributiontype,
-        c.avivgeoid,
-        c.location_type,
-        c.country,
-        c.postalcode,
-        c.price,
-        c.numberofrooms,
-        c.furnished,
-        c.yearofconstruction,
-        c.certificateofeligibilityneeded,
-        c.locationinbuilding,
-        c.features,
-        c.isauthorized,
-        c.isgeodatavalid,
-        c.ismarketstatuseligibleforpublication,
-        g.geolevel,
-        g.countryid,
-        g.regionid,
-        g.microregionid,
-        g.provinceid,
-        g.municipalityid,
-        g.boroughid,
-        g.neighborhoodid,
-        g.blocid,
-        c.projecttypes 
-      FROM classified c
-      LEFT JOIN geo_lat_lon geolatlon 
-      ON c.lat = geolatlon.lat 
-      AND c.lon = geolatlon.lon 
-      AND c.location_type::text = 'POINT'::text
-      LEFT JOIN geo g 
-      ON g.avivgeoid::text = coalesce(geolatlon.avivgeoid::text , c.avivgeoid::text)
-      WHERE  c.brand::text = 'IWT'::text AND ('IMMONET'::text = ANY (c.portals))
-      and c.isauthorized IS TRUE AND c.isgeodatavalid IS TRUE AND c.ismarketstatuseligibleforpublication IS TRUE;
+          c.estatetype,
+          c.estatesubtype,
+          c.distributiontype,
+          c.avivgeoid,
+          c.location_type,
+          c.country,
+          c.postalcode,
+          c.price,
+          c.numberofrooms,
+          c.furnished,
+          c.yearofconstruction,
+          c.certificateofeligibilityneeded,
+          c.locationinbuilding,
+          c.features,
+          c.isauthorized,
+          c.isgeodatavalid,
+          c.ismarketstatuseligibleforpublication,
+          g.geolevel,
+          g.countryid,
+          g.regionid,
+          g.microregionid,
+          g.provinceid,
+          g.municipalityid,
+          g.boroughid,
+          g.neighborhoodid,
+          g.blocid,
+          c.projecttypes,
+          c.brand,
+          c.portals,
+          unnest(c.portals) AS portal,
+          g.avivgeoid as geo_avivgeoid,
+          c.showAddress,
+          c.street
+        FROM classified c
+          LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
+          LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
 
-    ALTER TABLE v_immonet
+    ALTER TABLE public.v_classified
         OWNER TO main_user;
-        
-    CREATE OR REPLACE VIEW v_immonet_all AS
-   SELECT c.classifiedid,
-        c.estatetype,
-        c.estatesubtype,
-        c.distributiontype,
-        c.avivgeoid,
-        c.location_type,
-        c.country,
-        c.postalcode,
-        c.price,
-        c.numberofrooms,
-        c.furnished,
-        c.yearofconstruction,
-        c.certificateofeligibilityneeded,
-        c.locationinbuilding,
-        c.features,
-        c.isauthorized,
-        c.isgeodatavalid,
-        c.ismarketstatuseligibleforpublication,
-        g.geolevel,
-        g.countryid,
-        g.regionid,
-        g.microregionid,
-        g.provinceid,
-        g.municipalityid,
-        g.boroughid,
-        g.neighborhoodid,
-        g.blocid,
-        c.projecttypes 
-      FROM classified c
-        LEFT JOIN geo_lat_lon geolatlon 
-      ON c.lat = geolatlon.lat 
-      AND c.lon = geolatlon.lon 
-      AND c.location_type::text = 'POINT'::text
-      LEFT JOIN geo g 
-      ON g.avivgeoid::text = coalesce(geolatlon.avivgeoid::text , c.avivgeoid::text)
-      WHERE c.brand::text = 'IWT'::text AND ('IMMONET'::text = ANY (c.portals));
-
-
-    ALTER TABLE v_immonet_all
-    OWNER TO main_user;
-
-
-CREATE OR REPLACE VIEW public.v_classified
- AS
- SELECT c.classifiedid,
-    c.estatetype,
-    c.estatesubtype,
-    c.distributiontype,
-    c.avivgeoid,
-    c.location_type,
-    c.country,
-    c.postalcode,
-    c.price,
-    c.numberofrooms,
-    c.furnished,
-    c.yearofconstruction,
-    c.certificateofeligibilityneeded,
-    c.locationinbuilding,
-    c.features,
-    c.isauthorized,
-    c.isgeodatavalid,
-    c.ismarketstatuseligibleforpublication,
-    g.geolevel,
-    g.countryid,
-    g.regionid,
-    g.microregionid,
-    g.provinceid,
-    g.municipalityid,
-    g.boroughid,
-    g.neighborhoodid,
-    g.blocid,
-    c.projecttypes,
-    c.brand,
-    c.portals,
-    unnest(c.portals) AS portal
-   FROM classified c
-     LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
-     LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
-
-ALTER TABLE public.v_classified
-    OWNER TO main_user;
   `;
 
   const pool = await poolInstance.getPool(); // Ensure you are getting the pool instance correctly
@@ -221,45 +141,59 @@ ALTER TABLE public.v_classified
 
 const patchDatabase = async () => {
   const sqlDatabase = `
-    CREATE OR REPLACE VIEW public.v_classified
- AS
- SELECT c.classifiedid,
-    c.estatetype,
-    c.estatesubtype,
-    c.distributiontype,
-    c.avivgeoid,
-    c.location_type,
-    c.country,
-    c.postalcode,
-    c.price,
-    c.numberofrooms,
-    c.furnished,
-    c.yearofconstruction,
-    c.certificateofeligibilityneeded,
-    c.locationinbuilding,
-    c.features,
-    c.isauthorized,
-    c.isgeodatavalid,
-    c.ismarketstatuseligibleforpublication,
-    g.geolevel,
-    g.countryid,
-    g.regionid,
-    g.microregionid,
-    g.provinceid,
-    g.municipalityid,
-    g.boroughid,
-    g.neighborhoodid,
-    g.blocid,
-    c.projecttypes,
-    c.brand,
-    c.portals,
-    unnest(c.portals) AS portal
-   FROM classified c
-     LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
-     LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
 
-ALTER TABLE public.v_classified
-    OWNER TO main_user;`;
+    DROP VIEW IF EXISTS v_immonet;    
+    DROP VIEW IF EXISTS v_immonet_all;
+    DROP VIEW IF EXISTS v_classified;    
+
+    ALTER TABLE classified
+    ADD COLUMN showAddress BOOLEAN NOT NULL DEFAULT FALSE;
+
+    ALTER TABLE classified
+    ADD COLUMN street character varying COLLATE pg_catalog."default";
+
+    CREATE OR REPLACE VIEW public.v_classified
+    AS
+      SELECT c.classifiedid,
+          c.estatetype,
+          c.estatesubtype,
+          c.distributiontype,
+          c.avivgeoid,
+          c.location_type,
+          c.country,
+          c.postalcode,
+          c.price,
+          c.numberofrooms,
+          c.furnished,
+          c.yearofconstruction,
+          c.certificateofeligibilityneeded,
+          c.locationinbuilding,
+          c.features,
+          c.isauthorized,
+          c.isgeodatavalid,
+          c.ismarketstatuseligibleforpublication,
+          g.geolevel,
+          g.countryid,
+          g.regionid,
+          g.microregionid,
+          g.provinceid,
+          g.municipalityid,
+          g.boroughid,
+          g.neighborhoodid,
+          g.blocid,
+          c.projecttypes,
+          c.brand,
+          c.portals,
+          unnest(c.portals) AS portal,
+          g.avivgeoid as geo_avivgeoid,
+          c.showAddress,
+          c.street
+        FROM classified c
+          LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
+          LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
+
+    ALTER TABLE public.v_classified
+        OWNER TO main_user;`;
 
   try {
     await poolInstance.getPool().then(_pool => _pool.query(sqlDatabase)); // Ensure you are getting the pool instance correctly

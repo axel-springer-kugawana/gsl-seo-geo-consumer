@@ -42,7 +42,7 @@ module "process_cm_connector_events_lambda" {
   timeout                          = 9
   is_lambda_vpc                    = true
   enable_secrets_manager_extension = true
-  env_variables = {
+  env_variables = { MV_TABLE_NAME = var.dynamodb_table_name
   }
 }
 
@@ -120,5 +120,12 @@ data "aws_iam_policy_document" "lambda_policy" {
       "rds-data:*",
     ]
     resources = [var.rds_arn]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "dynamodb:UpdateItem"
+    ]
+    resources = ["${var.dynamodb_arn}"]
   }
 }

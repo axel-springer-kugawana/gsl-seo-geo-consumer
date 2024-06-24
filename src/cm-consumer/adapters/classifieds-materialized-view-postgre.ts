@@ -1,5 +1,6 @@
 import { logger } from "@shared/cross-cutting/logger";
 import { Classified, Location, VisibilityStatus } from "@shared/models/classified/1.0.0/classified";
+import { ClassifiedWithFullGeo } from "@shared/models/classified/1.0.0/ClassifiedWithFullGeo";
 import { mapFeatures, mapPrice, mapProjectTypes } from '../utils/mappingHelpers';
 import { mapGeo } from '../utils/geoHelpers';
 
@@ -25,8 +26,6 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
 
     const pool = poolInstance.getPool
     await pool().then(async (_pool) => {
-
-
       const price = mapPrice(classified) ?? undefined;
       const features = mapFeatures(classified);
       const projectTypes = mapProjectTypes(classified);
@@ -64,6 +63,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         lon ?? 0,
         geometry?.type?.toUpperCase() ?? 'AVIV_GEO_ID',
         projectTypes,
+        classified.data.location.showAddress ?? false,
+        classified.data.location.street
       ];
 
       const classifiedQuery = `
@@ -90,8 +91,10 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           lat,
           lon,
           location_type,
-          projectTypes
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,$19, $20, $21, $22, $23)
+          projectTypes,
+          showAddress,
+          street
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,$19, $20, $21, $22, $23, $24, $25)
     ON CONFLICT (ClassifiedId) DO UPDATE 
           SET Price = $2,
               avivgeoId= $3, 
@@ -114,8 +117,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
               lat = $20,
               lon  = $21,
               location_type = $22,
-              projectTypes =$23
-              ;`;
+              projectTypes =$23,
+              showAddress = $24,
+              street= $25;`;
       await _pool.query(classifiedQuery, classifiedValue);
     });
   }
@@ -134,14 +138,54 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
   }
 }
 
-export {
-  createOrUpdateClassified,
-  markClassifiedAsDeleted
+const getClassified = async (context: Context, id: string): Promise<ClassifiedWithFullGeo> => {
+  context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
+
+  let result = undefined;
+  try {
+
+    const pool = poolInstance.getPool
+    await pool().then(async (_pool) => {
+
+      const classifiedValue = [id]
+
+      const query = `
+            SELECT classifiedid, estatetype, 
+                    estatesubtype, distributiontype, avivgeoid, location_type, country, postalcode,
+                    price, numberofrooms, furnished, yearofconstruction, certificateofeligibilityneeded, locationinbuilding, features, isauthorized,
+                    isgeodatavalid, ismarketstatuseligibleforpublication, geolevel, countryid, regionid,
+                    microregionid, provinceid, municipalityid, boroughid,
+                    neighborhoodid, blocid, projecttypes, brand,
+                    portals, portal, geo_avivgeoid,
+                    showAddress,
+                    street
+            FROM public.v_classified
+            where classifiedid = $1;
+              ;`;
+      const res = await _pool.query<ClassifiedWithFullGeo>(query, classifiedValue);
+      if (res.rows.length > 0) {
+        console.log(res.rows[0]);
+        result = res.rows[0];
+      }
+    });
+  }
+  catch (e) {
+    if (e.name === "ConditionalCheckFailedException") {
+      logger.warn("Conditional Check failed on lastUpdate date. Classified won't be updated", {
+        classified: id
+      })
+    }
+    else {
+      logger.error('classifiedId : ' + id)
+      logger.error(e)
+      throw (e);
+    }
+  }
+  return result;
 }
 
-function single<T>(a: ReadonlyArray<T>, fallback?: T): T {
-  if (a === undefined) return null;
-  if (a.length === 1) return a[0];
-  if (a.length === 0 && fallback !== void 0) return fallback;
-  return null;
+export {
+  createOrUpdateClassified,
+  markClassifiedAsDeleted,
+  getClassified
 }

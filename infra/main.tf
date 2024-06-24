@@ -18,6 +18,14 @@ module "cm_connector" {
   ssot_name   = var.ssot_name
 }
 
+
+module "dynamodb" {
+  source      = "./modules/dynamodb"
+  application = "seo-ssot-classified"
+  environment = var.environment
+
+}
+
 module "rds" {
   source                      = "./modules/rds"
   application                 = "seo-ssot-classified"
@@ -48,7 +56,7 @@ module "rds_athena_connector" {
 }
 
 module "cm_consumer" {
-  # depends_on = [module.rds]
+  # depends_on = [module.cm_connector, module.rds, module.dynamodb]
   source = "./modules/cm-consumer"
   process_cm_connector_events_lambda = {
     dist_file                 = "../src/dist/cm-consumer/lambda-handlers/process-cm-connector-events.js"
@@ -60,10 +68,12 @@ module "cm_consumer" {
     id  = module.cm_connector.queue_id
   }
 
-  ssot_name   = var.ssot_name
-  application = var.application
-  environment = var.environment
-  rds_arn     = module.rds.proxy_arn #module.rds.arn #
-  secret_name = module.rds.secret_name
-  rds_sg_id   = module.rds.sg_id
+  ssot_name    = var.ssot_name
+  application  = var.application
+  environment  = var.environment
+  rds_arn      = module.rds.proxy_arn #module.rds.arn #
+  secret_name  = module.rds.secret_name
+  rds_sg_id    = module.rds.sg_id
+  dynamodb_arn = module.dynamodb.properties.dynamodb_arn
+  dynamodb_table_name = module.dynamodb.properties.dynamodb_table_name
 }

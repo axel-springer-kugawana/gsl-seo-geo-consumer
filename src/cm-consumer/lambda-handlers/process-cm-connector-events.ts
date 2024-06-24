@@ -2,7 +2,8 @@ import { BatchProcessor, EventType, processPartialResponse } from "@aws-lambda-p
 import { enableLambdaPowertoolsLoggingAndMetrics } from "@shared/cross-cutting/lambda-logging-middleware";
 import { SSotEntityName } from "@shared/models/cm-consumer-constants";
 import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
-import { markClassifiedAsDeleted, createOrUpdateClassified } from "cm-consumer/adapters/classifieds-materialized-view-postgre";
+import { markClassifiedAsDeleted as markClassifiedAsDeletedPG, createOrUpdateClassified as createOrUpdateClassifiedPG, getClassified } from "cm-consumer/adapters/classifieds-materialized-view-postgre";
+import { createOrUpdateClassified as createOrUpdateClassifiedDynamoDB, markClassifiedAsDeleted as markClassifiedAsDeletedDynamoDB } from "cm-consumer/adapters/classifieds-materialized-view-dynamodb";
 import { initDatabase, patchDatabase } from "cm-consumer/adapters/initSql";
 //import * as fs from 'fs';
 const processor = new BatchProcessor(EventType.SQS);
@@ -13,8 +14,8 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
 
   if (e.type == `${SSotEntityName}.deleted.v1`) {
     const classifiedId = e.data.classifiedId;
-    await markClassifiedAsDeleted(context, { classifiedId, updateDate: e.data.updateDate });
-
+    await markClassifiedAsDeletedPG(context, { classifiedId, updateDate: e.data.updateDate });
+    await markClassifiedAsDeletedDynamoDB({ classifiedId, updateDate: e.data.updateDate });
   }
   else if (e.type == `${SSotEntityName}.init.v1`) {
     await initDatabase();
@@ -24,7 +25,12 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
 
   }
   else {
-    await createOrUpdateClassified(context, e.data.classifiedId, e.data);
+    await createOrUpdateClassifiedPG(context, e.data.classifiedId, e.data);
+
+    var fullClassified = await getClassified(context, e.data.classifiedId);
+    if (fullClassified != null) {
+      await createOrUpdateClassifiedDynamoDB(e.data.classifiedId, e.data, fullClassified);
+    }
   }
 }
 
