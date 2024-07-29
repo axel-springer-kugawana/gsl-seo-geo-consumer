@@ -6,6 +6,7 @@ export interface ClassifiedWithFullGeo {
     avivgeoid: string;
     location_type: string;
     country: string;
+    city: string;
     postalcode: string;
     price: number;
     numberofrooms: number;
@@ -23,13 +24,17 @@ export interface ClassifiedWithFullGeo {
     microregionid: number;
     provinceid: number;
     municipalityid: number;
+    municipalityname: string;
     boroughid: number;
     neighborhoodid: number;
+    neighborhoodname: string;
+    livingspace: number;
     blocid: number;
-    projecttypes: string; brand: string;
+    projecttypes: string;
+    brand: string;
     portals: string;
     portal: string;
     geo_avivgeoid: number;
-    showAddress: string,
+    showaddress: string,
     street: string
 }

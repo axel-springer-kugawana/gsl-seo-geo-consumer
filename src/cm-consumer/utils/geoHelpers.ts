@@ -127,18 +127,31 @@ function single<T>(a: ReadonlyArray<T>, fallback?: T): T {
     return null;
 }
 
+function getNamesForLevel(geo, level) {
+    return geo
+        .filter(item => item.level === level)
+        .map(item => {
+            const names = {};
+            Object.keys(item.names).forEach(lang => {
+                names[lang] = item.names[lang].map(entry => entry.name);
+            });
+            return names;
+        });
+}
+
 async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: string, location: Location) {
     const { avivGeoId, geometry } = location;
     const [lon, lat] = geometry?.coordinates ?? [];
-
     let geoLevel = single(geo.filter(x => x.id === mappedAvivGeoId))?.level;
     let countryId = single(geo?.filter(x => x.level === 200))?.id;
     let regionId = single(geo?.filter(x => x.level === 400))?.id;
     let microregionId = single(geo?.filter(x => x.level === 500))?.id;
     let provinceId = single(geo?.filter(x => x.level === 600))?.id;
     let municipalityID = single(geo?.filter(x => x.level === 800))?.id;
+    let municipalityName  = getNamesForLevel(geo,800);
     let boroughID = single(geo?.filter(x => x.level === 900))?.id;
     let neighborhoodId = single(geo?.filter(x => x.level === 1000))?.id;
+    let neighborhoodName = getNamesForLevel(geo, 1000);
     let blocId = single(geo?.filter(x => x.level === 1200))?.id;
 
     const geoValue = [
@@ -149,8 +162,10 @@ async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: 
         microregionId,
         provinceId,
         municipalityID,
+        municipalityName,
         boroughID,
         neighborhoodId,
+        neighborhoodName,
         blocId
     ]
     const geoQuery = `
@@ -162,11 +177,13 @@ async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: 
       microregionId,
       provinceId,
       municipalityID,
+      municipalityName,
       boroughID,
       neighborhoodId,
+      neighborhoodName,
       blocId,
       updateDate
-   ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
+   ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,$11,$12, NOW())
   ON CONFLICT (avivgeoId) DO UPDATE 
       SET    
       geoLevel = $2,
@@ -175,9 +192,11 @@ async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: 
       microregionId= $5,
       provinceId= $6,
       municipalityID= $7,
-      boroughID= $8,
-      neighborhoodId= $9,
-      blocId= $10,
+      municipalityName= $8,
+      boroughID= $9,
+      neighborhoodId= $10,
+      neighborhoodName= $11,
+      blocId= $12,
       updateDate= NOW();`;
 
     await _pool.query(geoQuery, geoValue);

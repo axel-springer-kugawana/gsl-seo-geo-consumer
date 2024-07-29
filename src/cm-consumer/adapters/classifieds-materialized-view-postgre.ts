@@ -53,6 +53,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         classified.data?.structure?.building?.locationInBuilding,
         features,
         classified.data?.location?.country,
+        classified.data?.location?.city,
         classified.metadata.brand,
         portalFilter.map(e => e.portal),
         classified?.data?.location?.postalcode,
@@ -64,7 +65,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         geometry?.type?.toUpperCase() ?? 'AVIV_GEO_ID',
         projectTypes,
         classified.data.location.showAddress ?? false,
-        classified.data.location.street
+        classified.data.location.street,
+        classified.data?.spaces?.residential?.livingSpace,
       ];
 
       const classifiedQuery = `
@@ -82,6 +84,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           LocationInBuilding,
           Features,
           Country,
+          City,
           Brand,
           Portals,
           Postalcode,
@@ -93,8 +96,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           location_type,
           projectTypes,
           showAddress,
-          street
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,$19, $20, $21, $22, $23, $24, $25)
+          street,
+          livingSpace
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,$19, $20, $21, $22, $23, $24, $25, $26,$27)
     ON CONFLICT (ClassifiedId) DO UPDATE 
           SET Price = $2,
               avivgeoId= $3, 
@@ -108,18 +112,21 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
               LocationInBuilding= $11,
               Features= $12,
               Country = $13,
-              Brand = $14,
-              Portals = $15,
-              Postalcode = $16,
-              isAuthorized = $17,
-              isGeoDataValid = $18,
-              isMarketStatusEligibleForPublication = $19,
-              lat = $20,
-              lon  = $21,
-              location_type = $22,
-              projectTypes =$23,
-              showAddress = $24,
-              street= $25;`;
+              City = $14,
+              Brand = $15,
+              Portals = $16,
+              Postalcode = $17,
+              isAuthorized = $18,
+              isGeoDataValid = $19,
+              isMarketStatusEligibleForPublication = $20,
+              lat = $21,
+              lon  = $22,
+              location_type = $23,
+              projectTypes =$24,
+              showAddress = $25,
+              street= $26,
+              livingSpace=$27
+              ;`;
       await _pool.query(classifiedQuery, classifiedValue);
     });
   }
@@ -151,13 +158,14 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
 
       const query = `
             SELECT classifiedid, estatetype, 
-                    estatesubtype, distributiontype, avivgeoid, location_type, country, postalcode,
+                    estatesubtype, distributiontype, avivgeoid, location_type, country, city, postalcode,
                     price, numberofrooms, furnished, yearofconstruction, certificateofeligibilityneeded, locationinbuilding, features, isauthorized,
                     isgeodatavalid, ismarketstatuseligibleforpublication, geolevel, countryid, regionid,
                     microregionid, provinceid, municipalityid, boroughid,
                     neighborhoodid, blocid, projecttypes, brand,
+                    neighborhoodname, municipalityname,
                     portals, portal, geo_avivgeoid,
-                    showAddress,
+                    showAddress, livingspace,
                     street
             FROM public.v_classified
             where classifiedid = $1;

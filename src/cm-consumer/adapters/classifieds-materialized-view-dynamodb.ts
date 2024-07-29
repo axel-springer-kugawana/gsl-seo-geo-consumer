@@ -22,7 +22,7 @@ const createOrUpdateClassified = async (id: string, data: Classified, classified
         REMOVE
           #SOFTDELETE, #EXPIREAT
          `,
-      ConditionExpression: "attribute_not_exists(#VERSIONATTN) OR #VERSIONATTN < :VERSIONATTCURRV",
+      ConditionExpression: "attribute_not_exists(#VERSIONATTN) OR #VERSIONATTN <= :VERSIONATTCURRV",
       ExpressionAttributeValues: {
         ":DATAATTV": {
           "S": JSON.stringify(classified)

@@ -36,8 +36,8 @@ const initDatabase = async () => {
         lon float,
         location_type character varying COLLATE pg_catalog."default",
         projectTypes text[] COLLATE pg_catalog."default",
-          showAddress boolean,
-          street  character varying COLLATE pg_catalog."default",
+        showAddress boolean,
+        street  character varying COLLATE pg_catalog."default",
         CONSTRAINT "Classified_pkey" PRIMARY KEY (classifiedid)
     )
     TABLESPACE pg_default;
@@ -112,7 +112,7 @@ const initDatabase = async () => {
           c.portals,
           unnest(c.portals) AS portal,
           g.avivgeoid as geo_avivgeoid,
-          c.showAddress,
+          c.showaddress,
           c.street
         FROM classified c
           LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
@@ -186,7 +186,7 @@ const patchDatabase = async () => {
           c.portals,
           unnest(c.portals) AS portal,
           g.avivgeoid as geo_avivgeoid,
-          c.showAddress,
+          c.showaddress,
           c.street
         FROM classified c
           LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
@@ -203,4 +203,74 @@ const patchDatabase = async () => {
   }
 };
 
-export { initDatabase, patchDatabase };
+const patchDatabaseV2 = async () => {
+  const sqlDatabase = `
+
+    DROP VIEW IF EXISTS v_immonet;    
+    DROP VIEW IF EXISTS v_immonet_all;
+    DROP VIEW IF EXISTS v_classified;    
+
+    ALTER TABLE classified
+    ADD COLUMN city character varying COLLATE pg_catalog."default",
+    ADD COLUMN livingspace numeric;
+
+    ALTER TABLE public.geo
+    ADD COLUMN municipalityname text[] COLLATE pg_catalog."default",
+    ADD COLUMN neighborhoodname text[] COLLATE pg_catalog."default";
+
+    CREATE OR REPLACE VIEW public.v_classified
+    AS
+      SELECT c.classifiedid,
+          c.estatetype,
+          c.estatesubtype,
+          c.distributiontype,
+          c.avivgeoid,
+          c.location_type,
+          c.country,
+          c.city, 
+          c.postalcode,
+          c.price,
+          c.numberofrooms,
+          c.livingspace,
+          c.furnished,
+          c.yearofconstruction,
+          c.certificateofeligibilityneeded,
+          c.locationinbuilding,
+          c.features,
+          c.isauthorized,
+          c.isgeodatavalid,
+          c.ismarketstatuseligibleforpublication,
+          g.geolevel,
+          g.countryid,
+          g.regionid,
+          g.microregionid,
+          g.provinceid,
+          g.municipalityid,
+          g.municipalityname,
+          g.boroughid,
+          g.neighborhoodid,
+          g.neighborhoodname,
+          g.blocid,
+          c.projecttypes,
+          c.brand,
+          c.portals,
+          unnest(c.portals) AS portal,
+          g.avivgeoid as geo_avivgeoid,
+          c.showaddress,
+          c.street
+        FROM classified c
+          LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
+          LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
+
+    ALTER TABLE public.v_classified
+        OWNER TO main_user;`;
+
+  try {
+    await poolInstance.getPool().then(_pool => _pool.query(sqlDatabase)); // Ensure you are getting the pool instance correctly
+    console.log('Database patched successfully');
+  } catch (e) {
+    logger.error('Error executing SQL:', e);
+  }
+};
+
+export { initDatabase, patchDatabase, patchDatabaseV2 };
