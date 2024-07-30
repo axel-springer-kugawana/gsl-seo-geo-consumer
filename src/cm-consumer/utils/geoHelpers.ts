@@ -128,15 +128,20 @@ function single<T>(a: ReadonlyArray<T>, fallback?: T): T {
 }
 
 function getNamesForLevel(geo, level) {
-    return geo
-        .filter(item => item.level === level)
-        .map(item => {
-            const names = {};
+    const result = {};
+    geo.filter(item => item.level === level)
+       .forEach(item => {
             Object.keys(item.names).forEach(lang => {
-                names[lang] = item.names[lang].map(entry => entry.name);
+                if (!result[lang]) {
+                    result[lang] = [];
+                }
+                item.names[lang].forEach(entry => {
+                    result[lang].push(entry.name);
+                });
             });
-            return names;
         });
+
+    return result;
 }
 
 async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: string, location: Location) {
