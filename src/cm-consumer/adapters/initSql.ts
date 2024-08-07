@@ -215,8 +215,8 @@ const patchDatabaseV2 = async () => {
     ADD COLUMN livingspace numeric;
 
     ALTER TABLE public.geo
-    ADD COLUMN municipalityname text[] COLLATE pg_catalog."default",
-    ADD COLUMN neighborhoodname text[] COLLATE pg_catalog."default";
+    ADD COLUMN municipalityname jsonb,
+    ADD COLUMN neighborhoodname jsonb;
 
     CREATE OR REPLACE VIEW public.v_classified
     AS

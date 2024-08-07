@@ -18,23 +18,23 @@ export interface ClassifiedWithFullGeo {
     isauthorized: string;
     isgeodatavalid: string;
     ismarketstatuseligibleforpublication: string;
-    geolevel: number;
-    countryid: number;
-    regionid: number;
-    microregionid: number;
+    geolevel: string;
+    countryid: string;
+    regionid: string;
+    microregionid: string;
     provinceid: number;
-    municipalityid: number;
-    municipalityname: string;
+    municipalityid: string;
+    municipalityname: any;
     boroughid: number;
-    neighborhoodid: number;
-    neighborhoodname: string;
+    neighborhoodid: string;
+    neighborhoodname: any;
     livingspace: number;
     blocid: number;
     projecttypes: string;
     brand: string;
     portals: string;
     portal: string;
-    geo_avivgeoid: number;
+    geo_avivgeoid: string;
     showaddress: string,
     street: string
 }

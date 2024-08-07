@@ -15,6 +15,9 @@ export const mapGeo = async (_pool: Pool, location: Location): Promise<string> =
 
 async function mapGeoFromCache(_pool: Pool, location: Location) {
     const { avivGeoId, geometry } = location;
+    //var geo = await getGeoHierarchyEnrichmentByCoordinates(location);
+    //await addGeoToCacheAsync(_pool, geo, "DDAD4", location);
+
     let mappedAvivGeoId = undefined;
     if (geometry?.type?.toUpperCase() === 'POINT') {
         mappedAvivGeoId = await getGeoHierarchyEnrichmentByCoordinatesByCache(_pool, location);
@@ -127,6 +130,23 @@ function single<T>(a: ReadonlyArray<T>, fallback?: T): T {
     return null;
 }
 
+/*function getNamesForLevel(geo, level) {
+    const result = [];
+    geo.filter(item => item.level === level)
+       .forEach(item => {
+            Object.keys(item.names).forEach(lang => {
+                if (!result[lang]) {
+                    result[lang] = [];
+                }
+                item.names[lang].forEach(entry => {
+                    result[lang].push(entry.name);
+                });
+            });
+        });
+
+    return result;
+}*/
+
 function getNamesForLevel(geo, level) {
     const result = {};
     geo.filter(item => item.level === level)
@@ -143,6 +163,31 @@ function getNamesForLevel(geo, level) {
 
     return result;
 }
+
+/*function getNamesForLevel(geo, level): string[] {
+    const result = [];
+    const namesByLanguage = {};
+
+    // Rassemble les noms par langue dans un dictionnaire temporaire
+    geo.filter(item => item.level === level)
+       .forEach(item => {
+            Object.keys(item.names).forEach(lang => {
+                if (!namesByLanguage[lang]) {
+                    namesByLanguage[lang] = [];
+                }
+                item.names[lang].forEach(entry => {
+                    namesByLanguage[lang].push(entry.name);
+                });
+            });
+        });
+
+    // Transforme le dictionnaire en une liste d'objets
+    Object.keys(namesByLanguage).forEach(lang => {
+        result.push({ [lang]: namesByLanguage[lang] });
+    });
+
+    return result;
+}*/
 
 async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: string, location: Location) {
     const { avivGeoId, geometry } = location;
