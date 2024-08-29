@@ -29,15 +29,22 @@ const initDatabase = async () => {
         yearofconstruction numeric,
         certificateofeligibilityneeded character varying COLLATE pg_catalog."default",
         locationinbuilding character varying COLLATE pg_catalog."default",
-        isAuthorized boolean,
-        isGeoDataValid boolean,
-        isMarketStatusEligibleForPublication boolean,
-        lat float,
-        lon float,
+        isauthorized boolean,
+        isgeodatavalid boolean,
+        ismarketstatuseligibleforpublication boolean,
+        lat double precision,
+        lon double precision,
         location_type character varying COLLATE pg_catalog."default",
-        projectTypes text[] COLLATE pg_catalog."default",
-        showAddress boolean,
-        street  character varying COLLATE pg_catalog."default",
+        projecttypes text[] COLLATE pg_catalog."default",
+        showaddress boolean NOT NULL DEFAULT false,
+        street character varying COLLATE pg_catalog."default",
+        city character varying COLLATE pg_catalog."default",
+        overallspace numeric,
+        spacemin numeric,
+        spacemax numeric,
+        livingspace numeric,
+        buildState character varying COLLATE pg_catalog."default",
+        energyCertificateClass character varying COLLATE pg_catalog."default",
         CONSTRAINT "Classified_pkey" PRIMARY KEY (classifiedid)
     )
     TABLESPACE pg_default;
@@ -58,6 +65,8 @@ const initDatabase = async () => {
         neighborhoodid character varying COLLATE pg_catalog."default",
         blocid character varying COLLATE pg_catalog."default",
         updatedate timestamp without time zone,
+        municipalityname jsonb,
+        neighborhoodname jsonb,
         CONSTRAINT pk_geo PRIMARY KEY (avivgeoid)
     )
     TABLESPACE pg_default;
@@ -87,9 +96,11 @@ const initDatabase = async () => {
           c.avivgeoid,
           c.location_type,
           c.country,
+          c.city,
           c.postalcode,
           c.price,
           c.numberofrooms,
+          c.livingspace,
           c.furnished,
           c.yearofconstruction,
           c.certificateofeligibilityneeded,
@@ -104,16 +115,20 @@ const initDatabase = async () => {
           g.microregionid,
           g.provinceid,
           g.municipalityid,
+          g.municipalityname,
           g.boroughid,
           g.neighborhoodid,
+          g.neighborhoodname,
           g.blocid,
           c.projecttypes,
           c.brand,
           c.portals,
           unnest(c.portals) AS portal,
-          g.avivgeoid as geo_avivgeoid,
+          g.avivgeoid AS geo_avivgeoid,
           c.showaddress,
-          c.street
+          c.street,
+          c.buildState,
+          c.energyCertificateClass
         FROM classified c
           LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
           LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
@@ -142,17 +157,13 @@ const initDatabase = async () => {
 const patchDatabase = async () => {
   const sqlDatabase = `
 
-    DROP VIEW IF EXISTS v_immonet;    
-    DROP VIEW IF EXISTS v_immonet_all;
-    DROP VIEW IF EXISTS v_classified;    
+    ALTER TABLE classified
+    ADD COLUMN energyCertificateClass character varying COLLATE pg_catalog."default";
 
     ALTER TABLE classified
-    ADD COLUMN showAddress BOOLEAN NOT NULL DEFAULT FALSE;
+    ADD COLUMN buildState character varying COLLATE pg_catalog."default";
 
-    ALTER TABLE classified
-    ADD COLUMN street character varying COLLATE pg_catalog."default";
-
-    CREATE OR REPLACE VIEW public.v_classified
+   CREATE OR REPLACE VIEW public.v_classified
     AS
       SELECT c.classifiedid,
           c.estatetype,
@@ -161,73 +172,7 @@ const patchDatabase = async () => {
           c.avivgeoid,
           c.location_type,
           c.country,
-          c.postalcode,
-          c.price,
-          c.numberofrooms,
-          c.furnished,
-          c.yearofconstruction,
-          c.certificateofeligibilityneeded,
-          c.locationinbuilding,
-          c.features,
-          c.isauthorized,
-          c.isgeodatavalid,
-          c.ismarketstatuseligibleforpublication,
-          g.geolevel,
-          g.countryid,
-          g.regionid,
-          g.microregionid,
-          g.provinceid,
-          g.municipalityid,
-          g.boroughid,
-          g.neighborhoodid,
-          g.blocid,
-          c.projecttypes,
-          c.brand,
-          c.portals,
-          unnest(c.portals) AS portal,
-          g.avivgeoid as geo_avivgeoid,
-          c.showaddress,
-          c.street
-        FROM classified c
-          LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
-          LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
-
-    ALTER TABLE public.v_classified
-        OWNER TO main_user;`;
-
-  try {
-    await poolInstance.getPool().then(_pool => _pool.query(sqlDatabase)); // Ensure you are getting the pool instance correctly
-    console.log('Database patched successfully');
-  } catch (e) {
-    logger.error('Error executing SQL:', e);
-  }
-};
-
-const patchDatabaseV2 = async () => {
-  const sqlDatabase = `
-
-    DROP VIEW IF EXISTS v_immonet;    
-    DROP VIEW IF EXISTS v_immonet_all;
-    DROP VIEW IF EXISTS v_classified;    
-
-    ALTER TABLE classified
-    ADD COLUMN city character varying COLLATE pg_catalog."default",
-    ADD COLUMN livingspace numeric;
-
-    ALTER TABLE public.geo
-    ADD COLUMN municipalityname jsonb,
-    ADD COLUMN neighborhoodname jsonb;
-
-    CREATE OR REPLACE VIEW public.v_classified
-    AS
-      SELECT c.classifiedid,
-          c.estatetype,
-          c.estatesubtype,
-          c.distributiontype,
-          c.avivgeoid,
-          c.location_type,
-          c.country,
-          c.city, 
+          c.city,
           c.postalcode,
           c.price,
           c.numberofrooms,
@@ -255,9 +200,11 @@ const patchDatabaseV2 = async () => {
           c.brand,
           c.portals,
           unnest(c.portals) AS portal,
-          g.avivgeoid as geo_avivgeoid,
+          g.avivgeoid AS geo_avivgeoid,
           c.showaddress,
-          c.street
+          c.street,
+          c.buildState,
+          c.energyCertificateClass
         FROM classified c
           LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
           LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
@@ -273,4 +220,5 @@ const patchDatabaseV2 = async () => {
   }
 };
 
-export { initDatabase, patchDatabase, patchDatabaseV2 };
+
+export { initDatabase, patchDatabase };

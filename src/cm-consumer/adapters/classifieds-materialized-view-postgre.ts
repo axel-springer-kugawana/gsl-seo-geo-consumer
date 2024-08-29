@@ -1,7 +1,7 @@
 import { logger } from "@shared/cross-cutting/logger";
 import { Classified, Location, VisibilityStatus } from "@shared/models/classified/1.0.0/classified";
 import { ClassifiedWithFullGeo } from "@shared/models/classified/1.0.0/ClassifiedWithFullGeo";
-import { mapFeatures, mapPrice, mapProjectTypes } from '../utils/mappingHelpers';
+import { mapFeatures, mapPrice, mapProjectTypes, mapEnergyCertificateClass } from '../utils/mappingHelpers';
 import { mapGeo } from '../utils/geoHelpers';
 
 import { poolInstance } from "./connectPostGre";
@@ -67,6 +67,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         classified.data.location.showAddress ?? false,
         classified.data.location.street,
         classified.data?.spaces?.residential?.livingSpace,
+        classified.data?.conditions?.buildState,
+        mapEnergyCertificateClass(classified),
       ];
 
       const classifiedQuery = `
@@ -97,8 +99,10 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           projectTypes,
           showAddress,
           street,
-          livingSpace
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,$19, $20, $21, $22, $23, $24, $25, $26,$27)
+          livingSpace,
+          buildState,
+          energyCertificateClass 
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,$19, $20, $21, $22, $23, $24, $25, $26,$27, $28,$29)
     ON CONFLICT (ClassifiedId) DO UPDATE 
           SET Price = $2,
               avivgeoId= $3, 
@@ -125,8 +129,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
               projectTypes =$24,
               showAddress = $25,
               street= $26,
-              livingSpace=$27
-              ;`;
+              livingSpace=$27,
+              buildState =$28,
+              energyCertificateClass = $29;`;
       await _pool.query(classifiedQuery, classifiedValue);
     });
   }
