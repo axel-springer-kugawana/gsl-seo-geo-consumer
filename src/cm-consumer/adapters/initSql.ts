@@ -221,4 +221,26 @@ const patchDatabase = async () => {
 };
 
 
-export { initDatabase, patchDatabase };
+
+const cleanDatabase = async () => {
+  const sqlDatabase =  ` delete
+from geo_lat_lon
+where avivgeoid in (
+select avivgeoid
+FROM geo
+where geolevel = 800 and municipalityid is null
+)
+
+delete
+FROM geo
+where geolevel = 800 and municipalityid is null
+
+   `;
+   try {
+    await poolInstance.getPool().then(_pool => _pool.query(sqlDatabase)); // Ensure you are getting the pool instance correctly
+    console.log('Database cleaned successfully');
+  } catch (e) {
+    logger.error('Error executing SQL:', e);
+  }
+};
+export { initDatabase, patchDatabase,cleanDatabase };
