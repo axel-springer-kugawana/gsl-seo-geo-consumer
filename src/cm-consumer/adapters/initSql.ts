@@ -223,17 +223,18 @@ const patchDatabase = async () => {
 
 
 const cleanDatabase = async () => {
-  const sqlDatabase =  ` delete
+  const sqlDatabase =  ` 
+delete
 from geo_lat_lon
 where avivgeoid in (
 select avivgeoid
 FROM geo
 where geolevel = 800 and municipalityid is null
-)
+);
 
 delete
 FROM geo
-where geolevel = 800 and municipalityid is null
+where geolevel = 800 and municipalityid is null;
 
    `;
    try {
