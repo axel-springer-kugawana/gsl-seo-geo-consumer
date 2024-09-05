@@ -197,7 +197,7 @@ async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: 
     let regionId = single(geo?.filter(x => x.level === 400))?.id;
     let microregionId = single(geo?.filter(x => x.level === 500))?.id;
     let provinceId = single(geo?.filter(x => x.level === 600))?.id;
-    let municipalityID = single(geo?.filter(x => x.level === 800))?.id;
+    let municipalityId= single(geo?.filter(x => x.level === 800 && x.type_key === 'AD08'))?.id;
     let municipalityName  = getNamesForLevel(geo,800);
     let boroughID = single(geo?.filter(x => x.level === 900))?.id;
     let neighborhoodId = single(geo?.filter(x => x.level === 1000))?.id;
@@ -211,7 +211,7 @@ async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: 
         regionId,
         microregionId,
         provinceId,
-        municipalityID,
+        municipalityId,
         municipalityName,
         boroughID,
         neighborhoodId,
@@ -226,7 +226,7 @@ async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: 
       regionId,
       microregionId,
       provinceId,
-      municipalityID,
+      municipalityId,
       municipalityName,
       boroughID,
       neighborhoodId,
@@ -235,13 +235,13 @@ async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: 
       updateDate
    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,$11,$12, NOW())
   ON CONFLICT (avivgeoId) DO UPDATE 
-      SET    
+      SET  
       geoLevel = $2,
       countryId = $3,
       regionId= $4,
       microregionId= $5,
       provinceId= $6,
-      municipalityID= $7,
+      municipalityId= $7,
       municipalityName= $8,
       boroughID= $9,
       neighborhoodId= $10,

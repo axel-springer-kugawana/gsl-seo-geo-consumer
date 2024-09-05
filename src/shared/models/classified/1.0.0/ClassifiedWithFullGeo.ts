@@ -22,14 +22,14 @@ export interface ClassifiedWithFullGeo {
     countryid: string;
     regionid: string;
     microregionid: string;
-    provinceid: number;
+    provinceid: string;
     municipalityid: string;
     municipalityname: any;
-    boroughid: number;
+    boroughid: string;
     neighborhoodid: string;
     neighborhoodname: any;
     livingspace: number;
-    blocid: number;
+    blocid: string;
     projecttypes: string;
     brand: string;
     portals: string;
