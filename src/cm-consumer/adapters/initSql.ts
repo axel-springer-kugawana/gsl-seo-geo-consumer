@@ -229,13 +229,13 @@ const cleanDatabase = async () => {
   where avivgeoid in (
   select avivgeoid
   from geo
-  where geo.municipalityname is not null and geo.municipalityid is null
+  where geo.municipalityname <> '{}' and geo.municipalityid is null
   ); 
   
   delete
   from geo
-  where geo.municipalityname is not null and geo.municipalityid is null;
-   `;
+  where geo.municipalityname <> '{}' and geo.municipalityid is null
+ `;
    try {
     await poolInstance.getPool().then(_pool => _pool.query(sqlDatabase)); // Ensure you are getting the pool instance correctly
     console.log('Database cleaned successfully');
