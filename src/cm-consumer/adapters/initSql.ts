@@ -223,19 +223,18 @@ const patchDatabase = async () => {
 
 
 const cleanDatabase = async () => {
-  const sqlDatabase =  ` 
-delete
-from geo_lat_lon
-where avivgeoid in (
-select avivgeoid
-FROM geo
-where geolevel = 800 and municipalityid is null
-);
-
-delete
-FROM geo
-where geolevel = 800 and municipalityid is null;
-
+  const sqlDatabase =  `
+  delete
+  from public.geo_lat_lon
+  where avivgeoid in (
+  select avivgeoid
+  from geo
+  where geo.municipalityname is not null and geo.municipalityid is null
+  ); 
+  
+  delete
+  from geo
+  where geo.municipalityname is not null and geo.municipalityid is null;
    `;
    try {
     await poolInstance.getPool().then(_pool => _pool.query(sqlDatabase)); // Ensure you are getting the pool instance correctly
