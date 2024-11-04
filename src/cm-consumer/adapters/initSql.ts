@@ -227,8 +227,7 @@ const patchDatabaseV2 = async () => {
     DELETE COLUMN livingspace;
 
     ALTER TABLE classified
-    ADD COLUMN overallSpace character varying COLLATE pg_catalog."default";
-
+    ADD COLUMN overallspace numeric;
 
    CREATE OR REPLACE VIEW public.v_classified
     AS
@@ -243,7 +242,7 @@ const patchDatabaseV2 = async () => {
           c.postalcode,
           c.price,
           c.numberofrooms,
-          c.overallSpace,
+          c.overallspace,
           c.furnished,
           c.yearofconstruction,
           c.certificateofeligibilityneeded,
