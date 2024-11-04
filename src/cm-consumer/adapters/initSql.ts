@@ -220,5 +220,73 @@ const patchDatabase = async () => {
   }
 };
 
+const patchDatabaseV2 = async () => {
+  const sqlDatabase = `
 
-export { initDatabase, patchDatabase };
+    ALTER TABLE classified
+    DELETE COLUMN livingspace;
+
+    ALTER TABLE classified
+    ADD COLUMN overallSpace character varying COLLATE pg_catalog."default";
+
+
+   CREATE OR REPLACE VIEW public.v_classified
+    AS
+      SELECT c.classifiedid,
+          c.estatetype,
+          c.estatesubtype,
+          c.distributiontype,
+          c.avivgeoid,
+          c.location_type,
+          c.country,
+          c.city,
+          c.postalcode,
+          c.price,
+          c.numberofrooms,
+          c.overallSpace,
+          c.furnished,
+          c.yearofconstruction,
+          c.certificateofeligibilityneeded,
+          c.locationinbuilding,
+          c.features,
+          c.isauthorized,
+          c.isgeodatavalid,
+          c.ismarketstatuseligibleforpublication,
+          g.geolevel,
+          g.countryid,
+          g.regionid,
+          g.microregionid,
+          g.provinceid,
+          g.municipalityid,
+          g.municipalityname,
+          g.boroughid,
+          g.neighborhoodid,
+          g.neighborhoodname,
+          g.blocid,
+          c.projecttypes,
+          c.brand,
+          c.portals,
+          unnest(c.portals) AS portal,
+          g.avivgeoid AS geo_avivgeoid,
+          c.showaddress,
+          c.street,
+          c.buildState,
+          c.energyCertificateClass
+        FROM classified c
+          LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
+          LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
+
+    ALTER TABLE public.v_classified
+        OWNER TO main_user;`;
+
+  try {
+    await poolInstance.getPool().then(_pool => _pool.query(sqlDatabase)); // Ensure you are getting the pool instance correctly
+    console.log('Database patched successfully');
+  } catch (e) {
+    logger.error('Error executing SQL:', e);
+  }
+};
+
+
+
+export { initDatabase, patchDatabase, patchDatabaseV2 };
