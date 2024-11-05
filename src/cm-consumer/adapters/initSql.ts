@@ -224,7 +224,7 @@ const patchDatabaseV2 = async () => {
   const sqlDatabase = `
 
     ALTER TABLE classified
-    DELETE COLUMN livingspace;
+    DROP COLUMN livingspace;
 
     ALTER TABLE classified
     ADD COLUMN overallspace numeric;
