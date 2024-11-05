@@ -224,13 +224,10 @@ const patchDatabaseV2 = async () => {
   const sqlDatabase = `
 
     DROP VIEW IF EXISTS v_classified;
-
     ALTER TABLE classified
-    DROP COLUMN livingspace;
-
+    DROP COLUMN IF EXISTS livingspace;
     ALTER TABLE classified
-    ADD COLUMN overallspace numeric;
-
+    ADD COLUMN IF NOT EXISTS overallspace numeric;
    CREATE OR REPLACE VIEW public.v_classified
     AS
       SELECT c.classifiedid,
@@ -276,7 +273,6 @@ const patchDatabaseV2 = async () => {
         FROM classified c
           LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
           LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
-
     ALTER TABLE public.v_classified
         OWNER TO main_user;`;
 
