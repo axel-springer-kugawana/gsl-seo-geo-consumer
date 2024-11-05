@@ -228,9 +228,6 @@ const patchDatabaseV2 = async () => {
     ALTER TABLE classified
     DROP COLUMN livingspace;
 
-    ALTER TABLE classified
-    ADD COLUMN overallspace numeric;
-
    CREATE OR REPLACE VIEW public.v_classified
     AS
       SELECT c.classifiedid,
