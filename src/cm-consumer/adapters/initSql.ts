@@ -223,6 +223,8 @@ const patchDatabase = async () => {
 const patchDatabaseV2 = async () => {
   const sqlDatabase = `
 
+    DROP VIEW IF EXISTS v_classified;
+
     ALTER TABLE classified
     DROP COLUMN livingspace;
 
