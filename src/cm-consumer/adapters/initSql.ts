@@ -159,7 +159,7 @@ const patchDatabase = async () => {
 
     DROP VIEW IF EXISTS v_classified;
     ALTER TABLE classified
-    ADD COLUMN IF NOT EXISTS livingspace numberic;
+    ADD COLUMN IF NOT EXISTS livingspace numeric;
     ALTER TABLE classified
     ADD COLUMN IF NOT EXISTS overallspace numeric;
     CREATE OR REPLACE VIEW public.v_classified
