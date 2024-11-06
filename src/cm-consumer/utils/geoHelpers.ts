@@ -197,7 +197,7 @@ async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: 
     let regionId = single(geo?.filter(x => x.level === 400))?.id;
     let microregionId = single(geo?.filter(x => x.level === 500))?.id;
     let provinceId = single(geo?.filter(x => x.level === 600))?.id;
-    let municipalityId= single(geo?.filter(x => x.level === 800 && x.type_key === 'AD08'))?.id;
+    let municipalityId= single(geo?.filter(x => x.level === 800 && x.type_key === 'AD08' && x.active===true))?.id;
     let municipalityName  = getNamesForLevel(geo,800);
     let boroughID = single(geo?.filter(x => x.level === 900))?.id;
     let neighborhoodId = single(geo?.filter(x => x.level === 1000))?.id;

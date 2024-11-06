@@ -284,6 +284,25 @@ const patchDatabaseV2 = async () => {
   }
 };
 
-
-
-export { initDatabase, patchDatabase, patchDatabaseV2 };
+const cleanDatabase = async () => {
+  const sqlDatabase =  `
+  delete
+  from public.geo_lat_lon
+  where avivgeoid in (
+  select avivgeoid
+  from geo
+  where geo.municipalityname <> '{}' and geo.municipalityid is null
+  ); 
+  
+  delete
+  from geo
+  where geo.municipalityname <> '{}' and geo.municipalityid is null
+ `;
+   try {
+    await poolInstance.getPool().then(_pool => _pool.query(sqlDatabase)); // Ensure you are getting the pool instance correctly
+    console.log('Database cleaned successfully');
+  } catch (e) {
+    logger.error('Error executing SQL:', e);
+  }
+};
+export { initDatabase, patchDatabase, patchDatabaseV2, cleanDatabase };

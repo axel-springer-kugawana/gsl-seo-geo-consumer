@@ -1,5 +1,5 @@
 import { logger } from "@shared/cross-cutting/logger";
-import { Classified, Location, VisibilityStatus } from "@shared/models/classified/1.0.0/classified";
+import { Classified, Location } from "@shared/models/classified/1.0.0/classified";
 import { ClassifiedWithFullGeo } from "@shared/models/classified/1.0.0/ClassifiedWithFullGeo";
 import { mapFeatures, mapPrice, mapProjectTypes, mapEnergyCertificateClass } from '../utils/mappingHelpers';
 import { mapGeo } from '../utils/geoHelpers';

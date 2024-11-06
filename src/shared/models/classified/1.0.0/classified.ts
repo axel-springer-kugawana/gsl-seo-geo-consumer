@@ -66,19 +66,21 @@ export interface Classified {
         de?: {
           energyCertificates?: EnergyCertificateDe[];
           houseEnergyStandardType?:
-          | 'UNSPECIFIED'
-          | 'LOW_ENERGY_40'
-          | 'LOW_ENERGY_60'
-          | 'PASSIVE_HOUSE'
-          | 'ENERGY_EFFICIENT_40'
-          | 'ENERGY_EFFICIENT_55'
-          | 'ENERGY_EFFICIENT_70'
-          | 'LOW_ENERGY_HOUSE'
-          | 'NULL_ENERGY_HOUSE'
-          | 'PLUS_ENERGY_HOUSE';
+            | 'UNSPECIFIED'
+            | 'LOW_ENERGY_40'
+            | 'LOW_ENERGY_60'
+            | 'PASSIVE_HOUSE'
+            | 'ENERGY_EFFICIENT_40'
+            | 'ENERGY_EFFICIENT_55'
+            | 'ENERGY_EFFICIENT_70'
+            | 'LOW_ENERGY_HOUSE'
+            | 'NULL_ENERGY_HOUSE'
+            | 'PLUS_ENERGY_HOUSE';
         };
         fr?: any;
-        at?: any;
+        at?: {
+          energyCertificate?: EnergyCertificateAt[];
+        };
         ch?: {
           /**
            * @description building is constructed according to Minergie standards, means with low-energy-consumption
@@ -102,12 +104,12 @@ export interface Classified {
        * @enum {string}
        */
       spaceMeasureUnit:
-      | 'SQUARE_METER'
-      | 'SQUARE_INCH'
-      | 'SQUARE_FOOT'
-      | 'SQUARE_YARD'
-      | 'HECTARE'
-      | 'ACRE';
+        | 'SQUARE_METER'
+        | 'SQUARE_INCH'
+        | 'SQUARE_FOOT'
+        | 'SQUARE_YARD'
+        | 'HECTARE'
+        | 'ACRE';
       /** @description building front facade length in meter */
       buildingFront?: number;
       /** @description space of the kitchen */
@@ -195,20 +197,20 @@ export interface Classified {
        * @enum {string}
        */
       buildState?:
-      | 'FIRST_TIME_USE'
-      | 'FIRST_TIME_USE_AFTER_REFURBISHMENT'
-      | 'MINT_CONDITION'
-      | 'MODERNISED'
-      | 'REFURBISHED'
-      | 'FULLY_RENOVATED'
-      | 'PARTLY_RENOVATED'
-      | 'NEED_OF_RENOVATION'
-      | 'WELL_KEPT'
-      | 'NEGOTIABLE'
-      | 'RIPE_FOR_DEMOLITION'
-      | 'PROJECTED'
-      | 'NO_INFORMATION'
-      | 'RESTRUCTURED';
+        | 'FIRST_TIME_USE'
+        | 'FIRST_TIME_USE_AFTER_REFURBISHMENT'
+        | 'MINT_CONDITION'
+        | 'MODERNISED'
+        | 'REFURBISHED'
+        | 'FULLY_RENOVATED'
+        | 'PARTLY_RENOVATED'
+        | 'NEED_OF_RENOVATION'
+        | 'WELL_KEPT'
+        | 'NEGOTIABLE'
+        | 'RIPE_FOR_DEMOLITION'
+        | 'PROJECTED'
+        | 'NO_INFORMATION'
+        | 'RESTRUCTURED';
       /**
        * @description the age of the building: OLD is defined as built before 1945. NEW is defined as built within the last 5 years.
        * @enum {string}
@@ -229,12 +231,12 @@ export interface Classified {
        * @enum {string}
        */
       constructionStyle?:
-      | 'PREFABRICATED'
-      | 'SOLID'
-      | 'SOLID_PREFABRICATED'
-      | 'TIMBERHOUSE'
-      | 'WOOD_PREFABRICATED'
-      | 'UNSPECIFIED';
+        | 'PREFABRICATED'
+        | 'SOLID'
+        | 'SOLID_PREFABRICATED'
+        | 'TIMBERHOUSE'
+        | 'WOOD_PREFABRICATED'
+        | 'UNSPECIFIED';
 
       /**
        * @description construction year if it's not just a number
@@ -252,38 +254,14 @@ export interface Classified {
     offererEstateId: string;
     offererMarketingKey: string;
     projectId: string;
-    externalProjectId: string;
-    classifiedBusiness: string;
   };
   media?: Media[];
   specifics?: Specifics;
-  visibility?: Visibility;
-  censorship?: Censorship;
-}
-
-export interface Visibility {
-  validations?: VisibilityProducer[];
-}
-
-export interface VisibilityProducer {
-  portal: Portals;
-  visibilityStatus: VisibilityStatus;
-  onTopProduct?: OnTopProductItem[];
-}
-
-interface OnTopProductItem {
-  onTopProductType: string;
-  onTopProductStatus: OnTopProductStatus;
-}
-
-enum OnTopProductStatus {
-  ACTIVATED = "ACTIVATED",
-  UNACTIVATED = "UNACTIVATED",
-}
-
-export enum VisibilityStatus {
-  PUBLISHED = "PUBLISHED",
-  UNPUBLISHED = "UNPUBLISHED",
+  visibility?: {
+    requests?: {
+      portal: 'SL' | 'LI' | 'LR' | 'BD' | 'BUCOM' | 'IWB' | 'IWT' | 'IMMONET';
+    }[];
+  };
 }
 
 export enum Orientation {
@@ -295,29 +273,6 @@ export enum Orientation {
   'SOUTH_EAST' = 'SOUTH_EAST',
   'NORTH_WEST' = 'NORTH_WEST',
   'SOUTH_WEST' = 'SOUTH_WEST',
-}
-
-export interface Censorship {
-  globalStatus?: boolean;
-  unitary?: CensorshipUnitary[];
-  additionalProperties?: Map<string, any>;
-}
-
-export interface CensorshipUnitary {
-  portal?: Portals;
-  reservedStatus?: boolean;
-  details?: string;
-}
-
-enum Portals {
-  SL = "SL",
-  LI = "LI",
-  LR = "LR",
-  BD = "BD",
-  BUCOM = "BUCOM",
-  IWB = "IWB",
-  IWT = "IWT",
-  IMMONET = "IMMONET",
 }
 
 export interface Structure {
@@ -406,14 +361,14 @@ export interface Structure {
      * @enum {string}
      */
     roofStyle?:
-    | 'HALF_HIPPED_ROOF'
-    | 'GAMBREL'
-    | 'MONO_PITCHED_ROOF'
-    | 'GABLE'
-    | 'HIP_ROOF'
-    | 'FLAT_ROOF'
-    | 'PYRAMIDAL_ROOF'
-    | 'OTHER';
+      | 'HALF_HIPPED_ROOF'
+      | 'GAMBREL'
+      | 'MONO_PITCHED_ROOF'
+      | 'GABLE'
+      | 'HIP_ROOF'
+      | 'FLAT_ROOF'
+      | 'PYRAMIDAL_ROOF'
+      | 'OTHER';
     /**
      * @description Location of the apartment in the building - GROUNDFLOOR: apartment is located on the ground floor,
      *   so usually you do not have stairs
@@ -482,12 +437,12 @@ export interface Structure {
         plasticWindows?: 'YES' | 'NO' | 'NOT_APPLICABLE';
         /** @enum {string} */
         insulatedGlazing?:
-        | 'YES'
-        | 'NO'
-        | 'NOT_APPLICABLE'
-        | 'SIMPLE'
-        | 'DOUBLE'
-        | 'TRIPLE';
+          | 'YES'
+          | 'NO'
+          | 'NOT_APPLICABLE'
+          | 'SIMPLE'
+          | 'DOUBLE'
+          | 'TRIPLE';
       };
     };
     /**
@@ -495,12 +450,12 @@ export interface Structure {
      * @enum {string}
      */
     shape?:
-    | 'L_SHAPE'
-    | 'U_SHAPE'
-    | 'V_SHAPE'
-    | 'RECTANGULAR'
-    | 'SQUARE'
-    | 'OTHER';
+      | 'L_SHAPE'
+      | 'U_SHAPE'
+      | 'V_SHAPE'
+      | 'RECTANGULAR'
+      | 'SQUARE'
+      | 'OTHER';
     /**
      * @description the property has at least one floor which level is between 2 other floors. This floor is not directly above or below these other floors. A "half floor" or a split floor.
      * @example true
@@ -776,14 +731,14 @@ export interface Management {
    * @enum {string}
    */
   projectStatus?:
-  | 'BUILDING_PERMISSION'
-  | 'COMMERCIAL_LAUNCH'
-  | 'CONSTRUCTION_START'
-  | 'UNDER_CONSTRUCTION'
-  | 'SHELL_WORKS'
-  | 'FINISHING_WORKS'
-  | 'LAST_CHANCE'
-  | 'PROJECT_ENDED';
+    | 'BUILDING_PERMISSION'
+    | 'COMMERCIAL_LAUNCH'
+    | 'CONSTRUCTION_START'
+    | 'UNDER_CONSTRUCTION'
+    | 'SHELL_WORKS'
+    | 'FINISHING_WORKS'
+    | 'LAST_CHANCE'
+    | 'PROJECT_ENDED';
   /**
    * @description additional to marketStatus; can be use eg on the realtor's website.
    * @example property of the week
