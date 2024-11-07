@@ -29,6 +29,7 @@ export interface ClassifiedWithFullGeo {
     neighborhoodid: string;
     neighborhoodname: any;
     livingspace: number;
+    overallspace: number;
     blocid: string;
     projecttypes: string;
     brand: string;

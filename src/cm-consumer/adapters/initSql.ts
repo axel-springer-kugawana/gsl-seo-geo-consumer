@@ -157,13 +157,12 @@ const initDatabase = async () => {
 const patchDatabase = async () => {
   const sqlDatabase = `
 
+    DROP VIEW IF EXISTS v_classified;
     ALTER TABLE classified
-    ADD COLUMN energyCertificateClass character varying COLLATE pg_catalog."default";
-
+    ADD COLUMN IF NOT EXISTS livingspace numeric;
     ALTER TABLE classified
-    ADD COLUMN buildState character varying COLLATE pg_catalog."default";
-
-   CREATE OR REPLACE VIEW public.v_classified
+    ADD COLUMN IF NOT EXISTS overallspace numeric;
+    CREATE OR REPLACE VIEW public.v_classified
     AS
       SELECT c.classifiedid,
           c.estatetype,
@@ -177,6 +176,7 @@ const patchDatabase = async () => {
           c.price,
           c.numberofrooms,
           c.livingspace,
+          c.overallspace,
           c.furnished,
           c.yearofconstruction,
           c.certificateofeligibilityneeded,
@@ -208,7 +208,6 @@ const patchDatabase = async () => {
         FROM classified c
           LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
           LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
-
     ALTER TABLE public.v_classified
         OWNER TO main_user;`;
 
@@ -219,8 +218,6 @@ const patchDatabase = async () => {
     logger.error('Error executing SQL:', e);
   }
 };
-
-
 
 const cleanDatabase = async () => {
   const sqlDatabase =  `
@@ -243,4 +240,4 @@ const cleanDatabase = async () => {
     logger.error('Error executing SQL:', e);
   }
 };
-export { initDatabase, patchDatabase,cleanDatabase };
+export { initDatabase, patchDatabase, cleanDatabase };
