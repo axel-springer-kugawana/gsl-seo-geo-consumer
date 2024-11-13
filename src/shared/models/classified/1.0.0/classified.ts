@@ -974,3 +974,7 @@ interface SpecificDe {
   iwtStellplatzAnzahl?: number;
   iwtBaujahr?: string;
 }
+export enum VisibilityStatus {
+  PUBLISHED = "PUBLISHED",
+  UNPUBLISHED = "UNPUBLISHED",
+}
