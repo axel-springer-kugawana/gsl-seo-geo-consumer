@@ -1,4 +1,4 @@
-import { Classified, Location } from "@shared/models/classified/1.0.0/classified";
+import { Classified, Location, VisibilityStatus } from "@shared/models/classified/1.0.0/classified";
 import { DistributionType, Portal, Features, KitchenEquipment, Validation, ProjectType, BuildState } from '../models/classifiedEnums';
 
 //https://avivgroup.atlassian.net/wiki/spaces/ATSS/pages/300812851/Search+index+model
