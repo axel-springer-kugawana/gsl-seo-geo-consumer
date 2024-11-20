@@ -5,6 +5,8 @@ import { Pool } from "pg";
 import { getClassifiedApiSecret } from "../adapters/classified-api-secrets";
 import { Location } from '@shared/models/classified/1.0.0/classified';
 import { logger } from "@shared/cross-cutting/logger";
+import axios from 'axios';
+
 export const mapGeo = async (_pool: Pool, location: Location): Promise<string> => {
     let avivGeoId = await mapGeoFromCache(_pool, location);
     if (avivGeoId === undefined) {
@@ -83,45 +85,38 @@ async function getGeoHierarchyEnrichmentById(avivGeoId: string): Promise<Feature
 export const getGeoHierarchyEnrichmentByCoordinates = async (location: Location): Promise<Feature[] | undefined> => {
     const { avivGeoId, geometry } = location;
     if (geometry?.coordinates?.length == 2) {
+        try {
         const apisecrets = await getClassifiedApiSecret();
-        const cliApi = createClient<paths>({
-            baseUrl: apisecrets.GeoPlaceApiUrl,
-        })
-
-        const myMiddleware: Middleware = {
-            async onRequest(req, options) {
-                req.headers.set("accept", "application/json");
-                req.headers.set("X-Api-Key", apisecrets.GeoPlaceApiKey);
-                return req;
-            }
-        };
-        cliApi.use(myMiddleware);
-
         const [lon, lat] = geometry.coordinates;
-        const {
-            data, // only present if 2XX response
-            error, // only present if 4XX or 5XX response
-        } = await cliApi.GET("/v1/places/point/{longitude}/{latitude}",
-            {
-                params: {
-                    path: {
-                        longitude: lon,
-                        latitude: lat
-                    },
-                }
-            });
-        if (error != null && error != undefined) {
-            logger.error("error while calling api geo" + JSON.stringify(error));
-            throw new Error("error while calling api geo" + JSON.stringify(error));
+        const parentTypes = [
+            "AD02", "AD03", "AD04", "AD05", "AD06", "AD07", "AD08",
+            "AD09", "NBH1", "NBH2", "STRT", "BLOC", "POCO"
+        ];
+        const url = `${apisecrets.GeoPlaceApiUrl}v1/places/point/${lon}/${lat}`;
+        const parentTypesParams = parentTypes.map(type => `parent_types=${type}`).join('&');
+        const fullUrlWithQueryParams = `${url}?${parentTypesParams}`;
+        console.log(fullUrlWithQueryParams);
+        let config = {
+            method: 'get',
+            maxBodyLength: Infinity,
+            url: fullUrlWithQueryParams,
+            headers: {
+              'x-api-key': apisecrets.GeoPlaceApiKey
+            }
+          };
+        const response = await axios.request(config);
+          if (response.status === 200 && response.data) {
+            return response.data.items;
+        } else {
+            throw new Error("API response error: " + JSON.stringify(response.data));
         }
-
-        if (data != null) {
-            return data.items
+        } catch (error) {
+            console.error("Error while calling API:", error);
+            throw new Error("Error while calling API: " + error.message);
         }
     }
     return null;
 }
-
 
 function single<T>(a: ReadonlyArray<T>, fallback?: T): T {
     if (a === undefined) return null;
@@ -192,21 +187,23 @@ function getNamesForLevel(geo, level) {
 async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: string, location: Location) {
     const { avivGeoId, geometry } = location;
     const [lon, lat] = geometry?.coordinates ?? [];
-    let geoLevel = single(geo.filter(x => x.id === mappedAvivGeoId))?.level;
-    let countryId = single(geo?.filter(x => x.level === 200))?.id;
-    let regionId = single(geo?.filter(x => x.level === 400))?.id;
-    let microregionId = single(geo?.filter(x => x.level === 500))?.id;
-    let provinceId = single(geo?.filter(x => x.level === 600))?.id;
-    let municipalityId= single(geo?.filter(x => x.level === 800 && x.type_key === 'AD08' && x.active===true))?.id;
-    let municipalityName  = getNamesForLevel(geo,800);
-    let boroughID = single(geo?.filter(x => x.level === 900))?.id;
-    let neighborhoodId = single(geo?.filter(x => x.level === 1000))?.id;
-    let neighborhoodName = getNamesForLevel(geo, 1000);
-    let blocId = single(geo?.filter(x => x.level === 1200))?.id;
+    let current = single(geo.filter(x=>x.id === mappedAvivGeoId));
+    let parents = current?.parents;
+    let currentGeoLevel = current?.level;
+    let countryId = single(parents?.filter(x => x.level === 200))?.id;
+    let regionId = single(parents?.filter(x => x.level === 400 && x.active === true))?.id;
+    let microregionId = single(parents?.filter(x => x.level === 500))?.id;
+    let provinceId = single(parents?.filter(x => x.level === 600))?.id;
+    let municipalityId= single(parents?.filter(x => x.level === 800 && x.type_key === 'AD08' && x.active===true))?.id;
+    let municipalityName  = getNamesForLevel(parents,800);
+    let boroughID = single(parents?.filter(x => x.level === 900))?.id;
+    let neighborhoodId = single(parents?.filter(x => x.level === 1000))?.id;
+    let neighborhoodName = getNamesForLevel(parents, 1000);
+    let blocId = single(parents?.filter(x => x.level === 1200))?.id;
 
     const geoValue = [
         mappedAvivGeoId,
-        geoLevel,
+        currentGeoLevel,
         countryId,
         regionId,
         microregionId,
