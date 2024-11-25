@@ -270,7 +270,7 @@ async function getGeoHierarchyEnrichmentByIdByCache(_pool: Pool, avivGeoId: stri
     const geoQueryExists = `
     select avivgeoid from geo
     where avivgeoid = $1
-    AND updateDate >= NOW() - INTERVAL '30 days'`;
+    AND updateDate >= NOW() - INTERVAL '1 days'`;
     const geoValueExists = [
         avivGeoId
     ]
@@ -286,7 +286,7 @@ async function getGeoHierarchyEnrichmentByCoordinatesByCache(_pool: Pool, locati
     const geoQueryExists = `   
     select avivgeoid from geo_lat_lon
     where (lat = $1 and lon = $2)
-    AND updateDate >= NOW() - INTERVAL '30 days'`;
+    AND updateDate >= NOW() - INTERVAL '1 days'`;
 
     const geoValueExists = [
         lat,
