@@ -189,7 +189,7 @@ async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: 
     const [lon, lat] = geometry?.coordinates ?? [];
     let current = single(geo.filter(x=>x.id === mappedAvivGeoId));
     let parents = current?.parents;
-    let currentGeoLevel = current?.level;
+    let geoLevel = current?.level;
     let countryId = single(parents?.filter(x => x.level === 200))?.id;
     let regionId = single(parents?.filter(x => x.level === 400 && x.active === true))?.id;
     let microregionId = single(parents?.filter(x => x.level === 500))?.id;
@@ -203,7 +203,7 @@ async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: 
 
     const geoValue = [
         mappedAvivGeoId,
-        currentGeoLevel,
+        geoLevel,
         countryId,
         regionId,
         microregionId,
