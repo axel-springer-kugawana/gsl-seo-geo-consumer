@@ -92,7 +92,7 @@ export const getGeoHierarchyEnrichmentByCoordinates = async (location: Location)
             "AD02", "AD03", "AD04", "AD05", "AD06", "AD07", "AD08",
             "AD09", "NBH1", "NBH2", "STRT", "BLOC", "POCO"
         ];
-        const url = `${apisecrets.GeoPlaceApiUrl}v1/places/point/${lon}/${lat}`;
+        const url = `${apisecrets.GeoPlaceApiUrl}/v1/places/point/${lon}/${lat}`;
         const parentTypesParams = parentTypes.map(type => `parent_types=${type}`).join('&');
         const fullUrlWithQueryParams = `${url}?${parentTypesParams}`;
         console.log(fullUrlWithQueryParams);
