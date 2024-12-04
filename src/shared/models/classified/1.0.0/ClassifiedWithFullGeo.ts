@@ -36,6 +36,7 @@ export interface ClassifiedWithFullGeo {
     portals: string;
     portal: string;
     geo_avivgeoid: string;
-    showaddress: string,
-    street: string
+    showaddress: boolean;
+    street: string;
+    showPrice: boolean;
 }

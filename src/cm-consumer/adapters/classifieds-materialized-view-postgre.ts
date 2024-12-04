@@ -70,6 +70,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         classified.data?.spaces?.overallSpace,
         classified.data?.conditions?.buildState,
         mapEnergyCertificateClass(classified),
+        classified.data?.prices?.showPrice,
       ];
 
       const classifiedQuery = `
@@ -103,8 +104,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           livingSpace,
           overallSpace,
           buildState,
-          energyCertificateClass 
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,$19, $20, $21, $22, $23, $24, $25, $26,$27, $28,$29, $30)
+          energyCertificateClass,
+          showPrice 
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31)
     ON CONFLICT (ClassifiedId) DO UPDATE 
           SET Price = $2,
               avivgeoId= $3, 
@@ -134,7 +136,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
               livingSpace=$27,
               overallSpace=$28,
               buildState =$29,
-              energyCertificateClass = $30;`;
+              energyCertificateClass = $30,
+              showPrice = $31;`;
       await _pool.query(classifiedQuery, classifiedValue);
     });
   }
@@ -174,7 +177,7 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
                     neighborhoodname, municipalityname,
                     portals, portal, geo_avivgeoid,
                     showAddress, overallSpace,
-                    livingSpace, street
+                    livingSpace, street, showPrice
             FROM public.v_classified
             where classifiedid = $1;
               ;`;
