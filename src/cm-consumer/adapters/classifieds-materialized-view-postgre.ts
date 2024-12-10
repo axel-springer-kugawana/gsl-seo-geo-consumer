@@ -1,7 +1,7 @@
 import { logger } from "@shared/cross-cutting/logger";
 import { Classified, Location, VisibilityStatus } from "@shared/models/classified/1.0.0/classified";
 import { ClassifiedWithFullGeo } from "@shared/models/classified/1.0.0/ClassifiedWithFullGeo";
-import { mapFeatures, mapPrice, mapProjectTypes, mapEnergyCertificateClass } from '../utils/mappingHelpers';
+import { mapFeatures, mapPrice, mapProjectTypes, mapEnergyCertificateClass, mapShowPrice } from '../utils/mappingHelpers';
 import { mapGeo } from '../utils/geoHelpers';
 
 import { poolInstance } from "./connectPostGre";
@@ -70,7 +70,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         classified.data?.spaces?.overallSpace,
         classified.data?.conditions?.buildState,
         mapEnergyCertificateClass(classified),
-        classified.data?.prices?.showPrice,
+        mapShowPrice(classified),
       ];
 
       const classifiedQuery = `
