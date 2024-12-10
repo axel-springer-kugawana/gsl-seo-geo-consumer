@@ -53,8 +53,6 @@ export const mapShowPrice = (
     if (buyPriceOnDemand || baseRentPriceOnDemand || totalRentPriceOnDemand || leasePriceOnDemand || minimumBidOnDemand) {
         showPrice = false
     }
-
-    console.log("Show price: " + showPrice);
     
     return showPrice;
 }
