@@ -1,3 +1,4 @@
+import { ClassifiedBusiness } from "cm-consumer/models/classifiedEnums";
 import { EnergyCertificateAt } from "./energy-certificate-at";
 import { EnergyCertificateDe } from "./energy-certificate-de";
 import { EstateSubType } from "./estate-sub-type";
@@ -246,6 +247,7 @@ export interface Classified {
     };
   };
   metadata: {
+    classifiedBusiness: ClassifiedBusiness;
     externalId?: string;
     brand: 'IWB' | 'IWT' | 'GSL' | 'MA';
     customerId: string;
@@ -254,6 +256,7 @@ export interface Classified {
     offererEstateId: string;
     offererMarketingKey: string;
     projectId: string;
+    externalProjectId : string
   };
   media?: Media[];
   specifics?: Specifics;
@@ -720,6 +723,12 @@ export interface Management {
    * @example NOT_APPLICABLE
    * @enum {string}
    */
+  isForSwap?: boolean;
+  /**
+   * @description is the property under a isForSwap
+   * @example NOT_APPLICABLE
+   * @enum {string}
+   */
   heritageProtected?: 'YES' | 'NO' | 'NOT_APPLICABLE';
   /**
    * @description marketing status of the property, is it currently sold, rented, under offer, etc. Options cannot be combined! fr: UNDER_OFFER si le bien est sous compromis
@@ -877,6 +886,7 @@ export interface Management {
     isSplittingAuction?: boolean;
   };
   countrySpecific?: {
+    be: any;
     fr?: {
       /**
        * @description building Usage change fr: Changement d'usage en accord avec le code de la construction et de l'habitation

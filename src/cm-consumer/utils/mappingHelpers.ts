@@ -1,4 +1,4 @@
-import { Classified, Location, VisibilityStatus } from "@shared/models/classified/1.0.0/classified";
+import { Classified} from "@shared/models/classified/1.0.0/classified";
 
 export const mapShowPrice = (
     classified: Classified,
@@ -16,4 +16,3 @@ export const mapShowPrice = (
     
     return showPrice;
 }
-
