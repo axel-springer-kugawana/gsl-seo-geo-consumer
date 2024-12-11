@@ -1,7 +1,11 @@
 import { logger } from "@shared/cross-cutting/logger";
 import { Classified, Location, VisibilityStatus } from "@shared/models/classified/1.0.0/classified";
 import { ClassifiedWithFullGeo } from "@shared/models/classified/1.0.0/ClassifiedWithFullGeo";
-import { mapFeatures, mapPrice, mapProjectTypes, mapEnergyCertificateClass, mapShowPrice } from '../utils/mappingHelpers';
+import { mapShowPrice } from '../utils/mappingHelpers';
+import { mapEnergyCertificateClass } from "cm-consumer/utils/mapEnergyCertificateClass";
+import { mapPrice } from "cm-consumer/utils/mapPrice";
+import { mapFeatures } from "cm-consumer/utils/mapFeatures";
+import { mapProjectTypes } from "cm-consumer/utils/mapProjectTypes";
 import { mapGeo } from '../utils/geoHelpers';
 
 import { poolInstance } from "./connectPostGre";

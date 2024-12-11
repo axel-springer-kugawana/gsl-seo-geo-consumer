@@ -1,4 +1,3 @@
-
 export enum Portal {
   SL = 'SL',
   LI = 'LI',
@@ -8,6 +7,9 @@ export enum Portal {
   IWB = 'IWB',
   IWT = 'IWT',
   IMMONET = 'IMMONET',
+  SLN = 'SLN',
+  LIN = 'LIN',
+  SLC = 'SLC',
 }
 
 export enum DistributionType {
@@ -55,6 +57,20 @@ export enum Validation {
   NOT_APPLICABLE = 'NOT_APPLICABLE',
 }
 
+export enum SwimmingPool {
+  YES = 'YES',
+  NO = 'NO',
+  OUTSIDE = 'OUTSIDE',
+  INSIDE_AND_OUTSIDE = 'INSIDE_AND_OUTSIDE',
+  INSIDE = 'INSIDE',
+}
+
+export enum MandateType {
+  DIRECT = 'DIRECT',
+  EXCLUSIVE = 'EXCLUSIVE',
+  SIMPLE = 'SIMPLE',
+}
+
 export enum Features {
   KITCHEN_FULLY_EQUIPPED = 'KITCHEN_FULLY_EQUIPPED',
   GARDEN = 'GARDEN',
@@ -69,6 +85,9 @@ export enum Features {
   ELEVATOR = 'ELEVATOR',
   COMMISSION_FREE = 'COMMISSION_FREE',
   NO_MEDIA = 'NO_MEDIA',
+  BOOKING_EFFECTS_SUGGESTION = 'BOOKING_EFFECTS_SUGGESTION',
+  SWIMMING_POOL = 'SWIMMING_POOL',
+  EXCLUSIVE = 'EXCLUSIVE',
 }
 
 export enum MarketStatus {
@@ -103,6 +122,7 @@ export enum EstateType {
   PLOT = 'PLOT',
   PARKING = 'PARKING',
   MISCELLANEOUS = 'MISCELLANEOUS',
+  PROJECT = 'PROJECT',
 }
 
 export enum ProjectType {
@@ -113,4 +133,15 @@ export enum ProjectType {
   FLATSHARING = 'FLATSHARING',
   STOCK = 'STOCK',
   PROJECTED = 'PROJECTED',
+  SWAP_APARTMENT = 'SWAP_APARTMENT',
+  LIFE_ANNUITY = 'LIFE_ANNUITY',
+}
+
+export enum ClassifiedBusiness {
+  PRIVATE = 'PRIVATE',
+  PROFESSIONAL = 'PROFESSIONAL',
+}
+
+export enum EnrichmentType {
+  FRAUD = 'FRAUD',
 }
