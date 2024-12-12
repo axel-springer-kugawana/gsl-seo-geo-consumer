@@ -4,7 +4,7 @@ import { SSotEntityName } from "@shared/models/cm-consumer-constants";
 import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
 import { markClassifiedAsDeleted as markClassifiedAsDeletedPG, createOrUpdateClassified as createOrUpdateClassifiedPG, getClassified } from "cm-consumer/adapters/classifieds-materialized-view-postgre";
 import { createOrUpdateClassified as createOrUpdateClassifiedDynamoDB, markClassifiedAsDeleted as markClassifiedAsDeletedDynamoDB } from "cm-consumer/adapters/classifieds-materialized-view-dynamodb";
-import { initDatabase, patchDatabase, patchDatabaseV2, cleanDatabase } from "cm-consumer/adapters/initSql";
+import { initDatabase, patchDatabaseV2, cleanDatabase } from "cm-consumer/adapters/initSql";
 
 //import * as fs from 'fs';
 const processor = new BatchProcessor(EventType.SQS);
@@ -20,9 +20,7 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
   }
   else if (e.type == `${SSotEntityName}.init.v1`) {
     await initDatabase();
-  } else if (e.type == `${SSotEntityName}.patch.v1`) {
-    await patchDatabase();
-  } else if (e.type == `${SSotEntityName}.patch.v2`) {
+  } else if (e.type == `${SSotEntityName}.patch`) {
     await patchDatabaseV2();
   }
   else if (e.type == `${SSotEntityName}.clean.v1`) {

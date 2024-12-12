@@ -17,9 +17,7 @@ export const mapGeo = async (_pool: Pool, location: Location): Promise<string> =
 
 async function mapGeoFromCache(_pool: Pool, location: Location) {
     const { avivGeoId, geometry } = location;
-    //var geo = await getGeoHierarchyEnrichmentByCoordinates(location);
-    //await addGeoToCacheAsync(_pool, geo, "DDAD4", location);
-
+  
     let mappedAvivGeoId = undefined;
     if (geometry?.type?.toUpperCase() === 'POINT') {
         mappedAvivGeoId = await getGeoHierarchyEnrichmentByCoordinatesByCache(_pool, location);
@@ -36,15 +34,22 @@ async function mapGeoFromApi(_pool: Pool, location: Location) {
     let geo = undefined;
     if (geometry?.type?.toUpperCase() === 'POINT') {
         geo = await getGeoHierarchyEnrichmentByCoordinates(location);
+    
+        if (geo !== undefined && geo != null) {
+            if (geo.length > 0) {
+                mappedAvivGeoId = geo[geo.length - 1]?.id;
+                await addGeoToCacheAsync(_pool, geo, mappedAvivGeoId, location);
+                return mappedAvivGeoId;
+            }
+        }
     }
-    if (geo === undefined && avivGeoId !== undefined) {
+    if (avivGeoId !== undefined){
         geo = await getGeoHierarchyEnrichmentById(avivGeoId);
-    }
-
-    if (geo !== undefined && geo != null) {
-        if (geo.length > 0) {
-            mappedAvivGeoId = geo[geo.length - 1]?.id;
-            await addGeoToCacheAsync(_pool, geo, mappedAvivGeoId, location);
+        if (geo !== undefined && geo != null) {
+            if (geo.length > 0) {
+                mappedAvivGeoId = geo[geo.length - 1]?.id;
+                await addGeoToCacheAsync(_pool, geo, mappedAvivGeoId, location);
+            }
         }
     }
 
@@ -74,8 +79,9 @@ async function getGeoHierarchyEnrichmentById(avivGeoId: string): Promise<Feature
         }
     });
     if (error != null && error != undefined) {
-        logger.error("error while calling api geo" + JSON.stringify(error));
-        throw new Error("error while calling api geo" + JSON.stringify(error));
+        
+        logger.error("error while calling api geo for getGeoHierarchyEnrichmentById : " + avivGeoId);
+        throw new Error("error while calling api geo getGeoHierarchyEnrichmentById => => " + JSON.stringify(error));
     }
     if (data != null) {
         return [...(data.item.parents ?? []), data.item]
@@ -84,6 +90,7 @@ async function getGeoHierarchyEnrichmentById(avivGeoId: string): Promise<Feature
 
 export const getGeoHierarchyEnrichmentByCoordinates = async (location: Location): Promise<Feature[] | undefined> => {
     const { avivGeoId, geometry } = location;
+    var url;
     if (geometry?.coordinates?.length == 2) {
         try {
         const apisecrets = await getClassifiedApiSecret();
@@ -92,7 +99,7 @@ export const getGeoHierarchyEnrichmentByCoordinates = async (location: Location)
             "AD02", "AD03", "AD04", "AD05", "AD06", "AD07", "AD08",
             "AD09", "NBH1", "NBH2", "STRT", "BLOC", "POCO"
         ];
-        const url = `${apisecrets.GeoPlaceApiUrl}/v1/places/point/${lon}/${lat}`;
+         url = `${apisecrets.GeoPlaceApiUrl}/v1/places/point/${lon}/${lat}`;
         const parentTypesParams = parentTypes.map(type => `parent_types=${type}`).join('&');
         const fullUrlWithQueryParams = `${url}?${parentTypesParams}`;
         console.log(fullUrlWithQueryParams);
@@ -111,8 +118,8 @@ export const getGeoHierarchyEnrichmentByCoordinates = async (location: Location)
             throw new Error("API response error: " + JSON.stringify(response.data));
         }
         } catch (error) {
-            console.error("Error while calling API:", error);
-            throw new Error("Error while calling API: " + error.message);
+            logger.error("error while calling api geo for getGeoHierarchyEnrichmentByCoordinates : " + url);
+            throw new Error("error while calling api geo getGeoHierarchyEnrichmentByCoordinates => => " + JSON.stringify(error));
         }
     }
     return null;

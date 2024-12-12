@@ -247,7 +247,7 @@ export interface Classified {
     };
   };
   metadata: {
-    classifiedBusiness: ClassifiedBusiness;
+    classifiedBusiness: string;
     externalId?: string;
     brand: 'IWB' | 'IWT' | 'GSL' | 'MA';
     customerId: string;

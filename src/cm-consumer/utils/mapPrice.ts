@@ -1,4 +1,5 @@
 import { Classified } from "@shared/models/classified/1.0.0/classified";
+
 import { Portal, DistributionType } from "cm-consumer/models/classifiedEnums";
 
 // import { ClassifiedManagementStructure, DistributionType, Portal } from '@/models'
@@ -28,15 +29,12 @@ const getCompulsoryAuctionPrice = (
     buy: Classified['data']['prices']['buy']
 ): { amount?: number } => compulsoryAuction?.minimumBid ?? getBuyAuctionPrice(buyAuction, buy)
 
-export const mapPrice = ({
-  portals,
-  distributionType,
-  prices,
-}: {
-  portals: Portal[]
-  distributionType: DistributionType
-  prices: Classified['data']['prices']
-}): number | undefined => {
+export const mapPrice = (
+  data: Classified
+): number | undefined => {
+  const portals = data?.visibility?.requests;
+  const distributionType = data.data.distributionType;
+  const prices = data.data.prices;
   const { rent, buy, buyAuction, compulsoryAuction } = prices || {}
   const isDE = [Portal.IMMONET, Portal.IWT].some((portalDE) => portals?.includes(portalDE))
 

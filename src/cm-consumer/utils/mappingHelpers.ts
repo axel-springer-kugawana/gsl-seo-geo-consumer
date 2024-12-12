@@ -11,8 +11,11 @@ export const mapShowPrice = (
     const minimumBidOnDemand = classified.data?.prices.compulsoryAuction?.minimumBid?.priceInformation == 'PRICE_ON_DEMAND';
 
     if (buyPriceOnDemand || baseRentPriceOnDemand || totalRentPriceOnDemand || leasePriceOnDemand || minimumBidOnDemand) {
-        showPrice = false
+        return false;
     }
+    
+    if(showPrice === undefined)
+        return true;
     
     return showPrice;
 }
