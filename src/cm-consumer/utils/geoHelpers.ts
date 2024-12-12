@@ -90,7 +90,7 @@ async function getGeoHierarchyEnrichmentById(avivGeoId: string): Promise<Feature
 
 export const getGeoHierarchyEnrichmentByCoordinates = async (location: Location): Promise<Feature[] | undefined> => {
     const { avivGeoId, geometry } = location;
-    var url;
+    var fullUrlWithQueryParams;
     if (geometry?.coordinates?.length == 2) {
         try {
         const apisecrets = await getClassifiedApiSecret();
@@ -99,10 +99,10 @@ export const getGeoHierarchyEnrichmentByCoordinates = async (location: Location)
             "AD02", "AD03", "AD04", "AD05", "AD06", "AD07", "AD08",
             "AD09", "NBH1", "NBH2", "STRT", "BLOC", "POCO"
         ];
-         url = `${apisecrets.GeoPlaceApiUrl}/v1/places/point/${lon}/${lat}`;
+        const url = `${apisecrets.GeoPlaceApiUrl}/v1/places/point/${lon}/${lat}`;
         const parentTypesParams = parentTypes.map(type => `parent_types=${type}`).join('&');
-        const fullUrlWithQueryParams = `${url}?${parentTypesParams}`;
-        console.log(fullUrlWithQueryParams);
+        fullUrlWithQueryParams = `${url}?${parentTypesParams}`;
+
         let config = {
             method: 'get',
             maxBodyLength: Infinity,
@@ -118,8 +118,8 @@ export const getGeoHierarchyEnrichmentByCoordinates = async (location: Location)
             throw new Error("API response error: " + JSON.stringify(response.data));
         }
         } catch (error) {
-            logger.error("error while calling api geo for getGeoHierarchyEnrichmentByCoordinates : " + url);
-            throw new Error("error while calling api geo getGeoHierarchyEnrichmentByCoordinates => => " + JSON.stringify(error));
+            logger.error("error while calling api geo - : " + fullUrlWithQueryParams);
+            throw new Error("error while calling api geo - : " + JSON.stringify(error));
         }
     }
     return null;
@@ -131,23 +131,6 @@ function single<T>(a: ReadonlyArray<T>, fallback?: T): T {
     if (a.length === 0 && fallback !== void 0) return fallback;
     return null;
 }
-
-/*function getNamesForLevel(geo, level) {
-    const result = [];
-    geo.filter(item => item.level === level)
-       .forEach(item => {
-            Object.keys(item.names).forEach(lang => {
-                if (!result[lang]) {
-                    result[lang] = [];
-                }
-                item.names[lang].forEach(entry => {
-                    result[lang].push(entry.name);
-                });
-            });
-        });
-
-    return result;
-}*/
 
 function getNamesForLevel(geo, level) {
     const result = {};
@@ -165,31 +148,6 @@ function getNamesForLevel(geo, level) {
 
     return result;
 }
-
-/*function getNamesForLevel(geo, level): string[] {
-    const result = [];
-    const namesByLanguage = {};
-
-    // Rassemble les noms par langue dans un dictionnaire temporaire
-    geo.filter(item => item.level === level)
-       .forEach(item => {
-            Object.keys(item.names).forEach(lang => {
-                if (!namesByLanguage[lang]) {
-                    namesByLanguage[lang] = [];
-                }
-                item.names[lang].forEach(entry => {
-                    namesByLanguage[lang].push(entry.name);
-                });
-            });
-        });
-
-    // Transforme le dictionnaire en une liste d'objets
-    Object.keys(namesByLanguage).forEach(lang => {
-        result.push({ [lang]: namesByLanguage[lang] });
-    });
-
-    return result;
-}*/
 
 async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: string, location: Location) {
     const { avivGeoId, geometry } = location;
