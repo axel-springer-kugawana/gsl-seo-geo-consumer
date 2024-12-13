@@ -17,7 +17,7 @@ export const mapGeo = async (_pool: Pool, location: Location): Promise<string> =
 
 async function mapGeoFromCache(_pool: Pool, location: Location) {
     const { avivGeoId, geometry } = location;
-  
+
     let mappedAvivGeoId = undefined;
     if (geometry?.type?.toUpperCase() === 'POINT') {
         mappedAvivGeoId = await getGeoHierarchyEnrichmentByCoordinatesByCache(_pool, location);
@@ -34,7 +34,7 @@ async function mapGeoFromApi(_pool: Pool, location: Location) {
     let geo = undefined;
     if (geometry?.type?.toUpperCase() === 'POINT') {
         geo = await getGeoHierarchyEnrichmentByCoordinates(location);
-    
+
         if (geo !== undefined && geo != null) {
             if (geo.length > 0) {
                 mappedAvivGeoId = geo[geo.length - 1]?.id;
@@ -43,7 +43,7 @@ async function mapGeoFromApi(_pool: Pool, location: Location) {
             }
         }
     }
-    if (avivGeoId !== undefined){
+    if (avivGeoId !== undefined) {
         geo = await getGeoHierarchyEnrichmentById(avivGeoId);
         if (geo !== undefined && geo != null) {
             if (geo.length > 0) {
@@ -79,9 +79,8 @@ async function getGeoHierarchyEnrichmentById(avivGeoId: string): Promise<Feature
         }
     });
     if (error != null && error != undefined) {
-        
-        logger.error("error while calling api geo for getGeoHierarchyEnrichmentById : " + avivGeoId);
-        throw new Error("error while calling api geo getGeoHierarchyEnrichmentById => => " + JSON.stringify(error));
+
+        logger.error("error while calling api geo for getGeoHierarchyEnrichmentById <<id " + avivGeoId + '>>  trace<<' + JSON.stringify(error) + '>>');
     }
     if (data != null) {
         return [...(data.item.parents ?? []), data.item]
@@ -93,33 +92,32 @@ export const getGeoHierarchyEnrichmentByCoordinates = async (location: Location)
     var fullUrlWithQueryParams;
     if (geometry?.coordinates?.length == 2) {
         try {
-        const apisecrets = await getClassifiedApiSecret();
-        const [lon, lat] = geometry.coordinates;
-        const parentTypes = [
-            "AD02", "AD03", "AD04", "AD05", "AD06", "AD07", "AD08",
-            "AD09", "NBH1", "NBH2", "STRT", "BLOC", "POCO"
-        ];
-        const url = `${apisecrets.GeoPlaceApiUrl}/v1/places/point/${lon}/${lat}`;
-        const parentTypesParams = parentTypes.map(type => `parent_types=${type}`).join('&');
-        fullUrlWithQueryParams = `${url}?${parentTypesParams}`;
+            const apisecrets = await getClassifiedApiSecret();
+            const [lon, lat] = geometry.coordinates;
+            const parentTypes = [
+                "AD02", "AD03", "AD04", "AD05", "AD06", "AD07", "AD08",
+                "AD09", "NBH1", "NBH2", "STRT", "BLOC", "POCO"
+            ];
+            const url = `${apisecrets.GeoPlaceApiUrl}/v1/places/point/${lon}/${lat}`;
+            const parentTypesParams = parentTypes.map(type => `parent_types=${type}`).join('&');
+            fullUrlWithQueryParams = `${url}?${parentTypesParams}`;
 
-        let config = {
-            method: 'get',
-            maxBodyLength: Infinity,
-            url: fullUrlWithQueryParams,
-            headers: {
-              'x-api-key': apisecrets.GeoPlaceApiKey
+            let config = {
+                method: 'get',
+                maxBodyLength: Infinity,
+                url: fullUrlWithQueryParams,
+                headers: {
+                    'x-api-key': apisecrets.GeoPlaceApiKey
+                }
+            };
+            const response = await axios.request(config);
+            if (response.status === 200 && response.data) {
+                return response.data.items;
+            } else {
+                throw new Error("API response error: " + JSON.stringify(response.data));
             }
-          };
-        const response = await axios.request(config);
-          if (response.status === 200 && response.data) {
-            return response.data.items;
-        } else {
-            throw new Error("API response error: " + JSON.stringify(response.data));
-        }
         } catch (error) {
-            logger.error("error while calling api geo - : " + fullUrlWithQueryParams);
-            throw new Error("error while calling api geo - : " + JSON.stringify(error));
+            logger.error("error while calling api geo - <<id " + fullUrlWithQueryParams + '>>  trace<<' + JSON.stringify(error) + '>>');
         }
     }
     return null;
@@ -135,7 +133,7 @@ function single<T>(a: ReadonlyArray<T>, fallback?: T): T {
 function getNamesForLevel(geo, level) {
     const result = {};
     geo.filter(item => item.level === level)
-       .forEach(item => {
+        .forEach(item => {
             Object.keys(item.names).forEach(lang => {
                 if (!result[lang]) {
                     result[lang] = [];
@@ -152,15 +150,15 @@ function getNamesForLevel(geo, level) {
 async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: string, location: Location) {
     const { avivGeoId, geometry } = location;
     const [lon, lat] = geometry?.coordinates ?? [];
-    let current = single(geo.filter(x=>x.id === mappedAvivGeoId));
+    let current = single(geo.filter(x => x.id === mappedAvivGeoId));
     let parents = current?.parents;
     let geoLevel = current?.level;
     let countryId = single(parents?.filter(x => x.level === 200))?.id;
     let regionId = single(parents?.filter(x => x.level === 400 && x.active === true))?.id;
     let microregionId = single(parents?.filter(x => x.level === 500))?.id;
     let provinceId = single(parents?.filter(x => x.level === 600))?.id;
-    let municipalityId= single(parents?.filter(x => x.level === 800 && x.type_key === 'AD08' && x.active===true))?.id;
-    let municipalityName  = getNamesForLevel(parents,800);
+    let municipalityId = single(parents?.filter(x => x.level === 800 && x.type_key === 'AD08' && x.active === true))?.id;
+    let municipalityName = getNamesForLevel(parents, 800);
     let boroughID = single(parents?.filter(x => x.level === 900))?.id;
     let neighborhoodId = single(parents?.filter(x => x.level === 1000))?.id;
     let neighborhoodName = getNamesForLevel(parents, 1000);
