@@ -130,9 +130,24 @@ function single<T>(a: ReadonlyArray<T>, fallback?: T): T {
     return null;
 }
 
-function getNamesForLevel(geo, level) {
+function getNamesForLevel(actualGeo : Feature, parents: Feature[], level: number) {
     const result = {};
-    geo.filter(item => item.level === level)
+     if (actualGeo.level === 800 && actualGeo?.id.startsWith('POCO') === true)
+    {
+        return result;
+    }
+    if (actualGeo.level === level)
+    {
+        Object.keys(actualGeo.names).forEach(lang => {
+            if (!result[lang]) {
+                result[lang] = [];
+            }
+            actualGeo.names[lang].forEach(entry => {
+                result[lang].push(entry.name);
+            });
+        });
+    }
+    parents.filter(item => item.level === level)
         .forEach(item => {
             Object.keys(item.names).forEach(lang => {
                 if (!result[lang]) {
@@ -151,22 +166,23 @@ async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: 
     const { avivGeoId, geometry } = location;
     const [lon, lat] = geometry?.coordinates ?? [];
     let current = single(geo.filter(x => x.id === mappedAvivGeoId));
+    let currentGeoId = current?.id;
     let parents = current?.parents;
-    let geoLevel = current?.level;
-    let countryId = single(parents?.filter(x => x.level === 200))?.id;
-    let regionId = single(parents?.filter(x => x.level === 400 && x.active === true))?.id;
-    let microregionId = single(parents?.filter(x => x.level === 500))?.id;
-    let provinceId = single(parents?.filter(x => x.level === 600))?.id;
-    let municipalityId = single(parents?.filter(x => x.level === 800 && x.type_key === 'AD08' && x.active === true))?.id;
-    let municipalityName = getNamesForLevel(parents, 800);
-    let boroughID = single(parents?.filter(x => x.level === 900))?.id;
-    let neighborhoodId = single(parents?.filter(x => x.level === 1000))?.id;
-    let neighborhoodName = getNamesForLevel(parents, 1000);
-    let blocId = single(parents?.filter(x => x.level === 1200))?.id;
+    let geoLevelCurrent = current?.level;
+    let countryId = geoLevelCurrent === 200 ? currentGeoId : single(parents?.filter(x => x.level === 200))?.id;
+    let regionId = geoLevelCurrent === 400 ? currentGeoId : single(parents?.filter(x => x.level === 400 && x.active === true))?.id;
+    let microregionId = geoLevelCurrent === 500 ? currentGeoId : single(parents?.filter(x => x.level === 500))?.id;
+    let provinceId = geoLevelCurrent === 600 ? currentGeoId : single(parents?.filter(x => x.level === 600))?.id;
+    let municipalityId = geoLevelCurrent === 800 && current.id?.startsWith('POCO') === false ? currentGeoId : single(parents?.filter(x => x.level === 800 && x.type_key === 'AD08' && x.active === true))?.id;
+    let municipalityName = getNamesForLevel(current, parents, 800);
+    let boroughID = geoLevelCurrent === 900 ? currentGeoId : single(parents?.filter(x => x.level === 900))?.id;
+    let neighborhoodId = geoLevelCurrent === 1000 ? currentGeoId : single(parents?.filter(x => x.level === 1000))?.id;
+    let neighborhoodName = getNamesForLevel(current, parents, 1000);
+    let blocId = geoLevelCurrent === 1200 ? currentGeoId : single(parents?.filter(x => x.level === 1200))?.id;
 
     const geoValue = [
         mappedAvivGeoId,
-        geoLevel,
+        geoLevelCurrent,
         countryId,
         regionId,
         microregionId,
