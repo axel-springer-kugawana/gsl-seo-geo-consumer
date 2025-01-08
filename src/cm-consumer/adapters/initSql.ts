@@ -249,16 +249,9 @@ const patchDatabaseV2 = async () => {
 const cleanDatabase = async () => {
   const sqlDatabase =  `
   delete
-  from public.geo_lat_lon
-  where avivgeoid in (
-  select avivgeoid
-  from geo
-  where geo.municipalityname <> '{}' and geo.municipalityid is null
-  ); 
-  
+  from public.geo_lat_lon;
   delete
   from geo
-  where geo.municipalityname <> '{}' and geo.municipalityid is null
  `;
    try {
     await poolInstance.getPool().then(_pool => _pool.query(sqlDatabase)); // Ensure you are getting the pool instance correctly
