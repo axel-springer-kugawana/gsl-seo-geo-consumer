@@ -4,33 +4,35 @@ import { SSotEntityName } from "@shared/models/cm-consumer-constants";
 import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
 import { markClassifiedAsDeleted as markClassifiedAsDeletedPG, createOrUpdateClassified as createOrUpdateClassifiedPG, getClassified } from "cm-consumer/adapters/classifieds-materialized-view-postgre";
 import { createOrUpdateClassified as createOrUpdateClassifiedDynamoDB, markClassifiedAsDeleted as markClassifiedAsDeletedDynamoDB } from "cm-consumer/adapters/classifieds-materialized-view-dynamodb";
-import { initDatabase, patchDatabaseV2, cleanDatabase } from "cm-consumer/adapters/initSql";
+import { initDatabase, patchDatabase, cleanDatabase } from "cm-consumer/adapters/initSql";
+import * as fs from 'fs';
 
-//import * as fs from 'fs';
 const processor = new BatchProcessor(EventType.SQS);
 
 export const recordHandler = async (record: SQSRecord, context: Context): Promise<void> => {
-  //const body = await fs.readFileSync("cm-consumer/lambda-handlers/fakes/231116WBR1KI.json", "utf8");
-  const e = JSON.parse(record.body);
+   //const body = await fs.readFileSync("cm-consumer/lambda-handlers/fakes/231116WBR1KI.json", "utf8");
+    const e = JSON.parse(record.body);
+    const classifiedId = e?.data?.classifiedId ?? e?.classifiedId;
+
 
   if (e.type == `${SSotEntityName}.deleted.v1`) {
-    const classifiedId = e.data.classifiedId;
     await markClassifiedAsDeletedPG(context, { classifiedId, updateDate: e.data.updateDate });
     await markClassifiedAsDeletedDynamoDB({ classifiedId, updateDate: e.data.updateDate });
   }
   else if (e.type == `${SSotEntityName}.init.v1`) {
     await initDatabase();
   } else if (e.type == `${SSotEntityName}.patch`) {
-    await patchDatabaseV2();
+    await patchDatabase();
   }
   else if (e.type == `${SSotEntityName}.clean.v1`) {
     await cleanDatabase();
   }
   else {
-    await createOrUpdateClassifiedPG(context, e.data.classifiedId, e.data);
-    var fullClassified = await getClassified(context, e.data.classifiedId);
+
+    await createOrUpdateClassifiedPG(context, classifiedId, e.data);
+    var fullClassified = await getClassified(context, classifiedId);
     if (fullClassified != null) {
-      await createOrUpdateClassifiedDynamoDB(e.data.classifiedId, e.data, fullClassified);
+      await createOrUpdateClassifiedDynamoDB(classifiedId, e.data, fullClassified);
     }
   }
 }

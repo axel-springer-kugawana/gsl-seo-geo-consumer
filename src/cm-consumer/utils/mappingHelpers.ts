@@ -1,7 +1,7 @@
 import { Classified} from "@shared/models/classified/1.0.0/classified";
 
 export const mapShowPrice = (
-    classified: Classified,
+    classified: Classified
 ): boolean | undefined => {
     let showPrice = classified.data?.prices.showPrice;
     const buyPriceOnDemand = classified.data?.prices.buy?.price?.priceInformation == 'PRICE_ON_DEMAND';
@@ -18,4 +18,11 @@ export const mapShowPrice = (
         return true;
     
     return showPrice;
+}
+export const mapIsRangePrice = (
+    classified: Classified
+): boolean | undefined => {
+    const isRangePrice = classified.data?.prices.buy?.price?.priceInformation == 'BASE_ON_RANGE_PRICE';
+    if (!isRangePrice) { return false; }
+    return true;
 }

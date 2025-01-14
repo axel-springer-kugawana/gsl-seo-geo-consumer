@@ -51,6 +51,7 @@ const initDatabase = async () => {
         livingspace numeric,
         classifiedbusiness character varying COLLATE pg_catalog."default",
         showprice boolean DEFAULT true,
+        isRangePrice boolean DEFAULT false,
         CONSTRAINT "Classified_pkey" PRIMARY KEY (classifiedid)
     )
 
@@ -135,7 +136,8 @@ const initDatabase = async () => {
           c.showaddress,
           c.street,
           c.buildState,
-          c.energyCertificateClass
+          c.energyCertificateClass,
+          c.isRangePrice,
         FROM classified c
           LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
           LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
@@ -161,30 +163,19 @@ const initDatabase = async () => {
   }
 };
  
-const patchDatabaseV2 = async () => {
+const patchDatabase = async () => {
   const sqlDatabase = `
 
     DROP VIEW IF EXISTS v_classified;
     
     ALTER TABLE classified    
-    DROP COLUMN IF EXISTS showPrice;
+    DROP COLUMN IF EXISTS isRangePrice;
 
     ALTER TABLE classified    
-    ADD COLUMN IF NOT EXISTS showPrice boolean  NULL DEFAULT true;
+    ADD COLUMN IF NOT EXISTS isRangePrice boolean  NULL DEFAULT false;
     
-    ALTER TABLE classified
-
-    ADD COLUMN IF NOT EXISTS livingspace numeric;
-    
-    ALTER TABLE classified
-    ADD COLUMN IF NOT EXISTS overallspace numeric;
-
-    ALTER TABLE classified
-    ADD COLUMN IF NOT EXISTS classifiedBusiness character varying COLLATE pg_catalog."default";
-    
-
     update classified    
-    set showPrice = true where showPrice is null;
+    set isRangePrice = false where isRangePrice is null;
 
 
     CREATE OR REPLACE VIEW public.v_classified
@@ -231,6 +222,7 @@ const patchDatabaseV2 = async () => {
           c.buildState,
           c.energyCertificateClass,
           c.showPrice,
+          c.isRangePrice,
           c.classifiedBusiness
         FROM classified c
           LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
@@ -260,4 +252,4 @@ const cleanDatabase = async () => {
     logger.error('Error executing SQL:', e);
   }
 };
-export { initDatabase, patchDatabaseV2, cleanDatabase };
+export { initDatabase, patchDatabase, cleanDatabase };

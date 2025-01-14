@@ -44,12 +44,22 @@
                 }
             },
             "prices": {
-                "rent": {
-                    "baseRent": {
-                        "amount": 999999999
+                "buy": {
+                    "price": {
+                        "amountWithoutBrokerageFee": 30117647,
+                        "amount": 32000000,
+                        "priceInformation": "BASE_ON_RANGE_PRICE"
+                    },
+                    "pricePerSqUnit": {
+                        "amount": 55944.06
                     }
                 },
-                "currency": "EUR"
+                "brokerageFee": {
+                    "amount": 1882353,
+                    "feePercentage": 6.25,
+                    "isVatIncluded": true,
+                    "feeFor": "SELLER_OR_LANDLORD"
+                }
             }
         },
         "visibility": {

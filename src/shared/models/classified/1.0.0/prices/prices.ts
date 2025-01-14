@@ -402,4 +402,4 @@ export interface Accounting {
   accounting?: 'FIXED' | 'REAL_USAGE' | 'ADJUSTMENT';
 }
 
-export type PriceInformation = 'PRICE_ON_DEMAND' | 'BASIS_FOR_NEGOTIATION';
+export type PriceInformation = 'PRICE_ON_DEMAND' | 'BASIS_FOR_NEGOTIATION' | 'BASE_ON_RANGE_PRICE';

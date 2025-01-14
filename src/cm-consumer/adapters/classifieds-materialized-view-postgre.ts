@@ -1,7 +1,7 @@
 import { logger } from "@shared/cross-cutting/logger";
 import { Classified, Location, VisibilityStatus } from "@shared/models/classified/1.0.0/classified";
 import { ClassifiedWithFullGeo } from "@shared/models/classified/1.0.0/ClassifiedWithFullGeo";
-import { mapShowPrice } from '../utils/mappingHelpers';
+import { mapIsRangePrice, mapShowPrice } from '../utils/mappingHelpers';
 import { mapEnergyCertificateClass } from "cm-consumer/utils/mapEnergyCertificateClass";
 import { mapPrice } from "cm-consumer/utils/mapPrice";
 import { mapFeatures } from "cm-consumer/utils/mapFeatures";
@@ -75,6 +75,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         classified.data?.conditions?.buildState,
         mapEnergyCertificateClass(classified),
         mapShowPrice(classified),
+        mapIsRangePrice(classified),
         classified.metadata.classifiedBusiness
       ];
 
@@ -111,8 +112,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           buildState,
           energyCertificateClass,
           showPrice,
+          isRangePrice,
           classifiedBusiness
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32)
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33)
     ON CONFLICT (ClassifiedId) DO UPDATE 
           SET Price = $2,
               avivgeoId= $3, 
@@ -144,7 +146,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
               buildState =$29,
               energyCertificateClass = $30,
               showPrice = $31,
-              classifiedBusiness=$32;`;
+              isRangePrice = $32,
+              classifiedBusiness=$33;`;
       await _pool.query(classifiedQuery, classifiedValue);
     });
   }
@@ -184,7 +187,7 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
                     neighborhoodname, municipalityname,
                     portals, portal, geo_avivgeoid,
                     showAddress, overallSpace,
-                    livingSpace, street, showPrice,classifiedBusiness
+                    livingSpace, street, showPrice, isRangePrice, classifiedBusiness
             FROM public.v_classified
             where classifiedid = $1;  
               ;`;

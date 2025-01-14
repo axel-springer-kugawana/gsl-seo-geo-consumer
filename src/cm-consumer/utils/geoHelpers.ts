@@ -9,10 +9,10 @@ import axios from 'axios';
 
 export const mapGeo = async (_pool: Pool, location: Location): Promise<string> => {
     let avivGeoId = await mapGeoFromCache(_pool, location);
+    
     if (avivGeoId === undefined) {
-        avivGeoId = await mapGeoFromApi(_pool, location);
+        return await mapGeoFromApi(_pool, location);
     }
-    return avivGeoId;
 }
 
 async function mapGeoFromCache(_pool: Pool, location: Location) {
@@ -130,6 +130,11 @@ function single<T>(a: ReadonlyArray<T>, fallback?: T): T {
     return null;
 }
 
+function getIdForGeoLevel(geo : Feature[], level: number)
+{
+    return single(geo?.filter(x => x.level === level && x.active === true))?.id ?? null;
+}
+
 function getNamesForLevel(actualGeo : Feature, parents: Feature[], level: number) {
     const result = {};
      if (actualGeo.level === 800 && actualGeo?.id.startsWith('POCO') === true)
@@ -163,26 +168,24 @@ function getNamesForLevel(actualGeo : Feature, parents: Feature[], level: number
 }
 
 async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: string, location: Location) {
-    const { avivGeoId, geometry } = location;
-    const [lon, lat] = geometry?.coordinates ?? [];
+    const [lon, lat] = location?.geometry?.coordinates ?? [];
     let current = single(geo.filter(x => x.id === mappedAvivGeoId));
-    let currentGeoId = current?.id;
-    let parents = current?.parents;
-    let geoLevelCurrent = current?.level;
-    let countryId = geoLevelCurrent === 200 ? currentGeoId : single(parents?.filter(x => x.level === 200))?.id;
-    let regionId = geoLevelCurrent === 400 ? currentGeoId : single(parents?.filter(x => x.level === 400 && x.active === true))?.id;
-    let microregionId = geoLevelCurrent === 500 ? currentGeoId : single(parents?.filter(x => x.level === 500))?.id;
-    let provinceId = geoLevelCurrent === 600 ? currentGeoId : single(parents?.filter(x => x.level === 600))?.id;
-    let municipalityId = geoLevelCurrent === 800 && current.id?.startsWith('POCO') === false ? currentGeoId : single(parents?.filter(x => x.level === 800 && x.type_key === 'AD08' && x.active === true))?.id;
-    let municipalityName = getNamesForLevel(current, parents, 800);
-    let boroughID = geoLevelCurrent === 900 ? currentGeoId : single(parents?.filter(x => x.level === 900))?.id;
-    let neighborhoodId = geoLevelCurrent === 1000 ? currentGeoId : single(parents?.filter(x => x.level === 1000))?.id;
-    let neighborhoodName = getNamesForLevel(current, parents, 1000);
-    let blocId = geoLevelCurrent === 1200 ? currentGeoId : single(parents?.filter(x => x.level === 1200))?.id;
 
-    const geoValue = [
+    let countryId = getIdForGeoLevel(geo, 200);
+    let regionId =  getIdForGeoLevel(geo, 400);
+    let microregionId = getIdForGeoLevel(geo, 500); 
+    let provinceId = getIdForGeoLevel(geo, 600);
+    //Ensure unicity of municipalityId
+    let municipalityId = single(geo?.filter(x => x.level === 800 && x.type_key === 'AD08' && x.active === true))?.id;
+    let municipalityName = getNamesForLevel(current, geo, 800);
+    let boroughID = getIdForGeoLevel(geo, 900);
+    let neighborhoodId = getIdForGeoLevel(geo, 1000);
+    let neighborhoodName = getNamesForLevel(current, geo, 1000);
+    let blocId = getIdForGeoLevel(geo, 1200);
+
+    const geoValues = [
         mappedAvivGeoId,
-        geoLevelCurrent,
+        current?.level,
         countryId,
         regionId,
         microregionId,
@@ -225,7 +228,7 @@ async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: 
       blocId= $12,
       updateDate= NOW();`;
 
-    await _pool.query(geoQuery, geoValue);
+    await _pool.query(geoQuery, geoValues);
 
     if (lat !== undefined) {
         const geo_lat_lonValue = [
