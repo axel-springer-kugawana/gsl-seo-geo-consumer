@@ -12,53 +12,54 @@ const initDatabase = async () => {
 
     -- Table: public.classified
 
-    -- DROP TABLE IF EXISTS public.classified;
+-- DROP TABLE IF EXISTS public.classified;
 
-    CREATE TABLE IF NOT EXISTS public.classified
-    (
-        classifiedid character varying COLLATE pg_catalog."default" NOT NULL,
-        brand character varying COLLATE pg_catalog."default",
-        portals text[] COLLATE pg_catalog."default",
-        estatetype character varying COLLATE pg_catalog."default",
-        estatesubtype character varying COLLATE pg_catalog."default",
-        distributiontype character varying COLLATE pg_catalog."default",
-        avivgeoid character varying COLLATE pg_catalog."default",
-        country character varying COLLATE pg_catalog."default",
-        postalcode character varying COLLATE pg_catalog."default",
-        price numeric,
-        numberofrooms numeric,
-        featuresincluded character varying COLLATE pg_catalog."default",
-        features text[] COLLATE pg_catalog."default",
-        furnished character varying COLLATE pg_catalog."default",
-        yearofconstruction numeric,
-        certificateofeligibilityneeded character varying COLLATE pg_catalog."default",
-        locationinbuilding character varying COLLATE pg_catalog."default",
-        isauthorized boolean,
-        isgeodatavalid boolean,
-        ismarketstatuseligibleforpublication boolean,
-        lat double precision,
-        lon double precision,
-        location_type character varying COLLATE pg_catalog."default",
-        projecttypes text[] COLLATE pg_catalog."default",
-        showaddress boolean NOT NULL DEFAULT false,
-        street character varying COLLATE pg_catalog."default",
-        city character varying COLLATE pg_catalog."default",
-        spacemin numeric,
-        spacemax numeric,
-        energycertificateclass character varying COLLATE pg_catalog."default",
-        buildstate character varying COLLATE pg_catalog."default",
-        overallspace numeric,
-        livingspace numeric,
-        classifiedbusiness character varying COLLATE pg_catalog."default",
-        showprice boolean DEFAULT true,
-        isRangePrice boolean DEFAULT false,
-        CONSTRAINT "Classified_pkey" PRIMARY KEY (classifiedid)
-    )
+CREATE TABLE IF NOT EXISTS public.classified
+(
+    classifiedid character varying COLLATE pg_catalog."default" NOT NULL,
+    brand character varying COLLATE pg_catalog."default",
+    portals text[] COLLATE pg_catalog."default",
+    estatetype character varying COLLATE pg_catalog."default",
+    estatesubtype character varying COLLATE pg_catalog."default",
+    distributiontype character varying COLLATE pg_catalog."default",
+    avivgeoid character varying COLLATE pg_catalog."default",
+    country character varying COLLATE pg_catalog."default",
+    postalcode character varying COLLATE pg_catalog."default",
+    price numeric,
+    numberofrooms numeric,
+    featuresincluded character varying COLLATE pg_catalog."default",
+    features text[] COLLATE pg_catalog."default",
+    furnished character varying COLLATE pg_catalog."default",
+    yearofconstruction numeric,
+    certificateofeligibilityneeded character varying COLLATE pg_catalog."default",
+    locationinbuilding character varying COLLATE pg_catalog."default",
+    isauthorized boolean,
+    isgeodatavalid boolean,
+    ismarketstatuseligibleforpublication boolean,
+    lat double precision,
+    lon double precision,
+    location_type character varying COLLATE pg_catalog."default",
+    projecttypes text[] COLLATE pg_catalog."default",
+    showaddress boolean NOT NULL DEFAULT false,
+    street character varying COLLATE pg_catalog."default",
+    city character varying COLLATE pg_catalog."default",
+    spacemin numeric,
+    spacemax numeric,
+    energycertificateclass character varying COLLATE pg_catalog."default",
+    buildstate character varying COLLATE pg_catalog."default",
+    overallspace numeric,
+    livingspace numeric,
+    classifiedbusiness character varying COLLATE pg_catalog."default",
+    showprice boolean DEFAULT true,
+    israngeprice boolean DEFAULT false,
+    space numeric,
+    CONSTRAINT "Classified_pkey" PRIMARY KEY (classifiedid)
+)
 
-    TABLESPACE pg_default;
+TABLESPACE pg_default;
 
-    ALTER TABLE IF EXISTS public.classified
-        OWNER to main_user;
+ALTER TABLE IF EXISTS public.classified
+    OWNER to main_user;
 
     CREATE TABLE IF NOT EXISTS public.geo
     (
@@ -94,57 +95,59 @@ const initDatabase = async () => {
 
     ALTER TABLE IF EXISTS public.geo_lat_lon
         OWNER TO main_user;
- 
-    CREATE OR REPLACE VIEW public.v_classified
-    AS
-      SELECT c.classifiedid,
-          c.estatetype,
-          c.estatesubtype,
-          c.distributiontype,
-          c.avivgeoid,
-          c.location_type,
-          c.country,
-          c.city,
-          c.postalcode,
-          c.price,
-          c.numberofrooms,
-          c.livingspace,
-          c.furnished,
-          c.yearofconstruction,
-          c.certificateofeligibilityneeded,
-          c.locationinbuilding,
-          c.features,
-          c.isauthorized,
-          c.isgeodatavalid,
-          c.ismarketstatuseligibleforpublication,
-          g.geolevel,
-          g.countryid,
-          g.regionid,
-          g.microregionid,
-          g.provinceid,
-          g.municipalityid,
-          g.municipalityname,
-          g.boroughid,
-          g.neighborhoodid,
-          g.neighborhoodname,
-          g.blocid,
-          c.projecttypes,
-          c.brand,
-          c.portals,
-          unnest(c.portals) AS portal,
-          g.avivgeoid AS geo_avivgeoid,
-          c.showaddress,
-          c.street,
-          c.buildState,
-          c.energyCertificateClass,
-          c.isRangePrice,
-        FROM classified c
-          LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
-          LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
+CREATE OR REPLACE VIEW public.v_classified
+ AS
+ SELECT c.classifiedid,
+    c.estatetype,
+    c.estatesubtype,
+    c.distributiontype,
+    c.avivgeoid,
+    c.location_type,
+    c.country,
+    c.city,
+    c.postalcode,
+    c.price,
+    c.numberofrooms,
+    c.livingspace,
+    c.overallspace,
+    c.furnished,
+    c.yearofconstruction,
+    c.certificateofeligibilityneeded,
+    c.locationinbuilding,
+    c.features,
+    c.isauthorized,
+    c.isgeodatavalid,
+    c.ismarketstatuseligibleforpublication,
+    g.geolevel,
+    g.countryid,
+    g.regionid,
+    g.microregionid,
+    g.provinceid,
+    g.municipalityid,
+    g.municipalityname,
+    g.boroughid,
+    g.neighborhoodid,
+    g.neighborhoodname,
+    g.blocid,
+    c.projecttypes,
+    c.brand,
+    c.portals,
+    unnest(c.portals) AS portal,
+    g.avivgeoid AS geo_avivgeoid,
+    c.showaddress,
+    c.street,
+    c.buildstate,
+    c.energycertificateclass,
+    c.showprice,
+    c.israngeprice,
+    c.classifiedbusiness,
+    c.space
+   FROM classified c
+     LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
+     LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
 
-    ALTER TABLE public.v_classified
-        OWNER TO main_user;
-  `;
+ALTER TABLE public.v_classified
+    OWNER TO main_user;  `;
 
   const pool = await poolInstance.getPool(); // Ensure you are getting the pool instance correctly
 
@@ -165,70 +168,62 @@ const initDatabase = async () => {
  
 const patchDatabase = async () => {
   const sqlDatabase = `
+  ALTER TABLE classified
+ADD space numeric;
 
-    DROP VIEW IF EXISTS v_classified;
-    
-    ALTER TABLE classified    
-    DROP COLUMN IF EXISTS isRangePrice;
+CREATE OR REPLACE VIEW public.v_classified
+ AS
+ SELECT c.classifiedid,
+    c.estatetype,
+    c.estatesubtype,
+    c.distributiontype,
+    c.avivgeoid,
+    c.location_type,
+    c.country,
+    c.city,
+    c.postalcode,
+    c.price,
+    c.numberofrooms,
+    c.livingspace,
+    c.overallspace,
+    c.furnished,
+    c.yearofconstruction,
+    c.certificateofeligibilityneeded,
+    c.locationinbuilding,
+    c.features,
+    c.isauthorized,
+    c.isgeodatavalid,
+    c.ismarketstatuseligibleforpublication,
+    g.geolevel,
+    g.countryid,
+    g.regionid,
+    g.microregionid,
+    g.provinceid,
+    g.municipalityid,
+    g.municipalityname,
+    g.boroughid,
+    g.neighborhoodid,
+    g.neighborhoodname,
+    g.blocid,
+    c.projecttypes,
+    c.brand,
+    c.portals,
+    unnest(c.portals) AS portal,
+    g.avivgeoid AS geo_avivgeoid,
+    c.showaddress,
+    c.street,
+    c.buildstate,
+    c.energycertificateclass,
+    c.showprice,
+    c.israngeprice,
+    c.classifiedbusiness,
+	c.space
+   FROM classified c
+     LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
+     LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
 
-    ALTER TABLE classified    
-    ADD COLUMN IF NOT EXISTS isRangePrice boolean  NULL DEFAULT false;
-    
-    update classified    
-    set isRangePrice = false where isRangePrice is null;
-
-
-    CREATE OR REPLACE VIEW public.v_classified
-    AS
-      SELECT c.classifiedid,
-          c.estatetype,
-          c.estatesubtype,
-          c.distributiontype,
-          c.avivgeoid,
-          c.location_type,
-          c.country,
-          c.city,
-          c.postalcode,
-          c.price,
-          c.numberofrooms,
-          c.livingspace,
-          c.overallspace,
-          c.furnished,
-          c.yearofconstruction,
-          c.certificateofeligibilityneeded,
-          c.locationinbuilding,
-          c.features,
-          c.isauthorized,
-          c.isgeodatavalid,
-          c.ismarketstatuseligibleforpublication,
-          g.geolevel,
-          g.countryid,
-          g.regionid,
-          g.microregionid,
-          g.provinceid,
-          g.municipalityid,
-          g.municipalityname,
-          g.boroughid,
-          g.neighborhoodid,
-          g.neighborhoodname,
-          g.blocid,
-          c.projecttypes,
-          c.brand,
-          c.portals,
-          unnest(c.portals) AS portal,
-          g.avivgeoid AS geo_avivgeoid,
-          c.showaddress,
-          c.street,
-          c.buildState,
-          c.energyCertificateClass,
-          c.showPrice,
-          c.isRangePrice,
-          c.classifiedBusiness
-        FROM classified c
-          LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
-          LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
-    ALTER TABLE public.v_classified
-        OWNER TO main_user;`;
+ALTER TABLE public.v_classified
+    OWNER TO main_user;`;
 
   try {
     await poolInstance.getPool().then(_pool => _pool.query(sqlDatabase)); // Ensure you are getting the pool instance correctly
