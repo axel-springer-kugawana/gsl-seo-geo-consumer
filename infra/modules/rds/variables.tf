@@ -49,13 +49,13 @@ variable "rds_aurora_postgres_version" {
 variable "rds_acu_min" {
   description = "min acu for serverless configuration"
   type        = string
-  default     = 4
+  default     = 0.5
 }
 
 variable "rds_acu_max" {
   description = "max acu for serverless configuration"
   type        = string
-  default     = 128
+  default     = 8
 }
 
 variable "vpc_id" {
@@ -89,29 +89,6 @@ variable "ssot_name" {
   type = string
 }
 
-variable "proxy_idle_client_timeout" {
-  type        = number
-  description = "The number of seconds that a connection to the proxy can be inactive before the proxy disconnects it"
-  default     = 3
-}
-
-variable "proxy_max_connections_percent" {
-  type        = number
-  description = "The maximum size of the connection pool for each target in a target group"
-  default     = 85
-}
-
-variable "proxy_max_idle_connections_percent" {
-  type        = number
-  description = "The maximum size of the connection pool for each target in a target group"
-  default     = 10
-}
-
-variable "proxy_connection_borrow_timeout" {
-  type        = number
-  description = "The number of seconds for a proxy to wait for a connection to become available in the connection pool"
-  default     = 0
-}
 
 
 variable "aws_account_name" {

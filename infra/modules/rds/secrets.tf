@@ -25,6 +25,5 @@ resource "aws_secretsmanager_secret_version" "postgres_credentials" {
     password  = module.aurora_cluster.cluster_master_password
     host      = module.aurora_cluster.cluster_endpoint
     port      = module.aurora_cluster.cluster_port
-    proxyhost = "rds.${var.application}-${var.environment}.${data.aws_route53_zone.main.name}"
   })
 }
