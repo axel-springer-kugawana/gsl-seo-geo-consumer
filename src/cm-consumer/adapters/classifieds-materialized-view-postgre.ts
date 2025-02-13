@@ -6,6 +6,7 @@ import { mapEnergyCertificateClass } from "cm-consumer/utils/mapEnergyCertificat
 import { mapPrice } from "cm-consumer/utils/mapPrice";
 import { mapFeatures } from "cm-consumer/utils/mapFeatures";
 import { mapProjectTypes } from "cm-consumer/utils/mapProjectTypes";
+import { mapSpace } from "cm-consumer/utils/mapSpace";
 import { mapGeo } from '../utils/geoHelpers';
 
 import { poolInstance } from "./connectPostGre";
@@ -31,6 +32,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
     const pool = poolInstance.getPool
     await pool().then(async (_pool) => {
       const price = mapPrice(classified) ?? undefined;
+      const space  = mapSpace (classified) ?? undefined;
       const features = mapFeatures(classified);
       const projectTypes = mapProjectTypes(classified);
       const isGeoDataValidValue = isGeoDataValid(classified)
@@ -76,7 +78,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         mapEnergyCertificateClass(classified),
         mapShowPrice(classified),
         mapIsRangePrice(classified),
-        classified.metadata.classifiedBusiness
+        classified.metadata.classifiedBusiness,
+        space  
       ];
 
       const classifiedQuery = `
@@ -113,8 +116,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           energyCertificateClass,
           showPrice,
           isRangePrice,
-          classifiedBusiness
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33)
+          classifiedBusiness,
+          space
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33,$34)
     ON CONFLICT (ClassifiedId) DO UPDATE 
           SET Price = $2,
               avivgeoId= $3, 
@@ -147,7 +151,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
               energyCertificateClass = $30,
               showPrice = $31,
               isRangePrice = $32,
-              classifiedBusiness=$33;`;
+              classifiedBusiness=$33,
+              space=$34;`;
       await _pool.query(classifiedQuery, classifiedValue);
     });
   }
