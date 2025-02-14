@@ -192,7 +192,7 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
                     neighborhoodname, municipalityname,
                     portals, portal, geo_avivgeoid,
                     showAddress, overallSpace,
-                    livingSpace, street, showPrice, isRangePrice, classifiedBusiness
+                    livingSpace, street, showPrice, isRangePrice, classifiedBusiness, space
             FROM public.v_classified
             where classifiedid = $1;  
               ;`;
