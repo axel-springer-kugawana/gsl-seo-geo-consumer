@@ -40,4 +40,5 @@ export interface ClassifiedWithFullGeo {
     street: string;
     showPrice: boolean;
     isRangePrice: boolean;
+    space: number;
 }
