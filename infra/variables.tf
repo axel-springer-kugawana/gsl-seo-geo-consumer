@@ -123,7 +123,7 @@ variable "rds_acu_min" {
 variable "rds_acu_max" {
   description = "max acu for serverless configuration"
   type        = string
-  default     = 8
+  default     = 32
 }
 
 variable "rds_aurora_postgres_version" {
