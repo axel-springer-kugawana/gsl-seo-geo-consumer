@@ -8,11 +8,13 @@ import { initDatabase, patchDatabase, cleanDatabase } from "cm-consumer/adapters
 import { logger } from "@shared/cross-cutting/logger";
 import { VisibilityStatus } from "@shared/models/classified/1.0.0/classified";
 
+
 import * as fs from 'fs';
 
 const processor = new BatchProcessor(EventType.SQS);
 
 export const recordHandler = async (record: SQSRecord, context: Context): Promise<void> => {
+
   //const body = await fs.readFileSync("cm-consumer/lambda-handlers/fakes/231116WBR1KI.json", "utf8");
   const e = JSON.parse(record.body);
   const classifiedId = e?.data?.classifiedId ?? e?.classifiedId;
