@@ -17,11 +17,9 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
   const e = JSON.parse(record.body);
   const classifiedId = e?.data?.classifiedId ?? e?.classifiedId;
 
-  const portalFilter = e?.data?.classified?.visibility?.validations?.filter(e => e.visibilityStatus === VisibilityStatus.PUBLISHED || e.visibilityStatus === undefined) ?? []
+  const portalFilter = e?.data?.visibility?.validations?.filter(e => e.visibilityStatus === VisibilityStatus.PUBLISHED || e.visibilityStatus === undefined) ?? []
   if (portalFilter.length == 0) {
-    logger.warn("Classified has 0 Publication", {
-      classified: classifiedId
-    });
+    logger.warn("Classified has 0 Publication", { classified: classifiedId });
 
     await markClassifiedAsDeletedPG(context, { classifiedId, updateDate: e.data.updateDate });
     await markClassifiedAsDeletedDynamoDB({ classifiedId, updateDate: e.data.updateDate });
