@@ -168,9 +168,6 @@ ALTER TABLE public.v_classified
  
 const patchDatabase = async () => {
   const sqlDatabase = `
-  ALTER TABLE classified
-ADD space numeric;
-
 CREATE OR REPLACE VIEW public.v_classified
  AS
  SELECT c.classifiedid,
@@ -217,10 +214,11 @@ CREATE OR REPLACE VIEW public.v_classified
     c.showprice,
     c.israngeprice,
     c.classifiedbusiness,
-	c.space
+    c.space
    FROM classified c
      LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
-     LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
+     LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text)
+  WHERE cardinality(c.portals) > 0;
 
 ALTER TABLE public.v_classified
     OWNER TO main_user;`;

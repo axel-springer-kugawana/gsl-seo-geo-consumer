@@ -5,17 +5,26 @@ import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
 import { markClassifiedAsDeleted as markClassifiedAsDeletedPG, createOrUpdateClassified as createOrUpdateClassifiedPG, getClassified } from "cm-consumer/adapters/classifieds-materialized-view-postgre";
 import { createOrUpdateClassified as createOrUpdateClassifiedDynamoDB, markClassifiedAsDeleted as markClassifiedAsDeletedDynamoDB } from "cm-consumer/adapters/classifieds-materialized-view-dynamodb";
 import { initDatabase, patchDatabase, cleanDatabase } from "cm-consumer/adapters/initSql";
+import { logger } from "@shared/cross-cutting/logger";
+import { VisibilityStatus } from "@shared/models/classified/1.0.0/classified";
+
 import * as fs from 'fs';
 
 const processor = new BatchProcessor(EventType.SQS);
 
 export const recordHandler = async (record: SQSRecord, context: Context): Promise<void> => {
-   //const body = await fs.readFileSync("cm-consumer/lambda-handlers/fakes/231116WBR1KI.json", "utf8");
-    const e = JSON.parse(record.body);
-    const classifiedId = e?.data?.classifiedId ?? e?.classifiedId;
+  //const body = await fs.readFileSync("cm-consumer/lambda-handlers/fakes/231116WBR1KI.json", "utf8");
+  const e = JSON.parse(record.body);
+  const classifiedId = e?.data?.classifiedId ?? e?.classifiedId;
 
+  const portalFilter = e?.data?.visibility?.validations?.filter(e => e.visibilityStatus === VisibilityStatus.PUBLISHED || e.visibilityStatus === undefined) ?? []
+  if (portalFilter.length == 0) {
+    logger.warn("Classified has 0 Publication", { classified: classifiedId });
 
-  if (e.type == `${SSotEntityName}.deleted.v1`) {
+    await markClassifiedAsDeletedPG(context, { classifiedId, updateDate: e.data.updateDate });
+    await markClassifiedAsDeletedDynamoDB({ classifiedId, updateDate: e.data.updateDate });
+  }
+  else if (e.type == `${SSotEntityName}.deleted.v1`) {
     await markClassifiedAsDeletedPG(context, { classifiedId, updateDate: e.data.updateDate });
     await markClassifiedAsDeletedDynamoDB({ classifiedId, updateDate: e.data.updateDate });
   }
