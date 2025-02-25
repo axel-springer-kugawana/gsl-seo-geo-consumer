@@ -8,6 +8,7 @@ import { initDatabase, patchDatabase, cleanDatabase } from "cm-consumer/adapters
 import { logger } from "@shared/cross-cutting/logger";
 import { VisibilityStatus } from "@shared/models/classified/1.0.0/classified";
 
+
 import * as fs from 'fs';
 
 const processor = new BatchProcessor(EventType.SQS);
