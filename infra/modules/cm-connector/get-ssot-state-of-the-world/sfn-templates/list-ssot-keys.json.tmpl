@@ -16,7 +16,8 @@
           "Payload": {
             "nextContinuationToken.$": "$.iterator.nextContinuationToken",
             "prefix.$": ${jsonencode(prefix)},
-            "keyBatchingSize": ${jsonencode(keys_batching_size)}
+            "keyBatchingSize": ${jsonencode(keys_batching_size)},
+            "operation.$": ${jsonencode(operation)}
           },
           "FunctionName": ${jsonencode(list_ssot_keys_function_name)}
         },

@@ -74,6 +74,11 @@ variable "classified_management_events_topic" {
   type        = string
 }
 
+variable "queue_esm_max_concurrency" {
+  description = "queue_esm_max_concurrency"
+  type        = number
+}
+
 variable "classified_management_api" {
   description = "classified management api"
   type        = string

@@ -80,7 +80,8 @@ async function getGeoHierarchyEnrichmentById(avivGeoId: string): Promise<Feature
     });
     if (error != null && error != undefined) {
 
-        logger.error("error while calling api geo for getGeoHierarchyEnrichmentById <<id " + avivGeoId + '>>  trace<<' + JSON.stringify(error) + '>>');
+        throw new Error("API response error: " + JSON.stringify(error));
+        //logger.error("error while calling api geo for getGeoHierarchyEnrichmentById <<id " + avivGeoId + '>>  trace<<' + JSON.stringify(error) + '>>');
     }
     if (data != null) {
         return [...(data.item.parents ?? []), data.item]

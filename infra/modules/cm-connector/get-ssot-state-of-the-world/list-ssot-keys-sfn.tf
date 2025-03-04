@@ -31,6 +31,7 @@ resource "aws_sfn_state_machine" "list-ssot-sotw-keys-sfn" {
   definition = templatefile("${path.module}/sfn-templates/list-ssot-keys.json.tmpl", {
     list_ssot_keys_function_name  = "${module.list_ssot_keys_lambda.function_name}"
     prefix = "$.prefix"
+    operation = "$.operation"
     keys_batching_size = tostring(var.get_state_of_the_world_key_batch_size)
     ssot_name = "${var.ssot_name}"
   })

@@ -6,10 +6,7 @@ import { markClassifiedAsDeleted as markClassifiedAsDeletedPG, createOrUpdateCla
 import { createOrUpdateClassified as createOrUpdateClassifiedDynamoDB, markClassifiedAsDeleted as markClassifiedAsDeletedDynamoDB } from "cm-consumer/adapters/classifieds-materialized-view-dynamodb";
 import { initDatabase, patchDatabase, cleanDatabase } from "cm-consumer/adapters/initSql";
 import { logger } from "@shared/cross-cutting/logger";
-import { VisibilityStatus } from "@shared/models/classified/1.0.0/classified";
-
-
-import * as fs from 'fs';
+//import * as fs from 'fs';
 
 const processor = new BatchProcessor(EventType.SQS);
 
@@ -18,23 +15,31 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
   //const body = await fs.readFileSync("cm-consumer/lambda-handlers/fakes/231116WBR1KI.json", "utf8");
   const e = JSON.parse(record.body);
   const classifiedId = e?.data?.classifiedId ?? e?.classifiedId;
+   
 
-  if (e.type == `${SSotEntityName}.deleted.v1`) {
+  if (e.type == `${SSotEntityName}.deleted.v1`) {    
+    logger.warn ('delete classified  - ' + classifiedId);
+    logger.warn ('delete from postgre');
     await markClassifiedAsDeletedPG(context, { classifiedId, updateDate: e.data.updateDate });
+    logger.warn ("delete from dynamoDb");
     await markClassifiedAsDeletedDynamoDB({ classifiedId, updateDate: e.data.updateDate });
   }
   else if (e.type == `${SSotEntityName}.init.v1`) {
+    logger.warn ('init database');
     await initDatabase();
   } else if (e.type == `${SSotEntityName}.patch`) {
+    logger.warn ('patch database');
     await patchDatabase();
   }
   else if (e.type == `${SSotEntityName}.clean.v1`) {
+    logger.warn ('clean database');
     await cleanDatabase();
   }
   else {
-
+    logger.warn ('upsert classified  - ' + classifiedId+ ' <event type> - ' + e.type);
+    
     await createOrUpdateClassifiedPG(context, classifiedId, e.data);
-    var fullClassified = await getClassified(context, classifiedId);
+    const fullClassified = await getClassified(context, classifiedId);
     if (fullClassified != null) {
       await createOrUpdateClassifiedDynamoDB(classifiedId, e.data, fullClassified);
     }

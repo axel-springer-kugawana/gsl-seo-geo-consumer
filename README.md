@@ -98,6 +98,15 @@ Along with the connector, you will find [an example of a lambda function](./src/
 
 ![Alt text](./assets/mat-view-ddb-table.png)
 
+
+if you want to start reading all IWT Deleted classified you will need to provide this input
+`
+
+{
+  "prefix": "DELETE/0/IWT/",
+  "operation": "delete"
+}
+
 ### Wait ! Why are we using a step function to get the state of the world ?
 
 Lambda functions have a maximum timeout of 15 minutes. Attempting to list and read the S3 state of the world bucket, which holds millions of classifieds, in a single lambda function execution would result in timeouts.
