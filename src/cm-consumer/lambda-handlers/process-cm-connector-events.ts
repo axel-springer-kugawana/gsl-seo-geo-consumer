@@ -4,7 +4,7 @@ import { SSotEntityName } from "@shared/models/cm-consumer-constants";
 import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
 import { markClassifiedAsDeleted as markClassifiedAsDeletedPG, createOrUpdateClassified as createOrUpdateClassifiedPG, getClassified } from "cm-consumer/adapters/classifieds-materialized-view-postgre";
 import { createOrUpdateClassified as createOrUpdateClassifiedDynamoDB, markClassifiedAsDeleted as markClassifiedAsDeletedDynamoDB } from "cm-consumer/adapters/classifieds-materialized-view-dynamodb";
-import { initDatabase, patchDatabase, cleanDatabase } from "cm-consumer/adapters/initSql";
+import { initDatabase, patchDatabase, removeGeo , removeOrphans} from "cm-consumer/adapters/initSql";
 import { logger } from "@shared/cross-cutting/logger";
 //import * as fs from 'fs';
 
@@ -32,8 +32,12 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
     await patchDatabase();
   }
   else if (e.type == `${SSotEntityName}.clean.v1`) {
-    logger.warn ('clean database');
-    await cleanDatabase();
+    logger.warn ('delete  geo');
+    await removeGeo();
+  }
+  else if (e.type == `${SSotEntityName}.removeorphans.v1`) {
+    logger.warn ('removeorphans');
+    await removeOrphans();
   }
   else {
     logger.warn ('upsert classified  - ' + classifiedId+ ' <event type> - ' + e.type);

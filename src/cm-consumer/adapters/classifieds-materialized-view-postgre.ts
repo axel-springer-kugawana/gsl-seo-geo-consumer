@@ -117,8 +117,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           showPrice,
           isRangePrice,
           classifiedBusiness,
-          space
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33,$34)
+          space,
+          ssotupdatedate
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33,$34, NOW() )
     ON CONFLICT (ClassifiedId) DO UPDATE 
           SET Price = $2,
               avivgeoId= $3, 
@@ -152,7 +153,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
               showPrice = $31,
               isRangePrice = $32,
               classifiedBusiness=$33,
-              space=$34;`;
+              space=$34,
+              ssotupdatedate= NOW()
+              ;`;
       await _pool.query(classifiedQuery, classifiedValue);
     });
   }
@@ -164,7 +167,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
     }
     else {
       logger.error('classifiedId : ' + id)
-      logger.error('payload : ' + JSON.stringify(classified))
+      logger.error('SQL payload : ' + JSON.stringify(classified))
       logger.error(e)
       throw (e);
     }
@@ -198,7 +201,7 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
               ;`;
       const res = await _pool.query<ClassifiedWithFullGeo>(query, classifiedValue);
       if (res.rows.length > 0) {
-        console.log(res.rows[0]);
+        
         result = res.rows[0];
       }
     });

@@ -28,7 +28,7 @@ const createOrUpdateClassified = async (id: string, data: Classified, classified
           "S": JSON.stringify(classified)
         },
         ":VERSIONATTCURRV": {
-          "S": data.metadata.updateDate?.toString()
+          "S": data?.metadata?.updateDate?.toString()??Date.now.toString()
         },
       },
       ExpressionAttributeNames: {
@@ -46,14 +46,21 @@ const createOrUpdateClassified = async (id: string, data: Classified, classified
         classified: data
       })
     } else {
+
+
+      logger.warn("Error While update / creating DynamoDB Record", {
+        classified: id
+      })
+
+      let tmp = JSON.stringify(classified);
+      logger.warn("dynamodb Payload : "+tmp);
+      
+      logger.warn("Error : "+ e?.name);
+      
+      logger.warn("data.metadata.updateDate? : "+ data?.metadata?.updateDate);
       throw e;
-
     }
-
   }
-
-
-
 }
 
 

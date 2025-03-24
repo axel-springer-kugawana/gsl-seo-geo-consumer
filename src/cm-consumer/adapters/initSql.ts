@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS public.classified
     showprice boolean DEFAULT true,
     israngeprice boolean DEFAULT false,
     space numeric,
+    ssotupdatedate timestamp without time zone,
     CONSTRAINT "Classified_pkey" PRIMARY KEY (classifiedid)
 )
 
@@ -141,7 +142,8 @@ CREATE OR REPLACE VIEW public.v_classified
     c.showprice,
     c.israngeprice,
     c.classifiedbusiness,
-    c.space
+    c.space,
+    c.ssotupdatedate
    FROM classified c
      LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
      LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
@@ -168,7 +170,10 @@ ALTER TABLE public.v_classified
  
 const patchDatabase = async () => {
   const sqlDatabase = `
-CREATE OR REPLACE VIEW public.v_classified
+ ALTER TABLE public.classified
+ add column ssotupdatedate timestamp without time zone;
+
+ CREATE OR REPLACE VIEW public.v_classified
  AS
  SELECT c.classifiedid,
     c.estatetype,
@@ -214,7 +219,8 @@ CREATE OR REPLACE VIEW public.v_classified
     c.showprice,
     c.israngeprice,
     c.classifiedbusiness,
-    c.space
+    c.space,
+    c.ssotupdatedate
    FROM classified c
      LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
      LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text)
@@ -231,7 +237,7 @@ ALTER TABLE public.v_classified
   }
 };
 
-const cleanDatabase = async () => {
+const removeGeo = async () => {
   const sqlDatabase =  `
   delete
   from public.geo_lat_lon;
@@ -245,4 +251,19 @@ const cleanDatabase = async () => {
     logger.error('Error executing SQL:', e);
   }
 };
-export { initDatabase, patchDatabase, cleanDatabase };
+
+const removeOrphans = async () => {
+  const sqlDatabase =  `
+    delete 
+    from classified 
+    where portals is null or cardinality(portals)=0
+
+ `;
+   try {
+    await poolInstance.getPool().then(_pool => _pool.query(sqlDatabase)); // Ensure you are getting the pool instance correctly
+    console.log('Database cleaned successfully');
+  } catch (e) {
+    logger.error('Error executing SQL:', e);
+  }
+};
+export { initDatabase, patchDatabase, removeGeo, removeOrphans };
