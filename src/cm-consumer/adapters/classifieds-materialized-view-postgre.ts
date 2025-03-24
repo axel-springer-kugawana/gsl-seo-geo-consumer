@@ -79,7 +79,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         mapShowPrice(classified),
         mapIsRangePrice(classified),
         classified.metadata.classifiedBusiness,
-        space  
+        space,
+        classified.metadata.projectId
       ];
 
       const classifiedQuery = `
@@ -118,8 +119,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           isRangePrice,
           classifiedBusiness,
           space,
-          ssotupdatedate
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33,$34, NOW() )
+          ssotupdatedate,
+          projectId
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33,$34, NOW(), $35)
     ON CONFLICT (ClassifiedId) DO UPDATE 
           SET Price = $2,
               avivgeoId= $3, 
@@ -154,8 +156,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
               isRangePrice = $32,
               classifiedBusiness=$33,
               space=$34,
-              ssotupdatedate= NOW()
-              ;`;
+              ssotupdatedate= NOW(),
+              projectId=$35;`;
       await _pool.query(classifiedQuery, classifiedValue);
     });
   }
