@@ -172,9 +172,6 @@ ALTER TABLE public.v_classified
  
 const patchDatabase = async () => {
   const sqlDatabase = `
- ALTER TABLE public.classified
- add COLUMN IF NOT EXISTS ssotupdatedate timestamp without time zone;
-
   ALTER TABLE public.classified
   ADD COLUMN IF NOT EXISTS projectId character varying COLLATE pg_catalog."default";
     
