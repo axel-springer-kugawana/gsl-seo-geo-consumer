@@ -10,7 +10,7 @@
             "classifiedBusiness": "PROFESSIONAL",
             "externalId": "00000000-0000-0000-0002-000000000000",
             "updateDate": "2024-05-13T11:32:49.902Z",
-            "creationDate": "2020-11-05T10:15:34.547Z",
+            "creationDate": "2017-03-28T17:18:46.65Z",
             "brand": "IWT"
         },
         "media": [],
@@ -23,8 +23,8 @@
                 "houseNumber": "9",
                 "geometry": {
                     "coordinates": [
-                        5.539088,
-                        43.215334
+                        10.046247482299805,
+                        54.178672790527344
                     ],
                     "type": "Point"
                 },

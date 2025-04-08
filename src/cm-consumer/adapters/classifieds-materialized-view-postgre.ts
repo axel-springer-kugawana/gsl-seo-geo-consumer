@@ -80,7 +80,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         mapIsRangePrice(classified),
         classified.metadata.classifiedBusiness,
         space,
-        classified.metadata.projectId
+        classified.metadata.projectId,
+        classified.metadata?.creationDate ?? null
       ];
 
       const classifiedQuery = `
@@ -120,8 +121,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           classifiedBusiness,
           space,
           ssotupdatedate,
-          projectId
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35)
+          projectId,
+          creationdate
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36)
     ON CONFLICT (ClassifiedId) DO UPDATE 
           SET Price = $2,
               avivgeoId= $3, 
@@ -157,7 +159,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
               classifiedBusiness=$33,
               space=$34,
               ssotupdatedate= NOW(),
-              projectId=$35
+              projectId=$35,
+              creationdate=$36
               ;`;
       await _pool.query(classifiedQuery, classifiedValue);
     });
@@ -198,7 +201,8 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
                     neighborhoodname, municipalityname,
                     portals, portal, geo_avivgeoid,
                     showAddress, overallSpace,
-                    livingSpace, street, showPrice, isRangePrice, classifiedBusiness, space
+                    livingSpace, street, showPrice, isRangePrice, classifiedBusiness, space,
+                    creationdate
             FROM public.v_classified
             where classifiedid = $1;  
               ;`;

@@ -36,8 +36,9 @@ async function mapGeoFromApi(_pool: Pool, location: Location) {
         geo = await getGeoHierarchyEnrichmentByCoordinates(location);
 
         if (geo !== undefined && geo != null) {
-            if (geo.length > 0) {
-                mappedAvivGeoId = geo[geo.length - 1]?.id;
+            if (geo && geo.length > 0) {
+                mappedAvivGeoId = geo.reduce((max, item) => 
+                    item.level > max.level ? item : max, geo[0])?.id;
                 await addGeoToCacheAsync(_pool, geo, mappedAvivGeoId, location);
                 return mappedAvivGeoId;
             }
@@ -45,11 +46,10 @@ async function mapGeoFromApi(_pool: Pool, location: Location) {
     }
     if (avivGeoId !== undefined) {
         geo = await getGeoHierarchyEnrichmentById(avivGeoId);
-        if (geo !== undefined && geo != null) {
-            if (geo.length > 0) {
-                mappedAvivGeoId = geo[geo.length - 1]?.id;
+        if (geo && geo.length > 0) {
+            mappedAvivGeoId = geo.reduce((max, item) => 
+                item.level > max.level ? item : max, geo[0])?.id;
                 await addGeoToCacheAsync(_pool, geo, mappedAvivGeoId, location);
-            }
         }
     }
 
@@ -96,8 +96,7 @@ export const getGeoHierarchyEnrichmentByCoordinates = async (location: Location)
             const apisecrets = await getClassifiedApiSecret();
             const [lon, lat] = geometry.coordinates;
             const parentTypes = [
-                "AD02", "AD03", "AD04", "AD05", "AD06", "AD07", "AD08",
-                "AD09", "NBH1", "NBH2", "STRT", "BLOC", "POCO"
+                 "AD08", "NBH1", "NBH2"
             ];
             const url = `${apisecrets.GeoPlaceApiUrl}/v1/places/point/${lon}/${lat}`;
             const parentTypesParams = parentTypes.map(type => `parent_types=${type}`).join('&');
@@ -253,7 +252,7 @@ async function getGeoHierarchyEnrichmentByIdByCache(_pool: Pool, avivGeoId: stri
     const geoQueryExists = `
     select avivgeoid from geo
     where avivgeoid = $1
-    AND updateDate >= NOW() - INTERVAL '1 days'`;
+    AND updateDate >= NOW() - INTERVAL '4 hours'`;
     const geoValueExists = [
         avivGeoId
     ]
@@ -269,7 +268,7 @@ async function getGeoHierarchyEnrichmentByCoordinatesByCache(_pool: Pool, locati
     const geoQueryExists = `   
     select avivgeoid from geo_lat_lon
     where (lat = $1 and lon = $2)
-    AND updateDate >= NOW() - INTERVAL '1 days'`;
+    AND updateDate >= NOW() - INTERVAL '4 hours'`;
 
     const geoValueExists = [
         lat,

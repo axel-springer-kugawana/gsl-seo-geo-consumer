@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS public.classified
     space numeric,
     ssotupdatedate timestamp without time zone,
     projectId character varying COLLATE pg_catalog."default",
+    creationdate timestamp without time zone,
     CONSTRAINT "Classified_pkey" PRIMARY KEY (classifiedid)
 )
 
@@ -145,7 +146,8 @@ CREATE OR REPLACE VIEW public.v_classified
     c.classifiedbusiness,
     c.space,
     c.ssotupdatedate,
-    c.projectId
+    c.projectId,
+    c.creationdate
    FROM classified c
      LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
      LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
@@ -173,7 +175,7 @@ ALTER TABLE public.v_classified
 const patchDatabase = async () => {
   const sqlDatabase = `
   ALTER TABLE public.classified
-  ADD COLUMN IF NOT EXISTS projectId character varying COLLATE pg_catalog."default";
+  ADD COLUMN IF NOT EXISTS creationdate timestamp without time zone;
     
  CREATE OR REPLACE VIEW public.v_classified
  AS
@@ -223,7 +225,8 @@ const patchDatabase = async () => {
     c.classifiedbusiness,
     c.space,
     c.ssotupdatedate,
-    c.projectId
+    c.projectId,
+    c.creationdate
    FROM classified c
      LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
      LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text)
