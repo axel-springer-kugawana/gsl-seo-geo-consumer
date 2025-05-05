@@ -90,8 +90,18 @@ ALTER TABLE IF EXISTS public.classified
     (
         lon float NOT NULL,
         lat float NOT NULL,
-        avivgeoid character varying COLLATE pg_catalog."default" NOT NULL,
+        geolevel numeric,
+		    avivgeoid character varying COLLATE pg_catalog."default" NOT NULL,
+        countryid character varying COLLATE pg_catalog."default",
+        regionid character varying COLLATE pg_catalog."default",
+        microregionid character varying COLLATE pg_catalog."default",
+        provinceid character varying COLLATE pg_catalog."default",
+        municipalityid character varying COLLATE pg_catalog."default",
+        boroughid character varying COLLATE pg_catalog."default",
+        neighborhoodid character varying COLLATE pg_catalog."default",
         updatedate timestamp without time zone,
+        municipalityname jsonb,
+        neighborhoodname jsonb,
         CONSTRAINT pk_lat_lon PRIMARY KEY (lat, lon)
     )
     TABLESPACE pg_default;
@@ -121,17 +131,46 @@ CREATE OR REPLACE VIEW public.v_classified
     c.isauthorized,
     c.isgeodatavalid,
     c.ismarketstatuseligibleforpublication,
-    g.geolevel,
-    g.countryid,
-    g.regionid,
-    g.microregionid,
-    g.provinceid,
-    g.municipalityid,
-    g.municipalityname,
-    g.boroughid,
-    g.neighborhoodid,
-    g.neighborhoodname,
-    g.blocid,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.geolevel
+            ELSE g.geolevel
+        END AS geolevel,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.countryid
+            ELSE g.countryid
+        END AS countryid,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.regionid
+            ELSE g.regionid
+        END AS regionid,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.microregionid
+            ELSE g.microregionid
+        END AS microregionid,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.provinceid
+            ELSE g.provinceid
+        END AS provinceid,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.municipalityid
+            ELSE g.municipalityid
+        END AS municipalityid,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.municipalityname
+            ELSE g.municipalityname
+        END AS municipalityname,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.boroughid
+            ELSE g.boroughid
+        END AS boroughid,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.neighborhoodid
+            ELSE g.neighborhoodid
+        END AS neighborhoodid,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.neighborhoodname
+            ELSE g.neighborhoodname
+        END AS neighborhoodname,
     c.projecttypes,
     c.brand,
     c.portals,
@@ -150,7 +189,8 @@ CREATE OR REPLACE VIEW public.v_classified
     c.creationdate
    FROM classified c
      LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
-     LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text);
+     LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid, c.avivgeoid)::text
+  WHERE cardinality(c.portals) > 0;
 
 ALTER TABLE public.v_classified
     OWNER TO main_user;  `;
@@ -174,10 +214,21 @@ ALTER TABLE public.v_classified
  
 const patchDatabase = async () => {
   const sqlDatabase = `
-  ALTER TABLE public.classified
-  ADD COLUMN IF NOT EXISTS creationdate timestamp without time zone;
-    
- CREATE OR REPLACE VIEW public.v_classified
+  ALTER TABLE public.geo_lat_lon ADD COLUMN IF NOT EXISTS avivgeoid character varying COLLATE pg_catalog."default" NOT NULL;
+  ALTER TABLE public.geo_lat_lon ADD COLUMN IF NOT EXISTS countryid character varying COLLATE pg_catalog."default";
+  ALTER TABLE public.geo_lat_lon ADD COLUMN IF NOT EXISTS regionid character varying COLLATE pg_catalog."default";
+  ALTER TABLE public.geo_lat_lon ADD COLUMN IF NOT EXISTS microregionid character varying COLLATE pg_catalog."default";
+  ALTER TABLE public.geo_lat_lon ADD COLUMN IF NOT EXISTS provinceid character varying COLLATE pg_catalog."default";
+  ALTER TABLE public.geo_lat_lon ADD COLUMN IF NOT EXISTS municipalityid character varying COLLATE pg_catalog."default";
+  ALTER TABLE public.geo_lat_lon ADD COLUMN IF NOT EXISTS boroughid character varying COLLATE pg_catalog."default";
+  ALTER TABLE public.geo_lat_lon ADD COLUMN IF NOT EXISTS neighborhoodid character varying COLLATE pg_catalog."default";
+  ALTER TABLE public.geo_lat_lon ADD COLUMN IF NOT EXISTS updatedate timestamp without time zone;
+  ALTER TABLE public.geo_lat_lon ADD COLUMN IF NOT EXISTS municipalityname jsonb;
+  ALTER TABLE public.geo_lat_lon ADD COLUMN IF NOT EXISTS neighborhoodname jsonb;
+  ALTER TABLE public.geo_lat_lon ADD COLUMN IF NOT EXISTS geolevel numeric;
+  
+  DROP VIEW IF EXISTS public.v_classified;
+CREATE OR REPLACE VIEW public.v_classified
  AS
  SELECT c.classifiedid,
     c.estatetype,
@@ -200,17 +251,46 @@ const patchDatabase = async () => {
     c.isauthorized,
     c.isgeodatavalid,
     c.ismarketstatuseligibleforpublication,
-    g.geolevel,
-    g.countryid,
-    g.regionid,
-    g.microregionid,
-    g.provinceid,
-    g.municipalityid,
-    g.municipalityname,
-    g.boroughid,
-    g.neighborhoodid,
-    g.neighborhoodname,
-    g.blocid,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.geolevel
+            ELSE g.geolevel
+        END AS geolevel,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.countryid
+            ELSE g.countryid
+        END AS countryid,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.regionid
+            ELSE g.regionid
+        END AS regionid,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.microregionid
+            ELSE g.microregionid
+        END AS microregionid,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.provinceid
+            ELSE g.provinceid
+        END AS provinceid,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.municipalityid
+            ELSE g.municipalityid
+        END AS municipalityid,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.municipalityname
+            ELSE g.municipalityname
+        END AS municipalityname,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.boroughid
+            ELSE g.boroughid
+        END AS boroughid,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.neighborhoodid
+            ELSE g.neighborhoodid
+        END AS neighborhoodid,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.neighborhoodname
+            ELSE g.neighborhoodname
+        END AS neighborhoodname,
     c.projecttypes,
     c.brand,
     c.portals,
@@ -229,7 +309,7 @@ const patchDatabase = async () => {
     c.creationdate
    FROM classified c
      LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
-     LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid::text, c.avivgeoid::text)
+     LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid, c.avivgeoid)::text
   WHERE cardinality(c.portals) > 0;
 
 ALTER TABLE public.v_classified

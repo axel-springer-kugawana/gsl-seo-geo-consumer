@@ -39,7 +39,7 @@ async function mapGeoFromApi(_pool: Pool, location: Location) {
             if (geo && geo.length > 0) {
                 mappedAvivGeoId = geo.reduce((max, item) => 
                     item.level > max.level ? item : max, geo[0])?.id;
-                await addGeoToCacheAsync(_pool, geo, mappedAvivGeoId, location);
+                await addGeoFromCoordinatesToCacheAsync(_pool, geo, mappedAvivGeoId, location);
                 return mappedAvivGeoId;
             }
         }
@@ -49,7 +49,7 @@ async function mapGeoFromApi(_pool: Pool, location: Location) {
         if (geo && geo.length > 0) {
             mappedAvivGeoId = geo.reduce((max, item) => 
                 item.level > max.level ? item : max, geo[0])?.id;
-                await addGeoToCacheAsync(_pool, geo, mappedAvivGeoId, location);
+                await addGeoFromIdToCacheAsync(_pool, geo, mappedAvivGeoId, location);
         }
     }
 
@@ -95,17 +95,11 @@ export const getGeoHierarchyEnrichmentByCoordinates = async (location: Location)
         try {
             const apisecrets = await getClassifiedApiSecret();
             const [lon, lat] = geometry.coordinates;
-            const parentTypes = [
-                 "AD08", "NBH1", "NBH2"
-            ];
             const url = `${apisecrets.GeoPlaceApiUrl}/v1/places/point/${lon}/${lat}`;
-            const parentTypesParams = parentTypes.map(type => `parent_types=${type}`).join('&');
-            fullUrlWithQueryParams = `${url}?${parentTypesParams}`;
-
             let config = {
                 method: 'get',
                 maxBodyLength: Infinity,
-                url: fullUrlWithQueryParams,
+                url: url,
                 headers: {
                     'x-api-key': apisecrets.GeoPlaceApiKey
                 }
@@ -167,7 +161,59 @@ function getNamesForLevel(actualGeo : Feature, parents: Feature[], level: number
     return result;
 }
 
-async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: string, location: Location) {
+async function addGeoFromCoordinatesToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: string, location: Location) {
+    const [lon, lat] = location?.geometry?.coordinates ?? [];
+    let current = single(geo.filter(x => x.id === mappedAvivGeoId));
+
+    let countryId = getIdForGeoLevel(geo, 200);
+    let regionId =  getIdForGeoLevel(geo, 400);
+    let microregionId = getIdForGeoLevel(geo, 500); 
+    let provinceId = getIdForGeoLevel(geo, 600);
+    //Ensure unicity of municipalityId
+    let municipalityId = single(geo?.filter(x => x.level === 800 && x.type_key === 'AD08' && x.active === true))?.id;
+    let municipalityName = getNamesForLevel(current, geo, 800);
+    let boroughID = getIdForGeoLevel(geo, 900);
+    let neighborhoodId = getIdForGeoLevel(geo, 1000);
+    let neighborhoodName = getNamesForLevel(current, geo, 1000);
+
+    if (lat !== undefined) {
+        const geo_lat_lonValue = [
+            lat,
+            lon,
+            mappedAvivGeoId,
+            countryId,
+            regionId,
+            microregionId,
+            provinceId,
+            municipalityId,
+            municipalityName,
+            boroughID,
+            neighborhoodId,
+            neighborhoodName,
+            current?.level
+        ]
+
+        const geo_lat_lon = `
+      INSERT INTO geo_lat_lon (lat, lon, avivgeoId, updateDate, countryId, regionId, microregionId, provinceId, municipalityId, municipalityName, boroughID, neighborhoodId,neighborhoodName,geolevel) VALUES ($1, $2, $3, NOW(), $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      ON CONFLICT (lat,lon) DO UPDATE 
+        SET    
+        avivgeoId = $3,
+        updateDate = NOW(),
+        countryId = $4,
+        regionId= $5,
+        microregionId= $6,
+        provinceId= $7,
+        municipalityId= $8,
+        municipalityName= $9,
+        boroughID= $10,
+        neighborhoodId= $11,
+        neighborhoodName= $12,
+        geolevel=$13`;
+        await _pool.query(geo_lat_lon, geo_lat_lonValue);
+    }
+}
+
+async function addGeoFromIdToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: string, location: Location) {
     const [lon, lat] = location?.geometry?.coordinates ?? [];
     let current = single(geo.filter(x => x.id === mappedAvivGeoId));
 
@@ -229,22 +275,6 @@ async function addGeoToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivGeoId: 
       updateDate= NOW();`;
 
     await _pool.query(geoQuery, geoValues);
-
-    if (lat !== undefined) {
-        const geo_lat_lonValue = [
-            lat,
-            lon,
-            mappedAvivGeoId
-        ]
-
-        const geo_lat_lon = `
-      INSERT INTO geo_lat_lon (lat, lon, avivgeoId, updateDate) VALUES ($1, $2, $3, NOW())
-      ON CONFLICT (lat,lon) DO UPDATE 
-        SET    
-        avivgeoId = $3,
-        updateDate = NOW();`;
-        await _pool.query(geo_lat_lon, geo_lat_lonValue);
-    }
 }
 
 

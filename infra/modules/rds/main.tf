@@ -5,7 +5,7 @@ module "aurora_cluster" {
   name                            = "${var.rds_aurora_name}${var.suffix}"
   engine                          = "aurora-postgresql"
   engine_mode                     = "provisioned"
-  engine_version                  = "16.1"
+  engine_version                  = "16.6"
   vpc_id                          = var.vpc_id
   subnets                         = var.subnets
   db_subnet_group_name            = "main"

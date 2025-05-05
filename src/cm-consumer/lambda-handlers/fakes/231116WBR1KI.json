@@ -11,22 +11,24 @@
             "externalId": "00000000-0000-0000-0002-000000000000",
             "updateDate": "2024-05-13T11:32:49.902Z",
             "creationDate": "2017-03-28T17:18:46.65Z",
-            "brand": "IWT"
+            "brand": "IWT",
+            "projectId": "1453"
         },
         "media": [],
         "data": {
             "location": {
-                "country": "ATA",
-                "city": "Pinguin Town",
-                "postalcode": "8340",
-                "street": "Nordostpark",
-                "houseNumber": "9",
+                "avivGeoId": "BLOCDE286164",
+                "country": "DE",
+                "city": "München",
+                "postalcode": "80339",
+                "street": "Grasserstr. 12",
+                "floorNumber": 2,
                 "geometry": {
                     "coordinates": [
-                        10.046247482299805,
-                        54.178672790527344
+                        11.549139976501465,
+                        48.14065933227539
                     ],
-                    "type": "Point"
+                "type": "Point"
                 },
                 "showAddress": false
             },
@@ -63,8 +65,22 @@
             }
         },
         "visibility": {
-            "requests": [],
-            "validations": []
+            "requests": [
+                {
+                    "portal": "IWT"
+                },
+                {
+                    "portal": "IMMONET"
+                }
+            ],
+            "validations": [
+                {
+                    "portal": "IWT"
+                },
+                {
+                    "portal": "IMMONET"
+                }
+            ]
         },
         "classifiedId": "23NM8IIQXH5P"
     }

@@ -197,7 +197,7 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
                     price, numberofrooms, furnished, yearofconstruction, certificateofeligibilityneeded, locationinbuilding, features, isauthorized,
                     isgeodatavalid, ismarketstatuseligibleforpublication, geolevel, countryid, regionid,
                     microregionid, provinceid, municipalityid, boroughid,
-                    neighborhoodid, blocid, projecttypes, brand,
+                    neighborhoodid, projecttypes, brand,
                     neighborhoodname, municipalityname,
                     portals, portal, geo_avivgeoid,
                     showAddress, overallSpace,
