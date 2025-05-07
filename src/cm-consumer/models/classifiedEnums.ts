@@ -33,6 +33,11 @@ export enum ExtendedValidation {
   NOT_APPLICABLE = 'NOT_APPLICABLE',
 }
 
+export enum BrandCountry {
+  FR = 'FR',
+  DE = 'DE',
+}
+
 export enum BuildState {
   FIRST_TIME_USE = 'FIRST_TIME_USE',
   FIRST_TIME_USE_AFTER_REFURBISHMENT = 'FIRST_TIME_USE_AFTER_REFURBISHMENT',
