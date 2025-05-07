@@ -45,6 +45,7 @@ const createOrUpdateClassified = async (id: string, data: Classified, classified
       logger.warn("Conditional Check failed on lastUpdate date. Classified won't be updated", {
         classified: data
       })
+      logger.warn(e)
     } else {
 
 
@@ -53,6 +54,7 @@ const createOrUpdateClassified = async (id: string, data: Classified, classified
       })
 
       let tmp = JSON.stringify(classified);
+      logger.warn(e)
       logger.warn("dynamodb Payload : "+tmp);
       
       logger.warn("Error : "+ e?.name);

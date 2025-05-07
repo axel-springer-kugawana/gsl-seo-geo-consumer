@@ -167,6 +167,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
   }
   catch (e) {
     if (e.name === "ConditionalCheckFailedException") {
+      logger.warn(e)
       logger.warn("Conditional Check failed on lastUpdate date. Classified won't be updated", {
         classified: classified
       })
@@ -215,6 +216,7 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
   }
   catch (e) {
     if (e.name === "ConditionalCheckFailedException") {
+      logger.warn(e)
       logger.warn("Conditional Check failed on lastUpdate date. Classified won't be updated", {
         classified: id
       })
