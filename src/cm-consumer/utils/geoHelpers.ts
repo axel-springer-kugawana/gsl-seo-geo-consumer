@@ -9,7 +9,6 @@ import axios from 'axios';
 
 export const mapGeo = async (_pool: Pool, location: Location): Promise<string> => {
     let avivGeoId = await mapGeoFromCache(_pool, location);
-    
     if (avivGeoId === undefined) {
         return await mapGeoFromApi(_pool, location);
     }
@@ -171,10 +170,10 @@ async function addGeoFromCoordinatesToCacheAsync(_pool: Pool, geo: Feature[], ma
     let provinceId = getIdForGeoLevel(geo, 600);
     //Ensure unicity of municipalityId
     let municipalityId = single(geo?.filter(x => x.level === 800 && x.type_key === 'AD08' && x.active === true))?.id;
-    let municipalityName = getNamesForLevel(current, geo, 800);
+    let municipalityName = getNamesForLevel(current, geo?.filter(x=>x.level === 800 && x.type_key === 'AD08'), 800);
     let boroughID = getIdForGeoLevel(geo, 900);
-    let neighborhoodId = getIdForGeoLevel(geo, 1000);
-    let neighborhoodName = getNamesForLevel(current, geo, 1000);
+    let neighborhoodId = getIdForGeoLevel(geo.filter(x=>x.type === 'Neighborhood'), 1000);
+    let neighborhoodName = getNamesForLevel(current, geo.filter(x=>x.type === 'Neighborhood'), 1000);
 
     if (lat !== undefined) {
         const geo_lat_lonValue = [
