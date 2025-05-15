@@ -13,8 +13,8 @@ import { poolInstance } from "./connectPostGre";
 import { Context } from "aws-lambda";
 import { isAuthorized, isGeoDataValid, isMarketStatusEligibleForPublication } from '../utils/classfiedRulesHelpers';
 
-const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classifiedId: string, updateDate: string }): Promise<void> => {
-  const { classifiedId, updateDate } = deleteCommand;
+const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classifiedId: string }): Promise<void> => {
+  const { classifiedId } = deleteCommand;
   const values = [classifiedId];
   context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
 
@@ -25,14 +25,25 @@ const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classi
   });
 }
 
-const createOrUpdateClassified = async (context: Context, id: string, classified: Classified): Promise<void> => {
+const createOrUpdateClassified = async (context: Context, id: string, classified: Classified): Promise<boolean> => {
   context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
+
+  const portalFilter = classified?.visibility?.validations?.filter(e => e.visibilityStatus === VisibilityStatus.PUBLISHED || e.visibilityStatus === undefined)??[];
+
+  
+  const portals = portalFilter.map(e => e.portal)
+
+  if (portals.length == 0) {
+    return false;
+  }
+
   try {
 
     const pool = poolInstance.getPool
     await pool().then(async (_pool) => {
+
       const price = mapPrice(classified) ?? undefined;
-      const space  = mapSpace (classified) ?? undefined;
+      const space = mapSpace(classified) ?? undefined;
       const features = mapFeatures(classified);
       const projectTypes = mapProjectTypes(classified);
       const isGeoDataValidValue = isGeoDataValid(classified)
@@ -44,7 +55,6 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       const { avivGeoId, geometry } = classified.data?.location;
       const [lon, lat] = geometry?.coordinates ?? []
 
-      const portalFilter = classified?.visibility?.validations?.filter(e => e.visibilityStatus === VisibilityStatus.PUBLISHED || e.visibilityStatus === undefined) ?? []
       const classifiedValue = [
         id,
         price,
@@ -61,7 +71,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         classified.data?.location?.country,
         classified.data?.location?.city,
         classified.metadata.brand,
-        portalFilter.map(e => e.portal),
+        portals,
         classified?.data?.location?.postalcode,
         isGeoDataValidValue,
         isMarketStatusEligibleForPublicationValue,
@@ -81,87 +91,98 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         classified.metadata.classifiedBusiness,
         space,
         classified.metadata.projectId,
-        classified.metadata?.creationDate ?? null
+        classified.metadata?.creationDate ?? null,
+        portals.some(x => x === "IMMONET") && classified.metadata?.creationDate != null,
+        portals.some(x => x === "IWT") && classified.metadata?.creationDate != null,
+        portals.some(x => x === "SL") && classified.metadata?.creationDate != null,
+        portals.some(x => x === "LI") && classified.metadata?.creationDate != null
       ];
 
       const classifiedQuery = `
-        INSERT INTO classified (
-          ClassifiedId, 
-          Price,
-          AvivGeoId, 
-          DistributionType, 
-          EstateType, 
-          EstateSubType, 
-          NumberOfRooms,
-          Furnished,
-          YearOfConstruction,
-          CertificateOfEligibilityNeeded,
-          LocationInBuilding,
-          Features,
-          Country,
-          City,
-          Brand,
-          Portals,
-          Postalcode,
-          isAuthorized,
-          isGeoDataValid,
-          isMarketStatusEligibleForPublication,
-          lat,
-          lon,
-          location_type,
-          projectTypes,
-          showAddress,
-          street,
-          livingSpace,
-          overallSpace,
-          buildState,
-          energyCertificateClass,
-          showPrice,
-          isRangePrice,
-          classifiedBusiness,
-          space,
-          ssotupdatedate,
-          projectId,
-          creationdate
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36)
-    ON CONFLICT (ClassifiedId) DO UPDATE 
-          SET Price = $2,
-              avivgeoId= $3, 
-              DistributionType= $4, 
-              EstateType= $5, 
-              EstateSubType= $6, 
-              NumberOfRooms= $7,
-              Furnished= $8,
-              YearOfConstruction= $9,
-              CertificateOfEligibilityNeeded= $10,
-              LocationInBuilding= $11,
-              Features= $12,
-              Country = $13,
-              City = $14,
-              Brand = $15,
-              Portals = $16,
-              Postalcode = $17,
-              isAuthorized = $18,
-              isGeoDataValid = $19,
-              isMarketStatusEligibleForPublication = $20,
-              lat = $21,
-              lon  = $22,
-              location_type = $23,
-              projectTypes =$24,
-              showAddress = $25,
-              street= $26,
-              livingSpace=$27,
-              overallSpace=$28,
-              buildState =$29,
-              energyCertificateClass = $30,
-              showPrice = $31,
-              isRangePrice = $32,
-              classifiedBusiness=$33,
-              space=$34,
-              ssotupdatedate= NOW(),
-              projectId=$35,
-              creationdate=$36
-              ;`;
+          INSERT INTO classified (
+            ClassifiedId, 
+            Price,
+            AvivGeoId, 
+            DistributionType, 
+            EstateType, 
+            EstateSubType, 
+            NumberOfRooms,
+            Furnished,
+            YearOfConstruction,
+            CertificateOfEligibilityNeeded,
+            LocationInBuilding,
+            Features,
+            Country,
+            City,
+            Brand,
+            Portals,
+            Postalcode,
+            isAuthorized,
+            isGeoDataValid,
+            isMarketStatusEligibleForPublication,
+            lat,
+            lon,
+            location_type,
+            projectTypes,
+            showAddress,
+            street,
+            livingSpace,
+            overallSpace,
+            buildState,
+            energyCertificateClass,
+            showPrice,
+            isRangePrice,
+            classifiedBusiness,
+            space,
+            ssotupdatedate,
+            projectId,
+            creationdate,
+            isImmonetPortal,
+            isImmoweltPortal,
+            isSeLogerPortal,
+            isLogicImmoPortal)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36, $37, $38, $39, $40)
+      ON CONFLICT (ClassifiedId) DO UPDATE 
+            SET Price = $2,
+                avivgeoId= $3, 
+                DistributionType= $4, 
+                EstateType= $5, 
+                EstateSubType= $6, 
+                NumberOfRooms= $7,
+                Furnished= $8,
+                YearOfConstruction= $9,
+                CertificateOfEligibilityNeeded= $10,
+                LocationInBuilding= $11,
+                Features= $12,
+                Country = $13,
+                City = $14,
+                Brand = $15,
+                Portals = $16,
+                Postalcode = $17,
+                isAuthorized = $18,
+                isGeoDataValid = $19,
+                isMarketStatusEligibleForPublication = $20,
+                lat = $21,
+                lon  = $22,
+                location_type = $23,
+                projectTypes =$24,
+                showAddress = $25,
+                street= $26,
+                livingSpace=$27,
+                overallSpace=$28,
+                buildState =$29,
+                energyCertificateClass = $30,
+                showPrice = $31,
+                isRangePrice = $32,
+                classifiedBusiness=$33,
+                space=$34,
+                ssotupdatedate= NOW(),
+                projectId=$35,
+                creationdate=$36,
+                isImmonetPortal=$37,
+                isImmoweltPortal=$38,
+                isSeLogerPortal=$39,
+                isLogicImmoPortal=$40;`;
       await _pool.query(classifiedQuery, classifiedValue);
     });
   }
@@ -171,6 +192,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       logger.warn("Conditional Check failed on lastUpdate date. Classified won't be updated", {
         classified: classified
       })
+      return false;
     }
     else {
       logger.error('classifiedId : ' + id)
@@ -179,6 +201,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       throw (e);
     }
   }
+  return true;
 }
 
 const getClassified = async (context: Context, id: string): Promise<ClassifiedWithFullGeo> => {
@@ -209,7 +232,6 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
               ;`;
       const res = await _pool.query<ClassifiedWithFullGeo>(query, classifiedValue);
       if (res.rows.length > 0) {
-        
         result = res.rows[0];
       }
     });

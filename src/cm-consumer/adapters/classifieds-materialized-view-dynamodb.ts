@@ -109,11 +109,7 @@ const markClassifiedAsDeleted = async (deleteCommand: { classifiedId: string, up
       cause: result.$metadata
     });
   }
-
-
 }
-
-
 
 export {
   createOrUpdateClassified,

@@ -4,7 +4,7 @@ import { SSotEntityName } from "@shared/models/cm-consumer-constants";
 import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
 import { markClassifiedAsDeleted as markClassifiedAsDeletedPG, createOrUpdateClassified as createOrUpdateClassifiedPG, getClassified } from "cm-consumer/adapters/classifieds-materialized-view-postgre";
 import { createOrUpdateClassified as createOrUpdateClassifiedDynamoDB, markClassifiedAsDeleted as markClassifiedAsDeletedDynamoDB } from "cm-consumer/adapters/classifieds-materialized-view-dynamodb";
-import { initDatabase, patchDatabase, removeGeo , removeOrphans} from "cm-consumer/adapters/initSql";
+import { initDatabase, patchDatabase, removeGeo, removeOrphans } from "cm-consumer/adapters/initSql";
 import { logger } from "@shared/cross-cutting/logger";
 //import * as fs from 'fs';
 
@@ -15,37 +15,44 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
   //const body = await fs.readFileSync("cm-consumer/lambda-handlers/fakes/231116WBR1KI.json", "utf8");
   const e = JSON.parse(record.body);
   const classifiedId = e?.data?.classifiedId ?? e?.classifiedId;
-   
 
-  if (e.type == `${SSotEntityName}.deleted.v1`) {    
-    logger.warn ('delete classified  - ' + classifiedId);
-    logger.warn ('delete from postgre');
-    await markClassifiedAsDeletedPG(context, { classifiedId, updateDate: e.data.updateDate });
-    logger.warn ("delete from dynamoDb");
-    await markClassifiedAsDeletedDynamoDB({ classifiedId, updateDate: e.data.updateDate });
-  }
-  else if (e.type == `${SSotEntityName}.init.v1`) {
-    logger.warn ('init database');
-    await initDatabase();
-  } else if (e.type == `${SSotEntityName}.patch`) {
-    logger.warn ('patch database');
-    await patchDatabase();
-  }
-  else if (e.type == `${SSotEntityName}.clean.v1`) {
-    logger.warn ('delete  geo');
-    await removeGeo();
-  }
-  else if (e.type == `${SSotEntityName}.removeorphans.v1`) {
-    logger.warn ('removeorphans');
-    await removeOrphans();
-  }
-  else {
-    logger.warn ('upsert classified  - ' + classifiedId+ ' <event type> - ' + e.type);
-    
-    await createOrUpdateClassifiedPG(context, classifiedId, e.data);
-    const fullClassified = await getClassified(context, classifiedId);
-    if (fullClassified != null) {
-      await createOrUpdateClassifiedDynamoDB(classifiedId, e.data, fullClassified);
+  logger.warn(e.type);
+  switch (e.type) {
+    case `${SSotEntityName}.deleted.v1`: {
+      await markClassifiedAsDeletedPG(context, { classifiedId });
+      await markClassifiedAsDeletedDynamoDB({ classifiedId, updateDate: e.data.updateDate });
+      break;
+    }
+    case `${SSotEntityName}.init.v1`: {
+      await initDatabase();
+      break;
+    }
+    case `${SSotEntityName}.patch`: {
+      await patchDatabase();
+      break;
+    }
+    case `${SSotEntityName}.clean.v1`: {
+      await removeGeo();
+      break;
+    }
+    case `${SSotEntityName}.removeorphans.v1`: {
+      await removeOrphans();
+      break;
+    }
+    default: {
+      logger.warn('upsert classified  - ' + classifiedId + ' <event type> - ' + e.type);
+      const isUpserted = await createOrUpdateClassifiedPG(context, classifiedId, e.data);
+      if (!isUpserted) {
+        await markClassifiedAsDeletedPG(context, { classifiedId });
+       // await markClassifiedAsDeletedDynamoDB({ classifiedId, updateDate: e.data.updateDate });
+      }
+      else {
+        const fullClassified = await getClassified(context, classifiedId);
+        if (fullClassified != null) {
+          await createOrUpdateClassifiedDynamoDB(classifiedId, e.data, fullClassified);
+        }
+      }
+      break;
     }
   }
 }
