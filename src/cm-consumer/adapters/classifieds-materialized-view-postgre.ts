@@ -1,5 +1,5 @@
 import { logger } from "@shared/cross-cutting/logger";
-import { Classified, Location, VisibilityStatus } from "@shared/models/classified/1.0.0/classified";
+import { Classified, VisibilityStatus } from "@shared/models/classified/1.0.0/classified";
 import { ClassifiedWithFullGeo } from "@shared/models/classified/1.0.0/ClassifiedWithFullGeo";
 import { mapIsRangePrice, mapShowPrice } from '../utils/mappingHelpers';
 import { mapEnergyCertificateClass } from "cm-consumer/utils/mapEnergyCertificateClass";
@@ -95,7 +95,10 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         portals.some(x => x === "IMMONET") && classified.metadata?.creationDate != null,
         portals.some(x => x === "IWT") && classified.metadata?.creationDate != null,
         portals.some(x => x === "SL") && classified.metadata?.creationDate != null,
-        portals.some(x => x === "LI") && classified.metadata?.creationDate != null
+        portals.some(x => x === "LI") && classified.metadata?.creationDate != null,
+        classified.data?.structure?.rooms?.numberOfBedRooms,
+        classified.data?.texts?.headline?.fr,        
+        classified.data?.texts?.headline?.de
       ];
 
       const classifiedQuery = `
@@ -140,8 +143,16 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
             isImmonetPortal,
             isImmoweltPortal,
             isSeLogerPortal,
-            isLogicImmoPortal)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36, $37, $38, $39, $40)
+            isLogicImmoPortal,
+            numberOfBedRooms,
+            headline_fr,
+            headline_de)
+          VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36, $37, $38, $39
+          , $40
+          , $41
+          , $42
+          , $43)
       ON CONFLICT (ClassifiedId) DO UPDATE 
             SET Price = $2,
                 avivgeoId= $3, 
@@ -182,7 +193,10 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
                 isImmonetPortal=$37,
                 isImmoweltPortal=$38,
                 isSeLogerPortal=$39,
-                isLogicImmoPortal=$40;`;
+                isLogicImmoPortal=$40,
+                numberOfBedRooms=$41,
+                headline_fr=$42,
+                headline_de=$43;`;
       await _pool.query(classifiedQuery, classifiedValue);
     });
   }
@@ -223,11 +237,14 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
                     microregionid, provinceid, municipalityid, boroughid,
                     neighborhoodid, projecttypes, brand,
                     neighborhoodname, municipalityname,
-                    portals, portal, geo_avivgeoid,
+                    portals, geo_avivgeoid,
                     showAddress, overallSpace,
                     livingSpace, street, showPrice, isRangePrice, classifiedBusiness, space,
-                    creationdate
-            FROM public.v_classified
+                    creationdate,
+                    numberOfBedRooms,
+                    headline_fr,
+                    headline_de
+            FROM public.v_classified_v2
             where classifiedid = $1;  
               ;`;
       const res = await _pool.query<ClassifiedWithFullGeo>(query, classifiedValue);
