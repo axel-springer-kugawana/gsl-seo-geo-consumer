@@ -97,8 +97,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         portals.some(x => x === "SL") && classified.metadata?.creationDate != null,
         portals.some(x => x === "LI") && classified.metadata?.creationDate != null,
         classified.data?.structure?.rooms?.numberOfBedRooms,
-        classified.data?.texts.headline?.fr,        
-        classified.data?.texts.headline?.de
+        classified.data?.texts?.headline?.fr,        
+        classified.data?.texts?.headline?.de
       ];
 
       const classifiedQuery = `
