@@ -62,6 +62,9 @@ CREATE TABLE IF NOT EXISTS public.classified
     isimmoweltportal boolean DEFAULT false,
     isselogerportal boolean DEFAULT false,
     islogicimmoportal boolean DEFAULT false,
+    numberofbedrooms numeric,
+    headline_fr character varying COLLATE pg_catalog."default",
+    headline_de character varying COLLATE pg_catalog."default",
     CONSTRAINT "Classified_pkey" PRIMARY KEY (classifiedid)
 )
 
@@ -200,6 +203,7 @@ CREATE OR REPLACE VIEW public.v_classified
 
 ALTER TABLE public.v_classified
     OWNER TO main_user;
+ 
     
 CREATE OR REPLACE VIEW public.v_classified_v2
  AS
@@ -282,13 +286,18 @@ CREATE OR REPLACE VIEW public.v_classified_v2
     c.isimmonetportal,
     c.isimmoweltportal,
     c.isselogerportal,
-    c.islogicimmoportal
+    c.islogicimmoportal,
+    c.numberofbedrooms,
+    c.headline_fr,
+    c.headline_de
    FROM classified c
      LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
      LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid, c.avivgeoid)::text;
 
 ALTER TABLE public.v_classified_v2
-    OWNER TO main_user;`;
+    OWNER TO main_user;
+
+    `;
 
   const pool = await poolInstance.getPool(); // Ensure you are getting the pool instance correctly
 
@@ -309,10 +318,9 @@ ALTER TABLE public.v_classified_v2
  
 const patchDatabase = async () => {
   const sqlDatabase = `
-  ALTER TABLE classified ADD COLUMN IF NOT EXISTS isImmonetPortal boolean default false;
-  ALTER TABLE classified ADD COLUMN IF NOT EXISTS isImmoweltPortal boolean default false;
-  ALTER TABLE classified ADD COLUMN IF NOT EXISTS isSeLogerPortal boolean default false;
-  ALTER TABLE classified ADD COLUMN IF NOT EXISTS isLogicImmoPortal boolean default false;
+  ALTER TABLE classified ADD COLUMN IF NOT EXISTS numberofbedrooms numeric;
+  ALTER TABLE classified ADD COLUMN IF NOT EXISTS headline_fr character varying COLLATE pg_catalog."default";
+  ALTER TABLE classified ADD COLUMN IF NOT EXISTS headline_de character varying COLLATE pg_catalog."default";
 
 CREATE OR REPLACE VIEW public.v_classified_v2
  AS
@@ -395,13 +403,18 @@ CREATE OR REPLACE VIEW public.v_classified_v2
     c.isimmonetportal,
     c.isimmoweltportal,
     c.isselogerportal,
-    c.islogicimmoportal
+    c.islogicimmoportal,
+    c.numberofbedrooms,
+    c.headline_fr,
+    c.headline_de
    FROM classified c
      LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
      LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid, c.avivgeoid)::text;
 
 ALTER TABLE public.v_classified_v2
-    OWNER TO main_user;`;
+    OWNER TO main_user;
+
+  `;
 
   try {
     await poolInstance.getPool().then(_pool => _pool.query(sqlDatabase)); // Ensure you are getting the pool instance correctly
