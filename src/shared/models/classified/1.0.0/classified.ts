@@ -1,4 +1,3 @@
-import { ClassifiedBusiness } from "cm-consumer/models/classifiedEnums";
 import { EnergyCertificateAt } from "./energy-certificate-at";
 import { EnergyCertificateDe } from "./energy-certificate-de";
 import { EstateSubType } from "./estate-sub-type";
@@ -6,6 +5,7 @@ import { EstateType } from "./estate-type";
 import { Features } from "./features";
 import { Prices } from "./prices/prices";
 
+import { DistributionSubType } from "cm-consumer/models/DistributionSubType";
 
 // KEEP UPDATE FROM https://github.com/axel-springer-kugawana/aviv_architecture_backend_guild/tree/main/samples/classified-management-connector/src
 
@@ -24,6 +24,7 @@ export interface Classified {
     estateType: EstateType;
     estateSubType?: EstateSubType;
     distributionType: 'BUY' | 'RENT' | 'COMPULSORY_AUCTION' | 'BUY_AUCTION';
+    distributionSubType : DistributionSubType
     location?: Location;
     texts?: {
       headline?: MultiLingualText;

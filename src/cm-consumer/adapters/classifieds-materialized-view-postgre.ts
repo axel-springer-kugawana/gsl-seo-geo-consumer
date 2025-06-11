@@ -9,6 +9,8 @@ import { mapProjectTypes } from "cm-consumer/utils/mapProjectTypes";
 import { mapSpace } from "cm-consumer/utils/mapSpace";
 import { mapGeo } from '../utils/geoHelpers';
 
+import { DistributionSubTypeBuy} from "cm-consumer/models/classifiedEnums";
+
 import { poolInstance } from "./connectPostGre";
 import { Context } from "aws-lambda";
 import { isAuthorized, isGeoDataValid, isMarketStatusEligibleForPublication } from '../utils/classfiedRulesHelpers';
@@ -98,7 +100,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         portals.some(x => x === "LI") && classified.metadata?.creationDate != null,
         classified.data?.structure?.rooms?.numberOfBedRooms,
         classified.data?.texts?.headline?.fr,        
-        classified.data?.texts?.headline?.de
+        classified.data?.texts?.headline?.de,
+        classified.data?.distributionSubType?.buy === DistributionSubTypeBuy.BUSINESS_SALE_GOODWILL
       ];
 
       const classifiedQuery = `
@@ -146,13 +149,15 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
             isLogicImmoPortal,
             numberOfBedRooms,
             headline_fr,
-            headline_de)
+            headline_de,
+            isSaleGoodwill)
           VALUES (
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36, $37, $38, $39
           , $40
           , $41
           , $42
-          , $43)
+          , $43
+          , $44)
       ON CONFLICT (ClassifiedId) DO UPDATE 
             SET Price = $2,
                 avivgeoId= $3, 
@@ -196,7 +201,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
                 isLogicImmoPortal=$40,
                 numberOfBedRooms=$41,
                 headline_fr=$42,
-                headline_de=$43;`;
+                headline_de=$43,
+                isSaleGoodwill=$44;`;
       await _pool.query(classifiedQuery, classifiedValue);
     });
   }
@@ -243,7 +249,8 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
                     creationdate,
                     numberOfBedRooms,
                     headline_fr,
-                    headline_de
+                    headline_de,
+                    isSaleGoodwill
             FROM public.v_classified_v2
             where classifiedid = $1;  
               ;`;

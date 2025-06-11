@@ -131,3 +131,8 @@ You will find more about classified management APIs here:
 
 
 
+### Update SQL Part
+execute sqs event :
+{
+    "type": "classified.init.v1"
+}
