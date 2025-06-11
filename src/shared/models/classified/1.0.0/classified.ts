@@ -1,4 +1,3 @@
-import { ClassifiedBusiness } from "cm-consumer/models/classifiedEnums";
 import { EnergyCertificateAt } from "./energy-certificate-at";
 import { EnergyCertificateDe } from "./energy-certificate-de";
 import { EstateSubType } from "./estate-sub-type";
