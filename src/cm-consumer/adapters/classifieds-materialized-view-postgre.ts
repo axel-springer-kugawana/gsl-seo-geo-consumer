@@ -9,7 +9,7 @@ import { mapProjectTypes } from "cm-consumer/utils/mapProjectTypes";
 import { mapSpace } from "cm-consumer/utils/mapSpace";
 import { mapGeo } from '../utils/geoHelpers';
 
-import { ProjectType, BuildState, Validation, DistributionType ,DistributionSubTypeRent, DistributionSubTypeBuy} from "cm-consumer/models/classifiedEnums";
+import { DistributionSubTypeBuy} from "cm-consumer/models/classifiedEnums";
 
 import { poolInstance } from "./connectPostGre";
 import { Context } from "aws-lambda";
