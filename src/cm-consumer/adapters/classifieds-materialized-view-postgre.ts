@@ -101,7 +101,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         classified.data?.structure?.rooms?.numberOfBedRooms,
         classified.data?.texts?.headline?.fr,        
         classified.data?.texts?.headline?.de,
-        classified.data?.distributionSubType?.buy === DistributionSubTypeBuy.BUSINESS_SALE_GOODWILL,
+        classified.data?.distributionSubType?.buy === DistributionSubTypeBuy.BUSINESS_SALE_GOODWILL
       ];
 
       const classifiedQuery = `
