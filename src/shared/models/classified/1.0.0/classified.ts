@@ -189,6 +189,7 @@ export interface Classified {
         }[];
       };
     };
+    specifics?: Specifics;
     structure?: Structure;
     management?: Management;
     features?: Features;
@@ -975,6 +976,20 @@ export interface Media {
 }
 
 export interface Specifics {
+  extraction?: {
+    features?: {
+      /** @description presence of a cellar */
+      cellar?: boolean;
+      /** @description presence of a garage */
+      garage?: boolean;
+      /** @description presence of a garden */
+      garden?: boolean;
+      /** @description property is a houseboat */
+      houseboat?: boolean;
+      /** @description flat sharing is possible */
+      flatSharePossible?: boolean;
+    };
+  };
   de?: SpecificDe;
 }
 

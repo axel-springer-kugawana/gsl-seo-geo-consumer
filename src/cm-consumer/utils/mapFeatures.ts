@@ -24,12 +24,12 @@ export const mapFeatures = (
     const {
       garden: { part = null, private: privateGarden = null, shared = null } = {},
       wheelchairUse,
-      residential: { swimmingPool = null } = {},
+      residential: { swimmingPool = null, assistedLiving = null } = {},
+      aircondition
     } = {
       ...data.features,
     }
     const { numberOfBalconies = 0, numberOfTerraces = 0 } = { ...data.structure?.rooms }
-    const { mandateType } = { ...data.countrySpecific?.fr?.agentMandate }
     const { isImmediatelyAvailable, isRented, rent: { petsAllowed = null } = {} } = { ...data.management }
     const {
       bath: { window: bathWindow = null, bathtub = null } = {},
@@ -42,6 +42,14 @@ export const mapFeatures = (
     }
     const { iwtStellplatzAnzahl = 0 } = { ...specifics?.de }
   
+      const {
+    cellar: cellarFromExtraction,
+    flatSharePossible,
+    garage: garageFromExtraction,
+    garden,
+    houseboat
+    } = { ...specifics?.extraction?.features }
+
     const features: string[] = []
   
     if (
@@ -51,9 +59,10 @@ export const mapFeatures = (
     ) {
       features.push(Features.KITCHEN_FULLY_EQUIPPED)
     }
-    if (part || privateGarden || shared) features.push(Features.GARDEN)
+    if (garden || part || privateGarden || shared) features.push(Features.GARDEN)
     if (bathWindow === Validation.YES) features.push(Features.BATHROOM_WINDOW)
     if (
+      garageFromExtraction ||
       box > 0 ||
       inside > 0 ||
       outside > 0 ||
@@ -82,8 +91,7 @@ export const mapFeatures = (
     if (wheelchairUse === Validation.YES || barrierFree === Validation.YES) features.push(Features.REDUCE_MOBILITY_ACCESS)
     if (!(isRented === true || isImmediatelyAvailable === false)) features.push(Features.VACANT)
     if (bathtub === Validation.YES) features.push(Features.BATHTUB)
-    if (cellar === Validation.YES || cellar === Validation.PART) features.push(Features.CELLAR)
-    if (mandateType === MandateType.EXCLUSIVE) features.push(Features.EXCLUSIVE)
+    if (cellarFromExtraction || cellar === Validation.YES || cellar === Validation.PART) features.push(Features.CELLAR)
     if (elevator?.person === Validation.YES || elevator?.freight === Validation.YES) features.push(Features.ELEVATOR)
     if (
       data.prices?.brokerageFee?.hasFee === Validation.NO ||
@@ -92,7 +100,10 @@ export const mapFeatures = (
       features.push(Features.COMMISSION_FREE)
     }
     if (media === undefined || media.length === 0) features.push(Features.NO_MEDIA)
-    // if (booking?.effectsSuggestion) features.push(Features.BOOKING_EFFECTS_SUGGESTION)
+      if (aircondition === Validation.YES || aircondition === Validation.PART) features.push(Features.AIR_CONDITION)
+      if (assistedLiving === Validation.YES || assistedLiving === Validation.PART) features.push(Features.ASSISTED_LIVING)
+      if (houseboat) features.push(Features.HOUSEBOAT)
+      if (flatSharePossible) features.push(Features.FLATSHARE_POSSIBLE)
   
     return features
   }

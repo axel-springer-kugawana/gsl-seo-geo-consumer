@@ -87,6 +87,7 @@ export enum SwimmingPool {
   OUTSIDE = 'OUTSIDE',
   INSIDE_AND_OUTSIDE = 'INSIDE_AND_OUTSIDE',
   INSIDE = 'INSIDE',
+  NOT_APPLICABLE = 'NOT_APPLICABLE',
 }
 
 export enum MandateType {
@@ -112,6 +113,11 @@ export enum Features {
   BOOKING_EFFECTS_SUGGESTION = 'BOOKING_EFFECTS_SUGGESTION',
   SWIMMING_POOL = 'SWIMMING_POOL',
   EXCLUSIVE = 'EXCLUSIVE',
+  ASSISTED_LIVING = 'ASSISTED_LIVING',
+  AIR_CONDITION = 'AIR_CONDITION',
+  HOUSEBOAT = 'HOUSEBOAT',
+  // FLATSHARE_POSSIBLE feature <=> Classified is allowed to be a flat share /!\ Do not confuse with ProjectType.FLATSHARING
+  FLATSHARE_POSSIBLE = 'FLATSHARE_POSSIBLE',
 }
 
 export enum MarketStatus {
@@ -143,10 +149,13 @@ export enum EstateSubType {
 }
 
 export enum EstateType {
+  HOUSE = 'HOUSE',
+  APARTMENT = 'APARTMENT',
   PLOT = 'PLOT',
   PARKING = 'PARKING',
   MISCELLANEOUS = 'MISCELLANEOUS',
   PROJECT = 'PROJECT',
+  OFFICE = 'OFFICE',
 }
 
 export enum ProjectType {
@@ -164,6 +173,7 @@ export enum ProjectType {
 export enum ClassifiedBusiness {
   PRIVATE = 'PRIVATE',
   PROFESSIONAL = 'PROFESSIONAL',
+  PROFESSIONAL_UNITARY = 'PROFESSIONAL_UNITARY',
 }
 
 export enum EnrichmentType {

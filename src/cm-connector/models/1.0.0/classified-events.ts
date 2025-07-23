@@ -35,6 +35,9 @@ enum Portals {
     IWB = "IWB",
     IWT = "IWT",
     IMMONET = "IMMONET",
+    SLN = 'SLN',
+    LIN = 'LIN',
+    SLC = 'SLC',
 }
 
 enum VisibilityStatus {

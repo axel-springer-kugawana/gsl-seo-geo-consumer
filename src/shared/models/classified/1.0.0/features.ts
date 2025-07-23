@@ -211,7 +211,7 @@ export interface Features {
      * @description assisted living is offered
      * @enum {string}
      */
-    assistedLiving?: 'YES' | 'NO' | 'NOT_APPLICABLE';
+    assistedLiving?: 'YES' | 'NO' | 'PART' | 'NOT_APPLICABLE';
     /**
      * @description presence of a chimney, indoor fireplace
      * @enum {string}
