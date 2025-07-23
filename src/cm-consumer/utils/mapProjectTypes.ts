@@ -1,6 +1,5 @@
 import { Classified } from "@shared/models/classified/1.0.0/classified";
-import { ProjectType, BuildState, Validation, DistributionType ,DistributionSubTypeRent, DistributionSubTypeBuy} from "cm-consumer/models/classifiedEnums";
-
+import { ProjectType, BuildState, Validation, DistributionType ,DistributionSubTypeRent, DistributionSubTypeBuy, EstateType} from "cm-consumer/models/classifiedEnums";
 
 export const mapProjectTypes = (
     classified: Classified
@@ -28,6 +27,10 @@ export const mapProjectTypes = (
         ].includes(distributionSubTypeBuy))
     ) {
       projectTypes.push(ProjectType.NEW_BUILD)
+    }
+
+    if (data.estateType === EstateType.PROJECT && distributionSubTypeBuy === DistributionSubTypeBuy.NEW_HOME) {
+      data.estateType = EstateType.HOUSE
     }
 
     if (isForInvestment || distributionSubTypeBuy === DistributionSubTypeBuy.NEW_BUILD_INVESTMENT_PRODUCT) {
