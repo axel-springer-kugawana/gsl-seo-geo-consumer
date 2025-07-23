@@ -82,6 +82,17 @@
                 }
             ]
         },
-        "classifiedId": "23NM8IIQXH5P"
+        "classifiedId": "23NM8IIQXH5P",
+        "specifics": {
+        "extraction": {
+            "features": {
+            "farmLand": false,
+            "cellar": false,
+            "houseboat": false,
+            "garage": false,
+            "garden": true
+            }
+        }
+    }
     }
 }
