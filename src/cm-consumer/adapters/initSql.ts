@@ -66,7 +66,8 @@ CREATE TABLE IF NOT EXISTS public.classified
     headline_fr character varying COLLATE pg_catalog."default",
     headline_de character varying COLLATE pg_catalog."default",
     CONSTRAINT "Classified_pkey" PRIMARY KEY (classifiedid),
-    isSaleGoodwill boolean DEFAULT false
+    isSaleGoodwill boolean DEFAULT false,
+    businessSubType character varying COLLATE pg_catalog."default"
 )
 
 TABLESPACE pg_default;
@@ -204,7 +205,8 @@ CREATE OR REPLACE VIEW public.v_classified_v2
     c.numberofbedrooms,
     c.headline_fr,
     c.headline_de,
-    c.isSaleGoodwill
+    c.isSaleGoodwill,
+    c.businessSubType
    FROM classified c
      LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
      LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid, c.avivgeoid)::text;
@@ -233,7 +235,7 @@ ALTER TABLE public.v_classified_v2
  
 const patchDatabase = async () => {
   const sqlDatabase = `
-  ALTER TABLE classified ADD COLUMN IF NOT EXISTS isSaleGoodwill boolean;
+  ALTER TABLE classified ADD COLUMN IF NOT EXISTS businessSubType character varying COLLATE pg_catalog."default";
 
 CREATE OR REPLACE VIEW public.v_classified_v2
  AS
@@ -320,7 +322,8 @@ CREATE OR REPLACE VIEW public.v_classified_v2
     c.numberofbedrooms,
     c.headline_fr,
     c.headline_de,
-    c.isSaleGoodwill
+    c.isSaleGoodwill,
+    c.businessSubType
    FROM classified c
      LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
      LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid, c.avivgeoid)::text;

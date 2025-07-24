@@ -41,4 +41,5 @@ export interface ClassifiedWithFullGeo {
     showPrice: boolean;
     isRangePrice: boolean;
     space: number;
+    businessSubType: string;
 }

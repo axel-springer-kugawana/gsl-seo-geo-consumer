@@ -101,7 +101,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         classified.data?.structure?.rooms?.numberOfBedRooms,
         classified.data?.texts?.headline?.fr,        
         classified.data?.texts?.headline?.de,
-        classified.data?.distributionSubType?.buy === DistributionSubTypeBuy.BUSINESS_SALE_GOODWILL
+        classified.data?.distributionSubType?.buy === DistributionSubTypeBuy.BUSINESS_SALE_GOODWILL,
+        classified.data?.countrySpecific?.fr?.business?.businessSubType ?? null
       ];
 
       const classifiedQuery = `
@@ -150,14 +151,16 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
             numberOfBedRooms,
             headline_fr,
             headline_de,
-            isSaleGoodwill)
+            isSaleGoodwill,
+            businessSubType)
           VALUES (
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36, $37, $38, $39
           , $40
           , $41
           , $42
           , $43
-          , $44)
+          , $44
+          , $45)
       ON CONFLICT (ClassifiedId) DO UPDATE 
             SET Price = $2,
                 avivgeoId= $3, 
@@ -202,7 +205,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
                 numberOfBedRooms=$41,
                 headline_fr=$42,
                 headline_de=$43,
-                isSaleGoodwill=$44;`;
+                isSaleGoodwill=$44,
+                businessSubType=$45;
+                `;
       await _pool.query(classifiedQuery, classifiedValue);
     });
   }
@@ -250,7 +255,8 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
                     numberOfBedRooms,
                     headline_fr,
                     headline_de,
-                    isSaleGoodwill
+                    isSaleGoodwill,
+                    businessSubType
             FROM public.v_classified_v2
             where classifiedid = $1;  
               ;`;
