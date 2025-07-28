@@ -26,6 +26,7 @@ export interface Classified {
     distributionType: 'BUY' | 'RENT' | 'COMPULSORY_AUCTION' | 'BUY_AUCTION';
     distributionSubType : DistributionSubType
     location?: Location;
+    countrySpecific?: Specifics;
     texts?: {
       headline?: MultiLingualText;
       description?: MultiLingualText;
@@ -991,6 +992,7 @@ export interface Specifics {
     };
   };
   de?: SpecificDe;
+  fr?: SpecificFr;
 }
 
 interface SpecificDe {
@@ -1000,6 +1002,16 @@ interface SpecificDe {
   iwtStellplatzAnzahl?: number;
   iwtBaujahr?: string;
 }
+
+interface SpecificFr {
+  business?: Business;
+}
+
+interface Business {
+  businessSubType?: string;
+  businessType?: string;
+}
+
 export enum VisibilityStatus {
   PUBLISHED = "PUBLISHED",
   UNPUBLISHED = "UNPUBLISHED",

@@ -16,6 +16,19 @@
         },
         "media": [],
         "data": {
+            "countrySpecific": {
+                "fr": {
+                "agentMandate": {
+                    "mandateType": "EXCLUSIVE",
+                    "mandateNumber": "864669"
+                },
+                "business": {
+                    "isBusinessSold": true,
+                    "businessSubType": "PHARMACY",
+                    "businessType": "HEALTH"
+                }
+                }
+            },
             "location": {
                 "avivGeoId": "BLOCDE286164",
                 "country": "DE",

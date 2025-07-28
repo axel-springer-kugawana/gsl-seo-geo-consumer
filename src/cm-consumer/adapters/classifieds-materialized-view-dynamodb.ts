@@ -1,15 +1,28 @@
 import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
+import { fromSSO } from "@aws-sdk/credential-provider-sso";
 import { logger } from "@shared/cross-cutting/logger";
 import { Classified } from "@shared/models/classified/1.0.0/classified";
 import { ClassifiedWithFullGeo } from "@shared/models/classified/1.0.0/ClassifiedWithFullGeo";
 
-const ddbClient = new DynamoDBClient({});
+// Configuration du client DynamoDB avec SSO pour le développement local
+const isLocal = process.env.AWS_EXECUTION_ENV === undefined;
+
+const ddbClient = new DynamoDBClient(
+  isLocal
+    ? {
+        region: process.env.AWS_REGION || 'eu-central-1',
+        credentials: fromSSO({
+          profile: 'AvivPowerUserAccessReadWrite-135557783010',
+        }),
+      }
+    : {}
+);
 
 const createOrUpdateClassified = async (id: string, data: Classified, classified: ClassifiedWithFullGeo): Promise<void> => {
 
   try {
     await ddbClient.send(new UpdateItemCommand({
-      TableName: process.env.MV_TABLE_NAME,
+      TableName: isLocal ? "seo-ssot-classified" : process.env.MV_TABLE_NAME,
       Key: {
         "id": {
           "S": id
