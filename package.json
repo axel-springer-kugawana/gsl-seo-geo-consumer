@@ -3,5 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "packageManager": "pnpm@8.7.5",
-  "scripts": {}
+  "scripts": {
+    "aws:login": "aws sso login --profile AvivPowerUserAccessReadWrite-135557783010",
+    "aws:check": "aws sts get-caller-identity --profile AvivPowerUserAccessReadWrite-135557783010"
+  }
 }

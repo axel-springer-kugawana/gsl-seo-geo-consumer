@@ -102,7 +102,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         classified.data?.texts?.headline?.fr,        
         classified.data?.texts?.headline?.de,
         classified.data?.distributionSubType?.buy === DistributionSubTypeBuy.BUSINESS_SALE_GOODWILL,
-        classified.data?.countrySpecific?.fr?.business?.businessSubType ?? null
+        classified.data?.countrySpecific?.fr?.business?.businessSubType
       ];
 
       const classifiedQuery = `
@@ -151,7 +151,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
             numberOfBedRooms,
             headline_fr,
             headline_de,
-            isSaleGoodwill,
+            issalegoodwill,
             businessSubType)
           VALUES (
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36, $37, $38, $39
