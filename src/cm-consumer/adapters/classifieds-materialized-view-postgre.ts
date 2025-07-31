@@ -248,6 +248,7 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
                     microregionid, provinceid, municipalityid, boroughid,
                     neighborhoodid, projecttypes, brand,
                     neighborhoodname, municipalityname,
+                    microNeighborhoodId,
                     portals, geo_avivgeoid,
                     showAddress, overallSpace,
                     livingSpace, street, showPrice, isRangePrice, classifiedBusiness, space,
