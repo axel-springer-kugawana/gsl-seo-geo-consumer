@@ -174,7 +174,7 @@ async function addGeoFromCoordinatesToCacheAsync(_pool: Pool, geo: Feature[], ma
     let boroughID = getIdForGeoLevel(geo, 900);
     let neighborhoodId = getIdForGeoLevel(geo.filter(x=>x.type === 'Neighborhood'), 1000);
     let neighborhoodName = getNamesForLevel(current, geo.filter(x=>x.type === 'Neighborhood'), 1000);
-    let microNeighborhoodId = getIdForGeoLevel(geo, 1100);
+    let microNeighborhoodId = getIdForGeoLevel(geo.filter(x=>x.type === 'Micro neighborhood'), 1100);
 
     if (lat !== undefined) {
         const geo_lat_lonValue = [
