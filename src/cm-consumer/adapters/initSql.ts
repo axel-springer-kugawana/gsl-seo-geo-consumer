@@ -241,7 +241,8 @@ ALTER TABLE public.v_classified_v2
  
 const patchDatabase = async () => {
   const sqlDatabase = `
-  ALTER TABLE classified ADD COLUMN IF NOT EXISTS microneighborhoodid character varying COLLATE pg_catalog."default";
+  ALTER TABLE geo ADD COLUMN IF NOT EXISTS microneighborhoodid character varying COLLATE pg_catalog."default";
+  ALTER TABLE geo_lat_lon ADD COLUMN IF NOT EXISTS microneighborhoodid character varying COLLATE pg_catalog."default";
 
 CREATE OR REPLACE VIEW public.v_classified_v2
  AS
