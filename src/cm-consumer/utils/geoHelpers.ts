@@ -225,11 +225,11 @@ async function addGeoFromIdToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivG
     let provinceId = getIdForGeoLevel(geo, 600);
     //Ensure unicity of municipalityId
     let municipalityId = single(geo?.filter(x => x.level === 800 && x.type_key === 'AD08' && x.active === true))?.id;
-    let municipalityName = getNamesForLevel(current, geo, 800);
+    let municipalityName = getNamesForLevel(current, geo?.filter(x=>x.level === 800 && x.type_key === 'AD08'), 800);
     let boroughID = getIdForGeoLevel(geo, 900);
-    let neighborhoodId = getIdForGeoLevel(geo, 1000);
-    let neighborhoodName = getNamesForLevel(current, geo, 1000);
-    let microNeighborhoodId = getIdForGeoLevel(geo, 1100);
+    let neighborhoodId = getIdForGeoLevel(geo.filter(x=>x.type === 'Neighborhood'), 1000);
+    let neighborhoodName = getNamesForLevel(current, geo.filter(x=>x.type === 'Neighborhood'), 1000);
+    let microNeighborhoodId = getIdForGeoLevel(geo.filter(x=>x.type === 'Micro neighborhood'), 1100);
     let blocId = getIdForGeoLevel(geo, 1200);
 
     const geoValues = [
