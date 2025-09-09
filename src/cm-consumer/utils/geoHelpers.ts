@@ -174,6 +174,7 @@ async function addGeoFromCoordinatesToCacheAsync(_pool: Pool, geo: Feature[], ma
     let boroughID = getIdForGeoLevel(geo, 900);
     let neighborhoodId = getIdForGeoLevel(geo.filter(x=>x.type === 'Neighborhood'), 1000);
     let neighborhoodName = getNamesForLevel(current, geo.filter(x=>x.type === 'Neighborhood'), 1000);
+    let microNeighborhoodId = getIdForGeoLevel(geo.filter(x=>x.type === 'Micro neighborhood'), 1100);
 
     if (lat !== undefined) {
         const geo_lat_lonValue = [
@@ -189,11 +190,12 @@ async function addGeoFromCoordinatesToCacheAsync(_pool: Pool, geo: Feature[], ma
             boroughID,
             neighborhoodId,
             neighborhoodName,
+            microNeighborhoodId,
             current?.level
         ]
 
         const geo_lat_lon = `
-      INSERT INTO geo_lat_lon (lat, lon, avivgeoId, updateDate, countryId, regionId, microregionId, provinceId, municipalityId, municipalityName, boroughID, neighborhoodId,neighborhoodName,geolevel) VALUES ($1, $2, $3, NOW(), $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      INSERT INTO geo_lat_lon (lat, lon, avivgeoId, updateDate, countryId, regionId, microregionId, provinceId, municipalityId, municipalityName, boroughID, neighborhoodId, neighborhoodName, microNeighborhoodId, geolevel) VALUES ($1, $2, $3, NOW(), $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       ON CONFLICT (lat,lon) DO UPDATE 
         SET    
         avivgeoId = $3,
@@ -207,7 +209,8 @@ async function addGeoFromCoordinatesToCacheAsync(_pool: Pool, geo: Feature[], ma
         boroughID= $10,
         neighborhoodId= $11,
         neighborhoodName= $12,
-        geolevel=$13`;
+        microNeighborhoodId= $13,
+        geolevel=$14`;
         await _pool.query(geo_lat_lon, geo_lat_lonValue);
     }
 }
@@ -222,10 +225,11 @@ async function addGeoFromIdToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivG
     let provinceId = getIdForGeoLevel(geo, 600);
     //Ensure unicity of municipalityId
     let municipalityId = single(geo?.filter(x => x.level === 800 && x.type_key === 'AD08' && x.active === true))?.id;
-    let municipalityName = getNamesForLevel(current, geo, 800);
+    let municipalityName = getNamesForLevel(current, geo?.filter(x=>x.level === 800 && x.type_key === 'AD08'), 800);
     let boroughID = getIdForGeoLevel(geo, 900);
-    let neighborhoodId = getIdForGeoLevel(geo, 1000);
-    let neighborhoodName = getNamesForLevel(current, geo, 1000);
+    let neighborhoodId = getIdForGeoLevel(geo.filter(x=>x.type === 'Neighborhood'), 1000);
+    let neighborhoodName = getNamesForLevel(current, geo.filter(x=>x.type === 'Neighborhood'), 1000);
+    let microNeighborhoodId = getIdForGeoLevel(geo.filter(x=>x.type === 'Micro neighborhood'), 1100);
     let blocId = getIdForGeoLevel(geo, 1200);
 
     const geoValues = [
@@ -240,6 +244,7 @@ async function addGeoFromIdToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivG
         boroughID,
         neighborhoodId,
         neighborhoodName,
+        microNeighborhoodId,
         blocId
     ]
     const geoQuery = `
@@ -255,9 +260,10 @@ async function addGeoFromIdToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivG
       boroughID,
       neighborhoodId,
       neighborhoodName,
+      microNeighborhoodId,
       blocId,
       updateDate
-   ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,$11,$12, NOW())
+   ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())
   ON CONFLICT (avivgeoId) DO UPDATE 
       SET  
       geoLevel = $2,
@@ -270,7 +276,8 @@ async function addGeoFromIdToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivG
       boroughID= $9,
       neighborhoodId= $10,
       neighborhoodName= $11,
-      blocId= $12,
+      microNeighborhoodId= $12,
+      blocId= $13,
       updateDate= NOW();`;
 
     await _pool.query(geoQuery, geoValues);

@@ -86,6 +86,7 @@ ALTER TABLE IF EXISTS public.classified
         municipalityid character varying COLLATE pg_catalog."default",
         boroughid character varying COLLATE pg_catalog."default",
         neighborhoodid character varying COLLATE pg_catalog."default",
+        microneighborhoodid character varying COLLATE pg_catalog."default",
         blocid character varying COLLATE pg_catalog."default",
         updatedate timestamp without time zone,
         municipalityname jsonb,
@@ -110,6 +111,7 @@ ALTER TABLE IF EXISTS public.classified
         municipalityid character varying COLLATE pg_catalog."default",
         boroughid character varying COLLATE pg_catalog."default",
         neighborhoodid character varying COLLATE pg_catalog."default",
+        microneighborhoodid character varying COLLATE pg_catalog."default",
         updatedate timestamp without time zone,
         municipalityname jsonb,
         neighborhoodname jsonb,
@@ -183,6 +185,10 @@ CREATE OR REPLACE VIEW public.v_classified_v2
             WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.neighborhoodname
             ELSE g.neighborhoodname
         END AS neighborhoodname,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.microneighborhoodid
+            ELSE g.microneighborhoodid
+        END AS microneighborhoodid,
     c.projecttypes,
     c.brand,
     c.portals,
@@ -235,8 +241,8 @@ ALTER TABLE public.v_classified_v2
  
 const patchDatabase = async () => {
   const sqlDatabase = `
-  ALTER TABLE classified ADD COLUMN IF NOT EXISTS businesssubtype character varying COLLATE pg_catalog."default";
-
+  ALTER TABLE geo ADD COLUMN IF NOT EXISTS microneighborhoodid character varying COLLATE pg_catalog."default";
+  ALTER TABLE geo_lat_lon ADD COLUMN IF NOT EXISTS microneighborhoodid character varying COLLATE pg_catalog."default";
 CREATE OR REPLACE VIEW public.v_classified_v2
  AS
  SELECT c.classifiedid,
@@ -323,11 +329,14 @@ CREATE OR REPLACE VIEW public.v_classified_v2
     c.headline_fr,
     c.headline_de,
     c.issalegoodwill,
-    c.businesssubtype
+    c.businesssubtype,
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.microneighborhoodid
+            ELSE g.microneighborhoodid
+        END AS microneighborhoodid
    FROM classified c
      LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
      LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid, c.avivgeoid)::text;
-
 ALTER TABLE public.v_classified_v2
     OWNER TO main_user;
   `;
