@@ -1,16 +1,18 @@
 import { Classified } from "@shared/models/classified/1.0.0/classified";
-import { ProjectType, BuildState, Validation, DistributionType ,DistributionSubTypeRent, DistributionSubTypeBuy, EstateType} from "cm-consumer/models/classifiedEnums";
+import { ProjectType, BuildState, Validation, DistributionType ,DistributionSubTypeRent, DistributionSubTypeBuy, EstateType, EstateSubType} from "cm-consumer/models/classifiedEnums";
 
 export const mapProjectTypes = (
     classified: Classified
 ): string[] => {
-    const { data, metadata } = classified;
+    const { data, metadata, specifics } = classified;
 
 
     const { projectId, externalProjectId } = { ...metadata }
 
     const { rent: { isShortTimeRental = null } = {}, isForInvestment, isForSwap } = { ...data.management }
     const projectTypes: string[] = []
+
+    const { flatSharePossible } = { ...specifics?.extraction?.features }
   
      const { buy: distributionSubTypeBuy, rent: distributionSubTypeRent } = { ...data.distributionSubType }
     // const projectTypes: string[] = []
@@ -52,9 +54,13 @@ export const mapProjectTypes = (
       projectTypes.push(ProjectType.PROJECTED)
     }
 
-    if (data.estateSubType && data.estateSubType[data.estateType.toLocaleLowerCase()] === 'FLATSHARING_ROOM') {
-      projectTypes.push(ProjectType.FLATSHARING)
-    }
+  if (
+    (data.estateSubType &&
+      data.estateSubType[data.estateType.toLocaleLowerCase()] === EstateSubType.FLATSHARING_ROOM) ||
+    flatSharePossible
+  ) {
+    projectTypes.push(ProjectType.FLATSHARING)
+  }
 
     if (isForSwap) projectTypes.push(ProjectType.SWAP_APARTMENT)
     if (
