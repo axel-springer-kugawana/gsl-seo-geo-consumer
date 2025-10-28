@@ -65,15 +65,39 @@ CREATE TABLE IF NOT EXISTS public.classified
     numberofbedrooms numeric,
     headline_fr character varying COLLATE pg_catalog."default",
     headline_de character varying COLLATE pg_catalog."default",
-    CONSTRAINT "Classified_pkey" PRIMARY KEY (classifiedid),
-    issalegoodwill boolean DEFAULT false,
-    businesssubtype character varying COLLATE pg_catalog."default"
+    issalegoodwill boolean,
+    businesssubtype character varying COLLATE pg_catalog."default",
+    CONSTRAINT "Classified_pkey" PRIMARY KEY (classifiedid)
 )
 
 TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS public.classified
-    OWNER to main_user
+    OWNER to main_user;
+
+-- Index: classified_immoweltbool_index
+-- DROP INDEX IF EXISTS public.classified_immoweltbool_index;
+CREATE INDEX IF NOT EXISTS classified_immoweltbool_index
+    ON public.classified USING btree
+    (isimmoweltportal ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+
+-- Index: idx_classified_portals
+-- DROP INDEX IF EXISTS public.idx_classified_portals;
+CREATE INDEX IF NOT EXISTS idx_classified_portals
+    ON public.classified USING btree
+    (portals COLLATE pg_catalog."default" ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+
+-- Index: idx_v_classified_v2_projecttypes_gin
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_projecttypes_gin;
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_projecttypes_gin
+    ON public.classified USING gin
+    (projecttypes COLLATE pg_catalog."default")
+    WITH (fastupdate=True, gin_pending_list_limit=4194304)
+    TABLESPACE pg_default;
 
     CREATE TABLE IF NOT EXISTS public.geo
     (
@@ -240,106 +264,8 @@ ALTER TABLE public.v_classified_v2
 };
  
 const patchDatabase = async () => {
-  const sqlDatabase = `
-  ALTER TABLE geo ADD COLUMN IF NOT EXISTS microneighborhoodid character varying COLLATE pg_catalog."default";
-  ALTER TABLE geo_lat_lon ADD COLUMN IF NOT EXISTS microneighborhoodid character varying COLLATE pg_catalog."default";
-CREATE OR REPLACE VIEW public.v_classified_v2
- AS
- SELECT c.classifiedid,
-    c.estatetype,
-    c.estatesubtype,
-    c.distributiontype,
-    c.avivgeoid,
-    c.location_type,
-    c.country,
-    c.city,
-    c.postalcode,
-    c.price,
-    c.numberofrooms,
-    c.livingspace,
-    c.overallspace,
-    c.furnished,
-    c.yearofconstruction,
-    c.certificateofeligibilityneeded,
-    c.locationinbuilding,
-    c.features,
-    c.isauthorized,
-    c.isgeodatavalid,
-    c.ismarketstatuseligibleforpublication,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.geolevel
-            ELSE g.geolevel
-        END AS geolevel,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.countryid
-            ELSE g.countryid
-        END AS countryid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.regionid
-            ELSE g.regionid
-        END AS regionid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.microregionid
-            ELSE g.microregionid
-        END AS microregionid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.provinceid
-            ELSE g.provinceid
-        END AS provinceid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.municipalityid
-            ELSE g.municipalityid
-        END AS municipalityid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.municipalityname
-            ELSE g.municipalityname
-        END AS municipalityname,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.boroughid
-            ELSE g.boroughid
-        END AS boroughid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.neighborhoodid
-            ELSE g.neighborhoodid
-        END AS neighborhoodid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.neighborhoodname
-            ELSE g.neighborhoodname
-        END AS neighborhoodname,
-    c.projecttypes,
-    c.brand,
-    c.portals,
-    g.avivgeoid AS geo_avivgeoid,
-    c.showaddress,
-    c.street,
-    c.buildstate,
-    c.energycertificateclass,
-    c.showprice,
-    c.israngeprice,
-    c.classifiedbusiness,
-    c.space,
-    c.ssotupdatedate,
-    c.projectid,
-    c.creationdate,
-    c.isimmonetportal,
-    c.isimmoweltportal,
-    c.isselogerportal,
-    c.islogicimmoportal,
-    c.numberofbedrooms,
-    c.headline_fr,
-    c.headline_de,
-    c.issalegoodwill,
-    c.businesssubtype,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.microneighborhoodid
-            ELSE g.microneighborhoodid
-        END AS microneighborhoodid
-   FROM classified c
-     LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
-     LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid, c.avivgeoid)::text;
-ALTER TABLE public.v_classified_v2
-    OWNER TO main_user;
-  `;
+  const sqlDatabase = `CREATE INDEX idx_v_classified_v2_projecttypes_gin
+ON classified USING GIN (projecttypes);`;
 
   try {
     await poolInstance.getPool().then(_pool => _pool.query(sqlDatabase)); // Ensure you are getting the pool instance correctly
