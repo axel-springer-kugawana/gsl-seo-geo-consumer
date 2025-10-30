@@ -268,17 +268,15 @@ ALTER TABLE public.v_classified_v2
  
 const patchDatabase = async () => {
   const sqlDatabase = `
-
-  CREATE INDEX IF NOT EXISTS idx_v_classified_v2_projecttypes_gin
+ 
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_projecttypes_gin
     ON public.classified USING gin
     (projecttypes COLLATE pg_catalog."default")
     WITH (fastupdate=True, gin_pending_list_limit=4194304)
     TABLESPACE pg_default;
 
-    
   ALTER TABLE classified ADD COLUMN IF NOT EXISTS building_offeredFloors numeric;
--- View: public.v_classified_v2
--- DROP VIEW public.v_classified_v2;
+
 CREATE OR REPLACE VIEW public.v_classified_v2
  AS
  SELECT c.classifiedid,
@@ -376,7 +374,10 @@ CREATE OR REPLACE VIEW public.v_classified_v2
      LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid, c.avivgeoid)::text;
 
 ALTER TABLE public.v_classified_v2
-    OWNER TO main_user,  `;
+    OWNER TO main_user;
+
+
+        `;
 
   try {
     await poolInstance.getPool().then(_pool => _pool.query(sqlDatabase)); // Ensure you are getting the pool instance correctly
