@@ -102,7 +102,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         classified.data?.texts?.headline?.fr,        
         classified.data?.texts?.headline?.de,
         classified.data?.distributionSubType?.buy === DistributionSubTypeBuy.BUSINESS_SALE_GOODWILL,
-        classified.data?.countrySpecific?.fr?.business?.businessSubType
+        classified.data?.countrySpecific?.fr?.business?.businessSubType,
+         classified.data?.structure?.building?.offeredFloors
       ];
 
       const classifiedQuery = `
@@ -152,7 +153,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
             headline_fr,
             headline_de,
             issalegoodwill,
-            businessSubType)
+            businessSubType,
+            building_offeredFloors
+            )
           VALUES (
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36, $37, $38, $39
           , $40
@@ -160,7 +163,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           , $42
           , $43
           , $44
-          , $45)
+          , $45
+          , $46)
       ON CONFLICT (ClassifiedId) DO UPDATE 
             SET Price = $2,
                 avivgeoId= $3, 
@@ -206,7 +210,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
                 headline_fr=$42,
                 headline_de=$43,
                 isSaleGoodwill=$44,
-                businessSubType=$45;
+                businessSubType=$45,
+                building_offeredFloors=$46;
                 `;
       await _pool.query(classifiedQuery, classifiedValue);
     });

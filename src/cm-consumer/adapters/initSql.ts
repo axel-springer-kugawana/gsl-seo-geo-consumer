@@ -11,7 +11,7 @@ const initDatabase = async () => {
     DROP TABLE IF EXISTS geo;
     DROP TABLE IF EXISTS geo_lat_lon;
 
-    -- Table: public.classified
+ -- Table: public.classified
 
 -- DROP TABLE IF EXISTS public.classified;
 
@@ -65,15 +65,41 @@ CREATE TABLE IF NOT EXISTS public.classified
     numberofbedrooms numeric,
     headline_fr character varying COLLATE pg_catalog."default",
     headline_de character varying COLLATE pg_catalog."default",
-    CONSTRAINT "Classified_pkey" PRIMARY KEY (classifiedid),
-    issalegoodwill boolean DEFAULT false,
-    businesssubtype character varying COLLATE pg_catalog."default"
+    issalegoodwill boolean,
+    businesssubtype character varying COLLATE pg_catalog."default",
+	building_offeredFloors numeric,
+    CONSTRAINT "Classified_pkey" PRIMARY KEY (classifiedid)
 )
 
 TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS public.classified
-    OWNER to main_user
+    OWNER to main_user;
+-- Index: classified_immoweltbool_index
+
+-- DROP INDEX IF EXISTS public.classified_immoweltbool_index;
+
+CREATE INDEX IF NOT EXISTS classified_immoweltbool_index
+    ON public.classified USING btree
+    (isimmoweltportal ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+-- Index: idx_classified_portals
+
+-- DROP INDEX IF EXISTS public.idx_classified_portals;
+
+CREATE INDEX IF NOT EXISTS idx_classified_portals
+    ON public.classified USING btree
+    (portals COLLATE pg_catalog."default" ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_projecttypes_gin
+    ON public.classified USING gin
+    (projecttypes COLLATE pg_catalog."default")
+    WITH (fastupdate=True, gin_pending_list_limit=4194304)
+    TABLESPACE pg_default;
+
 
     CREATE TABLE IF NOT EXISTS public.geo
     (
@@ -212,7 +238,8 @@ CREATE OR REPLACE VIEW public.v_classified_v2
     c.headline_fr,
     c.headline_de,
     c.issalegoodwill,
-    c.businesssubtype
+    c.businesssubtype,
+    c.building_offeredFloors
    FROM classified c
      LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
      LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid, c.avivgeoid)::text;
@@ -241,8 +268,17 @@ ALTER TABLE public.v_classified_v2
  
 const patchDatabase = async () => {
   const sqlDatabase = `
-  ALTER TABLE geo ADD COLUMN IF NOT EXISTS microneighborhoodid character varying COLLATE pg_catalog."default";
-  ALTER TABLE geo_lat_lon ADD COLUMN IF NOT EXISTS microneighborhoodid character varying COLLATE pg_catalog."default";
+
+  CREATE INDEX IF NOT EXISTS idx_v_classified_v2_projecttypes_gin
+    ON public.classified USING gin
+    (projecttypes COLLATE pg_catalog."default")
+    WITH (fastupdate=True, gin_pending_list_limit=4194304)
+    TABLESPACE pg_default;
+
+    
+  ALTER TABLE classified ADD COLUMN IF NOT EXISTS building_offeredFloors numeric;
+-- View: public.v_classified_v2
+-- DROP VIEW public.v_classified_v2;
 CREATE OR REPLACE VIEW public.v_classified_v2
  AS
  SELECT c.classifiedid,
@@ -333,13 +369,14 @@ CREATE OR REPLACE VIEW public.v_classified_v2
         CASE
             WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.microneighborhoodid
             ELSE g.microneighborhoodid
-        END AS microneighborhoodid
+        END AS microneighborhoodid,
+    c.building_offeredfloors
    FROM classified c
      LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
      LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid, c.avivgeoid)::text;
+
 ALTER TABLE public.v_classified_v2
-    OWNER TO main_user;
-  `;
+    OWNER TO main_user,  `;
 
   try {
     await poolInstance.getPool().then(_pool => _pool.query(sqlDatabase)); // Ensure you are getting the pool instance correctly

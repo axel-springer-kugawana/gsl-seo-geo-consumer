@@ -43,4 +43,5 @@ export interface ClassifiedWithFullGeo {
     isRangePrice: boolean;
     space: number;
     businessSubType: string;
+    building_offeredFloors:number;
 }
