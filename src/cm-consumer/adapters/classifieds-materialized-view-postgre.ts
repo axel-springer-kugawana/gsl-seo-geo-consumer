@@ -262,7 +262,8 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
                     headline_fr,
                     headline_de,
                     isSaleGoodwill,
-                    businessSubType
+                    businessSubType,
+                    building_offeredFloors
             FROM public.v_classified_v2
             where classifiedid = $1;  
               ;`;
