@@ -99,8 +99,8 @@ module "cm_consumer_fifo" {
     queue_esm_max_concurrency = var.queue_esm_max_concurrency
   }
   cm_connector_consumer_queue = {
-    arn = module.cm_connector.queue_arn
-    id  = module.cm_connector.queue_id
+    arn = module.cm_connector.queue_fifo_arn
+    id  = module.cm_connector.queue_fifo_id
   }
   rds_arn      = module.rds.arn
   ssot_name    = var.ssot_name
