@@ -41,7 +41,12 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
       break;
     }
     default: {
-      logger.warn('upsert classified  - ' + classifiedId + ' <event type> - ' + e.type);
+
+      logger.warn('fifo upsert classified  - ' + classifiedId + ' <event type> - ' + e.type);
+
+      
+      logger.warn('data - ' +e.data+' data');
+
       const isUpserted = await createOrUpdateClassifiedPG(context, classifiedId, e.data);
       if (!isUpserted) {
         await markClassifiedAsDeletedPG(context, { classifiedId });
