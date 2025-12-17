@@ -80,13 +80,12 @@ module "cm_consumer" {
   }
   rds_arn      = module.rds.arn
   ssot_name    = var.ssot_name
-  application  = var.application
+  application  = "cm-consumer"
   environment  = var.environment
   secret_name  = module.rds.secret_name
   rds_sg_id    = module.rds.sg_id
   dynamodb_arn = module.dynamodb.properties.dynamodb_arn
   dynamodb_table_name = module.dynamodb.properties.dynamodb_table_name
-  lambda_function_name_suffix = "process-cm-connector-events-v1"
 }
 
 
@@ -105,11 +104,10 @@ module "cm_consumer_fifo" {
   }
   rds_arn      = module.rds.arn
   ssot_name    = var.ssot_name
-  application  = var.application
+  application  = "cm-consumer-fifo"
   environment  = var.environment
   secret_name  = module.rds.secret_name
   rds_sg_id    = module.rds.sg_id
   dynamodb_arn = module.dynamodb.properties.dynamodb_arn
   dynamodb_table_name = module.dynamodb.properties.dynamodb_table_name
-  lambda_function_name_suffix = "process-cm-connector-events-fifo-v1"
 }

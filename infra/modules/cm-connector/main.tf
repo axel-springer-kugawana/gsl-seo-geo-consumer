@@ -76,8 +76,8 @@ module "cm_events_handling_fifo" {
   cm_api_url = var.api.url
 
   connector_events_queue = {
-    arn = module.connector_internal_queue.queue_arn
-    id  = module.connector_internal_queue.queue_id
+    arn = module.connector_internal_queue_fifo.queue_arn
+    id  = module.connector_internal_queue_fifo.queue_id
   }
 
   application = var.application
@@ -88,4 +88,9 @@ module "cm_events_handling_fifo" {
 module "connector_internal_queue" {
   source            = "../constructs/consumer-queue-with-dlq"
   consumer_sqs_name = "${var.application}-${var.environment}-${var.ssot_name}-connector-events"
+}
+
+module "connector_internal_queue_fifo" {
+  source            = "../constructs/consumer-fifo-queue-with-dlq"
+  consumer_sqs_name = "${var.application}-${var.environment}-${var.ssot_name}-connector-events-fifo"
 }
