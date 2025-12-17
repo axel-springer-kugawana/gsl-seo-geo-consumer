@@ -42,7 +42,7 @@ module "process_cm_connector_events_lambda" {
   timeout                          = 9
   is_lambda_vpc                    = true
   enable_secrets_manager_extension = true
-  env_variables = { MV_TABLE_NAME = var.dynamodb_table_name
+  env_variables = { MV_TABLE_NAME = var.dynamodb_table_name, MV_APPLICATION_NAME = var.application
   }
 }
 
@@ -99,7 +99,7 @@ data "aws_iam_policy_document" "lambda_policy" {
     ]
     resources = [
       aws_secretsmanager_secret.lambda_consumer_credentials.arn,
-
+      "arn:aws:secretsmanager:*:*:secret:cm-consumer-lambda_consumer_credentials*"
     ]
   }
   statement {

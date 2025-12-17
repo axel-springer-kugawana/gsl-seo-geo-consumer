@@ -25,7 +25,10 @@ const getSecretValue = async (secretName: string) => {
 };
 
 const getClassifiedApiSecret = async () => {
-  const secretValue = await getSecretValue("cm-consumer-lambda_consumer_credentials");
+  const secretName = process.env.MV_APPLICATION_NAME
+  logger.info("Fetching Classified API secret", {secretName});
+  
+  const secretValue = await getSecretValue(secretName);
   const secret = JSON.parse(secretValue) as {
     DbPort: number;
     DbHostWriter: string;
