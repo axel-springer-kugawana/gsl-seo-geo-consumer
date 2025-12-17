@@ -80,7 +80,7 @@ module "cm_events_handling_fifo" {
     id  = module.connector_internal_queue_fifo.queue_id
   }
 
-  application = var.application
+  application = "cm-connector-fifo"
   environment = var.environment
   ssot_name   = var.ssot_name
 }
