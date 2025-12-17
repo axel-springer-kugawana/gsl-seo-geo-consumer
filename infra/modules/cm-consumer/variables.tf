@@ -6,6 +6,11 @@ variable "environment" {
   type = string
 }
 
+
+variable "lognamelambda_log_group_name" {
+  type = string
+}
+
 variable "process_cm_connector_events_lambda" {
   type = object({
     dist_file                 = string

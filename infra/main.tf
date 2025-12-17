@@ -86,6 +86,7 @@ module "cm_consumer" {
   rds_sg_id    = module.rds.sg_id
   dynamodb_arn = module.dynamodb.properties.dynamodb_arn
   dynamodb_table_name = module.dynamodb.properties.dynamodb_table_name
+  lambda_log_group_name = "process-cm-connector-events"
 }
 
 
@@ -95,7 +96,7 @@ module "cm_consumer_fifo" {
   source = "./modules/cm-consumer"
   process_cm_connector_events_lambda = {
     dist_file                 = "../src/dist/cm-consumer/lambda-handlers/process-cm-connector-events-fifo.js"
-    handler                   = "process-cm-connector-events.handler"
+    handler                   = "process-cm-connector-events-fifo.handler"
     queue_esm_max_concurrency = var.queue_esm_max_concurrency
   }
   cm_connector_consumer_queue = {
@@ -110,4 +111,5 @@ module "cm_consumer_fifo" {
   rds_sg_id    = module.rds.sg_id
   dynamodb_arn = module.dynamodb.properties.dynamodb_arn
   dynamodb_table_name = module.dynamodb.properties.dynamodb_table_name
+  lambda_log_group_name = "process-cm-connector-events-fifo"
 }

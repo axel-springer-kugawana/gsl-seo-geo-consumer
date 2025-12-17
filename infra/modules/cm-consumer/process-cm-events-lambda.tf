@@ -35,7 +35,7 @@ resource "aws_iam_role_policy_attachment" "attach_iam_policy_to_iam_role" {
 module "process_cm_connector_events_lambda" {
   source                           = "../constructs/lambda"
   lambda_handler                   = var.process_cm_connector_events_lambda.handler
-  lambda_function_name             = "${var.application}-${var.environment}-process-cm-connector-events"
+  lambda_function_name             = "${var.application}-${var.environment}-${var.lambda_log_group_name}"
   lambda_dist_file                 = var.process_cm_connector_events_lambda.dist_file
   lambda_role_arn                  = aws_iam_role.lambda_role.arn
   memory_size                      = "512"
