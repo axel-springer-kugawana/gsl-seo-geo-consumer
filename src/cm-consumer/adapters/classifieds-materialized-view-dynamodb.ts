@@ -22,7 +22,7 @@ const createOrUpdateClassified = async (id: string, data: Classified, classified
 
   try {
     await ddbClient.send(new UpdateItemCommand({
-      TableName: isLocal ? "seo-ssot-classified" : process.env.MV_TABLE_NAME,
+      TableName: isLocal ? "seo-ssot-classified-v2" : process.env.MV_TABLE_NAME,
       Key: {
         "id": {
           "S": id

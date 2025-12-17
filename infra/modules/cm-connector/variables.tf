@@ -28,6 +28,11 @@ variable events_topic {
 }
 
 
+variable events_fifo_topic {
+  type = object({
+    arn = string
+  })
+}
 
 variable api {
   type = object({

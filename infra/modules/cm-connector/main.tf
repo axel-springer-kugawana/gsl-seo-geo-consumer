@@ -59,6 +59,32 @@ module "cm_events_handling" {
   ssot_name   = var.ssot_name
 }
 
+
+module "cm_events_handling_fifo" {
+  source = "./cm-events-handling"
+
+  cm_topic = {
+    arn = var.events_fifo_topic.arn
+  }
+
+  handle_cm_events_lambda = {
+    dist_file                 = "../src/dist/cm-connector/lambda-handlers/handle-classifieds-events-v2.js"
+    handler                   = "handle-classifieds-events.queueHandler"
+    queue_esm_max_concurrency = 100
+  }
+
+  cm_api_url = var.api.url
+
+  connector_events_queue = {
+    arn = module.connector_internal_queue.queue_arn
+    id  = module.connector_internal_queue.queue_id
+  }
+
+  application = var.application
+  environment = var.environment
+  ssot_name   = var.ssot_name
+}
+
 module "connector_internal_queue" {
   source            = "../constructs/consumer-queue-with-dlq"
   consumer_sqs_name = "${var.application}-${var.environment}-${var.ssot_name}-connector-events"

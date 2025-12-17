@@ -16,6 +16,9 @@
             ],
             "@cm-connector/*": [
                 "cm-connector/*"
+            ],
+             "@models/*": [
+                "models/*"
             ]
         },
         "skipLibCheck": true,

@@ -9,6 +9,10 @@ module "cm_connector" {
     arn = var.classified_management_events_topic
   }
 
+  events_fifo_topic = {
+    arn = var.classified_management_events_fifo_topic
+  }
+  
   api = {
     url = var.classified_management_api
   }
@@ -22,6 +26,13 @@ module "cm_connector" {
 module "dynamodb" {
   source      = "./modules/dynamodb"
   application = "seo-ssot-classified"
+  environment = var.environment
+
+}
+
+module "dynamodb-v2" {
+  source      = "./modules/dynamodb"
+  application = "seo-ssot-classified-v2"
   environment = var.environment
 
 }

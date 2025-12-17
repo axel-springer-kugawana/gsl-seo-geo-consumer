@@ -74,6 +74,11 @@ variable "classified_management_events_topic" {
   type        = string
 }
 
+variable "classified_management_events_fifo_topic" {
+  description = "classified management events fifo topic arn"
+  type        = string
+}
+
 variable "queue_esm_max_concurrency" {
   description = "queue_esm_max_concurrency"
   type        = number
