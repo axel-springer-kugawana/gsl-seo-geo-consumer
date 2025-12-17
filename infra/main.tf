@@ -108,6 +108,6 @@ module "cm_consumer_fifo" {
   environment  = var.environment
   secret_name  = module.rds.secret_name
   rds_sg_id    = module.rds.sg_id
-  dynamodb_arn = module.dynamodb.properties.dynamodb_arn
-  dynamodb_table_name = module.dynamodb.properties.dynamodb_table_name
+  dynamodb_arn = module.dynamodb-fifo.properties.dynamodb_arn
+  dynamodb_table_name = module.dynamodb-fifo.properties.dynamodb_table_name
 }
