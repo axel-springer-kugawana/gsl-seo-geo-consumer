@@ -91,6 +91,6 @@ module "connector_internal_queue" {
 }
 
 module "connector_internal_queue_fifo" {
-  source            = "../constructs/consumer-fifo-queue-with-dlq"
+  source            = "../constructs/consumer-queue-with-dlq"
   consumer_sqs_name = "${var.application}-${var.environment}-${var.ssot_name}-connector-events-fifo"
 }
