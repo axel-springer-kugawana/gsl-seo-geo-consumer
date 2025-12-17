@@ -25,7 +25,7 @@ const getSecretValue = async (secretName: string) => {
 };
 
 const getClassifiedApiSecret = async () => {
-  const secretName = process.env.MV_APPLICATION_NAME
+  const secretName = process.env.MV_APPLICATION_NAME+"-lambda_consumer_credentials"
   logger.info("Fetching Classified API secret", {secretName});
   
   const secretValue = await getSecretValue(secretName);
