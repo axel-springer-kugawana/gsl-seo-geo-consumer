@@ -7,7 +7,7 @@ variable "environment" {
 }
 
 
-variable "lambda_log_group_name" {
+variable "lambda_function_name_suffix" {
   type = string
 }
 

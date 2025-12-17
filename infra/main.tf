@@ -86,7 +86,7 @@ module "cm_consumer" {
   rds_sg_id    = module.rds.sg_id
   dynamodb_arn = module.dynamodb.properties.dynamodb_arn
   dynamodb_table_name = module.dynamodb.properties.dynamodb_table_name
-  lambda_log_group_name = "process-cm-connector-events-v1"
+  lambda_function_name_suffix = "process-cm-connector-events-v1"
 }
 
 
@@ -111,5 +111,5 @@ module "cm_consumer_fifo" {
   rds_sg_id    = module.rds.sg_id
   dynamodb_arn = module.dynamodb.properties.dynamodb_arn
   dynamodb_table_name = module.dynamodb.properties.dynamodb_table_name
-  lambda_log_group_name = "process-cm-connector-events-fifo-v2"
+  lambda_function_name_suffix = "process-cm-connector-events-fifo-v1"
 }
