@@ -42,21 +42,36 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
     }
     default: {
 
-      logger.warn('fifo upsert classified  - ' + classifiedId + ' <event type> - ' + e.type);
+      logger.warn('fifo upsert classified', { 
+        classifiedId, 
+        type: e.type, 
+        data: e.data 
+      });
 
-      
-      logger.warn('data - ' +e.data+' data');
+      try {
+        const isUpserted = await createOrUpdateClassifiedPG(context, classifiedId, e.data);
+        logger.warn('fifo upsert classified', { 
+          isUpserted: isUpserted
+        });
 
-      const isUpserted = await createOrUpdateClassifiedPG(context, classifiedId, e.data);
-      if (!isUpserted) {
-        await markClassifiedAsDeletedPG(context, { classifiedId });
-       // await markClassifiedAsDeletedDynamoDB({ classifiedId, updateDate: e.data.updateDate });
-      }
-      else {
-        const fullClassified = await getClassified(context, classifiedId);
-        if (fullClassified != null) {
-          await createOrUpdateClassifiedDynamoDB(classifiedId, e.data, fullClassified);
+        if (!isUpserted) {
+          await markClassifiedAsDeletedPG(context, { classifiedId });
+         // await markClassifiedAsDeletedDynamoDB({ classifiedId, updateDate: e.data.updateDate });
         }
+        else {
+          const fullClassified = await getClassified(context, classifiedId);
+          if (fullClassified != null) {
+            await createOrUpdateClassifiedDynamoDB(classifiedId, e.data, fullClassified);
+          }
+        }
+      } catch (error) {
+        logger.error('Error processing classified', { 
+          classifiedId, 
+          type: e.type,
+          error: error instanceof Error ? error.message : error,
+          stack: error instanceof Error ? error.stack : undefined
+        });
+        throw error; // Re-throw to mark the batch item as failed
       }
       break;
     }
