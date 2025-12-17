@@ -2,11 +2,13 @@ import { BatchProcessor, EventType, processPartialResponse } from "@aws-lambda-p
 import { enableLambdaPowertoolsLoggingAndMetrics } from "@shared/cross-cutting/lambda-logging-middleware";
 import { SSotEntityName } from "@shared/models/cm-consumer-constants";
 import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
-import { markClassifiedAsDeleted as markClassifiedAsDeletedPG, createOrUpdateClassified as createOrUpdateClassifiedPG, getClassified } from "cm-consumer/adapters/classifieds-materialized-view-postgre";
+import { markClassifiedAsDeleted as markClassifiedAsDeletedPG, createOrUpdateClassified as createOrUpdateClassifiedPG, getClassified } from "cm-consumer/adapters/classifieds-fifo-materialized-view-postgre";
 import { createOrUpdateClassified as createOrUpdateClassifiedDynamoDB, markClassifiedAsDeleted as markClassifiedAsDeletedDynamoDB } from "cm-consumer/adapters/classifieds-materialized-view-dynamodb";
 import { initDatabase, patchDatabase, removeGeo, removeOrphans } from "cm-consumer/adapters/initSql";
 import { logger } from "@shared/cross-cutting/logger";
 //import * as fs from 'fs';
+
+import { ClassifiedManagementStructure } from "@models/classifiedManagementStructure";
 
 const processor = new BatchProcessor(EventType.SQS);
 
@@ -42,10 +44,12 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
     }
     default: {
 
+      const classifiedObject = e.data as ClassifiedManagementStructure;
+
       logger.warn('fifo upsert classified', { 
         classifiedId, 
         type: e.type, 
-        data: e.data 
+        data: classifiedObject
       });
 
       try {
