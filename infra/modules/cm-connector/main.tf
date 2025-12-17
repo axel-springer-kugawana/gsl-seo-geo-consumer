@@ -68,7 +68,7 @@ module "cm_events_handling_fifo" {
   }
 
   handle_cm_events_lambda = {
-    dist_file                 = "../src/dist/cm-connector/lambda-handlers/handle-classifieds-events-v2.js"
+    dist_file                 = "../src/dist/cm-connector/lambda-handlers/handle-classifieds-events-fifo.js"
     handler                   = "handle-classifieds-events.queueHandler"
     queue_esm_max_concurrency = 100
   }
