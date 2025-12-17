@@ -8,15 +8,14 @@ import { initDatabase, patchDatabase, removeGeo, removeOrphans } from "cm-consum
 import { logger } from "@shared/cross-cutting/logger";
 //import * as fs from 'fs';
 
-import { ClassifiedManagementStructure} from "@models/classified-events";
-
 const processor = new BatchProcessor(EventType.SQS);
 
 export const recordHandler = async (record: SQSRecord, context: Context): Promise<void> => {
 
   //const body = await fs.readFileSync("cm-consumer/lambda-handlers/fakes/231116WBR1KI.json", "utf8");
-  const e = JSON.parse(record.body) as ClassifiedManagementStructure;
-  const classifiedId = e.classifiedId;
+  const e = JSON.parse(record.body);
+
+  const classifiedId = e?.data?.classifiedId ?? e?.classifiedId;
 
   logger.warn(e.type);
   switch (e.type) {
