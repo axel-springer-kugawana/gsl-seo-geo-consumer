@@ -3,7 +3,7 @@ import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
 // import { getClassifiedById } from "@cm-connector/adapters/classified-api";
 import { BatchProcessor, EventType, processPartialResponse } from "@aws-lambda-powertools/batch";
 import { publishFullClassifiedEvent } from "@cm-connector/adapters/classified-event-publisher-fifo";
-import { ClassifiedManagementFatSsotEvent, FatEventType } from "@models/classified-events";
+import { ClassifiedManagementFatSsotEvent, FatEventType } from "@models";
 
 const handleClassifiedEvent = async (event: ClassifiedManagementFatSsotEvent): Promise<void> => {
     switch (event.type) {

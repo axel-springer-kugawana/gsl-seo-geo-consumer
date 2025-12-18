@@ -8,7 +8,8 @@ import { initDatabase, patchDatabase, removeGeo, removeOrphans } from "cm-consum
 import { logger } from "@shared/cross-cutting/logger";
 //import * as fs from 'fs';
 
-import { ClassifiedManagementStructure } from "@models/classifiedManagementStructure";
+import { ClassifiedManagementStructure } from "@models";
+
 
 const processor = new BatchProcessor(EventType.SQS);
 
@@ -53,7 +54,7 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
       });
 
       try {
-        const isUpserted = await createOrUpdateClassifiedPG(context, classifiedId, e.data);
+        const isUpserted = await createOrUpdateClassifiedPG(context, classifiedId, classifiedObject);
         logger.warn('fifo upsert classified', { 
           isUpserted: isUpserted
         });
