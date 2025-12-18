@@ -1,19 +1,18 @@
 import { logger } from "@shared/cross-cutting/logger";
 import { ClassifiedWithFullGeo } from "@shared/models/classified/1.0.0/ClassifiedWithFullGeo";
-import { mapIsRangePrice, mapShowPrice } from '../utils/mappingHelpers';
-import { mapEnergyCertificateClass } from "cm-consumer/utils/mapEnergyCertificateClass";
-import { mapFeatures } from "cm-consumer/utils/mapFeatures";
-import { mapProjectTypes } from "cm-consumer/utils/mapProjectTypes";
-import { mapGeo } from '../utils/geoHelpers';
+import { mapIsRangePrice_fifo } from '../utils/mappingHelpers';
+import { mapGeo_fifo } from '../utils/geoHelpers';
 
 import { DistributionSubTypeBuy} from "cm-consumer/models/classifiedEnums";
 
 import { poolInstance } from "./connectPostGre";
 import { Context } from "aws-lambda";
-import { isAuthorized, isGeoDataValid, isMarketStatusEligibleForPublication } from '../utils/classfiedRulesHelpers';
+import { isAuthorized_fifo, isGeoDataValid_fifo, isMarketStatusEligibleForPublication_fifo } from '../utils/classfiedRulesHelpers';
 
 import { ClassifiedManagementStructure } from "@models";
-import {mapPortals, mapSpaces, mapPrice, getBrandCountry } from "@utils";
+//import {mapPortals, mapSpaces, mapPrice, getBrandCountry } from "@utils";
+import { mapPortals, mapSpaces, mapPrice, mapFeatures, mapProjectTypes, mapEnergyCertificateClass, getBrandCountry } from "@utils";
+import { Location } from "@shared/models/classified/1.0.0/classified";
 
 const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classifiedId: string }): Promise<void> => {
   const { classifiedId } = deleteCommand;
@@ -48,14 +47,18 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       const price = mapPrice({ brandCountry, distributionType, prices: classified.data.prices }) ?? undefined;
 
       const space = mapSpaces(spaces, estateType)[0]; // Units only have one space
-      const features = mapFeatures(classified);
-      const projectTypes = mapProjectTypes(classified);
-      const isGeoDataValidValue = isGeoDataValid(classified)
-      const isMarketStatusEligibleForPublicationValue = isMarketStatusEligibleForPublication(classified)
-      const isAuthorizedValue = isAuthorized(classified)
+      const features = mapFeatures({data: classified.data,media: classified.media, specifics: classified!.specifics     });
 
+      const projectTypes = mapProjectTypes({data:classified!.data,
+        metadata: classified!.metadata,
+        specifics: classified!.specifics});
+
+      const isGeoDataValidValue = isGeoDataValid_fifo(classified)
+      const isMarketStatusEligibleForPublicationValue = isMarketStatusEligibleForPublication_fifo(classified)
+      const isAuthorizedValue = isAuthorized_fifo(classified) 
       //map geo by lat lon, then by geoId
-      await mapGeo(_pool, classified?.data?.location);
+      await mapGeo_fifo(_pool, classified?.data?.location as unknown as Location);
+
       const { avivGeoId, geometry } = classified.data?.location;
       const [lon, lat] = geometry?.coordinates ?? []
 
@@ -89,9 +92,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         classified.data?.spaces?.residential?.livingSpace,
         classified.data?.spaces?.overallSpace,
         classified.data?.conditions?.buildState,
-        mapEnergyCertificateClass(classified),
-        mapShowPrice(classified),
-        mapIsRangePrice(classified),
+        mapEnergyCertificateClass(classified!.data.energy, classified!.classifiedId, logger),
+        price == undefined ? false : true,
+        mapIsRangePrice_fifo(classified),
         classified.metadata.classifiedBusiness,
         space,
         classified.metadata.projectId,
@@ -105,7 +108,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         classified.data?.texts?.headline?.de,
         classified.data?.distributionSubType?.buy === DistributionSubTypeBuy.BUSINESS_SALE_GOODWILL,
         classified.data?.countrySpecific?.fr?.business?.businessSubType,
-         classified.data?.structure?.building?.offeredFloors
+         classified.data?.structure?.building?.numberOfFloors
       ];
 
       const classifiedQuery = `

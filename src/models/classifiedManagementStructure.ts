@@ -51,6 +51,7 @@ export const classifiedManagementStructure = z.object({
   classifiedId: z.string(),
   dbEntryCreationDate: z.optional(z.string()),
   metadata: z.object({
+    brand: z.string().nullish(), // will only be set for intermediary, see cleanupMetadata
     customerId: z.string().nullish(), // will only be set for intermediary, see cleanupMetadata
     userId: z.string().nullish(), // will only be set for intermediary, see cleanupMetadata
     creationDate: z.optional(z.string().datetime({ offset: true })).transform(convertToISOString),
@@ -316,6 +317,9 @@ export const classifiedManagementStructure = z.object({
     ),
     location: z.object({
       country: z.string().nullish(),
+      city: z.string().nullish(),
+      postalcode: z.string().nullish(),
+      street: z.string().nullish(),
       geometry: z.optional(
         z.object({
           // min(2).max(3) because in theory, a third entry could contain the elevation of the point
@@ -462,6 +466,11 @@ export const classifiedManagementStructure = z.object({
       z.object({
         fr: z.optional(
           z.object({
+             business: z.optional(
+              z.object({
+                businessSubType: z.optional(z.string()),
+              }),
+            ),
             agentMandate: z.optional(
               z.object({
                 mandateType: z.optional(z.string()),
