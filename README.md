@@ -13,7 +13,8 @@ Along with classified management connector, you will find an example on how to c
 
 ## code structure
 * In the `src` dir you will find the code of the lambda functions
-     *  [cm-connector](./src/cm-connector/) all lambda functions that implement classified management connector logic
+     *  [cm-connector](./src/cm-connector/ 
+     µ)à
      * [cm-consumer-example](./src/cm-consumer-example/) an example on how to consume events to build a materialized view
      * [shared/models](./src/shared/models) you will find the classified model your are consuming
 

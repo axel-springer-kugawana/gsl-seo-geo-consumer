@@ -18,9 +18,14 @@ module "cm_get_state_of_the_world" {
     handler   = "list-classified-keys.handler"
   }
 
+  # connector_internal_queue = {
+  #   arn = module.connector_internal_queue.queue_arn
+  #   id  = module.connector_internal_queue.queue_id
+  # }
+
   connector_internal_queue = {
-    arn = module.connector_internal_queue.queue_arn
-    id  = module.connector_internal_queue.queue_id
+    arn = module.connector_internal_queue_fifo.queue_arn
+    id  = module.connector_internal_queue_fifo.queue_id
   }
 
   account_data = {
