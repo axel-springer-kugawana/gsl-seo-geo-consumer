@@ -7,17 +7,7 @@ import { Location } from '@shared/models/classified/1.0.0/classified';
 import { logger } from "@shared/cross-cutting/logger";
 import axios from 'axios';
 
-import { ClassifiedManagementStructure } from '@models';
-
 export const mapGeo = async (_pool: Pool, location: Location): Promise<string> => {
-    let avivGeoId = await mapGeoFromCache(_pool, location);
-    if (avivGeoId === undefined) {
-        return await mapGeoFromApi(_pool, location);
-    }
-}
-
-
-export const mapGeo_fifo = async (_pool: Pool, location: Location): Promise<string> => {
     let avivGeoId = await mapGeoFromCache(_pool, location);
     if (avivGeoId === undefined) {
         return await mapGeoFromApi(_pool, location);

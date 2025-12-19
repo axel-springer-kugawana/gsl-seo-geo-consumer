@@ -1,18 +1,16 @@
 import { logger } from "@shared/cross-cutting/logger";
 import { ClassifiedWithFullGeo } from "@shared/models/classified/1.0.0/ClassifiedWithFullGeo";
 import { mapIsRangePrice_fifo } from '../utils/mappingHelpers';
-import { mapGeo_fifo } from '../utils/geoHelpers';
-
+import { mapGeo } from '../utils/geoHelpers';
 import { DistributionSubTypeBuy} from "cm-consumer/models/classifiedEnums";
-
 import { poolInstance } from "./connectPostGre";
 import { Context } from "aws-lambda";
 import { isAuthorized_fifo, isGeoDataValid_fifo, isMarketStatusEligibleForPublication_fifo } from '../utils/classfiedRulesHelpers';
+import { Location } from "@shared/models/classified/1.0.0/classified";
 
 import { ClassifiedManagementStructure } from "@models";
-//import {mapPortals, mapSpaces, mapPrice, getBrandCountry } from "@utils";
 import { mapPortals, mapSpaces, mapPrice, mapFeatures, mapProjectTypes, mapEnergyCertificateClass, getBrandCountry } from "@utils";
-import { Location } from "@shared/models/classified/1.0.0/classified";
+
 
 const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classifiedId: string }): Promise<void> => {
   const { classifiedId } = deleteCommand;
@@ -57,7 +55,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       const isMarketStatusEligibleForPublicationValue = isMarketStatusEligibleForPublication_fifo(classified)
       const isAuthorizedValue = isAuthorized_fifo(classified) 
       //map geo by lat lon, then by geoId
-      await mapGeo_fifo(_pool, classified?.data?.location as unknown as Location);
+      await mapGeo(_pool, classified?.data?.location as unknown as Location);
 
       const { avivGeoId, geometry } = classified.data?.location;
       const [lon, lat] = geometry?.coordinates ?? []
