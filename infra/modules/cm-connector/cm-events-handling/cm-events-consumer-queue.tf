@@ -9,4 +9,18 @@ module "cm_events_queue_subscription" {
   source_sns_topic_arn = var.cm_topic.arn
   target_queue_arn     = module.cm_events_consumer_queue.queue_arn
   target_queue_id      = module.cm_events_consumer_queue.queue_id
+  filter_policy = jsonencode({
+    type = ["classified.created", "classified.updated", "classified.deleted"]
+    // Only forward the event if they don't contain pending process or the properties do not exist          
+    data = {
+      # metadata = {
+      #   classifiedBusiness = ["PRIVATE"]
+      # }
+      isFraudPending = [false, { "exists" : false }]
+      isGeoEnrichmentPending = [false, { "exists" : false }]
+      isMlEnrichmentPending = [false, { "exists" : false }]
+    }
+  })
+
+  filter_policy_scope = "MessageBody"
 }
