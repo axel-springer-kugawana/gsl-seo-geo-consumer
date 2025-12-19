@@ -209,6 +209,7 @@ export const classifiedManagementStructure = z.object({
           z.object({
             locationInBuilding: z.optional(z.string()),
             numberOfFloors: z.optional(z.number()),
+            offeredFloors : z.optional(z.number()),            
             barrierFree: z.optional(z.string()),
             bath: z.optional(
               z.object({
