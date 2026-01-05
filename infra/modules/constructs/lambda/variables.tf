@@ -27,7 +27,7 @@ variable "memory_size" {
 
 variable "runtime" {
     type   = string
-    default = "nodejs20.x"
+    default = "nodejs22.x"
 }
 
 variable "lambda_dist_file" {
