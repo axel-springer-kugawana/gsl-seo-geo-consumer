@@ -66,27 +66,27 @@ module "rds_athena_connector" {
   depends_on  = [module.rds]
 }
 
-module "cm_consumer" {
-  # depends_on = [module.cm_connector, module.rds, module.dynamodb]
-  source = "./modules/cm-consumer"
-  process_cm_connector_events_lambda = {
-    dist_file                 = "../src/dist/cm-consumer/lambda-handlers/process-cm-connector-events.js"
-    handler                   = "process-cm-connector-events.handler"
-    queue_esm_max_concurrency = var.queue_esm_max_concurrency
-  }
-  cm_connector_consumer_queue = {
-    arn = module.cm_connector.queue_arn
-    id  = module.cm_connector.queue_id
-  }
-  rds_arn      = module.rds.arn
-  ssot_name    = var.ssot_name
-  application  = "cm-consumer"
-  environment  = var.environment
-  secret_name  = module.rds.secret_name
-  rds_sg_id    = module.rds.sg_id
-  dynamodb_arn = module.dynamodb.properties.dynamodb_arn
-  dynamodb_table_name = module.dynamodb.properties.dynamodb_table_name
-}
+# module "cm_consumer" {
+#   # depends_on = [module.cm_connector, module.rds, module.dynamodb]
+#   source = "./modules/cm-consumer"
+#   process_cm_connector_events_lambda = {
+#     dist_file                 = "../src/dist/cm-consumer/lambda-handlers/process-cm-connector-events.js"
+#     handler                   = "process-cm-connector-events.handler"
+#     queue_esm_max_concurrency = var.queue_esm_max_concurrency
+#   }
+#   cm_connector_consumer_queue = {
+#     arn = module.cm_connector.queue_arn
+#     id  = module.cm_connector.queue_id
+#   }
+#   rds_arn      = module.rds.arn
+#   ssot_name    = var.ssot_name
+#   application  = "cm-consumer"
+#   environment  = var.environment
+#   secret_name  = module.rds.secret_name
+#   rds_sg_id    = module.rds.sg_id
+#   dynamodb_arn = module.dynamodb.properties.dynamodb_arn
+#   dynamodb_table_name = module.dynamodb.properties.dynamodb_table_name
+# }
 
 
 
