@@ -39,30 +39,30 @@ module "cm_get_state_of_the_world" {
   ssot_name   = var.ssot_name
 }
 
-module "cm_events_handling" {
-  source = "./cm-events-handling"
+# module "cm_events_handling" {
+#   source = "./cm-events-handling"
 
-  cm_topic = {
-    arn = var.events_topic.arn
-  }
+#   cm_topic = {
+#     arn = var.events_topic.arn
+#   }
 
-  handle_cm_events_lambda = {
-    dist_file                 = "../src/dist/cm-connector/lambda-handlers/handle-classifieds-events.js"
-    handler                   = "handle-classifieds-events.queueHandler"
-    queue_esm_max_concurrency = 100
-  }
+#   handle_cm_events_lambda = {
+#     dist_file                 = "../src/dist/cm-connector/lambda-handlers/handle-classifieds-events.js"
+#     handler                   = "handle-classifieds-events.queueHandler"
+#     queue_esm_max_concurrency = 100
+#   }
 
-  cm_api_url = var.api.url
+#   cm_api_url = var.api.url
 
-  connector_events_queue = {
-    arn = module.connector_internal_queue.queue_arn
-    id  = module.connector_internal_queue.queue_id
-  }
+#   connector_events_queue = {
+#     arn = module.connector_internal_queue.queue_arn
+#     id  = module.connector_internal_queue.queue_id
+#   }
 
-  application = var.application
-  environment = var.environment
-  ssot_name   = var.ssot_name
-}
+#   application = var.application
+#   environment = var.environment
+#   ssot_name   = var.ssot_name
+# }
 
 
 module "cm_events_handling_fifo" {
@@ -90,10 +90,10 @@ module "cm_events_handling_fifo" {
   ssot_name   = var.ssot_name
 }
 
-module "connector_internal_queue" {
-  source            = "../constructs/consumer-queue-with-dlq"
-  consumer_sqs_name = "${var.application}-${var.environment}-${var.ssot_name}-connector-events"
-}
+# module "connector_internal_queue" {
+#   source            = "../constructs/consumer-queue-with-dlq"
+#   consumer_sqs_name = "${var.application}-${var.environment}-${var.ssot_name}-connector-events"
+# }
 
 module "connector_internal_queue_fifo" {
   source            = "../constructs/consumer-queue-with-dlq"
