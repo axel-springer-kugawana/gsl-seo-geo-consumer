@@ -5,6 +5,8 @@
     "watch": "tsc --noEmit --watch",
     "local": "tsx ./local/local-lambda-invoke.ts",
     "test": "jest",
+    "test:debug": "jest --runInBand",
+
     "generate:models": "openapi-typescript https://place-api.cosmic-bullfrog-preview.aws.aviv.eu/v1/openapi.json -o ./shared/models/geo-api.ts --exclude-deprecated"
   },
   "devDependencies": {
