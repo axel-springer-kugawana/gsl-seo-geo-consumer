@@ -78,7 +78,7 @@ export const mapEstateSubType = (
   const estateSubTypes = Object.values(data.estateSubType ?? {})
   if (estateSubTypes.length > 0) {
     if (estateSubTypes.length > 1) {
-      logger.warn('[mapIndexClassifiedDocument] Classified with mutliple estate sub type.', {
+      logger.warn('[mapIndexClassifiedDocument] Classified with multiple estate sub type.', {
         classifiedId,
         estateSubType: data.estateSubType,
       })
