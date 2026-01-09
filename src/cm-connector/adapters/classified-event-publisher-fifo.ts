@@ -3,7 +3,7 @@ import { config } from "@cm-connector/config/configuration-provider";
 import { v4 as uuidv4 } from 'uuid';
 import { createHash } from 'crypto';
 import { SSoTConsumerName, SSotEntityName } from "@shared/models/cm-consumer-constants";
-import { ClassifiedManagementStructure } from "@models/classifiedManagementStructure";
+import { ClassifiedManagementStructure } from "@models";
 
 
 const sqsClient = new SQSClient({});

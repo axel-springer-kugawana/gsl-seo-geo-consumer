@@ -13,19 +13,9 @@ module "cm_events_queue_subscription" {
     type = ["classified.created", "classified.updated", "classified.deleted"]
     data = {
       isFraudPending = [false, { "exists" : false }]
+      isGeoEnrichmentPending = [false, { "exists" : false }]
     }
   })
-  # filter_policy = jsonencode({
-  #   type = ["classified.created", "classified.updated", "classified.deleted"]
-  #   data = {
-  #     metadata = {
-  #       classifiedBusiness = ["PRIVATE"]
-  #     }
-  #     isFraudPending = [false, { "exists" : false }]
-  #     isGeoEnrichmentPending = [false, { "exists" : false }]
-  #     isMlEnrichmentPending = [false, { "exists" : false }]
-  #   }
-  # })
 
   filter_policy_scope = "MessageBody"
 }
