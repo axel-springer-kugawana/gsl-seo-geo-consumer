@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS public.classified
     location_type character varying COLLATE pg_catalog."default",
     projecttypes text[] COLLATE pg_catalog."default",
     showaddress boolean NOT NULL DEFAULT false,
+    hideneighborhood boolean DEFAULT false,
     street character varying COLLATE pg_catalog."default",
     city character varying COLLATE pg_catalog."default",
     spacemin numeric,
@@ -220,6 +221,7 @@ CREATE OR REPLACE VIEW public.v_classified_v2
     c.portals,
     g.avivgeoid AS geo_avivgeoid,
     c.showaddress,
+    c.hideneighborhood,
     c.street,
     c.buildstate,
     c.energycertificateclass,
@@ -276,6 +278,8 @@ CREATE INDEX IF NOT EXISTS idx_v_classified_v2_projecttypes_gin
     TABLESPACE pg_default;
 
   ALTER TABLE classified ADD COLUMN IF NOT EXISTS building_offeredFloors numeric;
+
+  ALTER TABLE classified ADD COLUMN IF NOT EXISTS hideneighborhood boolean DEFAULT false;
 
 CREATE OR REPLACE VIEW public.v_classified_v2
  AS
@@ -345,6 +349,7 @@ CREATE OR REPLACE VIEW public.v_classified_v2
     c.portals,
     g.avivgeoid AS geo_avivgeoid,
     c.showaddress,
+    c.hideneighborhood,
     c.street,
     c.buildstate,
     c.energycertificateclass,
