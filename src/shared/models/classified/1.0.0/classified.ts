@@ -660,6 +660,11 @@ export interface Location {
    * @example true
    */
   showAddress?: boolean;
+  /**
+   * @description should the neighborhood information be hidden from the property display?
+   * @example false
+   */
+  hideNeighborhood?: boolean;
   countrySpecific?: {
     /** @description official geographical information for plots, especially for Germany */
     de?: {
