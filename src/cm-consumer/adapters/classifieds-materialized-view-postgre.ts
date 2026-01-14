@@ -83,7 +83,6 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         geometry?.type?.toUpperCase() ?? 'AVIV_GEO_ID',
         projectTypes,
         classified.data.location.showAddress ?? false,
-        classified.data.location.hideNeighborhood ?? false,
         classified.data.location.street,
         classified.data?.spaces?.residential?.livingSpace,
         classified.data?.spaces?.overallSpace,
@@ -104,7 +103,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         classified.data?.texts?.headline?.de,
         classified.data?.distributionSubType?.buy === DistributionSubTypeBuy.BUSINESS_SALE_GOODWILL,
         classified.data?.countrySpecific?.fr?.business?.businessSubType,
-         classified.data?.structure?.building?.offeredFloors
+        classified.data?.structure?.building?.offeredFloors,
+        classified.data.location.hideNeighborhood ?? false
       ];
 
       const classifiedQuery = `
@@ -134,7 +134,6 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
             location_type,
             projectTypes,
             showAddress,
-            hideNeighborhood,
             street,
             livingSpace,
             overallSpace,
@@ -156,10 +155,11 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
             headline_de,
             issalegoodwill,
             businessSubType,
-            building_offeredFloors
+            building_offeredFloors,
+            hideNeighborhood
             )
           VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, NOW(), $36, $37, $38, $39, $40
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36, $37, $38, $39, $40
           , $41
           , $42
           , $43
@@ -192,29 +192,29 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
                 location_type = $23,
                 projectTypes =$24,
                 showAddress = $25,
-                hideNeighborhood = $26,
-                street= $27,
-                livingSpace=$28,
-                overallSpace=$29,
-                buildState =$30,
-                energyCertificateClass = $31,
-                showPrice = $32,
-                isRangePrice = $33,
-                classifiedBusiness=$34,
-                space=$35,
+                street= $26,
+                livingSpace=$27,
+                overallSpace=$28,
+                buildState =$29,
+                energyCertificateClass = $30,
+                showPrice = $31,
+                isRangePrice = $32,
+                classifiedBusiness=$33,
+                space=$34,
                 ssotupdatedate= NOW(),
-                projectId=$36,
-                creationdate=$37,
-                isImmonetPortal=$38,
-                isImmoweltPortal=$39,
-                isSeLogerPortal=$40,
-                isLogicImmoPortal=$41,
-                numberOfBedRooms=$42,
-                headline_fr=$43,
-                headline_de=$44,
-                isSaleGoodwill=$45,
-                businessSubType=$46,
-                building_offeredFloors=$47;
+                projectId=$35,
+                creationdate=$36,
+                isImmonetPortal=$37,
+                isImmoweltPortal=$38,
+                isSeLogerPortal=$39,
+                isLogicImmoPortal=$40,
+                numberOfBedRooms=$41,
+                headline_fr=$42,
+                headline_de=$43,
+                isSaleGoodwill=$44,
+                businessSubType=$45,
+                building_offeredFloors=$46,
+                hideNeighborhood=$47;
                 `;
       await _pool.query(classifiedQuery, classifiedValue);
     });
@@ -266,7 +266,8 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
                     headline_de,
                     isSaleGoodwill,
                     businessSubType,
-                    building_offeredFloors
+                    building_offeredFloors,
+                    hideNeighborhood
             FROM public.v_classified_v2
             where classifiedid = $1;  
               ;`;
