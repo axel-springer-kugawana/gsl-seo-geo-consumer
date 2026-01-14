@@ -221,7 +221,6 @@ CREATE OR REPLACE VIEW public.v_classified_v2
     c.portals,
     g.avivgeoid AS geo_avivgeoid,
     c.showaddress,
-    c.hideneighborhood,
     c.street,
     c.buildstate,
     c.energycertificateclass,
@@ -349,7 +348,6 @@ CREATE OR REPLACE VIEW public.v_classified_v2
     c.portals,
     g.avivgeoid AS geo_avivgeoid,
     c.showaddress,
-    c.hideneighborhood,
     c.street,
     c.buildstate,
     c.energycertificateclass,
@@ -373,7 +371,8 @@ CREATE OR REPLACE VIEW public.v_classified_v2
             WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.microneighborhoodid
             ELSE g.microneighborhoodid
         END AS microneighborhoodid,
-    c.building_offeredfloors
+    c.building_offeredfloors,
+    c.hideneighborhood
    FROM classified c
      LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
      LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid, c.avivgeoid)::text;
