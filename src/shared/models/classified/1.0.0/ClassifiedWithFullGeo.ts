@@ -44,4 +44,5 @@ export interface ClassifiedWithFullGeo {
     space: number;
     businessSubType: string;
     building_offeredFloors:number;
+    hideneighborhood: boolean;
 }
