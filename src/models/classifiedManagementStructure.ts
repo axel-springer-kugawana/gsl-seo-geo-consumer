@@ -331,6 +331,7 @@ export const classifiedManagementStructure = z.object({
       avivGeoId: z.string().nullish(),
       floorNumber: z.number().nullish(),
       showAddress: z.optional(z.boolean()),
+      hideNeighborhood : z.optional(z.boolean()),
       countrySpecific: z.optional(
         z.object({
           fr: z.optional(
