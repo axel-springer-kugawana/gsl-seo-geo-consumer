@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS public.classified
     location_type character varying COLLATE pg_catalog."default",
     projecttypes text[] COLLATE pg_catalog."default",
     showaddress boolean NOT NULL DEFAULT false,
+    hideneighborhood boolean DEFAULT false,
     street character varying COLLATE pg_catalog."default",
     city character varying COLLATE pg_catalog."default",
     spacemin numeric,
@@ -277,6 +278,8 @@ CREATE INDEX IF NOT EXISTS idx_v_classified_v2_projecttypes_gin
 
   ALTER TABLE classified ADD COLUMN IF NOT EXISTS building_offeredFloors numeric;
 
+  ALTER TABLE classified ADD COLUMN IF NOT EXISTS hideneighborhood boolean DEFAULT false;
+
 CREATE OR REPLACE VIEW public.v_classified_v2
  AS
  SELECT c.classifiedid,
@@ -368,7 +371,8 @@ CREATE OR REPLACE VIEW public.v_classified_v2
             WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.microneighborhoodid
             ELSE g.microneighborhoodid
         END AS microneighborhoodid,
-    c.building_offeredfloors
+    c.building_offeredfloors,
+    c.hideneighborhood
    FROM classified c
      LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
      LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid, c.avivgeoid)::text;

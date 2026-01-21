@@ -103,7 +103,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         classified.data?.texts?.headline?.de,
         classified.data?.distributionSubType?.buy === DistributionSubTypeBuy.BUSINESS_SALE_GOODWILL,
         classified.data?.countrySpecific?.fr?.business?.businessSubType,
-         classified.data?.structure?.building?.offeredFloors
+        classified.data?.structure?.building?.offeredFloors,
+        classified.data.location.hideNeighborhood ?? false
       ];
 
       const classifiedQuery = `
@@ -154,17 +155,18 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
             headline_de,
             issalegoodwill,
             businessSubType,
-            building_offeredFloors
+            building_offeredFloors,
+            hideNeighborhood
             )
           VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36, $37, $38, $39
-          , $40
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36, $37, $38, $39, $40
           , $41
           , $42
           , $43
           , $44
           , $45
-          , $46)
+          , $46
+          , $47)
       ON CONFLICT (ClassifiedId) DO UPDATE 
             SET Price = $2,
                 avivgeoId= $3, 
@@ -211,7 +213,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
                 headline_de=$43,
                 isSaleGoodwill=$44,
                 businessSubType=$45,
-                building_offeredFloors=$46;
+                building_offeredFloors=$46,
+                hideNeighborhood=$47;
                 `;
       await _pool.query(classifiedQuery, classifiedValue);
     });
@@ -263,7 +266,8 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
                     headline_de,
                     isSaleGoodwill,
                     businessSubType,
-                    building_offeredFloors
+                    building_offeredFloors,
+                    hideNeighborhood
             FROM public.v_classified_v2
             where classifiedid = $1;  
               ;`;
