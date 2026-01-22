@@ -1,19 +1,16 @@
 import { logger } from "@shared/cross-cutting/logger";
-import { Classified, VisibilityStatus } from "@shared/models/classified/1.0.0/classified";
 import { ClassifiedWithFullGeo } from "@shared/models/classified/1.0.0/ClassifiedWithFullGeo";
-import { mapIsRangePrice, mapShowPrice } from '../utils/mappingHelpers';
-import { mapEnergyCertificateClass } from "cm-consumer/utils/mapEnergyCertificateClass";
-import { mapPrice } from "cm-consumer/utils/mapPrice";
-import { mapFeatures } from "cm-consumer/utils/mapFeatures";
-import { mapProjectTypes } from "cm-consumer/utils/mapProjectTypes";
-import { mapSpace } from "cm-consumer/utils/mapSpace";
+import { mapIsRangePrice_fifo } from '../utils/mappingHelpers';
 import { mapGeo } from '../utils/geoHelpers';
-
 import { DistributionSubTypeBuy} from "cm-consumer/models/classifiedEnums";
-
 import { poolInstance } from "./connectPostGre";
 import { Context } from "aws-lambda";
-import { isAuthorized, isGeoDataValid, isMarketStatusEligibleForPublication } from '../utils/classfiedRulesHelpers';
+import { isAuthorized_fifo, isGeoDataValid_fifo, isMarketStatusEligibleForPublication_fifo } from '../utils/classfiedRulesHelpers';
+import { Location } from "@shared/models/classified/1.0.0/classified";
+
+import { ClassifiedManagementStructure } from "@models";
+import { mapPortals, mapSpaces, mapPrice, mapFeatures, mapProjectTypes, mapEnergyCertificateClass, getBrandCountry } from "@utils";
+
 
 const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classifiedId: string }): Promise<void> => {
   const { classifiedId } = deleteCommand;
@@ -27,33 +24,39 @@ const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classi
   });
 }
 
-const createOrUpdateClassified = async (context: Context, id: string, classified: Classified): Promise<boolean> => {
+const createOrUpdateClassified = async (context: Context, id: string, classified: ClassifiedManagementStructure): Promise<boolean> => {
   context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
-
-  const portalFilter = classified?.visibility?.validations?.filter(e => e.visibilityStatus === VisibilityStatus.PUBLISHED || e.visibilityStatus === undefined)??[];
-
   
-  const portals = portalFilter.map(e => e.portal)
+  const portals = mapPortals(classified.visibility?.validations );
 
   if (portals.length == 0) {
     return false;
   }
 
   try {
+    
+      const { distributionType, spaces, structure, energy, features: { furnished } = {}, estateType } = classified.data
+      const brandCountry = getBrandCountry(portals, classified?.data.location.country) 
+      
 
     const pool = poolInstance.getPool
     await pool().then(async (_pool) => {
 
-      const price = mapPrice(classified) ?? undefined;
-      const space = mapSpace(classified) ?? undefined;
-      const features = mapFeatures(classified);
-      const projectTypes = mapProjectTypes(classified);
-      const isGeoDataValidValue = isGeoDataValid(classified)
-      const isMarketStatusEligibleForPublicationValue = isMarketStatusEligibleForPublication(classified)
-      const isAuthorizedValue = isAuthorized(classified)
+      const price = mapPrice({ brandCountry, distributionType, prices: classified.data.prices }) ?? undefined;
 
+      const space = mapSpaces(spaces, estateType)[0]; // Units only have one space
+      const features = mapFeatures({data: classified.data,media: classified.media, specifics: classified!.specifics     });
+
+      const projectTypes = mapProjectTypes({data:classified!.data,
+        metadata: classified!.metadata,
+        specifics: classified!.specifics});
+
+      const isGeoDataValidValue = isGeoDataValid_fifo(classified)
+      const isMarketStatusEligibleForPublicationValue = isMarketStatusEligibleForPublication_fifo(classified)
+      const isAuthorizedValue = isAuthorized_fifo(classified) 
       //map geo by lat lon, then by geoId
-      await mapGeo(_pool, classified?.data?.location);
+      await mapGeo(_pool, classified?.data?.location as unknown as Location);
+
       const { avivGeoId, geometry } = classified.data?.location;
       const [lon, lat] = geometry?.coordinates ?? []
 
@@ -87,9 +90,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         classified.data?.spaces?.residential?.livingSpace,
         classified.data?.spaces?.overallSpace,
         classified.data?.conditions?.buildState,
-        mapEnergyCertificateClass(classified),
-        mapShowPrice(classified),
-        mapIsRangePrice(classified),
+        mapEnergyCertificateClass(classified!.data.energy, classified!.classifiedId, logger),
+        price == undefined ? false : true,
+        mapIsRangePrice_fifo(classified),
         classified.metadata.classifiedBusiness,
         space,
         classified.metadata.projectId,
@@ -104,7 +107,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         classified.data?.distributionSubType?.buy === DistributionSubTypeBuy.BUSINESS_SALE_GOODWILL,
         classified.data?.countrySpecific?.fr?.business?.businessSubType,
         classified.data?.structure?.building?.offeredFloors,
-        classified.data.location.hideNeighborhood ?? false
+        classified.data.location.hideNeighborhood ?? false 
       ];
 
       const classifiedQuery = `
@@ -159,7 +162,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
             hideneighborhood
             )
           VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36, $37, $38, $39, $40
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36, $37, $38, $39
+          , $40
           , $41
           , $42
           , $43

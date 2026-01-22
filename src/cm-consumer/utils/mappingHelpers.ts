@@ -1,5 +1,6 @@
 import { Classified} from "@shared/models/classified/1.0.0/classified";
 
+import {ClassifiedManagementStructure } from '@models'
 export const mapShowPrice = (
     classified: Classified
 ): boolean | undefined => {
@@ -19,8 +20,17 @@ export const mapShowPrice = (
     
     return showPrice;
 }
+
 export const mapIsRangePrice = (
     classified: Classified
+): boolean | undefined => {
+    const isRangePrice = classified.data?.prices.buy?.price?.priceInformation == 'BASE_ON_RANGE_PRICE';
+    if (!isRangePrice) { return false; }
+    return true;
+}
+
+export const mapIsRangePrice_fifo = (
+    classified: ClassifiedManagementStructure
 ): boolean | undefined => {
     const isRangePrice = classified.data?.prices.buy?.price?.priceInformation == 'BASE_ON_RANGE_PRICE';
     if (!isRangePrice) { return false; }

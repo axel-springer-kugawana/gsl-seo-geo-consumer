@@ -9,6 +9,10 @@ module "cm_connector" {
     arn = var.classified_management_events_topic
   }
 
+  events_fifo_topic = {
+    arn = var.classified_management_events_fifo_topic
+  }
+  
   api = {
     url = var.classified_management_api
   }
@@ -22,6 +26,13 @@ module "cm_connector" {
 module "dynamodb" {
   source      = "./modules/dynamodb"
   application = "seo-ssot-classified"
+  environment = var.environment
+
+}
+
+module "dynamodb-fifo" {
+  source      = "./modules/dynamodb"
+  application = "seo-ssot-classified-fifo"
   environment = var.environment
 
 }
@@ -55,24 +66,48 @@ module "rds_athena_connector" {
   depends_on  = [module.rds]
 }
 
-module "cm_consumer" {
+# module "cm_consumer" {
+#   # depends_on = [module.cm_connector, module.rds, module.dynamodb]
+#   source = "./modules/cm-consumer"
+#   process_cm_connector_events_lambda = {
+#     dist_file                 = "../src/dist/cm-consumer/lambda-handlers/process-cm-connector-events.js"
+#     handler                   = "process-cm-connector-events.handler"
+#     queue_esm_max_concurrency = var.queue_esm_max_concurrency
+#   }
+#   cm_connector_consumer_queue = {
+#     arn = module.cm_connector.queue_arn
+#     id  = module.cm_connector.queue_id
+#   }
+#   rds_arn      = module.rds.arn
+#   ssot_name    = var.ssot_name
+#   application  = "cm-consumer"
+#   environment  = var.environment
+#   secret_name  = module.rds.secret_name
+#   rds_sg_id    = module.rds.sg_id
+#   dynamodb_arn = module.dynamodb.properties.dynamodb_arn
+#   dynamodb_table_name = module.dynamodb.properties.dynamodb_table_name
+# }
+
+
+
+module "cm_consumer_fifo" {
   # depends_on = [module.cm_connector, module.rds, module.dynamodb]
   source = "./modules/cm-consumer"
   process_cm_connector_events_lambda = {
-    dist_file                 = "../src/dist/cm-consumer/lambda-handlers/process-cm-connector-events.js"
-    handler                   = "process-cm-connector-events.handler"
+    dist_file                 = "../src/dist/cm-consumer/lambda-handlers/process-cm-connector-events-fifo.js"
+    handler                   = "process-cm-connector-events-fifo.handler"
     queue_esm_max_concurrency = var.queue_esm_max_concurrency
   }
   cm_connector_consumer_queue = {
-    arn = module.cm_connector.queue_arn
-    id  = module.cm_connector.queue_id
+    arn = module.cm_connector.queue_fifo_arn
+    id  = module.cm_connector.queue_fifo_id
   }
   rds_arn      = module.rds.arn
   ssot_name    = var.ssot_name
-  application  = var.application
+  application  = "cm-consumer-fifo"
   environment  = var.environment
   secret_name  = module.rds.secret_name
   rds_sg_id    = module.rds.sg_id
-  dynamodb_arn = module.dynamodb.properties.dynamodb_arn
-  dynamodb_table_name = module.dynamodb.properties.dynamodb_table_name
+  dynamodb_arn = module.dynamodb-fifo.properties.dynamodb_arn
+  dynamodb_table_name = module.dynamodb-fifo.properties.dynamodb_table_name
 }

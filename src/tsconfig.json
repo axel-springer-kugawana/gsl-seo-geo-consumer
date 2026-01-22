@@ -16,7 +16,9 @@
             ],
             "@cm-connector/*": [
                 "cm-connector/*"
-            ]
+            ],
+            "@models": ["models/index"],
+            "@utils": ["utils/index"]
         },
         "skipLibCheck": true,
         "removeComments": true,
@@ -26,7 +28,8 @@
         "moduleResolution": "node",
         "esModuleInterop": true,
         "resolveJsonModule": true
-    },
+    },  
+      "include": ["**/*.ts"],
     "exclude": [
         "esbuild.config.js",
         "node_modules",
