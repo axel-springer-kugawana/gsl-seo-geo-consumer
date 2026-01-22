@@ -212,10 +212,6 @@ CREATE OR REPLACE VIEW public.v_classified_v2
             WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.neighborhoodname
             ELSE g.neighborhoodname
         END AS neighborhoodname,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.microneighborhoodid
-            ELSE g.microneighborhoodid
-        END AS microneighborhoodid,
     c.projecttypes,
     c.brand,
     c.portals,
@@ -240,7 +236,12 @@ CREATE OR REPLACE VIEW public.v_classified_v2
     c.headline_de,
     c.issalegoodwill,
     c.businesssubtype,
-    c.building_offeredFloors
+        CASE
+            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.microneighborhoodid
+            ELSE g.microneighborhoodid
+        END AS microneighborhoodid,
+    c.building_offeredfloors,
+	c.hideneighborhood
    FROM classified c
      LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
      LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid, c.avivgeoid)::text;
@@ -279,6 +280,9 @@ CREATE INDEX IF NOT EXISTS idx_v_classified_v2_projecttypes_gin
   ALTER TABLE classified ADD COLUMN IF NOT EXISTS building_offeredFloors numeric;
 
   ALTER TABLE classified ADD COLUMN IF NOT EXISTS hideneighborhood boolean DEFAULT false;
+-- View: public.v_classified_v2
+
+-- DROP VIEW public.v_classified_v2;
 
 CREATE OR REPLACE VIEW public.v_classified_v2
  AS
@@ -372,7 +376,7 @@ CREATE OR REPLACE VIEW public.v_classified_v2
             ELSE g.microneighborhoodid
         END AS microneighborhoodid,
     c.building_offeredfloors,
-    c.hideneighborhood
+	c.hideneighborhood
    FROM classified c
      LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
      LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid, c.avivgeoid)::text;
