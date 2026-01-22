@@ -156,7 +156,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
             issalegoodwill,
             businessSubType,
             building_offeredFloors,
-            hideNeighborhood
+            hideneighborhood
             )
           VALUES (
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36, $37, $38, $39, $40
@@ -214,7 +214,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
                 isSaleGoodwill=$44,
                 businessSubType=$45,
                 building_offeredFloors=$46,
-                hideNeighborhood=$47;
+                hideneighborhood=$47;
                 `;
       await _pool.query(classifiedQuery, classifiedValue);
     });
@@ -267,7 +267,7 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
                     isSaleGoodwill,
                     businessSubType,
                     building_offeredFloors,
-                    hideNeighborhood
+                    hideneighborhood
             FROM public.v_classified_v2
             where classifiedid = $1;  
               ;`;
