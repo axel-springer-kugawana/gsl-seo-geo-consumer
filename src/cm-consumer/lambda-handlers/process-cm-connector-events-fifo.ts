@@ -47,17 +47,17 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
 
       const classifiedObject = e.data as ClassifiedManagementStructure;
 
-      logger.warn('fifo upsert classified', { 
-        classifiedId, 
-        type: e.type, 
-        data: classifiedObject
-      });
+      // logger.warn('fifo upsert classified', { 
+      //   classifiedId, 
+      //   type: e.type, 
+      //   data: classifiedObject
+      // });
 
       try {
         const isUpserted = await createOrUpdateClassifiedPG(context, classifiedId, classifiedObject);
-        logger.warn('fifo upsert classified', { 
-          isUpserted: isUpserted
-        });
+        // logger.warn('fifo upsert classified', { 
+        //   isUpserted: isUpserted
+        // });
 
         if (!isUpserted) {
           await markClassifiedAsDeletedPG(context, { classifiedId });
