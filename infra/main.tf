@@ -5,10 +5,6 @@ module "cm_connector" {
     id = var.classified_management_sync_bucket
   }
 
-  events_topic = {
-    arn = var.classified_management_events_topic
-  }
-
   events_fifo_topic = {
     arn = var.classified_management_events_fifo_topic
   }

@@ -69,11 +69,6 @@ variable "classified_management_sync_bucket" {
   type        = string
 }
 
-variable "classified_management_events_topic" {
-  description = "classified management events topic arn"
-  type        = string
-}
-
 variable "classified_management_events_fifo_topic" {
   description = "classified management events fifo topic arn"
   type        = string

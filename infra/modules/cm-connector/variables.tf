@@ -14,19 +14,11 @@ locals {
   prefix = "${var.application}-${var.environment}-${var.ssot_name}-connector"
 }
 
-
 variable bucket {
 type = object({
     id = string
   })
 }
-
-variable events_topic {
-  type = object({
-    arn = string
-  })
-}
-
 
 variable events_fifo_topic {
   type = object({

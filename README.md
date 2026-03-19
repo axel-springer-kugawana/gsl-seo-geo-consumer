@@ -36,7 +36,7 @@ module "cm_connector" {
     id = "aviv-classdisp-dev-staging-resync-bucket"
   }
   
-  events_topic = {
+  events_topic_fifo = {
     # classified events event topic
     arn = "arn:aws:sns:eu-west-1:272575627684:classdisp-staging-dispatch-classified-event-topic"
   }
