@@ -1,5 +1,5 @@
 import { mockClient } from 'aws-sdk-client-mock';
-import { queueHandler } from "./handle-classifieds-events";
+import { queueHandler } from "./handle-classifieds-events-fifo";
 import { v4 as uuidv4 } from 'uuid';
 import { SQSEvent } from 'aws-lambda';
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
@@ -25,41 +25,16 @@ describe('handle classified event lambda', () => {
 
         // arrange
         const classifiedId = "231111GDUTW1";
-        const events = [{
-            id: uuidv4(),
-            classifiedId,
-            link: `/IWT/${classifiedId}`,
-            eventTime: 1676537758336,
-            eventType: "UPDATED",
-        }];
-
+        const eventId = uuidv4();
         const exepctedResponse = await import(`./fakes/classified-object-${classifiedId}.json`);
 
-        jest
-            .spyOn(global, 'fetch')
-            .mockImplementation((url: string) => {
-              
-                if (url.startsWith("http://localhost:2773/secretsmanager/get?secretId=")) {
+        const events = [{
+            type: "classified.updated",
+            data: exepctedResponse,
+            time: new Date(1676537758336).toISOString()
+        }];
 
-                    return Promise.resolve({
-                        ok: true, status: 200, json: () => Promise.resolve({
-                            SecretString: JSON.stringify({
-                                ClientId: uuidv4(),
-                                Authorization:  uuidv4()
-                            })
-                        })
-
-                    });
-                } else if (url.indexOf(`/IWT/${classifiedId}`)) {
-                    return Promise.resolve({
-                        ok: true, status: 200, json: () => Promise.resolve(exepctedResponse)
-                    } as any);
-                }
-            });
-
-
-        const records = events.map(e => createFakeSQSEnvelope(e.id, e));
-
+        const records = events.map(e => createFakeSQSEnvelope(eventId, e));
 
         const sqsEvent: SQSEvent = {
             Records: records
@@ -87,42 +62,16 @@ describe('handle classified event lambda', () => {
 
         // arrange
         const classifiedId = "231111GDUTW1";
-        const events = [{
-            id:  uuidv4(),
-            classifiedId,
-            link: `/IWT/${classifiedId}`,
-            eventType: "CREATED",
-            eventTime: 1676537758336,
-        }];
-
+        const eventId = uuidv4();
         const exepctedResponse = await import(`./fakes/classified-object-${classifiedId}.json`);
 
-        jest
-            .spyOn(global, 'fetch')
-            .mockImplementation((url: string) => {
-              
-                if (url.startsWith("http://localhost:2773/secretsmanager/get?secretId=")) {
+        const events = [{
+            type: "classified.created",
+            data: exepctedResponse,
+            time: new Date(1676537758336).toISOString()
+        }];
 
-                    return Promise.resolve({
-                        ok: true, status: 200, json: () => Promise.resolve({
-                            SecretString: JSON.stringify({
-                                ClientId: uuidv4(),
-                                Authorization: uuidv4()
-                            })
-                        })
-
-                    });
-                } else if (url.indexOf(`/IWT/${classifiedId}`)) {
-                    return Promise.resolve({
-                        ok: true, status: 200, json: () => Promise.resolve(exepctedResponse)
-                    } as any);
-                }
-            });
-
-
-            const records = events.map(e => createFakeSQSEnvelope(e.id, e));
-
-
+        const records = events.map(e => createFakeSQSEnvelope(eventId, e));
 
         const sqsEvent: SQSEvent = {
             Records: records
@@ -147,15 +96,16 @@ describe('handle classified event lambda', () => {
 
         // arrange
         const classifiedId = "231111GDUTW1";
+        const eventId = uuidv4();
         const events = [{
-            id:  uuidv4(),
-            classifiedId,
-            link: `/IWT/${classifiedId}`,
-            eventTime: 1676537758336,
-            eventType: "DELETED",
+            type: "classified.deleted",
+            data: {
+                classifiedId
+            },
+            time: new Date(1676537758336).toISOString()
         }];
 
-        const records = events.map(e => createFakeSQSEnvelope(e.id, e));
+        const records = events.map(e => createFakeSQSEnvelope(eventId, e));
 
         const sqsEvent: SQSEvent = {
             Records: records
