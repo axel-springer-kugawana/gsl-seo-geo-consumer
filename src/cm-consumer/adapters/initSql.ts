@@ -410,6 +410,22 @@ const removeGeo = async () => {
   }
 };
 
+
+const removeIWT = async () => {
+  const sqlDatabase =  `
+ delete 
+FROM public.classified
+where brand ='IWT'
+ `;
+   try {
+    await poolInstance.getPool().then(_pool => _pool.query(sqlDatabase)); // Ensure you are getting the pool instance correctly
+    console.log('Database cleaned successfully');
+  } catch (e) {
+    logger.error('Error executing SQL:', e);
+  }
+};
+
+
 const removeOrphans = async () => {
   const sqlDatabase =  `
     delete 
@@ -424,4 +440,4 @@ const removeOrphans = async () => {
     logger.error('Error executing SQL:', e);
   }
 };
-export { initDatabase, patchDatabase, removeGeo, removeOrphans };
+export { initDatabase, patchDatabase, removeGeo, removeIWT, removeOrphans };
