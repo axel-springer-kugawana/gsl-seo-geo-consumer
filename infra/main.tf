@@ -26,7 +26,9 @@ module "cm_connector" {
 
 module "dynamodb-fifo" {
   source      = "./modules/dynamodb"
-  application = "seo-ssot-classified-fifo"
+  application = "seo-ssot-classified-fifo"  
+  environment = var.environment
+}
 
 module "dynamodb-ssot-classified" {
   source      = "./modules/dynamodb"
