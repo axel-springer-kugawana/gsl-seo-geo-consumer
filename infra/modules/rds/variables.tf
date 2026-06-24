@@ -18,6 +18,12 @@ variable "rds_aurora_name" {
   type        = string
 }
 
+variable "rds_aurora_engine_version" {
+  description = "The aurora_engine_version"
+  type        = string
+  default     = "16.11"
+}
+
 variable "rds_aurora_username" {
   description = "The username of the admin user of the aurora cluster"
   type        = string
@@ -32,6 +38,12 @@ variable "rds_aurora_port" {
   description = "The port name of the aurora cluster"
   type        = string
   default     = "5432"
+}
+
+variable "rds_aurora_postgres_version" {
+  description = "The postgres version of the aurora cluster"
+  type        = string
+  default     = "15.3"
 }
 
 variable "rds_engine_mode" {
@@ -55,12 +67,6 @@ variable "rds_acu_max" {
 variable "vpc_id" {
   description = "The vpc id used by the database"
   type        = string
-}
-
-variable "rds_aurora_postgres_version" {
-  description = "The postgres version of the aurora cluster"
-  type        = string
-  default     = "16.11"
 }
 
 variable "subnets" {
