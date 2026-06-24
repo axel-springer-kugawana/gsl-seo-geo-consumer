@@ -103,7 +103,7 @@ if you want to start reading all IWT Deleted classified you will need to provide
 `
 
 {
-  "prefix": "DELETE/0/IWT/",
+  "prefix": "DELETE/0/GSL/",
   "operation": "delete"
 }
 

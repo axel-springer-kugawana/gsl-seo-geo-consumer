@@ -32,7 +32,7 @@ module "dynamodb-fifo" {
 
 module "dynamodb-ssot-classified" {
   source      = "./modules/dynamodb"
-  application = "gsl-seo-ssot-classified"
+  application = "gsl-seo-${var.environment}-classified-ssot"
   environment = var.environment
 
 }
