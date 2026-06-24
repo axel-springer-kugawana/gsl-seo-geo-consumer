@@ -40,12 +40,6 @@ variable "rds_engine_mode" {
   default     = "db.serverless"
 }
 
-variable "rds_aurora_postgres_version" {
-  description = "The postgres version of the aurora cluster"
-  type        = string
-  default     = "15.3"
-}
-
 variable "rds_acu_min" {
   description = "min acu for serverless configuration"
   type        = string
