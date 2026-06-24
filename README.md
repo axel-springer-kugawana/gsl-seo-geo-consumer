@@ -101,6 +101,12 @@ Along with the connector, you will find [an example of a lambda function](./src/
 
 if you want to start reading all GSL Deleted classified you will need to provide this input
 `
+{
+  "prefix": "DELETE/0/GSL/",
+  "operation": "delete"
+}
+
+`
 
 
 
@@ -138,7 +144,7 @@ execute sqs event :
 ### Update patch
 execute sqs event :
 {
-    "type": "classified.clean"
+    "type": "classified.patch"
 }
 
 ### clean patch
