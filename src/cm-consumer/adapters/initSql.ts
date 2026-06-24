@@ -59,8 +59,6 @@ CREATE TABLE IF NOT EXISTS public.classified
     ssotupdatedate timestamp without time zone,
     projectid character varying COLLATE pg_catalog."default",
     creationdate timestamp without time zone,
-    isimmonetportal boolean DEFAULT false,
-    isimmoweltportal boolean DEFAULT false,
     isselogerportal boolean DEFAULT false,
     islogicimmoportal boolean DEFAULT false,
     numberofbedrooms numeric,
@@ -76,19 +74,8 @@ TABLESPACE pg_default;
 
 ALTER TABLE IF EXISTS public.classified
     OWNER to main_user;
--- Index: classified_immoweltbool_index
-
--- DROP INDEX IF EXISTS public.classified_immoweltbool_index;
-
-CREATE INDEX IF NOT EXISTS classified_immoweltbool_index
-    ON public.classified USING btree
-    (isimmoweltportal ASC NULLS LAST)
-    WITH (fillfactor=100, deduplicate_items=True)
-    TABLESPACE pg_default;
--- Index: idx_classified_portals
 
 -- DROP INDEX IF EXISTS public.idx_classified_portals;
-
 CREATE INDEX IF NOT EXISTS idx_classified_portals
     ON public.classified USING btree
     (portals COLLATE pg_catalog."default" ASC NULLS LAST)
@@ -100,7 +87,6 @@ CREATE INDEX IF NOT EXISTS idx_v_classified_v2_projecttypes_gin
     (projecttypes COLLATE pg_catalog."default")
     WITH (fastupdate=True, gin_pending_list_limit=4194304)
     TABLESPACE pg_default;
-
 
     CREATE TABLE IF NOT EXISTS public.geo
     (
@@ -212,6 +198,7 @@ CREATE OR REPLACE VIEW public.v_classified_v2
             WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.neighborhoodname
             ELSE g.neighborhoodname
         END AS neighborhoodname,
+    g.blocid,
     c.projecttypes,
     c.brand,
     c.portals,
@@ -227,8 +214,6 @@ CREATE OR REPLACE VIEW public.v_classified_v2
     c.ssotupdatedate,
     c.projectid,
     c.creationdate,
-    c.isimmonetportal,
-    c.isimmoweltportal,
     c.isselogerportal,
     c.islogicimmoportal,
     c.numberofbedrooms,
@@ -241,7 +226,7 @@ CREATE OR REPLACE VIEW public.v_classified_v2
             ELSE g.microneighborhoodid
         END AS microneighborhoodid,
     c.building_offeredfloors,
-	c.hideneighborhood
+    c.hideneighborhood
    FROM classified c
      LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
      LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid, c.avivgeoid)::text;
@@ -271,18 +256,16 @@ ALTER TABLE public.v_classified_v2
 const patchDatabase = async () => {
   const sqlDatabase = `
  
-CREATE INDEX IF NOT EXISTS idx_v_classified_v2_projecttypes_gin
-    ON public.classified USING gin
-    (projecttypes COLLATE pg_catalog."default")
-    WITH (fastupdate=True, gin_pending_list_limit=4194304)
-    TABLESPACE pg_default;
+DROP INDEX IF EXISTS public.classified_immoweltbool_index;
 
-  ALTER TABLE classified ADD COLUMN IF NOT EXISTS building_offeredFloors numeric;
+ DROP VIEW IF EXISTS v_classified_v2;
+ 
+ALTER TABLE classified
+DROP COLUMN isImmonetPortal;
 
-  ALTER TABLE classified ADD COLUMN IF NOT EXISTS hideneighborhood boolean DEFAULT false;
--- View: public.v_classified_v2
+ALTER TABLE classified
+DROP COLUMN isImmoweltPortal;
 
--- DROP VIEW public.v_classified_v2;
 
 CREATE OR REPLACE VIEW public.v_classified_v2
  AS
@@ -347,6 +330,7 @@ CREATE OR REPLACE VIEW public.v_classified_v2
             WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.neighborhoodname
             ELSE g.neighborhoodname
         END AS neighborhoodname,
+    g.blocid,
     c.projecttypes,
     c.brand,
     c.portals,
@@ -362,8 +346,6 @@ CREATE OR REPLACE VIEW public.v_classified_v2
     c.ssotupdatedate,
     c.projectid,
     c.creationdate,
-    c.isimmonetportal,
-    c.isimmoweltportal,
     c.isselogerportal,
     c.islogicimmoportal,
     c.numberofbedrooms,
@@ -376,16 +358,11 @@ CREATE OR REPLACE VIEW public.v_classified_v2
             ELSE g.microneighborhoodid
         END AS microneighborhoodid,
     c.building_offeredfloors,
-	c.hideneighborhood
+    c.hideneighborhood
    FROM classified c
      LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
      LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid, c.avivgeoid)::text;
-
-ALTER TABLE public.v_classified_v2
-    OWNER TO main_user;
-
-
-        `;
+`;
 
   try {
     await poolInstance.getPool().then(_pool => _pool.query(sqlDatabase)); // Ensure you are getting the pool instance correctly

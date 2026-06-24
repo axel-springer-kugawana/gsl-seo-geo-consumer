@@ -97,8 +97,6 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         space,
         classified.metadata.projectId,
         classified.metadata?.creationDate ?? null,
-        portals.some(x => x === "IMMONET") && classified.metadata?.creationDate != null,
-        portals.some(x => x === "IWT") && classified.metadata?.creationDate != null,
         portals.some(x => x === "SL") && classified.metadata?.creationDate != null,
         portals.some(x => x === "LI") && classified.metadata?.creationDate != null,
         classified.data?.structure?.rooms?.numberOfBedRooms,
@@ -149,8 +147,6 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
             ssotupdatedate,
             projectId,
             creationdate,
-            isImmonetPortal,
-            isImmoweltPortal,
             isSeLogerPortal,
             isLogicImmoPortal,
             numberOfBedRooms,
@@ -162,15 +158,14 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
             hideneighborhood
             )
           VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36, $37, $38, $39
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36, $37, $38
+          , $39
           , $40
           , $41
           , $42
           , $43
           , $44
-          , $45
-          , $46
-          , $47)
+          , $45)
       ON CONFLICT (ClassifiedId) DO UPDATE 
             SET Price = $2,
                 avivgeoId= $3, 
@@ -208,17 +203,15 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
                 ssotupdatedate= NOW(),
                 projectId=$35,
                 creationdate=$36,
-                isImmonetPortal=$37,
-                isImmoweltPortal=$38,
-                isSeLogerPortal=$39,
-                isLogicImmoPortal=$40,
-                numberOfBedRooms=$41,
-                headline_fr=$42,
-                headline_de=$43,
-                isSaleGoodwill=$44,
-                businessSubType=$45,
-                building_offeredFloors=$46,
-                hideneighborhood=$47;
+                isSeLogerPortal=$37,
+                isLogicImmoPortal=$38,
+                numberOfBedRooms=$39,
+                headline_fr=$40,
+                headline_de=$41,
+                isSaleGoodwill=$42,
+                businessSubType=$43,
+                building_offeredFloors=$44,
+                hideneighborhood=$45;
                 `;
       await _pool.query(classifiedQuery, classifiedValue);
     });
