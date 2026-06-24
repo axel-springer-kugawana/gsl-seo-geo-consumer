@@ -146,8 +146,6 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
             ssotupdatedate,
             projectId,
             creationdate,
-            isImmonetPortal,
-            isImmoweltPortal,
             isSeLogerPortal,
             isLogicImmoPortal,
             numberOfBedRooms,
@@ -164,9 +162,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           , $42
           , $43
           , $44
-          , $45
-          , $46
-          , $47)
+          , $45)
       ON CONFLICT (ClassifiedId) DO UPDATE 
             SET Price = $2,
                 avivgeoId= $3, 
@@ -204,17 +200,15 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
                 ssotupdatedate= NOW(),
                 projectId=$35,
                 creationdate=$36,
-                isImmonetPortal=$37,
-                isImmoweltPortal=$38,
-                isSeLogerPortal=$39,
-                isLogicImmoPortal=$40,
-                numberOfBedRooms=$41,
-                headline_fr=$42,
-                headline_de=$43,
-                isSaleGoodwill=$44,
-                businessSubType=$45,
-                building_offeredFloors=$46,
-                hideneighborhood=$47;
+                isSeLogerPortal=$37,
+                isLogicImmoPortal=$38,
+                numberOfBedRooms=$39,
+                headline_fr=$40,
+                headline_de=$41,
+                isSaleGoodwill=$42,
+                businessSubType=$43,
+                building_offeredFloors=$44,
+                hideneighborhood=$45;
                 `;
       await _pool.query(classifiedQuery, classifiedValue);
     });
