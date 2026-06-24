@@ -63,6 +63,12 @@ variable "vpc_id" {
   type        = string
 }
 
+variable "rds_aurora_postgres_version" {
+  description = "The postgres version of the aurora cluster"
+  type        = string
+  default     = "16.11"
+}
+
 variable "subnets" {
   description = "The subnet ids used by the database"
   type        = list(string)

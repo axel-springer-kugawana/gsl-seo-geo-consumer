@@ -3,16 +3,12 @@ import { logger } from "@shared/cross-cutting/logger";
 
 const initDatabase = async () => {
   const sqlDatabase = `
-    DROP VIEW IF EXISTS v_immonet;    
-    DROP VIEW IF EXISTS v_immonet_all;
-    DROP VIEW IF EXISTS v_classified;
     DROP VIEW IF EXISTS v_classified_v2;
     DROP TABLE IF EXISTS classified;
     DROP TABLE IF EXISTS geo;
     DROP TABLE IF EXISTS geo_lat_lon;
 
  -- Table: public.classified
-
 -- DROP TABLE IF EXISTS public.classified;
 
 CREATE TABLE IF NOT EXISTS public.classified
@@ -261,10 +257,10 @@ DROP INDEX IF EXISTS public.classified_immoweltbool_index;
  DROP VIEW IF EXISTS v_classified_v2;
  
 ALTER TABLE classified
-DROP COLUMN isImmonetPortal;
+DROP COLUMN IF EXISTS isImmonetPortal;
 
 ALTER TABLE classified
-DROP COLUMN isImmoweltPortal;
+DROP COLUMN IF EXISTS isImmoweltPortal;
 
 
 CREATE OR REPLACE VIEW public.v_classified_v2

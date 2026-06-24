@@ -99,7 +99,7 @@ Along with the connector, you will find [an example of a lambda function](./src/
 ![Alt text](./assets/mat-view-ddb-table.png)
 
 
-if you want to start reading all IWT Deleted classified you will need to provide this input
+if you want to start reading all GSL Deleted classified you will need to provide this input
 `
 
 {
