@@ -21,13 +21,6 @@ export const mapShowPrice = (
     return showPrice;
 }
 
-export const mapIsRangePrice = (
-    classified: Classified
-): boolean | undefined => {
-    const isRangePrice = classified.data?.prices.buy?.price?.priceInformation == 'BASE_ON_RANGE_PRICE';
-    if (!isRangePrice) { return false; }
-    return true;
-}
 
 export const mapIsRangePrice_fifo = (
     classified: ClassifiedManagementStructure

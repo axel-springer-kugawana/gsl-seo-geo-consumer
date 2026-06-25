@@ -99,13 +99,16 @@ Along with the connector, you will find [an example of a lambda function](./src/
 ![Alt text](./assets/mat-view-ddb-table.png)
 
 
-if you want to start reading all IWT Deleted classified you will need to provide this input
+if you want to start reading all GSL Deleted classified you will need to provide this input
 `
-
 {
-  "prefix": "DELETE/0/IWT/",
+  "prefix": "DELETE/0/GSL/",
   "operation": "delete"
 }
+
+`
+
+
 
 ### Wait ! Why are we using a step function to get the state of the world ?
 
@@ -135,4 +138,17 @@ You will find more about classified management APIs here:
 execute sqs event :
 {
     "type": "classified.init.v1"
+}
+
+
+### Update patch
+execute sqs event :
+{
+    "type": "classified.patch"
+}
+
+### clean patch
+execute sqs event :
+{
+    "type": "classified.clean.v1"
 }
