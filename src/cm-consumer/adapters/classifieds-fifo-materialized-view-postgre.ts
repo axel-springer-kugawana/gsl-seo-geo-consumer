@@ -151,7 +151,6 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
             isLogicImmoPortal,
             numberOfBedRooms,
             headline_fr,
-            headline_de,
             issalegoodwill,
             businessSubType,
             building_offeredFloors,
@@ -207,11 +206,10 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
                 isLogicImmoPortal=$38,
                 numberOfBedRooms=$39,
                 headline_fr=$40,
-                headline_de=$41,
-                isSaleGoodwill=$42,
-                businessSubType=$43,
-                building_offeredFloors=$44,
-                hideneighborhood=$45;
+                isSaleGoodwill=$41,
+                businessSubType=$42,
+                building_offeredFloors=$43,
+                hideneighborhood=$44;
                 `;
       await _pool.query(classifiedQuery, classifiedValue);
     });
@@ -260,7 +258,6 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
                     creationdate,
                     numberOfBedRooms,
                     headline_fr,
-                    headline_de,
                     isSaleGoodwill,
                     businessSubType,
                     building_offeredFloors,

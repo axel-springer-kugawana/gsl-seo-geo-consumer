@@ -59,7 +59,6 @@ CREATE TABLE IF NOT EXISTS public.classified
     islogicimmoportal boolean DEFAULT false,
     numberofbedrooms numeric,
     headline_fr character varying COLLATE pg_catalog."default",
-    headline_de character varying COLLATE pg_catalog."default",
     issalegoodwill boolean,
     businesssubtype character varying COLLATE pg_catalog."default",
 	building_offeredFloors numeric,
@@ -214,7 +213,6 @@ CREATE OR REPLACE VIEW public.v_classified_v2
     c.islogicimmoportal,
     c.numberofbedrooms,
     c.headline_fr,
-    c.headline_de,
     c.issalegoodwill,
     c.businesssubtype,
         CASE
@@ -262,6 +260,9 @@ DROP COLUMN IF EXISTS isImmonetPortal;
 ALTER TABLE classified
 DROP COLUMN IF EXISTS isImmoweltPortal;
 
+
+ALTER TABLE classified
+DROP COLUMN IF EXISTS headline_de;
 
 CREATE OR REPLACE VIEW public.v_classified_v2
  AS
@@ -346,7 +347,6 @@ CREATE OR REPLACE VIEW public.v_classified_v2
     c.islogicimmoportal,
     c.numberofbedrooms,
     c.headline_fr,
-    c.headline_de,
     c.issalegoodwill,
     c.businesssubtype,
         CASE
