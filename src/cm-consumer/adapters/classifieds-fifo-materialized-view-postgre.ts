@@ -100,8 +100,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         portals.some(x => x === "SL") && classified.metadata?.creationDate != null,
         portals.some(x => x === "LI") && classified.metadata?.creationDate != null,
         classified.data?.structure?.rooms?.numberOfBedRooms,
-        classified.data?.texts?.headline?.fr,        
-        classified.data?.texts?.headline?.de,
+        classified.data?.texts?.headline?.fr,
         classified.data?.distributionSubType?.buy === DistributionSubTypeBuy.BUSINESS_SALE_GOODWILL,
         classified.data?.countrySpecific?.fr?.business?.businessSubType,
         classified.data?.structure?.building?.offeredFloors,
@@ -163,8 +162,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           , $41
           , $42
           , $43
-          , $44
-          , $45)
+          , $44)
       ON CONFLICT (ClassifiedId) DO UPDATE 
             SET Price = $2,
                 avivgeoId= $3, 
