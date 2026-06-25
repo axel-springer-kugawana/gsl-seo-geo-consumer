@@ -82,7 +82,8 @@ by specifying this input parameters to the state machine:
 more precisely, if you want to start reading all IWT active classified you will need to provide this input
 ```
 {
-   "prefix": "ACTIVE/0/IWT/"
+   "prefix": "ACTIVE/0/IWT/",
+  "operation": "upsert"
 }
 ```
 

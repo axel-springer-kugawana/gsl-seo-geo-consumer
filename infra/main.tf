@@ -22,14 +22,6 @@ module "cm_connector" {
   ssot_name   = var.ssot_name
 }
 
-
-
-module "dynamodb-fifo" {
-  source      = "./modules/dynamodb"
-  application = "seo-ssot-classified-fifo"  
-  environment = var.environment
-}
-
 module "dynamodb-ssot-classified" {
   source      = "./modules/dynamodb"
   application = "gsl-seo-${var.environment}-classified-ssot"
