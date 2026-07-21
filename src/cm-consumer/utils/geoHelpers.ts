@@ -1,22 +1,38 @@
-import { paths, components } from '../../shared/models/geo-api';
-import createClient from 'openapi-fetch';
-import { Middleware } from 'openapi-fetch';
-import { Pool } from "pg";
-import { getClassifiedApiSecret } from "../adapters/classified-api-secrets";
-import { Location } from '@shared/models/classified/1.0.0/classified';
-import { logger } from "@shared/cross-cutting/logger";
+import {components, paths} from '../../shared/models/geo-api';
+import createClient, {Middleware} from 'openapi-fetch';
+import {Pool} from "pg";
+import {getClassifiedApiSecret} from "../adapters/classified-api-secrets";
+import {Location} from '@shared/models/classified/1.0.0/classified';
+import {logger} from "@shared/cross-cutting/logger";
 import axios from 'axios';
+import {ClassifiedManagementStructure, GeoEnrichmentValueStructure} from "@models";
+import {EnrichmentType} from "../models/classifiedEnums";
 
-export const mapGeo = async (_pool: Pool, location: Location): Promise<string> => {
+export const mapGeo = async (_pool: Pool, classified: ClassifiedManagementStructure): Promise<string | undefined> => {
+    const location = classified.data?.location as unknown as Location;
+    const enrichment = getGeoEnrichment(classified);
+    if (enrichment) {
+        const resolved = await mapGeoFromEnrichment(_pool, enrichment);
+        if (resolved !== undefined) {
+            return resolved;
+        }
+    }
     let avivGeoId = await mapGeoFromCache(_pool, location);
     if (avivGeoId === undefined) {
         return await mapGeoFromApi(_pool, location);
     }
+    return avivGeoId;
+}
+
+async function mapGeoFromEnrichment(_pool: Pool, enrichment: GeoEnrichmentValueStructure): Promise<string | undefined> {
+    const hierarchy = resolveHierarchyFromEnrichment(enrichment);
+    if (!hierarchy.highestLevelId) return undefined;
+    await upsertGeoIdCache(_pool, hierarchy.highestLevelId, hierarchy.highestLevel, hierarchy);
+    return hierarchy.highestLevelId;
 }
 
 async function mapGeoFromCache(_pool: Pool, location: Location) {
-    const { avivGeoId, geometry } = location;
-
+    const {avivGeoId, geometry} = location;
     let mappedAvivGeoId = undefined;
     if (geometry?.type?.toUpperCase() === 'POINT') {
         mappedAvivGeoId = await getGeoHierarchyEnrichmentByCoordinatesByCache(_pool, location);
@@ -28,7 +44,7 @@ async function mapGeoFromCache(_pool: Pool, location: Location) {
 }
 
 async function mapGeoFromApi(_pool: Pool, location: Location) {
-    const { avivGeoId, geometry } = location;
+    const {avivGeoId, geometry} = location;
     let mappedAvivGeoId = undefined;
     let geo = undefined;
     if (geometry?.type?.toUpperCase() === 'POINT') {
@@ -36,7 +52,7 @@ async function mapGeoFromApi(_pool: Pool, location: Location) {
 
         if (geo !== undefined && geo != null) {
             if (geo && geo.length > 0) {
-                mappedAvivGeoId = geo.reduce((max, item) => 
+                mappedAvivGeoId = geo.reduce((max, item) =>
                     item.level > max.level ? item : max, geo[0])?.id;
                 await addGeoFromCoordinatesToCacheAsync(_pool, geo, mappedAvivGeoId, location);
                 return mappedAvivGeoId;
@@ -46,13 +62,43 @@ async function mapGeoFromApi(_pool: Pool, location: Location) {
     if (avivGeoId !== undefined) {
         geo = await getGeoHierarchyEnrichmentById(avivGeoId);
         if (geo && geo.length > 0) {
-            mappedAvivGeoId = geo.reduce((max, item) => 
+            mappedAvivGeoId = geo.reduce((max, item) =>
                 item.level > max.level ? item : max, geo[0])?.id;
-                await addGeoFromIdToCacheAsync(_pool, geo, mappedAvivGeoId, location);
+            await addGeoFromIdToCacheAsync(_pool, geo, mappedAvivGeoId, location);
         }
     }
 
     return mappedAvivGeoId
+}
+
+export function resolveHierarchyFromEnrichment(enrichment: GeoEnrichmentValueStructure): ResolvedGeoHierarchy {
+    const hierarchy = enrichment.jsonValue?.hierarchy;
+    if (!hierarchy) return {};
+    const entries = Object.values(hierarchy).flat(2);
+    const byLevel = (level: number) => entries.find(e => e.level === level)?.id;
+    const highest = entries.reduce((max, item) => (max === undefined || item.level > max.level ? item : max),
+        undefined as (typeof entries)[number] | undefined);
+    return {
+        countryId: byLevel(200),
+        regionId: byLevel(400),
+        microregionId: byLevel(500),
+        provinceId: byLevel(600),
+        municipalityId: byLevel(800),
+        boroughID: byLevel(900),
+        neighborhoodId: byLevel(1000),
+        microNeighborhoodId: byLevel(1100),
+        blocId: byLevel(1200),
+        highestLevelId: highest?.id,
+        highestLevel: highest?.level,
+    };
+}
+
+export function getGeoEnrichment(classified: ClassifiedManagementStructure): GeoEnrichmentValueStructure | undefined {
+    const geoEnrichments =
+        classified?.enrichedData.enrichments?.filter(({enrichmentType}) => enrichmentType === EnrichmentType.GEO) ?? []
+    return geoEnrichments
+        .flatMap(({enrichmentValues}) => enrichmentValues as GeoEnrichmentValueStructure[])
+        .find(({enrichment}) => enrichment === 'geo-enrichment');
 }
 
 async function getGeoHierarchyEnrichmentById(avivGeoId: string): Promise<Feature[] | undefined> {
@@ -74,7 +120,7 @@ async function getGeoHierarchyEnrichmentById(avivGeoId: string): Promise<Feature
         error, // only present if 4XX or 5XX response
     } = await cliApi.GET("/v1/places/{place_id}", {
         params: {
-            path: { place_id: avivGeoId },
+            path: {place_id: avivGeoId},
         }
     });
     if (error != null && error != undefined) {
@@ -88,7 +134,7 @@ async function getGeoHierarchyEnrichmentById(avivGeoId: string): Promise<Feature
 }
 
 export const getGeoHierarchyEnrichmentByCoordinates = async (location: Location): Promise<Feature[] | undefined> => {
-    const { avivGeoId, geometry } = location;
+    const {avivGeoId, geometry} = location;
     var fullUrlWithQueryParams;
     if (geometry?.coordinates?.length == 2) {
         try {
@@ -123,19 +169,16 @@ function single<T>(a: ReadonlyArray<T>, fallback?: T): T {
     return null;
 }
 
-function getIdForGeoLevel(geo : Feature[], level: number)
-{
+function getIdForGeoLevel(geo: Feature[], level: number) {
     return single(geo?.filter(x => x.level === level && x.active === true))?.id ?? null;
 }
 
-function getNamesForLevel(actualGeo : Feature, parents: Feature[], level: number) {
+function getNamesForLevel(actualGeo: Feature, parents: Feature[], level: number) {
     const result = {};
-     if (actualGeo.level === 800 && actualGeo?.id.startsWith('POCO') === true)
-    {
+    if (actualGeo.level === 800 && actualGeo?.id.startsWith('POCO') === true) {
         return result;
     }
-    if (actualGeo.level === level)
-    {
+    if (actualGeo.level === level) {
         Object.keys(actualGeo.names).forEach(lang => {
             if (!result[lang]) {
                 result[lang] = [];
@@ -165,16 +208,16 @@ async function addGeoFromCoordinatesToCacheAsync(_pool: Pool, geo: Feature[], ma
     let current = single(geo.filter(x => x.id === mappedAvivGeoId));
 
     let countryId = getIdForGeoLevel(geo, 200);
-    let regionId =  getIdForGeoLevel(geo, 400);
-    let microregionId = getIdForGeoLevel(geo, 500); 
+    let regionId = getIdForGeoLevel(geo, 400);
+    let microregionId = getIdForGeoLevel(geo, 500);
     let provinceId = getIdForGeoLevel(geo, 600);
     //Ensure unicity of municipalityId
     let municipalityId = single(geo?.filter(x => x.level === 800 && x.type_key === 'AD08' && x.active === true))?.id;
-    let municipalityName = getNamesForLevel(current, geo?.filter(x=>x.level === 800 && x.type_key === 'AD08'), 800);
+    let municipalityName = getNamesForLevel(current, geo?.filter(x => x.level === 800 && x.type_key === 'AD08'), 800);
     let boroughID = getIdForGeoLevel(geo, 900);
-    let neighborhoodId = getIdForGeoLevel(geo.filter(x=>x.type === 'Neighborhood'), 1000);
-    let neighborhoodName = getNamesForLevel(current, geo.filter(x=>x.type === 'Neighborhood'), 1000);
-    let microNeighborhoodId = getIdForGeoLevel(geo.filter(x=>x.type === 'Micro neighborhood'), 1100);
+    let neighborhoodId = getIdForGeoLevel(geo.filter(x => x.type === 'Neighborhood'), 1000);
+    let neighborhoodName = getNamesForLevel(current, geo.filter(x => x.type === 'Neighborhood'), 1000);
+    let microNeighborhoodId = getIdForGeoLevel(geo.filter(x => x.type === 'Micro neighborhood'), 1100);
 
     if (lat !== undefined) {
         const geo_lat_lonValue = [
@@ -195,22 +238,25 @@ async function addGeoFromCoordinatesToCacheAsync(_pool: Pool, geo: Feature[], ma
         ]
 
         const geo_lat_lon = `
-      INSERT INTO geo_lat_lon (lat, lon, avivgeoId, updateDate, countryId, regionId, microregionId, provinceId, municipalityId, municipalityName, boroughID, neighborhoodId, neighborhoodName, microNeighborhoodId, geolevel) VALUES ($1, $2, $3, NOW(), $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-      ON CONFLICT (lat,lon) DO UPDATE 
-        SET    
-        avivgeoId = $3,
-        updateDate = NOW(),
-        countryId = $4,
-        regionId= $5,
-        microregionId= $6,
-        provinceId= $7,
-        municipalityId= $8,
-        municipalityName= $9,
-        boroughID= $10,
-        neighborhoodId= $11,
-        neighborhoodName= $12,
-        microNeighborhoodId= $13,
-        geolevel=$14`;
+            INSERT INTO geo_lat_lon (lat, lon, avivgeoId, updateDate, countryId, regionId, microregionId, provinceId,
+                                     municipalityId, municipalityName, boroughID, neighborhoodId, neighborhoodName,
+                                     microNeighborhoodId, geolevel)
+            VALUES ($1, $2, $3, NOW(), $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) ON CONFLICT (lat,lon) DO
+            UPDATE
+                SET
+                    avivgeoId = $3,
+                updateDate = NOW(),
+                countryId = $4,
+                regionId= $5,
+                microregionId= $6,
+                provinceId= $7,
+                municipalityId= $8,
+                municipalityName= $9,
+                boroughID= $10,
+                neighborhoodId= $11,
+                neighborhoodName= $12,
+                microNeighborhoodId= $13,
+                geolevel=$14`;
         await _pool.query(geo_lat_lon, geo_lat_lonValue);
     }
 }
@@ -220,16 +266,16 @@ async function addGeoFromIdToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivG
     let current = single(geo.filter(x => x.id === mappedAvivGeoId));
 
     let countryId = getIdForGeoLevel(geo, 200);
-    let regionId =  getIdForGeoLevel(geo, 400);
-    let microregionId = getIdForGeoLevel(geo, 500); 
+    let regionId = getIdForGeoLevel(geo, 400);
+    let microregionId = getIdForGeoLevel(geo, 500);
     let provinceId = getIdForGeoLevel(geo, 600);
     //Ensure unicity of municipalityId
     let municipalityId = single(geo?.filter(x => x.level === 800 && x.type_key === 'AD08' && x.active === true))?.id;
-    let municipalityName = getNamesForLevel(current, geo?.filter(x=>x.level === 800 && x.type_key === 'AD08'), 800);
+    let municipalityName = getNamesForLevel(current, geo?.filter(x => x.level === 800 && x.type_key === 'AD08'), 800);
     let boroughID = getIdForGeoLevel(geo, 900);
-    let neighborhoodId = getIdForGeoLevel(geo.filter(x=>x.type === 'Neighborhood'), 1000);
-    let neighborhoodName = getNamesForLevel(current, geo.filter(x=>x.type === 'Neighborhood'), 1000);
-    let microNeighborhoodId = getIdForGeoLevel(geo.filter(x=>x.type === 'Micro neighborhood'), 1100);
+    let neighborhoodId = getIdForGeoLevel(geo.filter(x => x.type === 'Neighborhood'), 1000);
+    let neighborhoodName = getNamesForLevel(current, geo.filter(x => x.type === 'Neighborhood'), 1000);
+    let microNeighborhoodId = getIdForGeoLevel(geo.filter(x => x.type === 'Micro neighborhood'), 1100);
     let blocId = getIdForGeoLevel(geo, 1200);
 
     const geoValues = [
@@ -248,47 +294,98 @@ async function addGeoFromIdToCacheAsync(_pool: Pool, geo: Feature[], mappedAvivG
         blocId
     ]
     const geoQuery = `
-    INSERT INTO geo (
-      avivgeoId,
-      geoLevel,
-      countryId,
-      regionId,
-      microregionId,
-      provinceId,
-      municipalityId,
-      municipalityName,
-      boroughID,
-      neighborhoodId,
-      neighborhoodName,
-      microNeighborhoodId,
-      blocId,
-      updateDate
-   ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW())
-  ON CONFLICT (avivgeoId) DO UPDATE 
-      SET  
-      geoLevel = $2,
-      countryId = $3,
-      regionId= $4,
-      microregionId= $5,
-      provinceId= $6,
-      municipalityId= $7,
-      municipalityName= $8,
-      boroughID= $9,
-      neighborhoodId= $10,
-      neighborhoodName= $11,
-      microNeighborhoodId= $12,
-      blocId= $13,
-      updateDate= NOW();`;
+        INSERT INTO geo (avivgeoId,
+                         geoLevel,
+                         countryId,
+                         regionId,
+                         microregionId,
+                         provinceId,
+                         municipalityId,
+                         municipalityName,
+                         boroughID,
+                         neighborhoodId,
+                         neighborhoodName,
+                         microNeighborhoodId,
+                         blocId,
+                         updateDate)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW()) ON CONFLICT (avivgeoId) DO
+        UPDATE
+            SET
+                geoLevel = $2,
+            countryId = $3,
+            regionId= $4,
+            microregionId= $5,
+            provinceId= $6,
+            municipalityId= $7,
+            municipalityName= $8,
+            boroughID= $9,
+            neighborhoodId= $10,
+            neighborhoodName= $11,
+            microNeighborhoodId= $12,
+            blocId= $13,
+            updateDate= NOW();`;
 
     await _pool.query(geoQuery, geoValues);
 }
 
+async function upsertGeoIdCache(_pool: Pool, mappedAvivGeoId: string, geoLevel: number | undefined,
+                                ids: Omit<ResolvedGeoHierarchy, 'highestLevelId' | 'highestLevel'>,
+                                names?: { municipalityName?: unknown; neighborhoodName?: unknown }) {
+    const geoValues = [
+        mappedAvivGeoId,
+        geoLevel,
+        ids.countryId,
+        ids.regionId,
+        ids.microregionId,
+        ids.provinceId,
+        ids.municipalityId,
+        names?.municipalityName ?? null,
+        ids.boroughID,
+        ids.neighborhoodId,
+        names?.neighborhoodName ?? null,
+        ids.microNeighborhoodId,
+        ids.blocId
+    ];
+
+    const geoQuery = `
+        INSERT INTO geo (avivgeoId,
+                         geoLevel,
+                         countryId,
+                         regionId,
+                         microregionId,
+                         provinceId,
+                         municipalityId,
+                         municipalityName,
+                         boroughID,
+                         neighborhoodId,
+                         neighborhoodName,
+                         microNeighborhoodId,
+                         blocId,
+                         updateDate)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, NOW()) ON CONFLICT (avivgeoId) DO
+        UPDATE SET
+            geoLevel=$2,
+            countryId=$3,
+            regionId=$4,
+            microregionId=$5,
+            provinceId=$6,
+            municipalityId=$7,
+            municipalityName=COALESCE($8, geo.municipalityName),
+            boroughID=$9,
+            neighborhoodId=$10,
+            neighborhoodName=COALESCE($11, geo.neighborhoodName),
+            microNeighborhoodId=$12,
+            blocId=$13,
+            updateDate=NOW();`;
+    await _pool.query(geoQuery, geoValues);
+}
 
 async function getGeoHierarchyEnrichmentByIdByCache(_pool: Pool, avivGeoId: string): Promise<string> {
     const geoQueryExists = `
-    select avivgeoid from geo
-    where avivgeoid = $1
-    AND updateDate >= NOW() - INTERVAL '4 hours'`;
+        select avivgeoid
+        from geo
+        where avivgeoid = $1
+          AND updateDate >= NOW() - INTERVAL '4 hours'`;
     const geoValueExists = [
         avivGeoId
     ]
@@ -298,13 +395,14 @@ async function getGeoHierarchyEnrichmentByIdByCache(_pool: Pool, avivGeoId: stri
 }
 
 async function getGeoHierarchyEnrichmentByCoordinatesByCache(_pool: Pool, location: Location): Promise<string> {
-    const { avivGeoId, geometry } = location;
+    const {avivGeoId, geometry} = location;
     const [lon, lat] = geometry?.coordinates ?? [];
 
-    const geoQueryExists = `   
-    select avivgeoid from geo_lat_lon
-    where (lat = $1 and lon = $2)
-    AND updateDate >= NOW() - INTERVAL '4 hours'`;
+    const geoQueryExists = `
+        select avivgeoid
+        from geo_lat_lon
+        where (lat = $1 and lon = $2)
+          AND updateDate >= NOW() - INTERVAL '4 hours'`;
 
     const geoValueExists = [
         lat,
@@ -315,3 +413,10 @@ async function getGeoHierarchyEnrichmentByCoordinatesByCache(_pool: Pool, locati
 }
 
 type Feature = components['schemas']['Feature'];
+
+type ResolvedGeoHierarchy = {
+    countryId?: string; regionId?: string; microregionId?: string; provinceId?: string;
+    municipalityId?: string; boroughID?: string; neighborhoodId?: string;
+    microNeighborhoodId?: string; blocId?: string;
+    highestLevelId?: string; highestLevel?: number;
+};

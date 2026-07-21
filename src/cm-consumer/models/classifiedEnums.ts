@@ -179,4 +179,5 @@ export enum ClassifiedBusiness {
 
 export enum EnrichmentType {
   FRAUD = 'FRAUD',
+  GEO = 'GEO',
 }
