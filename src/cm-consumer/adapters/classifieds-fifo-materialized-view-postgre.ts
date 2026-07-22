@@ -55,9 +55,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       const isMarketStatusEligibleForPublicationValue = isMarketStatusEligibleForPublication_fifo(classified)
       const isAuthorizedValue = isAuthorized_fifo(classified) 
       //map geo by lat lon, then by geoId
-      await mapGeo(_pool, classified?.data?.location as unknown as Location);
-
-      const { avivGeoId, geometry } = classified.data?.location;
+      const resolvedAvivGeoId = await mapGeo(_pool, classified);
+      const { avivGeoId: rawAvivGeoId, geometry } = classified.data?.location;
+      const avivGeoId = resolvedAvivGeoId ?? rawAvivGeoId;
       const [lon, lat] = geometry?.coordinates ?? []
 
       const classifiedValue = [
