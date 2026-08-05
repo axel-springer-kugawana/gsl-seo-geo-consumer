@@ -288,7 +288,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
                 building_offeredFloors=$43,
                 hideneighborhood=$44,
                 geoPrecision=$45,
-                placeIds=$46;
+                placeIds=$46,
                 placeIdAD02 = $47,
                 placeIdAD03 = $48,
                 placeIdAD04 = $49,
@@ -301,7 +301,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
                 placeIdNBH3 = $56,
                 placeIdBLOC = $57,
                 placeIdSTRT = $58,
-                placeIdHONU = $59
+                placeIdHONU = $59;
                 `;
       await _pool.query(classifiedQuery, classifiedValue);
     });
