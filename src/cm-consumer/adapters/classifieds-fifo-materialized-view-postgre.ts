@@ -30,6 +30,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
   
   const portals = mapPortals(classified.visibility?.validations );
 let   classifiedQuery;
+
+  var classifiedValue = new Array<any>();
+
   if (portals.length == 0) {
     return false;
   }
@@ -61,7 +64,8 @@ let   classifiedQuery;
       logger,
       });
 
-  // Get the first placeId that starts with AD02
+         logger.info('portalsids : ' + placeIds?.join(', '));
+      
   const placeIdsAD02 = placeIds?.find(id => id.startsWith('AD02'));//AD02 countryid
   const placeIdAD03 = placeIds?.find(id => id.startsWith('AD03'));//AD03 macro region id
   const placeIdAD04 = placeIds?.find(id => id.startsWith('AD04'));//AD04 regionid  
@@ -94,8 +98,8 @@ let   classifiedQuery;
        const resolvedAvivGeoId = await mapGeo(_pool, classified);
        const { avivGeoId: rawAvivGeoId, geometry } = classified.data?.location;
        const avivGeoId = resolvedAvivGeoId ?? rawAvivGeoId;
-
-      const classifiedValue = [
+classifiedValue
+       = [
         id,
         price,
         avivGeoId,
@@ -229,10 +233,9 @@ let   classifiedQuery;
           , $43
           , $44
           , $45
-          , $46,
-          
-          , $47,
-          , $48,
+          , $46          
+          , $47
+          , $48
           , $49
           , $50
           , $51
@@ -240,7 +243,10 @@ let   classifiedQuery;
           , $53
           , $54
           , $55
-          , $56, $57,$58,$59
+          , $56
+          , $57
+          , $58
+          , $59
           )
       ON CONFLICT (ClassifiedId) DO UPDATE 
             SET Price = $2,
@@ -316,9 +322,11 @@ let   classifiedQuery;
     }
     else {
       logger.error('classifiedId : ' + id)
-      logger.error('SQL payload : ' + JSON.stringify(classified))
-logger.error('SQL classifiedQuery : ' + JSON.stringify(classifiedQuery))
+      // logger.error('SQL payload : ' + JSON.stringify(classified))
 
+      logger.error('SQL classifiedQuery : ' + JSON.stringify(classifiedQuery))
+
+      logger.error('SQL classifiedValue : ' + JSON.stringify(classifiedValue))  
       
       logger.error(e)
       throw (e);
