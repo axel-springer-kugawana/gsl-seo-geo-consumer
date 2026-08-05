@@ -29,7 +29,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
   context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
   
   const portals = mapPortals(classified.visibility?.validations );
-
+let   classifiedQuery;
   if (portals.length == 0) {
     return false;
   }
@@ -37,7 +37,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
   try {
     
       const { distributionType, spaces, structure, energy, features: { furnished } = {}, estateType } = classified.data
-      const brandCountry = getBrandCountry(portals, classified?.data.location.country) 
+      const brandCountry2 = getBrandCountry(portals, classified?.data.location.country) 
       
 
     const pool = poolInstance.getPool
@@ -57,7 +57,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       enrichedData: classified!.enrichedData,
       ssotGeoEnrichmentEnabledBrands :  [],
       ssotGeoEnrichmentPlaceIds: [],
-      brandCountry, 
+      brandCountry:brandCountry2, 
       logger,
       });
 
@@ -157,7 +157,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         placeIdHONU
       ];
 
-      const classifiedQuery = `
+        classifiedQuery = `
           INSERT INTO classified_v2 (
             ClassifiedId, 
             Price,
@@ -317,6 +317,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
     else {
       logger.error('classifiedId : ' + id)
       logger.error('SQL payload : ' + JSON.stringify(classified))
+logger.error('SQL classifiedQuery : ' + JSON.stringify(classifiedQuery))
+
+      
       logger.error(e)
       throw (e);
     }
