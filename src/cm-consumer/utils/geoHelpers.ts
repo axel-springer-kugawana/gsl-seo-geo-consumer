@@ -5,8 +5,7 @@ import {getClassifiedApiSecret} from "../adapters/classified-api-secrets";
 import {Location} from '@shared/models/classified/1.0.0/classified';
 import {logger} from "@shared/cross-cutting/logger";
 import axios from 'axios';
-import {ClassifiedManagementStructure, GeoEnrichmentValueStructure} from "@models";
-import {EnrichmentType} from "../models/classifiedEnums";
+import {ClassifiedManagementStructure, GeoEnrichmentValueStructure, EnrichmentType} from '@models';
 
 export const mapGeo = async (_pool: Pool, classified: ClassifiedManagementStructure): Promise<string | undefined> => {
     const location = classified.data?.location as unknown as Location;
@@ -415,8 +414,15 @@ async function getGeoHierarchyEnrichmentByCoordinatesByCache(_pool: Pool, locati
 type Feature = components['schemas']['Feature'];
 
 type ResolvedGeoHierarchy = {
-    countryId?: string; regionId?: string; microregionId?: string; provinceId?: string;
-    municipalityId?: string; boroughID?: string; neighborhoodId?: string;
-    microNeighborhoodId?: string; blocId?: string;
-    highestLevelId?: string; highestLevel?: number;
+    countryId?: string;
+    regionId?: string;
+    microregionId?: string; 
+    provinceId?: string;
+    municipalityId?: string;
+    boroughID?: string; 
+    neighborhoodId?: string;
+    microNeighborhoodId?: string;
+    blocId?: string;
+    highestLevelId?: string; 
+    highestLevel?: number;
 };

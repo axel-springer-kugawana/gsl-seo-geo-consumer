@@ -24,7 +24,8 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
   switch (e.type) {
     case `${SSotEntityName}.deleted.v1`: {
       await markClassifiedAsDeletedPG(context, { classifiedId });
-      await markClassifiedAsDeletedDynamoDB({ classifiedId, updateDate: e.data.updateDate });
+      //TODO : reactviate
+      //await markClassifiedAsDeletedDynamoDB({ classifiedId, updateDate: e.data.updateDate });
       break;
     }
     case `${SSotEntityName}.init.v1`: {
@@ -66,7 +67,9 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
         else {
           const fullClassified = await getClassified(context, classifiedId);
           if (fullClassified != null) {
-            await createOrUpdateClassifiedDynamoDB(classifiedId, e.data, fullClassified);
+              //TODO : reactviate
+      //await
+            // await createOrUpdateClassifiedDynamoDB(classifiedId, e.data, fullClassified);
           }
         }
       } catch (error) {

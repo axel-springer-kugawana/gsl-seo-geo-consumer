@@ -2,13 +2,14 @@ import { logger } from "@shared/cross-cutting/logger";
 import { ClassifiedWithFullGeo } from "@shared/models/classified/1.0.0/ClassifiedWithFullGeo";
 import { mapIsRangePrice_fifo } from '../utils/mappingHelpers';
 import { mapGeo } from '../utils/geoHelpers';
-import { DistributionSubTypeBuy} from "cm-consumer/models/classifiedEnums";
+import { mapGeoData } from '../utils/mapGeoData';
+
+import { DistributionSubTypeBuy,ClassifiedManagementStructure} from '@models';
+
 import { poolInstance } from "./connectPostGre";
 import { Context } from "aws-lambda";
 import { isAuthorized_fifo, isGeoDataValid_fifo, isMarketStatusEligibleForPublication_fifo } from '../utils/classfiedRulesHelpers';
-import { Location } from "@shared/models/classified/1.0.0/classified";
 
-import { ClassifiedManagementStructure } from "@models";
 import { mapPortals, mapSpaces, mapPrice, mapFeatures, mapProjectTypes, mapEnergyCertificateClass, getBrandCountry } from "@utils";
 
 
@@ -42,6 +43,41 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
     const pool = poolInstance.getPool
     await pool().then(async (_pool) => {
 
+      const portals = mapPortals(classified!.visibility?.validations)
+      const brandCountry = getBrandCountry(portals, classified!.data.location.country)
+
+      const {
+      coordinates,
+      geoPrecision,
+      placeIds,
+      debugData: geoDebugData,
+      } = mapGeoData({
+      classifiedId: classified!.classifiedId,
+      geoEnrichment: undefined,
+      enrichedData: classified!.enrichedData,
+      ssotGeoEnrichmentEnabledBrands :  [],
+      ssotGeoEnrichmentPlaceIds: [],
+      brandCountry, 
+      logger,
+      });
+
+  // Get the first placeId that starts with AD02
+  const placeIdsAD02 = placeIds?.find(id => id.startsWith('AD02'));//AD02 countryid
+  const placeIdAD03 = placeIds?.find(id => id.startsWith('AD03'));//AD03 macro region id
+  const placeIdAD04 = placeIds?.find(id => id.startsWith('AD04'));//AD04 regionid  
+  const placeIdAD05 = placeIds?.find(id => id.startsWith('AD05'));//ADO5 microregionid
+  const placeIdAD06 = placeIds?.find(id => id.startsWith('AD06'));//AD06 provinceid
+  const placeIdAD08 = placeIds?.find(id => id.startsWith('AD08'));//ADO8 municipalityid
+  const placeIdAD09 = placeIds?.find(id => id.startsWith('AD09'));//AD09 boroughid
+  const placeIdNBH1 = placeIds?.find(id => id.startsWith('NBH1'));//NBH1 boroughid
+  const placeIdNBH2 = placeIds?.find(id => id.startsWith('NBH2'));//NBH2 neighborhoodid
+  const placeIdNBH3 = placeIds?.find(id => id.startsWith('NBH3'));//NBH3 microneighborhoodid
+  const placeIdBLOC = placeIds?.find(id => id.startsWith('BLOC'));//bloc 
+  const placeIdSTRT = placeIds?.find(id => id.startsWith('STRT'));//street
+  const placeIdHONU = placeIds?.find(id => id.startsWith('HONU'));//honu
+
+  // if (shouldMap(data, portals)) {
+
       const price = mapPrice({ brandCountry, distributionType, prices: classified.data.prices }) ?? undefined;
 
       const space = mapSpaces(spaces, estateType)[0]; // Units only have one space
@@ -55,10 +91,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       const isMarketStatusEligibleForPublicationValue = isMarketStatusEligibleForPublication_fifo(classified)
       const isAuthorizedValue = isAuthorized_fifo(classified) 
       //map geo by lat lon, then by geoId
-      const resolvedAvivGeoId = await mapGeo(_pool, classified);
-      const { avivGeoId: rawAvivGeoId, geometry } = classified.data?.location;
-      const avivGeoId = resolvedAvivGeoId ?? rawAvivGeoId;
-      const [lon, lat] = geometry?.coordinates ?? []
+       const resolvedAvivGeoId = await mapGeo(_pool, classified);
+       const { avivGeoId: rawAvivGeoId, geometry } = classified.data?.location;
+       const avivGeoId = resolvedAvivGeoId ?? rawAvivGeoId;
 
       const classifiedValue = [
         id,
@@ -81,8 +116,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         isGeoDataValidValue,
         isMarketStatusEligibleForPublicationValue,
         isAuthorizedValue,
-        lat ?? 0,
-        lon ?? 0,
+        coordinates?.lat ?? 0,
+        coordinates?.lon ?? 0,
         geometry?.type?.toUpperCase() ?? 'AVIV_GEO_ID',
         projectTypes,
         classified.data.location.showAddress ?? false,
@@ -104,11 +139,26 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
         classified.data?.distributionSubType?.buy === DistributionSubTypeBuy.BUSINESS_SALE_GOODWILL,
         classified.data?.countrySpecific?.fr?.business?.businessSubType,
         classified.data?.structure?.building?.offeredFloors,
-        classified.data.location.hideNeighborhood ?? false 
+        classified.data.location.hideNeighborhood ?? false ,
+        geoPrecision,
+        placeIds,
+        placeIdsAD02,
+        placeIdAD03 ,
+        placeIdAD04 ,
+        placeIdAD05 ,
+        placeIdAD06 ,
+        placeIdAD08 ,
+        placeIdAD09 ,
+        placeIdNBH1,
+        placeIdNBH2,
+        placeIdNBH3,
+        placeIdBLOC ,
+        placeIdSTRT,
+        placeIdHONU
       ];
 
       const classifiedQuery = `
-          INSERT INTO classified (
+          INSERT INTO classified_v2 (
             ClassifiedId, 
             Price,
             AvivGeoId, 
@@ -153,16 +203,45 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
             issalegoodwill,
             businessSubType,
             building_offeredFloors,
-            hideneighborhood
-            )
+            hideneighborhood,
+            geoPrecision,
+            placeIds,
+            placeIdAD02,
+            placeIdAD03 ,
+            placeIdAD04 ,
+            placeIdAD05 ,
+            placeIdAD06 ,
+            placeIdAD08 ,
+            placeIdAD09 ,
+            placeIdNBH1,
+            placeIdNBH2,
+            placeIdNBH3,
+            placeIdBLOC ,
+            placeIdSTRT,
+            placeIdHONU)
           VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36, $37, $38
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23
+            , $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36, $37, $38
           , $39
           , $40
           , $41
           , $42
           , $43
-          , $44)
+          , $44
+          , $45
+          , $46,
+          
+          , $47,
+          , $48,
+          , $49
+          , $50
+          , $51
+          , $52
+          , $53
+          , $54
+          , $55
+          , $56, $57,$58,$59
+          )
       ON CONFLICT (ClassifiedId) DO UPDATE 
             SET Price = $2,
                 avivgeoId= $3, 
@@ -207,7 +286,22 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
                 isSaleGoodwill=$41,
                 businessSubType=$42,
                 building_offeredFloors=$43,
-                hideneighborhood=$44;
+                hideneighborhood=$44,
+                geoPrecision=$45,
+                placeIds=$46;
+                placeIdAD02 = $47,
+                placeIdAD03 = $48,
+                placeIdAD04 = $49,
+                placeIdAD05 = $50,
+                placeIdAD06 = $51,
+                placeIdAD08 = $52,
+                placeIdAD09 = $53,
+                placeIdNBH1 = $54,
+                placeIdNBH2 = $55,
+                placeIdNBH3 = $56,
+                placeIdBLOC = $57,
+                placeIdSTRT = $58,
+                placeIdHONU = $59
                 `;
       await _pool.query(classifiedQuery, classifiedValue);
     });
