@@ -94,7 +94,6 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       classifiedValue
         = [
           id,
-          //externalId,
           price,
           null,
           classified.data.distributionType,
@@ -156,8 +155,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           place_bloc,
           place_strt,
           place_honu,
-          classified.metadata?.updateDate,
-          externalId
+          classified.metadata?.updateDate
         ];
 
       classifiedQuery = `
@@ -222,8 +220,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
             place_bloc,
             place_strt,
             place_honu,
-            ssotupdatedate,
-            externalId)
+            updatedate)
           VALUES (
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23
             , $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34,$35, $36, $37, $38
@@ -250,7 +247,6 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           , $59  
           , $60
           , $61
-          , $62
           )
       ON CONFLICT (ClassifiedId) DO UPDATE 
             SET Price = $2,
@@ -312,8 +308,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
                 place_bloc = $58,
                 place_strt = $59,
                 place_honu = $60,
-                ssotupdatedate = $61,
-                externalId = $62;
+                updatedate = $61
                 `;
       await _pool.query(classifiedQuery, classifiedValue);
     });
