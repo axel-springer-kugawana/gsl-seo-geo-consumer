@@ -349,10 +349,9 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
       const classifiedValue = [id]
 
       const query = `
-            SELECT classifiedid, brand, portals, estatetype, estatesubtype, distributiontype, avivgeoid, country, postalcode, price, numberofrooms, featuresincluded, features, furnished, yearofconstruction, certificateofeligibilityneeded, locationinbuilding, isauthorized, isgeodatavalid, ismarketstatuseligibleforpublication, lat, lon, location_type, projecttypes, showaddress, street, city, spacemin, spacemax, energycertificateclass, buildstate, overallspace, livingspace, classifiedbusiness, showprice, israngeprice, space, updatedate, ssotupdatedate, projectid, creationdate, isselogerportal, islogicimmoportal, numberofbedrooms, headline_fr, issalegoodwill, businesssubtype, building_offeredfloors, hideneighborhood, geoprecision, placeids, place_ad02, place_ad03, place_ad04, place_ad05, place_ad06, place_ad08, place_ad09, place_nbh1, place_nbh2, place_nbh3, place_stu3, place_bloc, place_strt, 
+            SELECT classifiedid, brand, portals, estatetype, estatesubtype, distributiontype, avivgeoid, country, postalcode, price, numberofrooms, featuresincluded, features, furnished, yearofconstruction, certificateofeligibilityneeded, locationinbuilding, isauthorized, isgeodatavalid, ismarketstatuseligibleforpublication, lat, lon, location_type, projecttypes, showaddress, street, city, spacemin, spacemax, energycertificateclass, buildstate, overallspace, livingspace, classifiedbusiness, showprice, israngeprice, space, updatedate, projectid, creationdate, isselogerportal, islogicimmoportal, numberofbedrooms, headline_fr, issalegoodwill, businesssubtype, building_offeredfloors, hideneighborhood, geoprecision, placeids, place_ad02, place_ad03, place_ad04, place_ad05, place_ad06, place_ad08, place_ad09, place_nbh1, place_nbh2, place_nbh3, place_stu3, place_bloc, place_strt, 
             place_honu,
-            externalid,
-            ssotupdatedate
+            externalid
 	          FROM public.classified_v2
             where classifiedid = $1;  
               ;`;

@@ -291,7 +291,6 @@ CREATE TABLE IF NOT EXISTS public.classified_v2
     israngeprice boolean DEFAULT false,
     space numeric,
     updatedate timestamp without time zone,
-    ssotupdatedate timestamp without time zone,
     projectid character varying COLLATE pg_catalog."default",
     creationdate timestamp without time zone,
     isselogerportal boolean DEFAULT false,
