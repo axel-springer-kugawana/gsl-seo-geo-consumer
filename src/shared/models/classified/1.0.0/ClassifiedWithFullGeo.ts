@@ -3,7 +3,6 @@ export interface ClassifiedWithFullGeo {
     estatetype: string;
     estatesubtype: string;
     distributiontype: string;
-    avivgeoid: string;
     location_type: string;
     country: string;
     city: string;
@@ -19,16 +18,6 @@ export interface ClassifiedWithFullGeo {
     isgeodatavalid: string;
     ismarketstatuseligibleforpublication: string;
     geolevel: string;
-    countryid: string;
-    regionid: string;
-    microregionid: string;
-    provinceid: string;
-    municipalityid: string;
-    municipalityname: any;
-    boroughid: string;
-    neighborhoodid: string;
-    neighborhoodname: any;
-    microneighborhoodid: string;
     livingspace: number;
     overallspace: number;
     blocid: string;

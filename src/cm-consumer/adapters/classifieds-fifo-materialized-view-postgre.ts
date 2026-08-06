@@ -91,10 +91,6 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       const isGeoDataValidValue = isGeoDataValid_fifo(classified)
       const isMarketStatusEligibleForPublicationValue = isMarketStatusEligibleForPublication_fifo(classified)
       const isAuthorizedValue = isAuthorized_fifo(classified)
-      //map geo by lat lon, then by geoId
-      //const resolvedAvivGeoId = await mapGeo(_pool, classified);
-      //const { avivGeoId: rawAvivGeoId, geometry } = classified.data?.location;
-      //const avivGeoId = resolvedAvivGeoId ?? rawAvivGeoId;
       classifiedValue
         = [
           id,
@@ -349,25 +345,8 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
       const classifiedValue = [id]
 
       const query = `
-            SELECT classifiedid, estatetype, 
-                    estatesubtype, distributiontype, avivgeoid, location_type, country, city, postalcode,
-                    price, numberofrooms, furnished, yearofconstruction, certificateofeligibilityneeded, locationinbuilding, features, isauthorized,
-                    isgeodatavalid, ismarketstatuseligibleforpublication, geolevel, countryid, regionid,
-                    microregionid, provinceid, municipalityid, boroughid,
-                    neighborhoodid, projecttypes, brand,
-                    neighborhoodname, municipalityname,
-                    microNeighborhoodId,
-                    portals, geo_avivgeoid,
-                    showAddress, overallSpace,
-                    livingSpace, street, showPrice, isRangePrice, classifiedBusiness, space,
-                    creationdate,
-                    numberOfBedRooms,
-                    headline_fr,
-                    isSaleGoodwill,
-                    businessSubType,
-                    building_offeredFloors,
-                    hideneighborhood
-            FROM public.v_classified_v2
+            SELECT classifiedid, brand, portals, estatetype, estatesubtype, distributiontype, avivgeoid, country, postalcode, price, numberofrooms, featuresincluded, features, furnished, yearofconstruction, certificateofeligibilityneeded, locationinbuilding, isauthorized, isgeodatavalid, ismarketstatuseligibleforpublication, lat, lon, location_type, projecttypes, showaddress, street, city, spacemin, spacemax, energycertificateclass, buildstate, overallspace, livingspace, classifiedbusiness, showprice, israngeprice, space, updatedate, ssotupdatedate, projectid, creationdate, isselogerportal, islogicimmoportal, numberofbedrooms, headline_fr, issalegoodwill, businesssubtype, building_offeredfloors, hideneighborhood, geoprecision, placeids, place_ad02, place_ad03, place_ad04, place_ad05, place_ad06, place_ad08, place_ad09, place_nbh1, place_nbh2, place_nbh3, place_stu3, place_bloc, place_strt, place_honu
+	          FROM public.classified_v2
             where classifiedid = $1;  
               ;`;
       const res = await _pool.query<ClassifiedWithFullGeo>(query, classifiedValue);
