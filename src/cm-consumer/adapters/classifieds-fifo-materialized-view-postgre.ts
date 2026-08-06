@@ -24,12 +24,7 @@ const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classi
   });
 }
 
-const createOrUpdateClassified = async (context: Context, id: string, classified: ClassifiedManagementStructure, 
-
-
-  updateAt: Date,
-  externalId : Date
-): Promise<boolean> => {
+const createOrUpdateClassified = async (context: Context, id: string, classified: ClassifiedManagementStructure): Promise<boolean> => {
   context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
 
   const portals = mapPortals(classified.visibility?.validations);
@@ -161,7 +156,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           place_bloc,
           place_strt,
           place_honu,
-          updateAt,
+          classified.metadata?.updateDate,
           externalId
         ];
 

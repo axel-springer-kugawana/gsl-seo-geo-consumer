@@ -7,7 +7,9 @@ const initDatabase = async () => {
     DROP TABLE IF EXISTS classified;
     DROP TABLE IF EXISTS geo;
     DROP TABLE IF EXISTS geo_lat_lon;
--- Table: public.classified_v2
+
+    
+    -- Table: public.classified_v2
 
 -- DROP TABLE IF EXISTS public.classified_v2;
 
@@ -78,6 +80,7 @@ CREATE TABLE IF NOT EXISTS public.classified_v2
     place_bloc text[] COLLATE pg_catalog."default",
     place_strt text[] COLLATE pg_catalog."default",
     place_honu text[] COLLATE pg_catalog."default",
+    externalid character varying COLLATE pg_catalog."default",
     CONSTRAINT "Classified_v2_pkey" PRIMARY KEY (classifiedid)
 )
 
@@ -244,7 +247,7 @@ CREATE INDEX IF NOT EXISTS idx_v_classified_v2_projecttypes_gin_v2
  
 const patchDatabase = async () => {
   const sqlDatabase = `
-   -- Table: public.classified_v2
+  -- Table: public.classified_v2
 
 -- DROP TABLE IF EXISTS public.classified_v2;
 
@@ -315,6 +318,7 @@ CREATE TABLE IF NOT EXISTS public.classified_v2
     place_bloc text[] COLLATE pg_catalog."default",
     place_strt text[] COLLATE pg_catalog."default",
     place_honu text[] COLLATE pg_catalog."default",
+    externalid character varying COLLATE pg_catalog."default",
     CONSTRAINT "Classified_v2_pkey" PRIMARY KEY (classifiedid)
 )
 
