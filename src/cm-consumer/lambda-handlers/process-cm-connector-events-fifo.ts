@@ -54,7 +54,7 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
       // });
 
       try {
-        const isUpserted = await createOrUpdateClassifiedPG(context, classifiedId, classifiedObject, e.data.ssotUpdateDate, e.data.externalId);
+        const isUpserted = await createOrUpdateClassifiedPG(context, classifiedId, classifiedObject, e.data.updateAt, e.data.externalId);
         // logger.warn('fifo upsert classified', { 
         //   isUpserted: isUpserted
         // });
