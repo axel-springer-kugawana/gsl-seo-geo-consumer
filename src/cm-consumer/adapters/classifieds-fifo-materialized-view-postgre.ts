@@ -66,19 +66,19 @@ let   classifiedQuery;
 
          logger.info('portalsids : ' + placeIds?.join(', '));
       
-  const placeIdsAD02 = placeIds?.find(id => id.startsWith('AD02'));//AD02 countryid
-  const placeIdAD03 = placeIds?.find(id => id.startsWith('AD03'));//AD03 macro region id
-  const placeIdAD04 = placeIds?.find(id => id.startsWith('AD04'));//AD04 regionid  
-  const placeIdAD05 = placeIds?.find(id => id.startsWith('AD05'));//ADO5 microregionid
-  const placeIdAD06 = placeIds?.find(id => id.startsWith('AD06'));//AD06 provinceid
-  const placeIdAD08 = placeIds?.find(id => id.startsWith('AD08'));//ADO8 municipalityid
-  const placeIdAD09 = placeIds?.find(id => id.startsWith('AD09'));//AD09 boroughid
-  const placeIdNBH1 = placeIds?.find(id => id.startsWith('NBH1'));//NBH1 boroughid
-  const placeIdNBH2 = placeIds?.find(id => id.startsWith('NBH2'));//NBH2 neighborhoodid
-  const placeIdNBH3 = placeIds?.find(id => id.startsWith('NBH3'));//NBH3 microneighborhoodid
-  const placeIdBLOC = placeIds?.find(id => id.startsWith('BLOC'));//bloc 
-  const placeIdSTRT = placeIds?.find(id => id.startsWith('STRT'));//street
-  const placeIdHONU = placeIds?.find(id => id.startsWith('HONU'));//honu
+  const place_ad02 = placeIds?.find(id => id.startsWith('AD02'));//AD02 countryid
+  const place_ad03 = placeIds?.find(id => id.startsWith('AD03'));//AD03 macro region id
+  const place_ad04 = placeIds?.find(id => id.startsWith('AD04'));//AD04 regionid  
+  const place_ad05 = placeIds?.find(id => id.startsWith('AD05'));//ADO5 microregionid
+  const place_ad06 = placeIds?.find(id => id.startsWith('AD06'));//AD06 provinceid
+  const place_ad08 = placeIds?.find(id => id.startsWith('AD08'));//ADO8 municipalityid
+  const place_ad09 = placeIds?.find(id => id.startsWith('AD09'));//AD09 boroughid
+  const place_nbh1 = placeIds?.find(id => id.startsWith('NBH1'));//NBH1 boroughid
+  const place_nbh2 = placeIds?.find(id => id.startsWith('NBH2'));//NBH2 neighborhoodid
+  const place_nbh3 = placeIds?.find(id => id.startsWith('NBH3'));//NBH3 microneighborhoodid
+  const place_bloc = placeIds?.find(id => id.startsWith('BLOC'));//bloc 
+  const place_strt = placeIds?.find(id => id.startsWith('STRT'));//street
+  const place_honu = placeIds?.find(id => id.startsWith('HONU'));//honu
 
   // if (shouldMap(data, portals)) {
 
@@ -146,21 +146,21 @@ classifiedValue
         classified.data.location.hideNeighborhood ?? false ,
         geoPrecision,
         placeIds,
-        placeIdsAD02,
-        placeIdAD03 ,
-        placeIdAD04 ,
-        placeIdAD05 ,
-        placeIdAD06 ,
-        placeIdAD08 ,
-        placeIdAD09 ,
-        placeIdNBH1,
-        placeIdNBH2,
-        placeIdNBH3,
-        placeIdBLOC ,
-        placeIdSTRT,
-        placeIdHONU
+        place_ad02,
+        place_ad03 ,
+        place_ad04 ,
+        place_ad05 ,
+        place_ad06 ,
+        place_ad08 ,
+        place_ad09 ,
+        place_nbh1,
+        place_nbh2,
+        place_nbh3,
+        place_bloc ,
+        place_strt,
+        place_honu
       ];
-
+s
         classifiedQuery = `
           INSERT INTO classified_v2 (
             ClassifiedId, 
@@ -210,19 +210,19 @@ classifiedValue
             hideneighborhood,
             geoPrecision,
             placeIds,
-            placeIdAD02,
-            placeIdAD03 ,
-            placeIdAD04 ,
-            placeIdAD05 ,
-            placeIdAD06 ,
-            placeIdAD08 ,
-            placeIdAD09 ,
-            placeIdNBH1,
-            placeIdNBH2,
-            placeIdNBH3,
-            placeIdBLOC ,
-            placeIdSTRT,
-            placeIdHONU)
+            place_ad02 ,
+            place_ad03 ,
+            place_ad04 ,
+            place_ad05 ,
+            place_ad06 ,
+            place_ad08 ,
+            place_ad09 ,
+            place_nbh1,
+            place_nbh2,
+            place_nbh3,
+            place_bloc ,
+            place_strt,
+            place_honu)
           VALUES (
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23
             , $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36, $37, $38
@@ -295,19 +295,19 @@ classifiedValue
                 hideneighborhood=$44,
                 geoPrecision=$45,
                 placeIds=$46,
-                placeIdAD02 = $47,
-                placeIdAD03 = $48,
-                placeIdAD04 = $49,
-                placeIdAD05 = $50,
-                placeIdAD06 = $51,
-                placeIdAD08 = $52,
-                placeIdAD09 = $53,
-                placeIdNBH1 = $54,
-                placeIdNBH2 = $55,
-                placeIdNBH3 = $56,
-                placeIdBLOC = $57,
-                placeIdSTRT = $58,
-                placeIdHONU = $59;
+                place_ad02 = $47,
+                place_ad03 = $48,
+                place_ad04 = $49,
+                place_ad05 = $50,
+                place_ad06 = $51,
+                place_ad08 = $52,
+                place_ad09 = $53,
+                place_nbh1 = $54,
+                place_nbh2 = $55,
+                place_nbh3 = $56,
+                place_bloc = $57,
+                place_strt = $58,
+                place_honu = $59;
                 `;
       await _pool.query(classifiedQuery, classifiedValue);
     });
