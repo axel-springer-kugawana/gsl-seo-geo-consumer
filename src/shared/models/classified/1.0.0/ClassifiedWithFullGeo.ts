@@ -51,6 +51,6 @@ export interface ClassifiedWithFullGeo {
     place_strt?: string[] | null;
     place_honu?: string[] | null;
     externalid?: string;
-    ssotUpdateDate?: Date;
+    updateDate?: Date;
     creationdate?: Date;
 }
