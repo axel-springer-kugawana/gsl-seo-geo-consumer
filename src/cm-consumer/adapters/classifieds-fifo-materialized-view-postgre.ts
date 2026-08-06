@@ -160,8 +160,8 @@ classifiedValue
         place_strt,
         place_honu
       ];
-s
-        classifiedQuery = `
+
+      classifiedQuery = `
           INSERT INTO classified_v2 (
             ClassifiedId, 
             Price,
