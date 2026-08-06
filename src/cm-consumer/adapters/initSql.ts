@@ -7,8 +7,7 @@ const initDatabase = async () => {
     DROP TABLE IF EXISTS classified;
     DROP TABLE IF EXISTS geo;
     DROP TABLE IF EXISTS geo_lat_lon;
-
-    -- Table: public.classified_v2
+-- Table: public.classified_v2
 
 -- DROP TABLE IF EXISTS public.classified_v2;
 
@@ -112,6 +111,110 @@ CREATE INDEX IF NOT EXISTS idx_v_classified_fullevent_projecttypes_gin_v2
     (projecttypes COLLATE pg_catalog."default")
     WITH (fastupdate=True, gin_pending_list_limit=4194304)
     TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad02_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad02_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad02_gin
+    ON public.classified_v2 USING gin
+    (place_ad02 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad02_gin_v2
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad02_gin_v2;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad02_gin_v2
+    ON public.classified_v2 USING gin
+    (place_ad02 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad03_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad03_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad03_gin
+    ON public.classified_v2 USING gin
+    (place_ad03 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad04_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad04_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad04_gin
+    ON public.classified_v2 USING gin
+    (place_ad04 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad05_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad05_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad05_gin
+    ON public.classified_v2 USING gin
+    (place_ad05 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad06_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad06_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad06_gin
+    ON public.classified_v2 USING gin
+    (place_ad06 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad08_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad08_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad08_gin
+    ON public.classified_v2 USING gin
+    (place_ad08 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_nbh1_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_nbh1_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_nbh1_gin
+    ON public.classified_v2 USING gin
+    (place_nbh1 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_nbh2_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_nbh2_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_nbh2_gin
+    ON public.classified_v2 USING gin
+    (place_nbh2 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_nbh3_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_nbh3_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_nbh3_gin
+    ON public.classified_v2 USING gin
+    (place_nbh3 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_strt_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_strt_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_strt_gin
+    ON public.classified_v2 USING gin
+    (place_strt COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_placesids_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_placesids_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_placesids_gin
+    ON public.classified_v2 USING gin
+    (placeids COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_placesids_gin_v2
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_placesids_gin_v2;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_placesids_gin_v2
+    ON public.classified_v2 USING gin
+    (placeids COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
 -- Index: idx_v_classified_v2_projecttypes_gin_v2
 
 -- DROP INDEX IF EXISTS public.idx_v_classified_v2_projecttypes_gin_v2;
@@ -120,7 +223,6 @@ CREATE INDEX IF NOT EXISTS idx_v_classified_v2_projecttypes_gin_v2
     ON public.classified_v2 USING gin
     (projecttypes COLLATE pg_catalog."default")
     TABLESPACE pg_default;
-
     `;
 
   const pool = await poolInstance.getPool(); // Ensure you are getting the pool instance correctly
@@ -245,6 +347,110 @@ CREATE INDEX IF NOT EXISTS idx_v_classified_fullevent_projecttypes_gin_v2
     ON public.classified_v2 USING gin
     (projecttypes COLLATE pg_catalog."default")
     WITH (fastupdate=True, gin_pending_list_limit=4194304)
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad02_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad02_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad02_gin
+    ON public.classified_v2 USING gin
+    (place_ad02 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad02_gin_v2
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad02_gin_v2;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad02_gin_v2
+    ON public.classified_v2 USING gin
+    (place_ad02 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad03_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad03_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad03_gin
+    ON public.classified_v2 USING gin
+    (place_ad03 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad04_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad04_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad04_gin
+    ON public.classified_v2 USING gin
+    (place_ad04 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad05_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad05_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad05_gin
+    ON public.classified_v2 USING gin
+    (place_ad05 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad06_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad06_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad06_gin
+    ON public.classified_v2 USING gin
+    (place_ad06 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad08_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad08_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad08_gin
+    ON public.classified_v2 USING gin
+    (place_ad08 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_nbh1_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_nbh1_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_nbh1_gin
+    ON public.classified_v2 USING gin
+    (place_nbh1 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_nbh2_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_nbh2_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_nbh2_gin
+    ON public.classified_v2 USING gin
+    (place_nbh2 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_nbh3_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_nbh3_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_nbh3_gin
+    ON public.classified_v2 USING gin
+    (place_nbh3 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_strt_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_strt_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_strt_gin
+    ON public.classified_v2 USING gin
+    (place_strt COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_placesids_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_placesids_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_placesids_gin
+    ON public.classified_v2 USING gin
+    (placeids COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_placesids_gin_v2
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_placesids_gin_v2;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_placesids_gin_v2
+    ON public.classified_v2 USING gin
+    (placeids COLLATE pg_catalog."default")
     TABLESPACE pg_default;
 -- Index: idx_v_classified_v2_projecttypes_gin_v2
 
