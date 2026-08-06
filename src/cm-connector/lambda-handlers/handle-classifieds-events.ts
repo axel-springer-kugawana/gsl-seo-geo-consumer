@@ -13,7 +13,8 @@ const handleClassifiedEvent = async (event: ClassifiedCreateOrUpdateOrDeleteEven
                 event: "deleted",
                 data: {
                     classifiedId: event.classifiedId,
-                    updateDate: new Date(event.eventTime).toISOString()
+                    updateDate: new Date(event.eventTime).toISOString(),
+                    externalId: event.externalId
                 }
             });
             break;

@@ -24,7 +24,12 @@ const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classi
   });
 }
 
-const createOrUpdateClassified = async (context: Context, id: string, classified: ClassifiedManagementStructure): Promise<boolean> => {
+const createOrUpdateClassified = async (context: Context, id: string, classified: ClassifiedManagementStructure, 
+
+
+  ssotupdatedate: Date,
+  externalId : Date
+): Promise<boolean> => {
   context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
 
   const portals = mapPortals(classified.visibility?.validations);
@@ -94,6 +99,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       classifiedValue
         = [
           id,
+          //externalId,
           price,
           null,
           classified.data.distributionType,
@@ -126,12 +132,14 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           price != undefined,
           mapIsRangePrice_fifo(classified),
           classified.metadata.classifiedBusiness,
+          
           space,
           classified.metadata.projectId,
           classified.metadata?.creationDate ?? null,
           portals.includes("SL") && classified.metadata?.creationDate != null,
           portals.includes("LI") && classified.metadata?.creationDate != null,
           classified.data?.structure?.rooms?.numberOfBedRooms,
+
           classified.data?.texts?.headline?.fr,
           classified.data?.distributionSubType?.buy === DistributionSubTypeBuy.BUSINESS_SALE_GOODWILL,
           classified.data?.countrySpecific?.fr?.business?.businessSubType,
@@ -152,7 +160,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           place_stu3,
           place_bloc,
           place_strt,
-          place_honu
+          place_honu,
+          ssotupdatedate,
+          externalId
         ];
 
       classifiedQuery = `
@@ -217,7 +227,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
             place_stu3,
             place_bloc,
             place_strt,
-            place_honu)
+            place_honu,
+            ssotupdatedate,
+            externalId)
           VALUES (
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23
             , $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, NOW(), $35, $36, $37, $38
@@ -243,6 +255,8 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           , $58
           , $59  
           , $60
+          , $61
+          , $62
           )
       ON CONFLICT (ClassifiedId) DO UPDATE 
             SET Price = $2,
@@ -304,7 +318,9 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
                 place_stu3 = $57,
                 place_bloc = $58,
                 place_strt = $59,
-                place_honu = $60;
+                place_honu = $60,
+                ssotupdatedate = $61,
+                externalId = $62;
                 `;
       await _pool.query(classifiedQuery, classifiedValue);
     });
@@ -345,7 +361,11 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
       const classifiedValue = [id]
 
       const query = `
-            SELECT classifiedid, brand, portals, estatetype, estatesubtype, distributiontype, avivgeoid, country, postalcode, price, numberofrooms, featuresincluded, features, furnished, yearofconstruction, certificateofeligibilityneeded, locationinbuilding, isauthorized, isgeodatavalid, ismarketstatuseligibleforpublication, lat, lon, location_type, projecttypes, showaddress, street, city, spacemin, spacemax, energycertificateclass, buildstate, overallspace, livingspace, classifiedbusiness, showprice, israngeprice, space, updatedate, ssotupdatedate, projectid, creationdate, isselogerportal, islogicimmoportal, numberofbedrooms, headline_fr, issalegoodwill, businesssubtype, building_offeredfloors, hideneighborhood, geoprecision, placeids, place_ad02, place_ad03, place_ad04, place_ad05, place_ad06, place_ad08, place_ad09, place_nbh1, place_nbh2, place_nbh3, place_stu3, place_bloc, place_strt, place_honu
+            SELECT classifiedid, brand, portals, estatetype, estatesubtype, distributiontype, avivgeoid, country, postalcode, price, numberofrooms, featuresincluded, features, furnished, yearofconstruction, certificateofeligibilityneeded, locationinbuilding, isauthorized, isgeodatavalid, ismarketstatuseligibleforpublication, lat, lon, location_type, projecttypes, showaddress, street, city, spacemin, spacemax, energycertificateclass, buildstate, overallspace, livingspace, classifiedbusiness, showprice, israngeprice, space, updatedate, ssotupdatedate, projectid, creationdate, isselogerportal, islogicimmoportal, numberofbedrooms, headline_fr, issalegoodwill, businesssubtype, building_offeredfloors, hideneighborhood, geoprecision, placeids, place_ad02, place_ad03, place_ad04, place_ad05, place_ad06, place_ad08, place_ad09, place_nbh1, place_nbh2, place_nbh3, place_stu3, place_bloc, place_strt, 
+            place_honu,
+            externalid,
+            ssotupdatedate,
+            creationdate
 	          FROM public.classified_v2
             where classifiedid = $1;  
               ;`;
