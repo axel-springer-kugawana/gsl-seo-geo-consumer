@@ -1,10 +1,9 @@
 import { logger } from "@shared/cross-cutting/logger";
 import { ClassifiedWithFullGeo } from "@shared/models/classified/1.0.0/ClassifiedWithFullGeo";
 import { mapIsRangePrice_fifo } from '../utils/mappingHelpers';
-import { mapGeo } from '../utils/geoHelpers';
 import { mapGeoData } from '../utils/mapGeoData';
 
-import { DistributionSubTypeBuy,ClassifiedManagementStructure} from '@models';
+import { DistributionSubTypeBuy, ClassifiedManagementStructure } from '@models';
 
 import { poolInstance } from "./connectPostGre";
 import { Context } from "aws-lambda";
@@ -27,21 +26,21 @@ const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classi
 
 const createOrUpdateClassified = async (context: Context, id: string, classified: ClassifiedManagementStructure): Promise<boolean> => {
   context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
-  
-  const portals = mapPortals(classified.visibility?.validations );
-  var   classifiedQuery = '';
 
-  var classifiedValue = new Array<any>();
+  const portals = mapPortals(classified.visibility?.validations);
+  let classifiedQuery = '';
+
+  let classifiedValue = new Array<any>();
 
   if (portals.length == 0) {
     return false;
   }
 
   try {
-    
-      const { distributionType, spaces, structure, energy, features: { furnished } = {}, estateType } = classified.data
-      const brandCountry2 = getBrandCountry(portals, classified?.data.location.country) 
-      
+
+    const { distributionType, spaces, estateType } = classified.data
+    const brandCountry2 = getBrandCountry(portals, classified?.data.location.country)
+
 
     const pool = poolInstance.getPool
     await pool().then(async (_pool) => {
@@ -50,116 +49,115 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
       const brandCountry = getBrandCountry(portals, classified!.data.location.country)
 
       const {
-      coordinates,
-      geoPrecision,
-      placeIds,
-      debugData: geoDebugData,
+        coordinates,
+        geoPrecision,
+        placeIds,
       } = mapGeoData({
-      classifiedId: classified!.classifiedId,
-      geoEnrichment: undefined,
-      enrichedData: classified!.enrichedData,
-      ssotGeoEnrichmentEnabledBrands :  [],
-      ssotGeoEnrichmentPlaceIds: [],
-      brandCountry:brandCountry2, 
-      logger,
+        classifiedId: classified!.classifiedId,
+        geoEnrichment: undefined,
+        enrichedData: classified!.enrichedData,
+        ssotGeoEnrichmentEnabledBrands: [],
+        ssotGeoEnrichmentPlaceIds: [],
+        brandCountry: brandCountry2,
+        logger,
       });
 
-         logger.info('portalsids : ' + placeIds?.join(', '));
-      
-  const place_ad02 = placeIds?.find(id => id.startsWith('AD02'));//AD02 countryid
-  const place_ad03 = placeIds?.find(id => id.startsWith('AD03'));//AD03 macro region id
-  const place_ad04 = placeIds?.find(id => id.startsWith('AD04'));//AD04 regionid  
-  const place_ad05 = placeIds?.find(id => id.startsWith('AD05'));//ADO5 microregionid
-  const place_ad06 = placeIds?.find(id => id.startsWith('AD06'));//AD06 provinceid
-  const place_ad08 = placeIds?.find(id => id.startsWith('AD08'));//ADO8 municipalityid
-  const place_ad09 = placeIds?.find(id => id.startsWith('AD09'));//AD09 boroughid
-  const place_nbh1 = placeIds?.find(id => id.startsWith('NBH1'));//NBH1 boroughid
-  const place_nbh2 = placeIds?.find(id => id.startsWith('NBH2'));//NBH2 neighborhoodid
-  const place_nbh3 = placeIds?.find(id => id.startsWith('NBH3'));//NBH3 microneighborhoodid
-  const place_bloc = placeIds?.find(id => id.startsWith('BLOC'));//bloc 
-  const place_strt = placeIds?.find(id => id.startsWith('STRT'));//street
-  const place_honu = placeIds?.find(id => id.startsWith('HONU'));//honu
-
-  // if (shouldMap(data, portals)) {
+      const place_ad02 = placeIds?.filter(id => id.startsWith('AD02'));//AD02 countryid
+      const place_ad03 = placeIds?.filter(id => id.startsWith('AD03'));//AD03 macro region id
+      const place_ad04 = placeIds?.filter(id => id.startsWith('AD04'));//AD04 regionid  
+      const place_ad05 = placeIds?.filter(id => id.startsWith('AD05'));//ADO5 microregionid
+      const place_ad06 = placeIds?.filter(id => id.startsWith('AD06'));//AD06 provinceid
+      const place_ad08 = placeIds?.filter(id => id.startsWith('AD08'));//ADO8 municipalityid
+      const place_ad09 = placeIds?.filter(id => id.startsWith('AD09'));//AD09 boroughid
+      const place_nbh1 = placeIds?.filter(id => id.startsWith('NBH1'));//NBH1 boroughid
+      const place_nbh2 = placeIds?.filter(id => id.startsWith('NBH2'));//NBH2 neighborhoodid
+      const place_nbh3 = placeIds?.filter(id => id.startsWith('NBH3'));//NBH3 microneighborhoodid
+      const place_stu3 = placeIds?.filter(id => id.startsWith('STU3'));//NBH3 microneighborhoodid
+      const place_bloc = placeIds?.filter(id => id.startsWith('BLOC'));//bloc 
+      const place_strt = placeIds?.filter(id => id.startsWith('STRT'));//street
+      const place_honu = placeIds?.filter(id => id.startsWith('HONU'));//honu
 
       const price = mapPrice({ brandCountry, distributionType, prices: classified.data.prices }) ?? undefined;
 
       const space = mapSpaces(spaces, estateType)[0]; // Units only have one space
-      const features = mapFeatures({data: classified.data,media: classified.media, specifics: classified!.specifics     });
+      const features = mapFeatures({ data: classified.data, media: classified.media, specifics: classified!.specifics });
 
-      const projectTypes = mapProjectTypes({data:classified!.data,
+      const projectTypes = mapProjectTypes({
+        data: classified!.data,
         metadata: classified!.metadata,
-        specifics: classified!.specifics});
+        specifics: classified!.specifics
+      });
 
       const isGeoDataValidValue = isGeoDataValid_fifo(classified)
       const isMarketStatusEligibleForPublicationValue = isMarketStatusEligibleForPublication_fifo(classified)
-      const isAuthorizedValue = isAuthorized_fifo(classified) 
+      const isAuthorizedValue = isAuthorized_fifo(classified)
       //map geo by lat lon, then by geoId
-       const resolvedAvivGeoId = await mapGeo(_pool, classified);
-       const { avivGeoId: rawAvivGeoId, geometry } = classified.data?.location;
-       const avivGeoId = resolvedAvivGeoId ?? rawAvivGeoId;
-classifiedValue
-       = [
-        id,
-        price,
-        avivGeoId,
-        classified.data.distributionType,
-        classified.data.estateType,
-        classified.data?.estateSubType !== undefined ? Object.values(classified.data?.estateSubType)?.[0] : null,
-        classified.data?.structure?.rooms?.numberOfRooms,
-        classified.data?.features?.furnished,
-        classified.data?.conditions?.yearOfConstruction,
-        classified.data?.management?.rent?.certificateOfEligibilityNeeded,
-        classified.data?.structure?.building?.locationInBuilding,
-        features,
-        classified.data?.location?.country,
-        classified.data?.location?.city,
-        classified.metadata.brand,
-        portals,
-        classified?.data?.location?.postalcode,
-        isGeoDataValidValue,
-        isMarketStatusEligibleForPublicationValue,
-        isAuthorizedValue,
-        coordinates?.lat ?? 0,
-        coordinates?.lon ?? 0,
-        geometry?.type?.toUpperCase() ?? 'AVIV_GEO_ID',
-        projectTypes,
-        classified.data.location.showAddress ?? false,
-        classified.data.location.street,
-        classified.data?.spaces?.residential?.livingSpace,
-        classified.data?.spaces?.overallSpace,
-        classified.data?.conditions?.buildState,
-        mapEnergyCertificateClass(classified!.data.energy, classified!.classifiedId, logger),
-        price == undefined ? false : true,
-        mapIsRangePrice_fifo(classified),
-        classified.metadata.classifiedBusiness,
-        space,
-        classified.metadata.projectId,
-        classified.metadata?.creationDate ?? null,
-        portals.some(x => x === "SL") && classified.metadata?.creationDate != null,
-        portals.some(x => x === "LI") && classified.metadata?.creationDate != null,
-        classified.data?.structure?.rooms?.numberOfBedRooms,
-        classified.data?.texts?.headline?.fr,
-        classified.data?.distributionSubType?.buy === DistributionSubTypeBuy.BUSINESS_SALE_GOODWILL,
-        classified.data?.countrySpecific?.fr?.business?.businessSubType,
-        classified.data?.structure?.building?.offeredFloors,
-        classified.data.location.hideNeighborhood ?? false ,
-        geoPrecision,
-        placeIds,
-        place_ad02,
-        place_ad03 ,
-        place_ad04 ,
-        place_ad05 ,
-        place_ad06 ,
-        place_ad08 ,
-        place_ad09 ,
-        place_nbh1,
-        place_nbh2,
-        place_nbh3,
-        place_bloc ,
-        place_strt,
-        place_honu
-      ];
+      //const resolvedAvivGeoId = await mapGeo(_pool, classified);
+      //const { avivGeoId: rawAvivGeoId, geometry } = classified.data?.location;
+      //const avivGeoId = resolvedAvivGeoId ?? rawAvivGeoId;
+      classifiedValue
+        = [
+          id,
+          price,
+          null,
+          classified.data.distributionType,
+          classified.data.estateType,
+          classified.data?.estateSubType !== undefined ? Object.values(classified.data?.estateSubType)?.[0] : null,
+          classified.data?.structure?.rooms?.numberOfRooms,
+          classified.data?.features?.furnished,
+          classified.data?.conditions?.yearOfConstruction,
+          classified.data?.management?.rent?.certificateOfEligibilityNeeded,
+          classified.data?.structure?.building?.locationInBuilding,
+          features,
+          classified.data?.location?.country,
+          classified.data?.location?.city,
+          classified.metadata.brand,
+          portals,
+          classified?.data?.location?.postalcode,
+          isGeoDataValidValue,
+          isMarketStatusEligibleForPublicationValue,
+          isAuthorizedValue,
+          coordinates?.lat ?? 0,
+          coordinates?.lon ?? 0,
+          null,
+          projectTypes,
+          classified.data.location.showAddress ?? false,
+          classified.data.location.street,
+          classified.data?.spaces?.residential?.livingSpace,
+          classified.data?.spaces?.overallSpace,
+          classified.data?.conditions?.buildState,
+          mapEnergyCertificateClass(classified!.data.energy, classified!.classifiedId, logger),
+          price != undefined,
+          mapIsRangePrice_fifo(classified),
+          classified.metadata.classifiedBusiness,
+          space,
+          classified.metadata.projectId,
+          classified.metadata?.creationDate ?? null,
+          portals.includes("SL") && classified.metadata?.creationDate != null,
+          portals.includes("LI") && classified.metadata?.creationDate != null,
+          classified.data?.structure?.rooms?.numberOfBedRooms,
+          classified.data?.texts?.headline?.fr,
+          classified.data?.distributionSubType?.buy === DistributionSubTypeBuy.BUSINESS_SALE_GOODWILL,
+          classified.data?.countrySpecific?.fr?.business?.businessSubType,
+          classified.data?.structure?.building?.offeredFloors,
+          classified.data.location.hideNeighborhood ?? false,
+          geoPrecision,
+          placeIds,
+          place_ad02,
+          place_ad03,
+          place_ad04,
+          place_ad05,
+          place_ad06,
+          place_ad08,
+          place_ad09,
+          place_nbh1,
+          place_nbh2,
+          place_nbh3,
+          place_stu3,
+          place_bloc,
+          place_strt,
+          place_honu
+        ];
 
       classifiedQuery = `
           INSERT INTO classified_v2 (
@@ -220,7 +218,8 @@ classifiedValue
             place_nbh1,
             place_nbh2,
             place_nbh3,
-            place_bloc ,
+            place_stu3,
+            place_bloc,
             place_strt,
             place_honu)
           VALUES (
@@ -246,7 +245,8 @@ classifiedValue
           , $56
           , $57
           , $58
-          , $59
+          , $59  
+          , $60
           )
       ON CONFLICT (ClassifiedId) DO UPDATE 
             SET Price = $2,
@@ -305,16 +305,18 @@ classifiedValue
                 place_nbh1 = $54,
                 place_nbh2 = $55,
                 place_nbh3 = $56,
-                place_bloc = $57,
-                place_strt = $58,
-                place_honu = $59;
+                place_stu3 = $57,
+                place_bloc = $58,
+                place_strt = $59,
+                place_honu = $60;
                 `;
       await _pool.query(classifiedQuery, classifiedValue);
     });
   }
   catch (e) {
-    if (e.name === "ConditionalCheckFailedException") {
-      logger.warn(e)
+    const error = e as any;
+    if (error.name === "ConditionalCheckFailedException") {
+      logger.warn(error.message || "ConditionalCheckFailedException")
       logger.warn("Conditional Check failed on lastUpdate date. Classified won't be updated", {
         classified: classified
       })
@@ -326,16 +328,16 @@ classifiedValue
 
       logger.error('SQL classifiedQuery : ' + JSON.stringify(classifiedQuery))
 
-      logger.error('SQL classifiedValue : ' + JSON.stringify(classifiedValue))  
-      
-      logger.error(e)
-      throw (e);
+      logger.error('SQL classifiedValue : ' + JSON.stringify(classifiedValue))
+
+      logger.error(error.message || String(error))
+      throw (error);
     }
   }
   return true;
 }
 
-const getClassified = async (context: Context, id: string): Promise<ClassifiedWithFullGeo> => {
+const getClassified = async (context: Context, id: string): Promise<ClassifiedWithFullGeo | undefined> => {
   context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
 
   let result = undefined;
@@ -375,16 +377,17 @@ const getClassified = async (context: Context, id: string): Promise<ClassifiedWi
     });
   }
   catch (e) {
-    if (e.name === "ConditionalCheckFailedException") {
-      logger.warn(e)
+    const error = e as any;
+    if (error.name === "ConditionalCheckFailedException") {
+      logger.warn(error.message || "ConditionalCheckFailedException")
       logger.warn("Conditional Check failed on lastUpdate date. Classified won't be updated", {
         classified: id
       })
     }
     else {
       logger.error('classifiedId : ' + id)
-      logger.error(e)
-      throw (e);
+      logger.error(error.message || String(error))
+      throw (error);
     }
   }
   return result;
