@@ -17,7 +17,7 @@ const markClassifiedAsDeleted = async (context: Context, deleteCommand: { classi
   const values = [classifiedId];
   context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
 
-  const query = `DELETE FROM Classified WHERE ClassifiedId=$1`;
+  const query = `DELETE FROM classified_v2 WHERE ClassifiedId=$1`;
   const pool = poolInstance.getPool
   await pool().then(async (_pool) => {
     await _pool.query(query, values);
