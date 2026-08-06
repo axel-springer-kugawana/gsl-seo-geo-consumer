@@ -115,7 +115,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
           isAuthorizedValue,
           coordinates?.lat ?? 0,
           coordinates?.lon ?? 0,
-          null,
+          classified.data?.location?.geometry?.type?.toUpperCase() ?? 'AVIV_GEO_ID',
           projectTypes,
           classified.data.location.showAddress ?? false,
           classified.data.location.street,
