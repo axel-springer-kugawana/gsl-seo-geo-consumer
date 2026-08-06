@@ -29,7 +29,7 @@ const createOrUpdateClassified = async (context: Context, id: string, classified
   context.callbackWaitsForEmptyEventLoop = false; // !important to reuse pool
   
   const portals = mapPortals(classified.visibility?.validations );
-let   classifiedQuery;
+  var   classifiedQuery = '';
 
   var classifiedValue = new Array<any>();
 
