@@ -45,4 +45,20 @@ export interface ClassifiedWithFullGeo {
     businessSubType: string;
     building_offeredFloors:number;
     hideneighborhood: boolean;
+    geoprecision: string;
+    placeids: string[];
+    place_ad02: string[];
+    place_ad03: string[];
+    place_ad04: string[];
+    place_ad05: string[];
+    place_ad06: string[];
+    place_ad08: string[];
+    place_ad09: string[];
+    place_nbh1: string[];
+    place_nbh2: string[];
+    place_nbh3: string[];
+    place_stu3: string[];
+    place_bloc: string[];
+    place_strt: string[];
+    place_honu: string[];
 }

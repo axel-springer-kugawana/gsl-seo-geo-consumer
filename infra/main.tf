@@ -26,6 +26,12 @@ module "dynamodb-ssot-classified" {
   source      = "./modules/dynamodb"
   application = "gsl-seo-${var.environment}-classified-ssot"
   environment = var.environment
+}
+
+module "dynamodb-ssot-classified-fifo" {
+  source      = "./modules/dynamodb"
+  application = "gsl-seo-${var.environment}-classified-ssot-fifo"
+  environment = var.environment
 
 }
 
@@ -76,6 +82,6 @@ module "cm_consumer_fifo" {
   environment  = var.environment
   secret_name  = module.rds.secret_name
   rds_sg_id    = module.rds.sg_id
-  dynamodb_arn = module.dynamodb-ssot-classified.properties.dynamodb_arn
-  dynamodb_table_name = module.dynamodb-ssot-classified.properties.dynamodb_table_name
+  dynamodb_arn = module.dynamodb-ssot-classified-fifo.properties.dynamodb_arn
+  dynamodb_table_name = module.dynamodb-ssot-classified-fifo.properties.dynamodb_table_name
 }
