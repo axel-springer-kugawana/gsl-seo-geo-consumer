@@ -19,6 +19,7 @@ export interface MultiLingualText {
 
 export interface Classified {
   classifiedId: string;
+  externalId?: string;
   updateAt?: number;
   data?: {
     estateType: EstateType;

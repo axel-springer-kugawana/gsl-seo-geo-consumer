@@ -1,6 +1,7 @@
 import { Classified} from "@shared/models/classified/1.0.0/classified";
 
-import {ClassifiedManagementStructure } from '@models'
+import {ClassifiedManagementStructure, GeoDataEnrichmentCoordinates ,} from '@models'
+
 export const mapShowPrice = (
     classified: Classified
 ): boolean | undefined => {
@@ -28,4 +29,12 @@ export const mapIsRangePrice_fifo = (
     const isRangePrice = classified.data?.prices.buy?.price?.priceInformation == 'BASE_ON_RANGE_PRICE';
     if (!isRangePrice) { return false; }
     return true;
+}
+
+export const mapCoordinates = (coordinates: GeoDataEnrichmentCoordinates | undefined) => {
+  if (coordinates) {
+    return { lat: coordinates.latitude, lon: coordinates.longitude }
+  }
+
+  return undefined
 }

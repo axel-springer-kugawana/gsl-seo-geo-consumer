@@ -12,7 +12,8 @@ type ClassifiedFullEvent= {
     event: "deleted",
     data: {
         classifiedId: string,
-        updateDate: string
+        updateDate: string,
+        externalId: string
     }
 } | {
     event: "created" | "updated",

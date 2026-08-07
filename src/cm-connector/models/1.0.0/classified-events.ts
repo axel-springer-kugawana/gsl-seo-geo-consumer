@@ -1,5 +1,6 @@
 export interface ClassifiedCreateOrUpdateOrDeleteEvent {
     classifiedId: string;
+    externalId: string;
     eventType: ClassifiedEventType;
     eventTime: number;
     modelVersion?: string;

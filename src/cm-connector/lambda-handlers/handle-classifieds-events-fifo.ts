@@ -12,7 +12,8 @@ const handleClassifiedEvent = async (event: ClassifiedManagementFatSsotEvent): P
                 event: "deleted",
                 data: {
                     classifiedId: event.data.classifiedId,
-                    updateDate: new Date(event.time).toISOString()
+                    updateDate: new Date(event.time).toISOString(),
+                    externalId: event.data.classifiedId
                 }
             });
             break;

@@ -5,148 +5,554 @@
   "source": "classified-management-connector",
   "type": "classified.updated.v1",
   "data": {
-    "metadata": {
-      "customerId": "4092940",
-      "classifiedBusiness": "PROFESSIONAL",
-      "externalId": "00000000-0000-0000-0002-000000000000",
-      "updateDate": "2024-05-13T11:32:49.902Z",
-      "creationDate": "2017-03-28T17:18:46.65Z",
-      "brand": "IWT",
-      "projectId": "1453"
-    },
-    "media": [],
-    "data": {
-      "countrySpecific": {
-        "fr": {
-          "agentMandate": {
-            "mandateType": "EXCLUSIVE",
-            "mandateNumber": "864669"
-          },
-          "business": {
-            "isBusinessSold": true,
-            "businessSubType": "PHARMACY",
-            "businessType": "HEALTH"
-          }
-        }
-      },
-      "location": {
-        "avivGeoId": "BLOCDE286164",
-        "country": "DE",
-        "city": "München",
-        "postalcode": "80339",
-        "street": "Grasserstr. 12",
-        "floorNumber": 2,
-        "geometry": {
-          "coordinates": [
-            11.549139976501465,
-            48.14065933227539
-          ],
-          "type": "Point"
+        "metadata": {
+            "offererMarketingKey": "TABX-ENU-8WV",
+            "classifiedBusiness": "PROFESSIONAL",
+            "updateDate": "2026-07-08T18:21:11.749Z",
+            "offererEstateId": "512171462",
+            "sourceSystem": "GSL_Legacy_Import",
+            "customerId": "RC-088386",
+            "externalId": "260196899",
+            "creationDate": "2026-02-05T16:04:00Z",
+            "brand": "GSL",
+            "trackingId": "GSL_CONN#780b597b-7684-448f-a68b-e7304d9e2e92"
         },
-        "showAddress": false
-      },
-      "estateType": "APARTMENT",
-      "distributionType": "RENT",
-      "estateSubType": {
-        "apartment": "LOFT"
-      },
-      "texts": {
-        "headline": {
-          "de": "Testobjekt/Heartbeat"
-        },
-        "extendedInformation": {
-          "de": "<b>Test timestamp</b>\\n 1715599964487"
-        }
-      },
-      "prices": {
-        "buy": {
-          "price": {
-            "amountWithoutBrokerageFee": 30117647,
-            "amount": 32000000,
-            "priceInformation": "BASE_ON_RANGE_PRICE"
-          },
-          "pricePerSqUnit": {
-            "amount": 55944.06
-          }
-        },
-        "brokerageFee": {
-          "amount": 1882353,
-          "feePercentage": 6.25,
-          "isVatIncluded": true,
-          "feeFor": "SELLER_OR_LANDLORD"
-        }
-      }
-    },
-    "visibility": {
-      "requests": [
-        {
-          "portal": "IWT"
-        },
-        {
-          "portal": "IMMONET"
-        }
-      ],
-      "validations": [
-        {
-          "portal": "IWT"
-        },
-        {
-          "portal": "IMMONET"
-        }
-      ]
-    },
-    "classifiedId": "23NM8IIQXH5P",
-    "specifics": {
-      "extraction": {
-        "features": {
-          "farmLand": false,
-          "cellar": false,
-          "houseboat": false,
-          "garage": false,
-          "garden": true
-        }
-      },
-      "enrichedData": {
-        "enrichments": [
-          {
-            "enrichmentType": "GEO",
-            "enrichmentValues": [
-              {
-                "enrichment": "geo-enrichment",
-                "jsonValue": {
-                  "display": {
-                    "coordinates": {
-                      "lng": 11.55,
-                      "lat": 48.14
-                    },
-                    "isRandomised": false
-                  },
-                  "hierarchy": {
-                    "COUNTRY": [
-                      {
-                        "id": "AD02DE1",
-                        "level": 200
-                      }
-                    ],
-                    "MUNICIPALITY": [
-                      {
-                        "id": "AD08DE6345",
-                        "level": 800
-                      }
-                    ],
-                    "NEIGHBORHOOD": [
-                      {
-                        "id": "NBH2DE91301018",
-                        "level": 1000
-                      }
-                    ]
-                  }
+        "data": {
+            "features": {
+                "residential": {
+                    "closet": "YES",
+                    "swimmingPool": "NO"
+                },
+                "furnished": "NO"
+            },
+            "estateType": "APARTMENT",
+            "distributionType": "BUY",
+            "texts": {
+                "description": {
+                    "fr": "Au 2 € étage sans ascenseur d'un petit immeuble bien entretenu, nous vous proposons ce studio fonctionnel en excellent état, au plan optimisé sans perte de place.\r\n\r\nIl se compose d'une pièce de vie lumineuse exposée plein EST offrant des rangements, d'une cuisine indépendante en très bon état, ainsi que d'une salle d'eau fraîchement rénovée avec WC.\r\nUne cave en sous-sol complète ce bien.\r\n\r\nPlan idéal - Calme – Lumineux –\r\nDPE : E - Double vitrage –\r\nRéférence agence : 371"
+                },
+                "headline": {
+                    "fr": "Métro Brochant – Proche Batignolles Studio en très bon état – Lu"
                 }
-              }
+            },
+            "management": {
+                "countrySpecific": {
+                    "fr": {
+                        "numberOfUnits": 15,
+                        "operatingCostsPerYear": 1428,
+                        "isCondo": true
+                    }
+                },
+                "heritageProtected": "NO"
+            },
+            "spaces": {
+                "overallSpace": 20.88,
+                "spaceMeasureUnit": "SQUARE_METER"
+            },
+            "location": {
+                "avivGeoId": "HONUFR103268",
+                "country": "FRA",
+                "city": "Paris 17ème",
+                "postalcode": "75017",
+                "street": "33 Rue Pouchet",
+                "hideNeighborhood": false,
+                "floorNumber": 2,
+                "geometry": {
+                    "coordinates": [
+                        2.31972,
+                        48.89324
+                    ],
+                    "type": "Point"
+                },
+                "countrySpecific": {
+                    "fr": {
+                        "inseeCode": "750117",
+                        "addressDisplayPreference": "EXACT_POINT"
+                    }
+                },
+                "showAddress": true
+            },
+            "countrySpecific": {
+                "fr": {
+                    "agentMandate": {
+                        "mandateType": "EXCLUSIVE"
+                    }
+                }
+            },
+            "prices": {
+                "buy": {
+                    "price": {
+                        "amountWithoutBrokerageFee": 170000,
+                        "amount": 179750
+                    },
+                    "pricePerSqUnit": {
+                        "amount": 8608.72
+                    }
+                },
+                "brokerageFee": {
+                    "amount": 9750,
+                    "feePercentage": 5.74,
+                    "isVatIncluded": true,
+                    "feeFor": "BUYER_OR_TENANT"
+                }
+            },
+            "distributionSubType": {
+                "buy": "RESALE"
+            },
+            "structure": {
+                "rooms": {
+                    "numberOfToilets": 1,
+                    "numberOfRooms": 1,
+                    "numberOfShowerRooms": 1
+                },
+                "building": {
+                    "calm": "YES",
+                    "cellar": "YES",
+                    "elevator": {
+                        "person": "NO"
+                    },
+                    "numberOfFloors": 3,
+                    "kitchen": {
+                        "kitchenType": {
+                            "separated": true
+                        }
+                    }
+                }
+            },
+            "energy": {
+                "energyType": {
+                    "heatMethod": "INDIVIDUAL",
+                    "energySource": {
+                        "electric": true
+                    }
+                },
+                "countrySpecific": {
+                    "fr": {
+                        "energyCertificate": {
+                            "GHGEmission": 11,
+                            "overallEnergyNeed": 304,
+                            "efficiencyClass": "E",
+                            "GHGEmissionClass": "B",
+                            "energyConsumptionCostMin": 650,
+                            "dateOfConsumptionCostEstimation": "2022-12-31",
+                            "energyConsumptionCostMax": 930,
+                            "yearsOfConsumptionCostEstimation": "01/01/2023",
+                            "certificateType": "DPE_V07_2021"
+                        }
+                    }
+                }
+            }
+        },
+        "visibility": {
+            "requests": [
+                {
+                    "portal": "SL"
+                },
+                {
+                    "portal": "LI"
+                }
+            ],
+            "validations": [
+                {
+                    "portal": "SL",
+                    "latestPublicationDate": "2026-07-08T18:21:58.587Z"
+                },
+                {
+                    "portal": "LI",
+                    "latestPublicationDate": "2026-07-08T18:21:58.587Z"
+                }
             ]
-          }
-        ]
-      }
+        },
+        "enrichedData": {
+            "enrichments": [
+                {
+                    "date": "2026-07-08T18:21:46.202Z",
+                    "enrichmentValues": [
+                        {
+                            "enrichment": "tags",
+                            "jsonValue": [
+                                {
+                                    "score": 0.94,
+                                    "tag": "hasKitchenSeparated"
+                                },
+                                {
+                                    "score": 0.93,
+                                    "tag": "hasCellar"
+                                },
+                                {
+                                    "score": 0.92,
+                                    "tag": "hasNoElevator"
+                                }
+                            ]
+                        },
+                        {
+                            "enrichment": "status",
+                            "jsonValue": "COMPLETED_USING_CACHE"
+                        }
+                    ],
+                    "enrichmentType": "TAGGING",
+                    "enrichmentVersion": "0.7.1/2.1.0",
+                    "contextAssociation": "790f0a25-6535-4e48-8de6-cece18d0d349"
+                },
+                {
+                    "date": "2026-07-08T18:21:46.230Z",
+                    "enrichmentValues": [
+                        {
+                            "enrichment": "blocked",
+                            "jsonValue": "false",
+                            "value": "false"
+                        },
+                        {
+                            "enrichment": "fraud-check",
+                            "jsonValue": "LEGACY_EXPORTED",
+                            "value": "LEGACY_EXPORTED"
+                        }
+                    ],
+                    "enrichmentType": "FRAUD",
+                    "enrichmentVersion": "1.3.0",
+                    "contextAssociation": "0"
+                },
+                {
+                    "date": "2026-07-08T18:21:51.939Z",
+                    "enrichmentValues": [
+                        {
+                            "enrichment": "status",
+                            "jsonValue": "DONE"
+                        },
+                        {
+                            "enrichment": "geo-enrichment",
+                            "jsonValue": {
+                                "validatedCoordinates": {
+                                    "lng": 2.3197267447041132,
+                                    "lat": 48.893242172249749
+                                },
+                                "display": {
+                                    "avivGeoId": "HONUFR103268",
+                                    "country": {
+                                        "de": "Frankreich",
+                                        "default": "France",
+                                        "en": "France",
+                                        "it": "Francia",
+                                        "fr": "France",
+                                        "nl": "Frankrijk"
+                                    },
+                                    "city": {
+                                        "default": "Paris 17ème arrondissement",
+                                        "fr": "Paris 17ème arrondissement"
+                                    },
+                                    "countryCode": "FRA",
+                                    "street": {
+                                        "default": "Rue Pouchet",
+                                        "fr": "Rue Pouchet"
+                                    },
+                                    "postalCode": "75017",
+                                    "houseNumber": "33",
+                                    "coordinates": {
+                                        "lng": 2.3197267447041132,
+                                        "lat": 48.893242172249749
+                                    },
+                                    "neighborhood": {
+                                        "default": "Epinettes-Bessières",
+                                        "fr": "Epinettes-Bessières"
+                                    },
+                                    "inscribedPolygon": "STU3FR40039",
+                                    "isRandomised": false
+                                },
+                                "hierarchy": {
+                                    "AD09": [
+                                        {
+                                            "names": {
+                                                "default": "Paris 17ème arrondissement",
+                                                "fr": "Paris 17ème arrondissement"
+                                            },
+                                            "level": 900,
+                                            "id": "AD09FR42",
+                                            "legacyMapping": {
+                                                "selogerPlaces": {
+                                                    "inseeCodes": 750117
+                                                },
+                                                "meilleursagents": {
+                                                    "id": "32698",
+                                                    "type": "arrmuns"
+                                                }
+                                            },
+                                            "type": "Borough"
+                                        }
+                                    ],
+                                    "STRT": [
+                                        {
+                                            "names": {
+                                                "default": "Rue Pouchet",
+                                                "fr": "Rue Pouchet"
+                                            },
+                                            "level": 1200,
+                                            "id": "STRTFR4137",
+                                            "legacyMapping": {
+                                                "meilleursagents": {
+                                                    "id": "4143",
+                                                    "type": "streets"
+                                                }
+                                            },
+                                            "type": "Street"
+                                        }
+                                    ],
+                                    "AD08": [
+                                        {
+                                            "names": {
+                                                "de": "Paris",
+                                                "default": "Paris",
+                                                "it": "Parigi",
+                                                "fr": "Paris",
+                                                "nl": "Parijs"
+                                            },
+                                            "level": 800,
+                                            "id": "AD08FR31096",
+                                            "legacyMapping": {
+                                                "selogerPlaces": {
+                                                    "inseeCodes": 750056
+                                                },
+                                                "meilleursagents": {
+                                                    "id": "138724240",
+                                                    "type": "cities"
+                                                }
+                                            },
+                                            "type": "Municipality"
+                                        }
+                                    ],
+                                    "AD06": [
+                                        {
+                                            "names": {
+                                                "de": "Paris",
+                                                "default": "Paris",
+                                                "it": "Parigi",
+                                                "fr": "Paris",
+                                                "nl": "Parijs"
+                                            },
+                                            "level": 600,
+                                            "id": "AD06FR76",
+                                            "legacyMapping": {
+                                                "meilleursagents": {
+                                                    "id": "114",
+                                                    "type": "subregions"
+                                                }
+                                            },
+                                            "type": "Province"
+                                        }
+                                    ],
+                                    "AD03": [
+                                        {
+                                            "names": {
+                                                "default": "France Métropolitaine",
+                                                "fr": "France Métropolitaine"
+                                            },
+                                            "level": 300,
+                                            "id": "AD03FR2",
+                                            "legacyMapping": {
+                                                "meilleursagents": {
+                                                    "id": "2080787954",
+                                                    "type": "macroregions"
+                                                }
+                                            },
+                                            "type": "Macroregion"
+                                        }
+                                    ],
+                                    "STU3": [
+                                        {
+                                            "names": {
+                                                "default": "Epinettes 12",
+                                                "fr": "Epinettes 12"
+                                            },
+                                            "level": 1100,
+                                            "id": "STU3FR40039",
+                                            "legacyMapping": {
+                                                "meilleursagents": {
+                                                    "id": "135684833",
+                                                    "type": "irises"
+                                                }
+                                            },
+                                            "type": "Micro statistical unit"
+                                        }
+                                    ],
+                                    "AD04": [
+                                        {
+                                            "names": {
+                                                "default": "Ile-de-France",
+                                                "en": "Ile-de-France",
+                                                "it": "Isola di Francia",
+                                                "fr": "Ile-de-France"
+                                            },
+                                            "level": 400,
+                                            "id": "AD04FR5",
+                                            "legacyMapping": {
+                                                "meilleursagents": {
+                                                    "id": "20",
+                                                    "type": "regions"
+                                                }
+                                            },
+                                            "type": "Region"
+                                        }
+                                    ],
+                                    "NBH2": [
+                                        {
+                                            "names": {
+                                                "default": "Epinettes-Bessières",
+                                                "fr": "Epinettes-Bessières"
+                                            },
+                                            "level": 1000,
+                                            "id": "NBH2FR93",
+                                            "legacyMapping": {
+                                                "meilleursagents": {
+                                                    "id": "39197",
+                                                    "type": "neighborhoods"
+                                                }
+                                            },
+                                            "type": "Neighborhood"
+                                        }
+                                    ],
+                                    "AD02": [
+                                        {
+                                            "names": {
+                                                "de": "Frankreich",
+                                                "default": "France",
+                                                "en": "France",
+                                                "it": "Francia",
+                                                "fr": "France",
+                                                "nl": "Frankrijk"
+                                            },
+                                            "level": 200,
+                                            "id": "AD02FR1",
+                                            "legacyMapping": {
+                                                "meilleursagents": {
+                                                    "id": "8",
+                                                    "type": "countries"
+                                                }
+                                            },
+                                            "type": "Country"
+                                        }
+                                    ],
+                                    "POCO": [
+                                        {
+                                            "names": {
+                                                "de": "75017",
+                                                "default": "75017",
+                                                "it": "75017",
+                                                "fr": "75017",
+                                                "nl": "75017"
+                                            },
+                                            "level": 800,
+                                            "id": "POCOFR4811",
+                                            "type": "Postcode"
+                                        }
+                                    ],
+                                    "HONU": [
+                                        {
+                                            "names": {
+                                                "default": "33",
+                                                "fr": "33"
+                                            },
+                                            "level": 1400,
+                                            "id": "HONUFR103268",
+                                            "legacyMapping": {
+                                                "meilleursagents": {
+                                                    "id": "103301",
+                                                    "type": "addresses"
+                                                }
+                                            },
+                                            "type": "House number"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "enrichmentType": "GEO",
+                    "enrichmentVersion": "0.0.1",
+                    "contextAssociation": "0"
+                }
+            ]
+        },
+        "contact": {
+            "emailAddress": "ag755807@contact-manager.net",
+            "phoneNumber": "0187161942",
+            "displayName": true,
+            "name": "Belincelle",
+            "displayEmailAddress": true,
+            "displayPhoneNumber": true
+        },
+        "media": [
+            {
+                "avivMediaId": "743231e6-9fe1-4152-8814-5577b549d6a1",
+                "type": "PICTURE"
+            },
+            {
+                "avivMediaId": "07c37fb2-c3d9-4c8e-9467-d75c9143d6a4",
+                "type": "PICTURE"
+            },
+            {
+                "avivMediaId": "32b66218-3d65-462c-adb7-77d1894bc3e1",
+                "type": "PICTURE"
+            },
+            {
+                "avivMediaId": "2ad1adea-143d-4e47-98cf-1cbc98713996",
+                "type": "PICTURE"
+            },
+            {
+                "avivMediaId": "1e00e572-41ce-4855-a50c-4dac7a8520f4",
+                "type": "PICTURE"
+            },
+            {
+                "avivMediaId": "9629a521-38e1-4a76-b488-3d6da34e92a7",
+                "type": "PICTURE"
+            },
+            {
+                "avivMediaId": "45182357-c999-44cd-9513-935b6053b6ea",
+                "type": "PICTURE"
+            },
+            {
+                "avivMediaId": "ff983311-bda4-4040-ad68-63534123d444",
+                "type": "PICTURE"
+            },
+            {
+                "avivMediaId": "ef804650-b08a-4a39-8dd6-662167a77494",
+                "type": "PICTURE"
+            },
+            {
+                "avivMediaId": "f18cd329-039c-42d2-a1bf-062364795429",
+                "type": "PICTURE"
+            },
+            {
+                "avivMediaId": "2466655c-fdef-4a0a-8060-f80ba12fbb0c",
+                "type": "PICTURE"
+            }
+        ],
+        "contacts": {
+            "contactsInfo": [
+                {
+                    "phoneNumber": {
+                        "displayed": true,
+                        "value": "0187161942"
+                    },
+                    "name": {
+                        "displayed": true,
+                        "value": "Belincelle"
+                    },
+                    "type": "MAIN",
+                    "email": {
+                        "displayed": true,
+                        "value": "ag755807@contact-manager.net"
+                    }
+                }
+            ]
+        },
+        "specifics": {
+            "extraction": {
+                "features": {
+                    "cellar": true,
+                    "houseboat": false,
+                    "garage": false,
+                    "garden": false
+                }
+            }
+        }
     }
-  }
 }

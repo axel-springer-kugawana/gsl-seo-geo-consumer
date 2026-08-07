@@ -1,7 +1,6 @@
 import { Classified } from "@shared/models/classified/1.0.0/classified";
-import { Portal, DistributionType, BrandCountry } from "cm-consumer/models/classifiedEnums";
-
-// import { ClassifiedManagementStructure, DistributionType, Portal } from '@/models'
+import { Portal, DistributionType, BrandCountry,
+   ClassifiedManagementStructure } from '@/models'
 
 const getRentPrice = (
     rent: Classified['data']['prices']['rent'],

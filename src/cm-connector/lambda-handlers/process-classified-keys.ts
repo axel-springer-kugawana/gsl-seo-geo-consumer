@@ -28,6 +28,7 @@ const itemsHandler = async (event: ClassifiedKeysSync): Promise<void> => {
                     await publishFullClassifiedEvent({
                         data: {
                             classifiedId: classified.classifiedId,
+                            externalId: classified.externalId,
                             updateDate: new Date(classified.updateAt!).toISOString(),
                         },
                         event: "deleted",

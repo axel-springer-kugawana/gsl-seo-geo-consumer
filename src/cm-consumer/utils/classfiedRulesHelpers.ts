@@ -1,7 +1,6 @@
-import { MarketStatus } from './../models/classifiedEnums'
 import { Classified, VisibilityStatus } from '@shared/models/classified/1.0.0/classified'
 
-import {ClassifiedManagementStructure } from '@models'
+import {MarketStatus,ClassifiedManagementStructure } from '@models'
 
 type DataEligibilityResult = {
     isEligible: boolean

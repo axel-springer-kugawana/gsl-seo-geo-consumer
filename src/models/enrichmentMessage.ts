@@ -4,6 +4,8 @@ export type GeoDataEnrichmentMessage = {
   // Remarks: you need to update the method hasLocationDataChanged in correlation with what will be use by the get-geo-hierarchy lambda to populate this object
   coordinates?: GeoDataEnrichmentCoordinates
   placeIds?: string[]
+  // Informational names derived from the geo hierarchy; intentionally excluded from hasLocationDataChanged because they should not trigger re-enrichment on their own.
+  placeNames?: string[]
   geoPrecision?: string | null
   // If it exist, HONU avivGeoId source that was used as the randomized coordinates
   randomHonuAvivGeoId?: string | null

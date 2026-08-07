@@ -8,10 +8,12 @@ const initDatabase = async () => {
     DROP TABLE IF EXISTS geo;
     DROP TABLE IF EXISTS geo_lat_lon;
 
- -- Table: public.classified
--- DROP TABLE IF EXISTS public.classified;
+    
+    -- Table: public.classified_v2
 
-CREATE TABLE IF NOT EXISTS public.classified
+-- DROP TABLE IF EXISTS public.classified_v2;
+
+CREATE TABLE IF NOT EXISTS public.classified_v2
 (
     classifiedid character varying COLLATE pg_catalog."default" NOT NULL,
     brand character varying COLLATE pg_catalog."default",
@@ -38,7 +40,6 @@ CREATE TABLE IF NOT EXISTS public.classified
     location_type character varying COLLATE pg_catalog."default",
     projecttypes text[] COLLATE pg_catalog."default",
     showaddress boolean NOT NULL DEFAULT false,
-    hideneighborhood boolean DEFAULT false,
     street character varying COLLATE pg_catalog."default",
     city character varying COLLATE pg_catalog."default",
     spacemin numeric,
@@ -61,173 +62,170 @@ CREATE TABLE IF NOT EXISTS public.classified
     headline_fr character varying COLLATE pg_catalog."default",
     issalegoodwill boolean,
     businesssubtype character varying COLLATE pg_catalog."default",
-	building_offeredFloors numeric,
-    CONSTRAINT "Classified_pkey" PRIMARY KEY (classifiedid)
+    building_offeredfloors numeric,
+    hideneighborhood boolean DEFAULT false,
+    geoprecision character varying COLLATE pg_catalog."default",
+    placeids text[] COLLATE pg_catalog."default",
+    place_ad02 text[] COLLATE pg_catalog."default",
+    place_ad03 text[] COLLATE pg_catalog."default",
+    place_ad04 text[] COLLATE pg_catalog."default",
+    place_ad05 text[] COLLATE pg_catalog."default",
+    place_ad06 text[] COLLATE pg_catalog."default",
+    place_ad08 text[] COLLATE pg_catalog."default",
+    place_ad09 text[] COLLATE pg_catalog."default",
+    place_nbh1 text[] COLLATE pg_catalog."default",
+    place_nbh2 text[] COLLATE pg_catalog."default",
+    place_nbh3 text[] COLLATE pg_catalog."default",
+    place_stu3 text[] COLLATE pg_catalog."default",
+    place_bloc text[] COLLATE pg_catalog."default",
+    place_strt text[] COLLATE pg_catalog."default",
+    place_honu text[] COLLATE pg_catalog."default",
+    externalid character varying COLLATE pg_catalog."default",
+    CONSTRAINT "Classified_v2_pkey" PRIMARY KEY (classifiedid)
 )
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS public.classified
+ALTER TABLE IF EXISTS public.classified_v2
     OWNER to main_user;
+-- Index: idx_classified_fullevent_portals_v2
 
--- DROP INDEX IF EXISTS public.idx_classified_portals;
-CREATE INDEX IF NOT EXISTS idx_classified_portals
-    ON public.classified USING btree
+-- DROP INDEX IF EXISTS public.idx_classified_fullevent_portals_v2;
+
+CREATE INDEX IF NOT EXISTS idx_classified_fullevent_portals_v2
+    ON public.classified_v2 USING btree
     (portals COLLATE pg_catalog."default" ASC NULLS LAST)
     WITH (fillfactor=100, deduplicate_items=True)
     TABLESPACE pg_default;
+-- Index: idx_classified_portals_v2
 
-CREATE INDEX IF NOT EXISTS idx_v_classified_v2_projecttypes_gin
-    ON public.classified USING gin
+-- DROP INDEX IF EXISTS public.idx_classified_portals_v2;
+
+CREATE INDEX IF NOT EXISTS idx_classified_portals_v2
+    ON public.classified_v2 USING btree
+    (portals COLLATE pg_catalog."default" ASC NULLS LAST)
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_fullevent_projecttypes_gin_v2
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_fullevent_projecttypes_gin_v2;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_fullevent_projecttypes_gin_v2
+    ON public.classified_v2 USING gin
     (projecttypes COLLATE pg_catalog."default")
     WITH (fastupdate=True, gin_pending_list_limit=4194304)
     TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad02_gin
 
-    CREATE TABLE IF NOT EXISTS public.geo
-    (
-        avivgeoid character varying COLLATE pg_catalog."default" NOT NULL,
-        geolevel numeric,
-        countryid character varying COLLATE pg_catalog."default",
-        regionid character varying COLLATE pg_catalog."default",
-        microregionid character varying COLLATE pg_catalog."default",
-        provinceid character varying COLLATE pg_catalog."default",
-        municipalityid character varying COLLATE pg_catalog."default",
-        boroughid character varying COLLATE pg_catalog."default",
-        neighborhoodid character varying COLLATE pg_catalog."default",
-        microneighborhoodid character varying COLLATE pg_catalog."default",
-        blocid character varying COLLATE pg_catalog."default",
-        updatedate timestamp without time zone,
-        municipalityname jsonb,
-        neighborhoodname jsonb,
-        CONSTRAINT pk_geo PRIMARY KEY (avivgeoid)
-    )
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad02_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad02_gin
+    ON public.classified_v2 USING gin
+    (place_ad02 COLLATE pg_catalog."default")
     TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad02_gin_v2
 
-    ALTER TABLE IF EXISTS public.geo
-        OWNER TO main_user;
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad02_gin_v2;
 
-    CREATE TABLE IF NOT EXISTS public.geo_lat_lon
-    (
-        lon float NOT NULL,
-        lat float NOT NULL,
-        geolevel numeric,
-		    avivgeoid character varying COLLATE pg_catalog."default" NOT NULL,
-        countryid character varying COLLATE pg_catalog."default",
-        regionid character varying COLLATE pg_catalog."default",
-        microregionid character varying COLLATE pg_catalog."default",
-        provinceid character varying COLLATE pg_catalog."default",
-        municipalityid character varying COLLATE pg_catalog."default",
-        boroughid character varying COLLATE pg_catalog."default",
-        neighborhoodid character varying COLLATE pg_catalog."default",
-        microneighborhoodid character varying COLLATE pg_catalog."default",
-        updatedate timestamp without time zone,
-        municipalityname jsonb,
-        neighborhoodname jsonb,
-        CONSTRAINT pk_lat_lon PRIMARY KEY (lat, lon)
-    )
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad02_gin_v2
+    ON public.classified_v2 USING gin
+    (place_ad02 COLLATE pg_catalog."default")
     TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad03_gin
 
-ALTER TABLE IF EXISTS public.geo_lat_lon
-  OWNER TO main_user;
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad03_gin;
 
-CREATE OR REPLACE VIEW public.v_classified_v2
- AS
- SELECT c.classifiedid,
-    c.estatetype,
-    c.estatesubtype,
-    c.distributiontype,
-    c.avivgeoid,
-    c.location_type,
-    c.country,
-    c.city,
-    c.postalcode,
-    c.price,
-    c.numberofrooms,
-    c.livingspace,
-    c.overallspace,
-    c.furnished,
-    c.yearofconstruction,
-    c.certificateofeligibilityneeded,
-    c.locationinbuilding,
-    c.features,
-    c.isauthorized,
-    c.isgeodatavalid,
-    c.ismarketstatuseligibleforpublication,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.geolevel
-            ELSE g.geolevel
-        END AS geolevel,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.countryid
-            ELSE g.countryid
-        END AS countryid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.regionid
-            ELSE g.regionid
-        END AS regionid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.microregionid
-            ELSE g.microregionid
-        END AS microregionid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.provinceid
-            ELSE g.provinceid
-        END AS provinceid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.municipalityid
-            ELSE g.municipalityid
-        END AS municipalityid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.municipalityname
-            ELSE g.municipalityname
-        END AS municipalityname,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.boroughid
-            ELSE g.boroughid
-        END AS boroughid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.neighborhoodid
-            ELSE g.neighborhoodid
-        END AS neighborhoodid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.neighborhoodname
-            ELSE g.neighborhoodname
-        END AS neighborhoodname,
-    g.blocid,
-    c.projecttypes,
-    c.brand,
-    c.portals,
-    g.avivgeoid AS geo_avivgeoid,
-    c.showaddress,
-    c.street,
-    c.buildstate,
-    c.energycertificateclass,
-    c.showprice,
-    c.israngeprice,
-    c.classifiedbusiness,
-    c.space,
-    c.ssotupdatedate,
-    c.projectid,
-    c.creationdate,
-    c.isselogerportal,
-    c.islogicimmoportal,
-    c.numberofbedrooms,
-    c.headline_fr,
-    c.issalegoodwill,
-    c.businesssubtype,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.microneighborhoodid
-            ELSE g.microneighborhoodid
-        END AS microneighborhoodid,
-    c.building_offeredfloors,
-    c.hideneighborhood
-   FROM classified c
-     LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
-     LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid, c.avivgeoid)::text;
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad03_gin
+    ON public.classified_v2 USING gin
+    (place_ad03 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad04_gin
 
-ALTER TABLE public.v_classified_v2
-    OWNER TO main_user;
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad04_gin;
 
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad04_gin
+    ON public.classified_v2 USING gin
+    (place_ad04 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad05_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad05_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad05_gin
+    ON public.classified_v2 USING gin
+    (place_ad05 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad06_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad06_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad06_gin
+    ON public.classified_v2 USING gin
+    (place_ad06 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad08_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad08_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad08_gin
+    ON public.classified_v2 USING gin
+    (place_ad08 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_nbh1_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_nbh1_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_nbh1_gin
+    ON public.classified_v2 USING gin
+    (place_nbh1 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_nbh2_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_nbh2_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_nbh2_gin
+    ON public.classified_v2 USING gin
+    (place_nbh2 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_nbh3_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_nbh3_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_nbh3_gin
+    ON public.classified_v2 USING gin
+    (place_nbh3 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_strt_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_strt_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_strt_gin
+    ON public.classified_v2 USING gin
+    (place_strt COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_placesids_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_placesids_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_placesids_gin
+    ON public.classified_v2 USING gin
+    (placeids COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_placesids_gin_v2
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_placesids_gin_v2;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_placesids_gin_v2
+    ON public.classified_v2 USING gin
+    (placeids COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_projecttypes_gin_v2
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_projecttypes_gin_v2;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_projecttypes_gin_v2
+    ON public.classified_v2 USING gin
+    (projecttypes COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
     `;
 
   const pool = await poolInstance.getPool(); // Ensure you are getting the pool instance correctly
@@ -249,115 +247,222 @@ ALTER TABLE public.v_classified_v2
  
 const patchDatabase = async () => {
   const sqlDatabase = `
- 
-DROP INDEX IF EXISTS public.classified_immoweltbool_index;
+  -- Table: public.classified_v2
 
- DROP VIEW IF EXISTS v_classified_v2;
- 
-ALTER TABLE classified
-DROP COLUMN IF EXISTS isImmonetPortal;
+-- DROP TABLE IF EXISTS public.classified_v2;
 
-ALTER TABLE classified
-DROP COLUMN IF EXISTS isImmoweltPortal;
+CREATE TABLE IF NOT EXISTS public.classified_v2
+(
+    classifiedid character varying COLLATE pg_catalog."default" NOT NULL,
+    brand character varying COLLATE pg_catalog."default",
+    portals text[] COLLATE pg_catalog."default",
+    estatetype character varying COLLATE pg_catalog."default",
+    estatesubtype character varying COLLATE pg_catalog."default",
+    distributiontype character varying COLLATE pg_catalog."default",
+    avivgeoid character varying COLLATE pg_catalog."default",
+    country character varying COLLATE pg_catalog."default",
+    postalcode character varying COLLATE pg_catalog."default",
+    price numeric,
+    numberofrooms numeric,
+    featuresincluded character varying COLLATE pg_catalog."default",
+    features text[] COLLATE pg_catalog."default",
+    furnished character varying COLLATE pg_catalog."default",
+    yearofconstruction numeric,
+    certificateofeligibilityneeded character varying COLLATE pg_catalog."default",
+    locationinbuilding character varying COLLATE pg_catalog."default",
+    isauthorized boolean,
+    isgeodatavalid boolean,
+    ismarketstatuseligibleforpublication boolean,
+    lat double precision,
+    lon double precision,
+    location_type character varying COLLATE pg_catalog."default",
+    projecttypes text[] COLLATE pg_catalog."default",
+    showaddress boolean NOT NULL DEFAULT false,
+    street character varying COLLATE pg_catalog."default",
+    city character varying COLLATE pg_catalog."default",
+    spacemin numeric,
+    spacemax numeric,
+    energycertificateclass character varying COLLATE pg_catalog."default",
+    buildstate character varying COLLATE pg_catalog."default",
+    overallspace numeric,
+    livingspace numeric,
+    classifiedbusiness character varying COLLATE pg_catalog."default",
+    showprice boolean DEFAULT true,
+    israngeprice boolean DEFAULT false,
+    space numeric,
+    updatedate timestamp without time zone,
+    projectid character varying COLLATE pg_catalog."default",
+    creationdate timestamp without time zone,
+    isselogerportal boolean DEFAULT false,
+    islogicimmoportal boolean DEFAULT false,
+    numberofbedrooms numeric,
+    headline_fr character varying COLLATE pg_catalog."default",
+    issalegoodwill boolean,
+    businesssubtype character varying COLLATE pg_catalog."default",
+    building_offeredfloors numeric,
+    hideneighborhood boolean DEFAULT false,
+    geoprecision character varying COLLATE pg_catalog."default",
+    placeids text[] COLLATE pg_catalog."default",
+    place_ad02 text[] COLLATE pg_catalog."default",
+    place_ad03 text[] COLLATE pg_catalog."default",
+    place_ad04 text[] COLLATE pg_catalog."default",
+    place_ad05 text[] COLLATE pg_catalog."default",
+    place_ad06 text[] COLLATE pg_catalog."default",
+    place_ad08 text[] COLLATE pg_catalog."default",
+    place_ad09 text[] COLLATE pg_catalog."default",
+    place_nbh1 text[] COLLATE pg_catalog."default",
+    place_nbh2 text[] COLLATE pg_catalog."default",
+    place_nbh3 text[] COLLATE pg_catalog."default",
+    place_stu3 text[] COLLATE pg_catalog."default",
+    place_bloc text[] COLLATE pg_catalog."default",
+    place_strt text[] COLLATE pg_catalog."default",
+    place_honu text[] COLLATE pg_catalog."default",
+    externalid character varying COLLATE pg_catalog."default",
+    CONSTRAINT "Classified_v2_pkey" PRIMARY KEY (classifiedid)
+)
 
+TABLESPACE pg_default;
 
-ALTER TABLE classified
-DROP COLUMN IF EXISTS headline_de;
+ALTER TABLE IF EXISTS public.classified_v2
+    OWNER to main_user;
+-- Index: idx_classified_fullevent_portals_v2
 
-CREATE OR REPLACE VIEW public.v_classified_v2
- AS
- SELECT c.classifiedid,
-    c.estatetype,
-    c.estatesubtype,
-    c.distributiontype,
-    c.avivgeoid,
-    c.location_type,
-    c.country,
-    c.city,
-    c.postalcode,
-    c.price,
-    c.numberofrooms,
-    c.livingspace,
-    c.overallspace,
-    c.furnished,
-    c.yearofconstruction,
-    c.certificateofeligibilityneeded,
-    c.locationinbuilding,
-    c.features,
-    c.isauthorized,
-    c.isgeodatavalid,
-    c.ismarketstatuseligibleforpublication,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.geolevel
-            ELSE g.geolevel
-        END AS geolevel,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.countryid
-            ELSE g.countryid
-        END AS countryid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.regionid
-            ELSE g.regionid
-        END AS regionid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.microregionid
-            ELSE g.microregionid
-        END AS microregionid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.provinceid
-            ELSE g.provinceid
-        END AS provinceid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.municipalityid
-            ELSE g.municipalityid
-        END AS municipalityid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.municipalityname
-            ELSE g.municipalityname
-        END AS municipalityname,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.boroughid
-            ELSE g.boroughid
-        END AS boroughid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.neighborhoodid
-            ELSE g.neighborhoodid
-        END AS neighborhoodid,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.neighborhoodname
-            ELSE g.neighborhoodname
-        END AS neighborhoodname,
-    g.blocid,
-    c.projecttypes,
-    c.brand,
-    c.portals,
-    g.avivgeoid AS geo_avivgeoid,
-    c.showaddress,
-    c.street,
-    c.buildstate,
-    c.energycertificateclass,
-    c.showprice,
-    c.israngeprice,
-    c.classifiedbusiness,
-    c.space,
-    c.ssotupdatedate,
-    c.projectid,
-    c.creationdate,
-    c.isselogerportal,
-    c.islogicimmoportal,
-    c.numberofbedrooms,
-    c.headline_fr,
-    c.issalegoodwill,
-    c.businesssubtype,
-        CASE
-            WHEN geolatlon.lat IS NOT NULL AND geolatlon.lon IS NOT NULL AND c.location_type::text = 'POINT'::text THEN geolatlon.microneighborhoodid
-            ELSE g.microneighborhoodid
-        END AS microneighborhoodid,
-    c.building_offeredfloors,
-    c.hideneighborhood
-   FROM classified c
-     LEFT JOIN geo_lat_lon geolatlon ON c.lat = geolatlon.lat AND c.lon = geolatlon.lon AND c.location_type::text = 'POINT'::text
-     LEFT JOIN geo g ON g.avivgeoid::text = COALESCE(geolatlon.avivgeoid, c.avivgeoid)::text;
+-- DROP INDEX IF EXISTS public.idx_classified_fullevent_portals_v2;
+
+CREATE INDEX IF NOT EXISTS idx_classified_fullevent_portals_v2
+    ON public.classified_v2 USING btree
+    (portals COLLATE pg_catalog."default" ASC NULLS LAST)
+    WITH (fillfactor=100, deduplicate_items=True)
+    TABLESPACE pg_default;
+-- Index: idx_classified_portals_v2
+
+-- DROP INDEX IF EXISTS public.idx_classified_portals_v2;
+
+CREATE INDEX IF NOT EXISTS idx_classified_portals_v2
+    ON public.classified_v2 USING btree
+    (portals COLLATE pg_catalog."default" ASC NULLS LAST)
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_fullevent_projecttypes_gin_v2
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_fullevent_projecttypes_gin_v2;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_fullevent_projecttypes_gin_v2
+    ON public.classified_v2 USING gin
+    (projecttypes COLLATE pg_catalog."default")
+    WITH (fastupdate=True, gin_pending_list_limit=4194304)
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad02_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad02_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad02_gin
+    ON public.classified_v2 USING gin
+    (place_ad02 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad02_gin_v2
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad02_gin_v2;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad02_gin_v2
+    ON public.classified_v2 USING gin
+    (place_ad02 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad03_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad03_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad03_gin
+    ON public.classified_v2 USING gin
+    (place_ad03 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad04_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad04_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad04_gin
+    ON public.classified_v2 USING gin
+    (place_ad04 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad05_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad05_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad05_gin
+    ON public.classified_v2 USING gin
+    (place_ad05 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad06_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad06_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad06_gin
+    ON public.classified_v2 USING gin
+    (place_ad06 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_ad08_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_ad08_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_ad08_gin
+    ON public.classified_v2 USING gin
+    (place_ad08 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_nbh1_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_nbh1_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_nbh1_gin
+    ON public.classified_v2 USING gin
+    (place_nbh1 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_nbh2_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_nbh2_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_nbh2_gin
+    ON public.classified_v2 USING gin
+    (place_nbh2 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_nbh3_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_nbh3_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_nbh3_gin
+    ON public.classified_v2 USING gin
+    (place_nbh3 COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_place_strt_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_place_strt_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_place_strt_gin
+    ON public.classified_v2 USING gin
+    (place_strt COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_placesids_gin
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_placesids_gin;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_placesids_gin
+    ON public.classified_v2 USING gin
+    (placeids COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_placesids_gin_v2
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_placesids_gin_v2;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_placesids_gin_v2
+    ON public.classified_v2 USING gin
+    (placeids COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
+-- Index: idx_v_classified_v2_projecttypes_gin_v2
+
+-- DROP INDEX IF EXISTS public.idx_v_classified_v2_projecttypes_gin_v2;
+
+CREATE INDEX IF NOT EXISTS idx_v_classified_v2_projecttypes_gin_v2
+    ON public.classified_v2 USING gin
+    (projecttypes COLLATE pg_catalog."default")
+    TABLESPACE pg_default;
 `;
 
   try {

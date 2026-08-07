@@ -5,6 +5,9 @@
 // export * from './classifiedBaseBody'
 // export * from './classifiedBookingEvent'
 export * from './classifiedEnums'
+
+export * from './GeographicalType'
+export * from './PriceInformation'
 // export * from './classifiedIndexStructure'
 // export * from './classifiedKeysSync'
 export * from './classifiedManagement'

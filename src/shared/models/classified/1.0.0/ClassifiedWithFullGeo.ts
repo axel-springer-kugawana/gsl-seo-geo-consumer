@@ -3,7 +3,6 @@ export interface ClassifiedWithFullGeo {
     estatetype: string;
     estatesubtype: string;
     distributiontype: string;
-    avivgeoid: string;
     location_type: string;
     country: string;
     city: string;
@@ -19,16 +18,6 @@ export interface ClassifiedWithFullGeo {
     isgeodatavalid: string;
     ismarketstatuseligibleforpublication: string;
     geolevel: string;
-    countryid: string;
-    regionid: string;
-    microregionid: string;
-    provinceid: string;
-    municipalityid: string;
-    municipalityname: any;
-    boroughid: string;
-    neighborhoodid: string;
-    neighborhoodname: any;
-    microneighborhoodid: string;
     livingspace: number;
     overallspace: number;
     blocid: string;
@@ -45,4 +34,23 @@ export interface ClassifiedWithFullGeo {
     businessSubType: string;
     building_offeredFloors:number;
     hideneighborhood: boolean;
+    geoprecision?: string | null;
+    placeids?: string[] | null;
+    place_ad02?: string[] | null;
+    place_ad03?: string[] | null;
+    place_ad04?: string[] | null;
+    place_ad05?: string[] | null;
+    place_ad06?: string[] | null;
+    place_ad08?: string[] | null;
+    place_ad09?: string[] | null;
+    place_nbh1?: string[] | null;
+    place_nbh2?: string[] | null;
+    place_nbh3?: string[] | null;
+    place_stu3?: string[] | null;
+    place_bloc?: string[] | null;
+    place_strt?: string[] | null;
+    place_honu?: string[] | null;
+    externalid?: string;
+    updateDate?: Date;
+    creationdate?: Date;
 }

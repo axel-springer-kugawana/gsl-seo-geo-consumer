@@ -21,16 +21,18 @@ const getClassifiedByKey = async (key: string): Promise<Classified | undefined> 
 
     const content = await data.Body!.transformToString("utf-8");
 
-    const { classifiedId, updateAt, classified } = JSON.parse(content) as {
+    const { classifiedId, updateAt, classified, externalId } = JSON.parse(content) as {
         classifiedId: string;
         updateAt: number;
         classified: Classified;
+        externalId : string
     };
 
     return {
         ...classified,
         updateAt,
         classifiedId,
+        externalId
     };
     }
     catch(error)
