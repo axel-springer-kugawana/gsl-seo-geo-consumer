@@ -30,7 +30,7 @@ module "cm_consumer_fifo" {
     id  = module.cm_connector.queue_fifo_id
   } 
   ssot_name    = var.ssot_name
-  application  = "cm-consumer-fifo"
+  application  = "gm-consumer-fifo"
   environment  = var.environment  
   dynamodb_arn = module.dynamodb-ssot-classified.properties.dynamodb_arn
   dynamodb_table_name = module.dynamodb-ssot-classified.properties.dynamodb_table_name
