@@ -73,11 +73,6 @@ variable "queue_esm_max_concurrency" {
   type        = number
 }
 
-variable "classified_management_api" {
-  description = "classified management api"
-  type        = string
-}
-
 variable "aws_account_name" {
   type        = string
   description = "AWS account name or workspace."

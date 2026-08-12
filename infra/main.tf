@@ -4,10 +4,6 @@ module "cm_connector" {
   events_fifo_topic = {
     arn = var.geo_management_events_fifo_topic
   }
-  
-  api = {
-    url = var.classified_management_api
-  }
 
   application = var.application
   environment = var.environment

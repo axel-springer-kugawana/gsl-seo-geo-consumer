@@ -19,9 +19,3 @@ variable events_fifo_topic {
     arn = string
   })
 }
-
-variable api {
-  type = object({
-    url = string
-  })
-}
