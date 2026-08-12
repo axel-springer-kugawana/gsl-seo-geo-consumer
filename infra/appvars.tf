@@ -1,7 +1,7 @@
 variable "application" {
   description = "Application name"
   type        = string
-  default     = "geo-consumer"
+  default     = "gm-consumer"
 }
 
 variable "ssot_name" {
