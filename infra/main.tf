@@ -11,10 +11,10 @@ module "cm_connector" {
 }
 
 module "dynamodb-ssot-classified" {
+  partition_key = "AvivGeoId"
   source      = "./modules/dynamodb"
   application = "gsl-seo-geo-ssot-${var.environment}"
   environment = var.environment
-
 } 
 
 module "cm_consumer_fifo" {

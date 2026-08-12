@@ -1,4 +1,5 @@
 import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
+import { marshall } from "@aws-sdk/util-dynamodb";
 import { fromSSO } from "@aws-sdk/credential-provider-sso";
 import { logger } from "@shared/cross-cutting/logger";
 
@@ -21,36 +22,51 @@ const ddbClient = new DynamoDBClient(
 const createOrUpdateClassified = async (id: string, data: any, classified: GeoManagementStructure): Promise<void> => {
   const geoData = transformGeoManagementToGeo(classified);
 
+  // Marshall the geodata to DynamoDB format
+  const marshalledData = marshall(geoData, { removeUndefinedValues: true });
+  
+  // Build UpdateExpression dynamically, excluding the partition key (AvivGeoId)
+  const updateExpressions: string[] = [];
+  const expressionAttributeValues: Record<string, any> = {};
+  const expressionAttributeNames: Record<string, string> = {
+    "#VERSIONATTN": "version",
+    "#SOFTDELETE": "softdeleted",
+    "#EXPIREAT": "expireat"
+  };
+  
+  // Add geodata attributes to update (excluding partition key)
+  Object.entries(marshalledData).forEach(([key, value]) => {
+    if (key !== 'AvivGeoId') { // Skip the partition key
+      const attributeName = `#${key}`;
+      const attributeValue = `:${key}`;
+      expressionAttributeNames[attributeName] = key;
+      expressionAttributeValues[attributeValue] = value;
+      updateExpressions.push(`${attributeName} = ${attributeValue}`);
+    }
+  });
+  
+  // Add version attribute
+  const versionValue = data?.metadata?.updateDate?.toString() ?? Date.now().toString();
+  expressionAttributeValues[":VERSIONATTCURRV"] = { "S": versionValue };
+  updateExpressions.push("#VERSIONATTN = :VERSIONATTCURRV");
+
   try {
     await ddbClient.send(new UpdateItemCommand({
       TableName: isLocal ? "seo-ssot-classified-fifo" : process.env.MV_TABLE_NAME,
       Key: {
-        "id": {
+        "AvivGeoId": {
           "S": id
         }
       },
       UpdateExpression: `
         SET 
-          #DATAATTN = :DATAATTV,
-          #VERSIONATTN = :VERSIONATTCURRV
+          ${updateExpressions.join(',\n          ')}
         REMOVE
           #SOFTDELETE, #EXPIREAT
          `,
       ConditionExpression: "attribute_not_exists(#VERSIONATTN) OR #VERSIONATTN <= :VERSIONATTCURRV",
-      ExpressionAttributeValues: {
-        ":DATAATTV": {
-          "S": JSON.stringify(geoData)
-        },
-        ":VERSIONATTCURRV": {
-          "S": data?.metadata?.updateDate?.toString()??Date.now.toString()
-        },
-      },
-      ExpressionAttributeNames: {
-        "#DATAATTN": "data",
-        "#VERSIONATTN": "version",
-        "#SOFTDELETE": "softdeleted",
-        "#EXPIREAT": "expireat"
-      }
+      ExpressionAttributeValues: expressionAttributeValues,
+      ExpressionAttributeNames: expressionAttributeNames
     }));
 
   } catch (e) {
@@ -90,7 +106,7 @@ const markClassifiedAsDeleted = async (deleteCommand: { geoId: string, updateDat
   const result = await ddbClient.send(new UpdateItemCommand({
     TableName: process.env.MV_TABLE_NAME,
     Key: {
-      "id": {
+      "AvivGeoId": {
         "S": geoId
       }
     },
