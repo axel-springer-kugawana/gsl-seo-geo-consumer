@@ -30,7 +30,7 @@ variable "capability" {
 variable "component" {
   description = "Application component"
   type        = string
-  default     = "seo-cm-connector"
+  default     = "seo-gm-connector"
 }
 
 variable "contact" {
