@@ -7,5 +7,5 @@ variable "application" {
 variable "ssot_name" {
   description = "SSoT name"
   type        = string
-  default     = "classifieds"
+  default     = "geos"
 }
