@@ -4,7 +4,7 @@ parameters:
   run-http-api-standards-job:
     type: boolean
     default: false
-  run-classified-management-connector-job:
+  run-geo-management-connector-job:
     type: boolean
     default: false
 aliases:
@@ -30,7 +30,7 @@ orbs:
   terraform: circleci/terraform@3.2.1
 
 jobs:
-  build-classified-management-connector:
+  build-geo-management-connector:
     docker:
       - image: cimg/node:20.11.0
     parameters:
@@ -70,7 +70,7 @@ jobs:
             - "."
           root: "~/project"
             
-  deploy-classified-management-connector:
+  deploy-geo-management-connector:
     executor: 
       name: terraform/default
       tag: "1.5.7"
@@ -99,36 +99,36 @@ jobs:
           var_file: <<parameters.ENV_PATH_FILE>>
 
 workflows:
-  classified-management-connector-dev:
-    when: << pipeline.parameters.run-classified-management-connector-job >>
+  geo-management-connector-dev:
+    when: << pipeline.parameters.run-geo-management-connector-job >>
     jobs:
-      - build-classified-management-connector:
+      - build-geo-management-connector:
           <<: *devfilter
           ENV_SECRETS: "DEV"
-      - deploy-classified-management-connector:
+      - deploy-geo-management-connector:
           <<: *devfilter
           ENV: "dev"
           ENV_SECRETS: "DEV"
           ENV_PATH_FILE: "./dev.tfvars"
           requires:
-            - build-classified-management-connector
-  classified-management-connector-preview:
-    when: << pipeline.parameters.run-classified-management-connector-job >>
+            - build-geo-management-connector
+  geo-management-connector-preview:
+    when: << pipeline.parameters.run-geo-management-connector-job >>
     jobs:
-      - build-classified-management-connector:
+      - build-geo-management-connector:
             ENV_SECRETS: "PREVIEW"
             <<: *previewfilter
-      - deploy-classified-management-connector:
+      - deploy-geo-management-connector:
             <<: *previewfilter
             ENV: "preview"
             ENV_SECRETS: "PREVIEW"
             ENV_PATH_FILE: "./preview.tfvars"
             requires:
-              - build-classified-management-connector
-  classified-management-connector-live:
-    when: << pipeline.parameters.run-classified-management-connector-job >>
+              - build-geo-management-connector
+  geo-management-connector-live:
+    when: << pipeline.parameters.run-geo-management-connector-job >>
     jobs:
-      - build-classified-management-connector:
+      - build-geo-management-connector:
           ENV_SECRETS: "LIVE"
           <<: *livefilter
       - promote:
@@ -136,12 +136,12 @@ workflows:
           name: Approve deploy to prod 
           type: approval
           requires:
-            - build-classified-management-connector
-      - deploy-classified-management-connector:
+            - build-geo-management-connector
+      - deploy-geo-management-connector:
           <<: *livefilter
           ENV: "live"
           ENV_SECRETS: "LIVE"
           ENV_PATH_FILE: "./live.tfvars"
           requires:
-            - build-classified-management-connector
+            - build-geo-management-connector
             - Approve deploy to prod

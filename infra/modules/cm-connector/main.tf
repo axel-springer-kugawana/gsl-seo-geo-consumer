@@ -21,11 +21,6 @@ module "cm_events_handling_fifo" {
   ssot_name   = var.ssot_name
 }
 
-# module "connector_internal_queue" {
-#   source            = "../constructs/consumer-queue-with-dlq"
-#   consumer_sqs_name = "${var.application}-${var.environment}-${var.ssot_name}-connector-events"
-# }
-
 module "connector_internal_queue_fifo" {
   source            = "../constructs/consumer-queue-with-dlq"
   consumer_sqs_name = "${var.application}-${var.environment}-${var.ssot_name}-connector-events-fifo"
