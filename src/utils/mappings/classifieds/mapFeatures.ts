@@ -1,5 +1,4 @@
 import {
-  //BookingDataEnrichmentMessage,
   ClassifiedManagementStructure,
   Features,
   KitchenEquipment,
@@ -17,7 +16,6 @@ export const mapFeatures = ({
   data: ClassifiedManagementStructure['data']
   media: ClassifiedManagementStructure['media']
   specifics?: ClassifiedManagementStructure['specifics']
- // booking?: BookingDataEnrichmentMessage
 }): string[] => {
   const {
     box = 0,

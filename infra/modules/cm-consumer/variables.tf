@@ -23,17 +23,7 @@ variable "cm_connector_consumer_queue" {
 variable "ssot_name" {
   type = string
 }
-variable "rds_arn" {
-  type = string
-}
-
-variable "secret_name" {
-  type = string
-}
-
-variable "rds_sg_id" {
-  type = string
-}
+ 
 
 variable "dynamodb_arn" {
   type = string

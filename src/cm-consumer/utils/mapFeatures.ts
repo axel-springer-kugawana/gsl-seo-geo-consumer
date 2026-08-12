@@ -5,7 +5,6 @@ export const mapFeatures = (
     classified: Classified
 ): string[] => {
     const { data, media, specifics } = classified;
-    // booking?: BookingDataEnrichmentMessage
     const {
       box = 0,
       inside = 0,

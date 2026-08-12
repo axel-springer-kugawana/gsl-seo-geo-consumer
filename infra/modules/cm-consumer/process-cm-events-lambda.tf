@@ -112,15 +112,7 @@ data "aws_iam_policy_document" "lambda_policy" {
     resources = ["*"]
   }
 
-  statement {
-    effect = "Allow"
-    actions = [
-      "rds-db:connect",
-      "rds:*",
-      "rds-data:*",
-    ]
-    resources = [var.rds_arn]
-  }
+ 
   statement {
     effect = "Allow"
     actions = [

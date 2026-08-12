@@ -1,5 +1,5 @@
 import { mockClient } from 'aws-sdk-client-mock';
-import { queueHandler } from "./handle-classifieds-events";
+import { queueHandler } from "./handle-geo-events-fifo";
 import { v4 as uuidv4 } from 'uuid';
 import { SQSEvent } from 'aws-lambda';
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
@@ -7,7 +7,7 @@ import { createFakeLambdaContext } from './fakes/fake-lambda-context';
 import { createFakeSQSEnvelope } from './fakes/create-fake-sqs-envelope';
 
 
-describe('handle classified event lambda', () => {
+describe('handle geo event lambda', () => {
 
     let sqsClientMock;
 
@@ -24,17 +24,20 @@ describe('handle classified event lambda', () => {
     test('should emit classified updated event from cm connector when classified updated event is received from classified management', async () => {
 
         // arrange
-        const classifiedId = "231111GDUTW1";
+        const geoId = "NBH1FR1";
+        const exepctedResponse = await import(`./fakes/geo-object-${geoId}.json`);
+
+
         const events = [{
             id: uuidv4(),
-            classifiedId,
-            link: `/IWT/${classifiedId}`,
+            geoId,
+            link: `/IWT/${geoId}`,
             eventTime: 1676537758336,
             eventType: "UPDATED",
+            data: exepctedResponse
         }];
 
-        const exepctedResponse = await import(`./fakes/classified-object-${classifiedId}.json`);
-
+     
         jest
             .spyOn(global, 'fetch')
             .mockImplementation((url: string) => {
@@ -50,7 +53,7 @@ describe('handle classified event lambda', () => {
                         })
 
                     });
-                } else if (url.indexOf(`/IWT/${classifiedId}`)) {
+                } else if (url.indexOf(`/IWT/${geoId}`)) {
                     return Promise.resolve({
                         ok: true, status: 200, json: () => Promise.resolve(exepctedResponse)
                     } as any);
@@ -75,9 +78,9 @@ describe('handle classified event lambda', () => {
 
         const messageBodyInJson = JSON.parse(command[0].args[0].input.MessageBody);
 
-        expect(messageBodyInJson.source).toBe("classified-management-connector");
-        expect(messageBodyInJson.type).toBe("classified.updated.v1");
-        expect(messageBodyInJson.data.classifiedId).toBe(classifiedId);
+        expect(messageBodyInJson.source).toBe("geo-management-connector");
+        expect(messageBodyInJson.type).toBe("geo.updated.v1");
+        expect(messageBodyInJson.data.geoId).toBe(geoId);
 
 
     });
@@ -86,16 +89,17 @@ describe('handle classified event lambda', () => {
     test('should emit classified created event from cm connector when classified created event is received from classified management', async () => {
 
         // arrange
-        const classifiedId = "231111GDUTW1";
+        const geoId = "NBH1FR1";
+          const exepctedResponse = await import(`./fakes/geo-object-${geoId}.json`);
+
         const events = [{
             id:  uuidv4(),
-            classifiedId,
-            link: `/IWT/${classifiedId}`,
+            geoId,
+            link: `/IWT/${geoId}`,
             eventType: "CREATED",
             eventTime: 1676537758336,
+            data: exepctedResponse
         }];
-
-        const exepctedResponse = await import(`./fakes/classified-object-${classifiedId}.json`);
 
         jest
             .spyOn(global, 'fetch')
@@ -112,7 +116,7 @@ describe('handle classified event lambda', () => {
                         })
 
                     });
-                } else if (url.indexOf(`/IWT/${classifiedId}`)) {
+                } else if (url.indexOf(`/IWT/${geoId}`)) {
                     return Promise.resolve({
                         ok: true, status: 200, json: () => Promise.resolve(exepctedResponse)
                     } as any);
@@ -132,28 +136,42 @@ describe('handle classified event lambda', () => {
         await queueHandler(sqsEvent, createFakeLambdaContext());
 
         // assert
+
         const command = sqsClientMock.commandCalls(SendMessageCommand);
 
         expect(command.length).toBe(1);
 
         const messageBodyInJson = JSON.parse(command[0].args[0].input.MessageBody);
 
-        expect(messageBodyInJson.source).toBe("classified-management-connector");
-        expect(messageBodyInJson.type).toBe("classified.created.v1");
-        expect(messageBodyInJson.data.classifiedId).toBe(classifiedId);
+        expect(messageBodyInJson.source).toBe("geo-management-connector");
+        expect(messageBodyInJson.type).toBe("geo.created.v1");
+        expect(messageBodyInJson.data.geoId).toBe(geoId);
     });
     
     test('should emit classified deleted event from cm connector when classified deleted event is received from classified management', async () => {
 
         // arrange
-        const classifiedId = "231111GDUTW1";
+        const geoId = "NBH1FR1";
+          const exepctedResponse = await import(`./fakes/geo-object-${geoId}.json`);
+// GeoManagementStructure
+
         const events = [{
             id:  uuidv4(),
-            classifiedId,
-            link: `/IWT/${classifiedId}`,
-            eventTime: 1676537758336,
+            geoId,
+            link: `/IWT/${geoId}`,
+            eventTime: 1676537758336,            
+            time: 1676537758336,
             eventType: "DELETED",
+            data: exepctedResponse
         }];
+        // const events = [{
+        //     id:  uuidv4(),
+        //     geoId,
+        //     link: `/IWT/${geoId}`,
+        //     eventType: "CREATED",
+        //     eventTime: 1676537758336,
+        //     data: exepctedResponse
+        // }];
 
         const records = events.map(e => createFakeSQSEnvelope(e.id, e));
 
@@ -171,9 +189,9 @@ describe('handle classified event lambda', () => {
 
         const messageBodyInJson = JSON.parse(command[0].args[0].input.MessageBody);
 
-        expect(messageBodyInJson.source).toBe("classified-management-connector");
-        expect(messageBodyInJson.type).toBe("classified.deleted.v1");
-        expect(messageBodyInJson.data.classifiedId).toBe(classifiedId);
+        expect(messageBodyInJson.source).toBe("geo-management-connector");
+        expect(messageBodyInJson.type).toBe("geo.deleted.v1");
+        expect(messageBodyInJson.data.id).toBe(geoId);
 
 
     });

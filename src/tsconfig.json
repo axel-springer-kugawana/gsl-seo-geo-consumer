@@ -29,7 +29,7 @@
         "esModuleInterop": true,
         "resolveJsonModule": true
     },  
-      "include": ["**/*.ts"],
+      "include": ["**/*.ts", "models/geoManagement.ts.old"],
     "exclude": [
         "esbuild.config.js",
         "node_modules",

@@ -3,23 +3,25 @@ import { config } from "@cm-connector/config/configuration-provider";
 import { v4 as uuidv4 } from 'uuid';
 import { createHash } from 'crypto';
 import { SSoTConsumerName, SSotEntityName } from "@shared/models/cm-consumer-constants";
-import { Classified } from "@shared/models/classified/1.0.0/classified";
+import { GeoManagementStructure } from "@models";
+
 
 const sqsClient = new SQSClient({});
 
-type ClassifiedFullEvent= {
+type GeoFullEvent= {
     event: "deleted",
     data: {
-        classifiedId: string,
+        id: string,
         updateDate: string
     }
 } | {
     event: "created" | "updated",
-    data: Classified
+    data: GeoManagementStructure
 
 }
+ 
 
-const publishFullClassifiedEvent = async (fullEvent: ClassifiedFullEvent) => {
+const publishFullClassifiedEvent = async (fullEvent: GeoFullEvent) => {
 
     await sqsClient.send(new SendMessageCommand({
         QueueUrl: config.get("connectorEventsQueue"),

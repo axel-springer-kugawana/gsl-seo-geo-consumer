@@ -1,9 +1,9 @@
 import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { fromSSO } from "@aws-sdk/credential-provider-sso";
 import { logger } from "@shared/cross-cutting/logger";
-import { Classified } from "@shared/models/classified/1.0.0/classified";
-import { ClassifiedWithFullGeo } from "@shared/models/classified/1.0.0/ClassifiedWithFullGeo";
 
+import { GeoManagementStructure } from "@models";
+import { transformGeoManagementToGeo } from "./transformGeoManagementToGeo";
 // Configuration du client DynamoDB avec SSO pour le développement local
 const isLocal = process.env.AWS_EXECUTION_ENV === undefined;
 
@@ -18,7 +18,8 @@ const ddbClient = new DynamoDBClient(
     : {}
 );
 
-const createOrUpdateClassified = async (id: string, data: Classified, classified: ClassifiedWithFullGeo): Promise<void> => {
+const createOrUpdateClassified = async (id: string, data: any, classified: GeoManagementStructure): Promise<void> => {
+  const geoData = transformGeoManagementToGeo(classified);
 
   try {
     await ddbClient.send(new UpdateItemCommand({
@@ -38,7 +39,7 @@ const createOrUpdateClassified = async (id: string, data: Classified, classified
       ConditionExpression: "attribute_not_exists(#VERSIONATTN) OR #VERSIONATTN <= :VERSIONATTCURRV",
       ExpressionAttributeValues: {
         ":DATAATTV": {
-          "S": JSON.stringify(classified)
+          "S": JSON.stringify(geoData)
         },
         ":VERSIONATTCURRV": {
           "S": data?.metadata?.updateDate?.toString()??Date.now.toString()
@@ -79,9 +80,9 @@ const createOrUpdateClassified = async (id: string, data: Classified, classified
 }
 
 
-const markClassifiedAsDeleted = async (deleteCommand: { classifiedId: string, updateDate: string }): Promise<void> => {
+const markClassifiedAsDeleted = async (deleteCommand: { geoId: string, updateDate: string }): Promise<void> => {
 
-  const { classifiedId, updateDate } = deleteCommand;
+  const { geoId, updateDate } = deleteCommand;
 
   const onDayInSeconds = 60 * 60 * 24 * 1;
   const expiryTime = Math.floor(Date.now() / 1000) + onDayInSeconds;
@@ -90,7 +91,7 @@ const markClassifiedAsDeleted = async (deleteCommand: { classifiedId: string, up
     TableName: process.env.MV_TABLE_NAME,
     Key: {
       "id": {
-        "S": classifiedId
+        "S": geoId
       }
     },
     UpdateExpression: `
@@ -118,7 +119,7 @@ const markClassifiedAsDeleted = async (deleteCommand: { classifiedId: string, up
   }));
 
   if (result.$metadata.httpStatusCode !== 200) {
-    throw new Error(`Error deleting item of id: ${classifiedId}`, {
+    throw new Error(`Error deleting item of id: ${geoId}`, {
       cause: result.$metadata
     });
   }

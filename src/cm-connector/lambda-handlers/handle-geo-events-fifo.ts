@@ -1,27 +1,31 @@
 import { enableLambdaPowertoolsLoggingAndMetrics } from "@shared/cross-cutting/lambda-logging-middleware";
 import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
-import { getClassifiedById } from "@cm-connector/adapters/classified-api";
 import { BatchProcessor, EventType, processPartialResponse } from "@aws-lambda-powertools/batch";
-import { publishFullClassifiedEvent } from "@cm-connector/adapters/classified-event-publisher";
-import { ClassifiedCreateOrUpdateOrDeleteEvent, ClassifiedEventType } from "@cm-connector/models/1.0.0/classified-events";
+import { publishFullClassifiedEvent } from "@cm-connector/adapters/geo-event-publisher-fifo";
+import { GeoManagementEvent, GeoEventType } from "@models";
+import { logger } from "@shared/cross-cutting/logger";
 
+const handleClassifiedEvent = async (event: GeoManagementEvent): Promise<void> => {
 
-const handleClassifiedEvent = async (event: ClassifiedCreateOrUpdateOrDeleteEvent): Promise<void> => {
+     
+
+logger.warn(`Handling classified event: ${event.eventType} for geoId: ${event.geoId}`;
+
     switch (event.eventType) {
-        case ClassifiedEventType.DELETED:
+        case GeoEventType.DELETED:
             await publishFullClassifiedEvent({
                 event: "deleted",
                 data: {
-                    classifiedId: event.classifiedId,
-                    updateDate: new Date(event.eventTime).toISOString()
+                    id: event.geoId,
+                    updateDate: new Date(event.time).toISOString()
                 }
             });
             break;
-        case ClassifiedEventType.CREATED:
-        case ClassifiedEventType.UPDATED:
-            const classified = await getClassifiedById(event.link);
+        case GeoEventType.CREATED:
+        case GeoEventType.UPDATED:
+            const classified = event.data;//await getClassifiedById(event.link);
             await publishFullClassifiedEvent({
-                event: event.eventType === ClassifiedEventType.CREATED ? "created" : "updated",
+                event: event.eventType === GeoEventType.CREATED ? "created" : "updated",
                 data: {
                     ...classified
                 }
@@ -36,10 +40,12 @@ const handleClassifiedEvent = async (event: ClassifiedCreateOrUpdateOrDeleteEven
 const processor = new BatchProcessor(EventType.SQS);
 
 export const queueSourceHandler = async (event: SQSEvent, context: Context): Promise<SQSBatchResponse> => {
+    logger.info("Received SQS event", { event });
 
     return processPartialResponse(event, async (record: SQSRecord) => {
-        const classifiedEvent = JSON.parse(record.body) as ClassifiedCreateOrUpdateOrDeleteEvent;
-        return await handleClassifiedEvent(classifiedEvent);
+        const geoEvent = JSON.parse(record.body) as GeoManagementEvent;
+        logger.info("Processing geo event", { geoEvent });
+        return await handleClassifiedEvent(geoEvent);
     }, processor, {
         context,
     });
