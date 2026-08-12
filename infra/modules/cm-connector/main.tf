@@ -11,8 +11,6 @@ module "cm_events_handling_fifo" {
     queue_esm_max_concurrency = 100
   }
 
-  cm_api_url = var.api.url
-
   connector_events_queue = {
     arn = module.connector_internal_queue_fifo.queue_arn
     id  = module.connector_internal_queue_fifo.queue_id
