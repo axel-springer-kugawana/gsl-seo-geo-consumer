@@ -1,12 +1,12 @@
 # Getting started
 
-You will find here a concrete implemention of Classified Management consumer.
+You will find here a concrete implemention of Geo Management consumer.
 
 By deploying  this application into your account, you will be able:
-*  to consume events from Classified Management 
-* and  to request the current state of the world of classifieds. 
+*  to consume events from Geo  Management 
 
-Along with classified management connector, you will find an example on how to create a materialized view where you can store your own adapted/enriched models of classifieds.
+
+Along with geo management connector, you will find an example on how to create a materialized view where you can store your own adapted/enriched models of classifieds.
 
 ![CM Consumer](./assets/cm-connector-architecture.gif "CM connector").
 
@@ -37,8 +37,8 @@ module "cm_connector" {
   }
   
   events_topic = {
-    # classified events event topic
-    arn = "arn:aws:sns:eu-west-1:272575627684:classdisp-staging-dispatch-classified-event-topic"
+    # geo events event topic
+    arn = "arn:aws:sns:eu-west-1:090290096726:geodata_updates.fifo
   }
 
   api = {
@@ -72,7 +72,7 @@ First, you will need to get your AWS account(s) allowed to consume classified ma
 
 
 ### Running an initialization job
-Once sucessfully deployed, you start getting events from classified management. If you want to run a "Get state of the world" operation in order to get the complete set of classifieds you will need to go to you aws console and execute the `get state of world` state machine (by default this state machine will have this name `cm-consumer-sample-dev-classifieds-get-stow`)
+Once sucessfully deployed, you start getting events from geo management. If you want to run a "Get state of the world" operation in order to get the complete set of classifieds you will need to go to you aws console and execute the `get state of world` state machine (by default this state machine will have this name `cm-consumer-sample-dev-classifieds-get-stow`)
 by specifying this input parameters to the state machine:
 ```
 {
@@ -133,7 +133,6 @@ You will find more about classified management APIs here:
 
 
 
-
 ### Update SQL Part
 execute sqs event :
 {
@@ -151,4 +150,146 @@ execute sqs event :
 execute sqs event :
 {
     "type": "classified.clean.v1"
+}
+
+
+* event format :
+
+
+{
+    "id": "83cfbb07-9544-46a3-a62b-33651a708922",
+    "source": "geo-management-dispatch",
+    "datacontenttype": "application/json",
+    "specversion": "1.0",
+    "time": "2026-08-12T15:20:30.172Z",
+    "type": "UPDATED",
+    "eventdataversion": "0.13.7",
+    "data": {
+        "id": "NBH1FR1",
+        "type": "CREATED",
+        "current_feature": {
+            "id": "NBH1FR1",
+            "type": "Macro neighborhood",
+            "type_key": "NBH1",
+            "level": 900,
+            "active": true,
+            "fictive": false,
+            "language": "fr",
+            "names": {
+                "fr": [
+                    {
+                        "name": "Les Arcs – Peisey-Vallandry",
+                        "display_name": "Les Arcs – Peisey-Vallandry (tous codes postaux)",
+                        "slug": "les-arcs-peisey-vallandry-73210",
+                        "name_rank": 1,
+                        "name_root": "Les Arcs – Peisey-Vallandry",
+                        "name_prefix": null,
+                        "name_prepositions": {
+                            "de": "de ",
+                            "à": "à "
+                        }
+                    }
+                ]
+            },
+            "administrative_code": null,
+            "main_postal_code": "73210",
+            "postal_codes": [
+                "73210",
+                "73700"
+            ],
+            "area": 39614659,
+            "coordinates": {
+                "lat": 45.570340942364837,
+                "lng": 6.8123840658261194,
+                "centroid": {
+                    "lat": 45.570340942364837,
+                    "lng": 6.8123840658261194
+                },
+                "point_on_surface": {
+                    "lat": 45.5722965,
+                    "lng": 6.8117477594776856
+                },
+                "max_inscribed_circle": {
+                    "lat": 45.571506532519521,
+                    "lng": 6.8067098694335924
+                }
+            },
+            "viewport": {
+                "ne": {
+                    "lat": 45.60618019999999,
+                    "lng": 6.8771755999999993
+                },
+                "sw": {
+                    "lat": 45.539519599999991,
+                    "lng": 6.7521203
+                }
+            },
+            "bounding_box": {
+                "ne": {
+                    "lat": 45.60618019999999,
+                    "lng": 6.8771755999999993
+                },
+                "sw": {
+                    "lat": 45.539519599999991,
+                    "lng": 6.7521203
+                }
+            },
+            "weight": 777.0,
+            "mapping": {
+                "atlas": [
+                    {
+                        "metric": {
+                            "confidence": 1.0,
+                            "testname": "manual_mapping"
+                        },
+                        "id": "32248",
+                        "type": "7",
+                        "metadata": {
+                            "version": "1",
+                            "source_id": "4",
+                            "source_name": "BcGeo.Villes_Prim"
+                        }
+                    }
+                ],
+                "places": null,
+                "immoweb": null,
+                "immowelt": null,
+                "logicimmo": [
+                    {
+                        "metric": {
+                            "confidence": 1.0,
+                            "testname": "manual"
+                        },
+                        "id": "38020",
+                        "type": "2"
+                    }
+                ],
+                "meilleursagents": [
+                    {
+                        "metric": {
+                            "confidence": 1.0,
+                            "testname": "Trivial"
+                        },
+                        "id": 2080788954,
+                        "type": "macro_neighborhoods",
+                        "platform": "fr"
+                    }
+                ],
+                "iso3166": null,
+                "immowelt_geoids": null
+            },
+            "lineage": null,
+            "duplicates": null,
+            "extra_properties": null,
+            "subtype": null,
+            "active_since": "2025-03-06T22:25:52.353401",
+            "deprecated_since": null,
+            "parents": null
+        },
+        "platform": "FR",
+        "release_date": "2025-03-06",
+        "created": null,
+        "updated": null,
+        "deleted": null
+    }
 }

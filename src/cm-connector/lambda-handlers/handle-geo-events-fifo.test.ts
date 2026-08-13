@@ -25,7 +25,7 @@ describe('handle geo event lambda', () => {
 
         // arrange
         const geoId = "NBH1FR1";
-        const exepctedResponse = await import(`./fakes/geo-object-${geoId}.json`);
+        const exepctedResponse = await import(`./fakes/UPDATED_geo-object-${geoId}.json`);
 
 
         const events = [{
@@ -90,7 +90,7 @@ describe('handle geo event lambda', () => {
 
         // arrange
         const geoId = "NBH1FR1";
-          const exepctedResponse = await import(`./fakes/geo-object-${geoId}.json`);
+          const exepctedResponse = await import(`./fakes/UPDATED_geo-object-${geoId}.json`);
 
         const events = [{
             id:  uuidv4(),
@@ -152,7 +152,7 @@ describe('handle geo event lambda', () => {
 
         // arrange
         const geoId = "NBH1FR1";
-          const exepctedResponse = await import(`./fakes/geo-object-${geoId}.json`);
+          const exepctedResponse = await import(`./fakes/DELETED_geo-object-${geoId}.json`);
 // GeoManagementStructure
 
         const events = [{

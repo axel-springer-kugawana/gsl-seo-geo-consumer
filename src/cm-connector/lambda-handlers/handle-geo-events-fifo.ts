@@ -6,8 +6,6 @@ import { GeoManagementEvent, GeoEventType } from "@models";
 import { logger } from "@shared/cross-cutting/logger";
 
 const handleClassifiedEvent = async (event: GeoManagementEvent): Promise<void> => {
- 
-logger.warn(`Handling classified event: ${event.eventType} for geoId: ${event.geoId}`);
 
     switch (event.eventType) {
         case GeoEventType.DELETED:
