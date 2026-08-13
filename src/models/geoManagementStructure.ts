@@ -98,6 +98,16 @@ export const currentFeatureStructure = z.object({
   parents: z.optional(z.any().nullable()),
 })
 
+export const deletedFallbackStructure = z.object({
+  type: z.string(),
+  ancestor_id: z.string(),
+  descendant_id: z.string(),
+})
+
+export const deletedStructure = z.object({
+  fallback: z.array(deletedFallbackStructure),
+})
+
 export const geoManagementStructure = z.object({
   id: z.string(),
   type: z.string(), // CREATED, UPDATED, DELETED
@@ -106,7 +116,7 @@ export const geoManagementStructure = z.object({
   release_date: z.string(),
   created: z.optional(z.string().nullable()),
   updated: z.optional(z.string().nullable()),
-  deleted: z.optional(z.string().nullable()),
+  deleted: z.optional(deletedStructure.nullable()),
 })
 
 export type CoordinatesStructure = z.infer<typeof coordinatesStructure>
@@ -119,4 +129,6 @@ export type LogicimmoMappingStructure = z.infer<typeof logicimmoMappingStructure
 export type MeilleursagentsMappingStructure = z.infer<typeof meilleursagentsMappingStructure>
 export type MappingStructure = z.infer<typeof mappingStructure>
 export type CurrentFeatureStructure = z.infer<typeof currentFeatureStructure>
+export type DeletedFallbackStructure = z.infer<typeof deletedFallbackStructure>
+export type DeletedStructure = z.infer<typeof deletedStructure>
 export type GeoManagementStructure = z.infer<typeof geoManagementStructure>

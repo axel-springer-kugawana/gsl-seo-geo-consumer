@@ -19,16 +19,11 @@ const ddbClient = new DynamoDBClient(
     : {}
 );
 
-const createOrUpdateClassified = async (id: string, data: any, classified: GeoManagementStructure): Promise<void> => {
-  const geoData = transformGeoManagementToGeo(classified);
-
-  // Marshall the geodata to DynamoDB format
-  const marshalledData = marshall(geoData, { removeUndefinedValues: true });
-  
+const persistGeoData = async (id: string, marshalledData: Record<string, any>, tableName: string, versionValue: string): Promise<void> => {
   // Build UpdateExpression dynamically, excluding the partition key (AvivGeoId)
   const updateExpressions: string[] = [];
   const expressionAttributeValues: Record<string, any> = {};
-  const expressionAttributeNames: Record<string, string> = {
+  const expressionAttributeNames: Record<string, string> = { 
     "#VERSIONATTN": "version",
     "#SOFTDELETE": "softdeleted",
     "#EXPIREAT": "expireat"
@@ -46,13 +41,13 @@ const createOrUpdateClassified = async (id: string, data: any, classified: GeoMa
   });
   
   // Add version attribute
-  const versionValue = data?.metadata?.updateDate?.toString() ?? Date.now().toString();
+  // const versionValue = data?.metadata?.updateDate?.toString() ?? Date.now().toString();
   expressionAttributeValues[":VERSIONATTCURRV"] = { "S": versionValue };
   updateExpressions.push("#VERSIONATTN = :VERSIONATTCURRV");
 
   try {
     await ddbClient.send(new UpdateItemCommand({
-      TableName: isLocal ? "seo-ssot-classified-fifo" : process.env.MV_TABLE_NAME,
+      TableName: tableName,
       Key: {
         "AvivGeoId": {
           "S": id
@@ -73,7 +68,7 @@ const createOrUpdateClassified = async (id: string, data: any, classified: GeoMa
 
     if (e.name === "ConditionalCheckFailedException") {
       logger.warn("Conditional Check failed on lastUpdate date. Classified won't be updated", {
-        classified: data
+        classified: marshalledData
       })
       logger.warn(e)
     } else {
@@ -82,32 +77,55 @@ const createOrUpdateClassified = async (id: string, data: any, classified: GeoMa
       logger.warn("Error While update / creating DynamoDB Record", {
         classified: id
       })
-
-      let tmp = JSON.stringify(classified);
-      logger.warn(e)
-      logger.warn("dynamodb Payload : "+tmp);
+ 
       
-      logger.warn("Error : "+ e?.name);
-      
-      logger.warn("data.metadata.updateDate? : "+ data?.metadata?.updateDate);
+      logger.warn("Error : "+ JSON.stringify(e));
+       
       throw e;
     }
   }
 }
 
+const createOrUpdateGeo = async (id: string, data: any, classified: GeoManagementStructure): Promise<void> => {
+  
+  const geoData = transformGeoManagementToGeo(classified);
 
-const markClassifiedAsDeleted = async (deleteCommand: { geoId: string, updateDate: string }): Promise<void> => {
+  // Marshall the geodata to DynamoDB format
+  const marshalledData = marshall(geoData, { removeUndefinedValues: true });
 
-  const { geoId, updateDate } = deleteCommand;
+  const tableName = isLocal ? "seo-ssot-classified-fifo" : process.env.MV_UPDATED_TABLE_NAME;
+
+  await persistGeoData(id, marshalledData, tableName, data?.metadata?.updateDate?.toString() ?? Date.now().toString());
+}
+
+
+const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, classified: GeoManagementStructure }): Promise<void> => {
+
+
+  var deletedGeo = {
+    AvivGeoId: deleteCommand.classified?.id,
+    Version: deleteCommand.updateDate?.toString(),
+    Fallbacks: deleteCommand.classified.deleted?.fallback,
+    release_date: deleteCommand.classified.deleted?.release_date,
+    Type: deleteCommand.classified?.type,
+  };
+ 
+  // Marshall the geodata to DynamoDB format
+  const marshalledData = marshall(deletedGeo, { removeUndefinedValues: true });
+
+  const tableName = isLocal ? "seo-ssot-classified-fifo" : process.env.MV_DELETED_TABLE_NAME;
+
+  await persistGeoData(deleteCommand.id, marshalledData, tableName, deleteCommand.updateDate?.toString() ?? Date.now().toString());
+
 
   const onDayInSeconds = 60 * 60 * 24 * 1;
   const expiryTime = Math.floor(Date.now() / 1000) + onDayInSeconds;
-
-  const result = await ddbClient.send(new UpdateItemCommand({
-    TableName: process.env.MV_TABLE_NAME,
+  
+  const removeGeoFromReferentialResult = await ddbClient.send(new UpdateItemCommand({
+    TableName: process.env.MV_UPDATED_TABLE_NAME,
     Key: {
       "AvivGeoId": {
-        "S": geoId
+        "S": id
       }
     },
     UpdateExpression: `
@@ -134,14 +152,14 @@ const markClassifiedAsDeleted = async (deleteCommand: { geoId: string, updateDat
     }
   }));
 
-  if (result.$metadata.httpStatusCode !== 200) {
-    throw new Error(`Error deleting item of id: ${geoId}`, {
-      cause: result.$metadata
+  if (removeGeoFromReferentialResult.$metadata.httpStatusCode !== 200) {
+    throw new Error(`Error deleting item of id: ${id}`, {
+      cause: removeGeoFromReferentialResult.$metadata
     });
   }
 }
 
 export {
-  createOrUpdateClassified,
-  markClassifiedAsDeleted
+  createOrUpdateGeo,
+  markGeoAsDeleted
 }

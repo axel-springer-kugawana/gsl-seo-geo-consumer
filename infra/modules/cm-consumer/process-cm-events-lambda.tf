@@ -42,7 +42,10 @@ module "process_cm_connector_events_lambda" {
   timeout                          = 9
   is_lambda_vpc                    = true
   enable_secrets_manager_extension = true
-  env_variables = { MV_TABLE_NAME = var.dynamodb_table_name, MV_APPLICATION_NAME = var.application
+  env_variables = {
+    MV_UPDATED_TABLE_NAME = var.updated_dynamodb_table_name
+    MV_DELETED_TABLE_NAME = var.deleted_dynamodb_table_name
+    MV_APPLICATION_NAME   = var.application
   }
 }
 
@@ -118,6 +121,9 @@ data "aws_iam_policy_document" "lambda_policy" {
     actions = [
       "dynamodb:UpdateItem"
     ]
-    resources = ["${var.dynamodb_arn}"]
+    resources = [
+      var.updated_dynamodb_arn,
+      var.deleted_dynamodb_arn
+    ]
   }
 }

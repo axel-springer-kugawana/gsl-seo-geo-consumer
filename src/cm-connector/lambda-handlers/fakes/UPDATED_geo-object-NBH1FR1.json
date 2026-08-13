@@ -4,134 +4,134 @@
     "geoId": "NBH1FR1",
     "requestDate": "2023-11-03T07:52:32.194Z",
     "updateAt": 1698941776985,
-    "geo":   {
+    "geo": {
+        "id": "NBH1FR1",
+        "type": "CREATED",
+        "current_feature": {
             "id": "NBH1FR1",
-            "type": "CREATED",
-            "current_feature": {
-                "id": "NBH1FR1",
-                "type": "Macro neighborhood",
-                "type_key": "NBH1",
-                "level": 900,
-                "active": true,
-                "fictive": false,
-                "language": "fr",
-                "names": {
-                    "fr": [
-                        {
-                            "name": "Les Arcs – Peisey-Vallandry",
-                            "display_name": "Les Arcs – Peisey-Vallandry (tous codes postaux)",
-                            "slug": "les-arcs-peisey-vallandry-73210",
-                            "name_rank": 1,
-                            "name_root": "Les Arcs – Peisey-Vallandry",
-                            "name_prefix": null,
-                            "name_prepositions": {
-                                "de": "de ",
-                                "à": "à "
-                            }
+            "type": "Macro neighborhood",
+            "type_key": "NBH1",
+            "level": 900,
+            "active": true,
+            "fictive": false,
+            "language": "fr",
+            "names": {
+                "fr": [
+                    {
+                        "name": "Les Arcs – Peisey-Vallandry",
+                        "display_name": "Les Arcs – Peisey-Vallandry (tous codes postaux)",
+                        "slug": "les-arcs-peisey-vallandry-73210",
+                        "name_rank": 1,
+                        "name_root": "Les Arcs – Peisey-Vallandry",
+                        "name_prefix": null,
+                        "name_prepositions": {
+                            "de": "de ",
+                            "à": "à "
                         }
-                    ]
-                },
-                "administrative_code": null,
-                "main_postal_code": "73210",
-                "postal_codes": [
-                    "73210",
-                    "73700"
-                ],
-                "area": 39614659,
-                "coordinates": {
-                    "lat": 45.57034094236484,
-                    "lng": 6.812384065826119,
-                    "centroid": {
-                        "lat": 45.57034094236484,
-                        "lng": 6.812384065826119
-                    },
-                    "point_on_surface": {
-                        "lat": 45.5722965,
-                        "lng": 6.811747759477686
-                    },
-                    "max_inscribed_circle": {
-                        "lat": 45.57150653251952,
-                        "lng": 6.806709869433592
                     }
-                },
-                "viewport": {
-                    "ne": {
-                        "lat": 45.60618019999999,
-                        "lng": 6.877175599999999
-                    },
-                    "sw": {
-                        "lat": 45.53951959999999,
-                        "lng": 6.7521203
-                    }
-                },
-                "bounding_box": {
-                    "ne": {
-                        "lat": 45.60618019999999,
-                        "lng": 6.877175599999999
-                    },
-                    "sw": {
-                        "lat": 45.53951959999999,
-                        "lng": 6.7521203
-                    }
-                },
-                "weight": 777.0,
-                "mapping": {
-                    "atlas": [
-                        {
-                            "metric": {
-                                "confidence": 1.0,
-                                "testname": "manual_mapping"
-                            },
-                            "id": "32248",
-                            "type": "7",
-                            "metadata": {
-                                "version": "1",
-                                "source_id": "4",
-                                "source_name": "BcGeo.Villes_Prim"
-                            }
-                        }
-                    ],
-                    "places": null,
-                    "immoweb": null,
-                    "immowelt": null,
-                    "logicimmo": [
-                        {
-                            "metric": {
-                                "confidence": 1.0,
-                                "testname": "manual"
-                            },
-                            "id": "38020",
-                            "type": "2"
-                        }
-                    ],
-                    "meilleursagents": [
-                        {
-                            "metric": {
-                                "confidence": 1.0,
-                                "testname": "Trivial"
-                            },
-                            "id": 2080788954,
-                            "type": "macro_neighborhoods",
-                            "platform": "fr"
-                        }
-                    ],
-                    "iso3166": null,
-                    "immowelt_geoids": null
-                },
-                "lineage": null,
-                "duplicates": null,
-                "extra_properties": null,
-                "subtype": null,
-                "active_since": "2025-03-06T22:25:52.353401",
-                "deprecated_since": null,
-                "parents": null
+                ]
             },
-            "platform": "FR",
-            "release_date": "2025-03-06",
-            "created": null,
-            "updated": null,
-            "deleted": null
+            "administrative_code": null,
+            "main_postal_code": "73210",
+            "postal_codes": [
+                "73210",
+                "73700"
+            ],
+            "area": 39614659,
+            "coordinates": {
+                "lat": 45.57034094236484,
+                "lng": 6.812384065826119,
+                "centroid": {
+                    "lat": 45.57034094236484,
+                    "lng": 6.812384065826119
+                },
+                "point_on_surface": {
+                    "lat": 45.5722965,
+                    "lng": 6.811747759477686
+                },
+                "max_inscribed_circle": {
+                    "lat": 45.57150653251952,
+                    "lng": 6.806709869433592
+                }
+            },
+            "viewport": {
+                "ne": {
+                    "lat": 45.60618019999999,
+                    "lng": 6.877175599999999
+                },
+                "sw": {
+                    "lat": 45.53951959999999,
+                    "lng": 6.7521203
+                }
+            },
+            "bounding_box": {
+                "ne": {
+                    "lat": 45.60618019999999,
+                    "lng": 6.877175599999999
+                },
+                "sw": {
+                    "lat": 45.53951959999999,
+                    "lng": 6.7521203
+                }
+            },
+            "weight": 777.0,
+            "mapping": {
+                "atlas": [
+                    {
+                        "metric": {
+                            "confidence": 1.0,
+                            "testname": "manual_mapping"
+                        },
+                        "id": "32248",
+                        "type": "7",
+                        "metadata": {
+                            "version": "1",
+                            "source_id": "4",
+                            "source_name": "BcGeo.Villes_Prim"
+                        }
+                    }
+                ],
+                "places": null,
+                "immoweb": null,
+                "immowelt": null,
+                "logicimmo": [
+                    {
+                        "metric": {
+                            "confidence": 1.0,
+                            "testname": "manual"
+                        },
+                        "id": "38020",
+                        "type": "2"
+                    }
+                ],
+                "meilleursagents": [
+                    {
+                        "metric": {
+                            "confidence": 1.0,
+                            "testname": "Trivial"
+                        },
+                        "id": 2080788954,
+                        "type": "macro_neighborhoods",
+                        "platform": "fr"
+                    }
+                ],
+                "iso3166": null,
+                "immowelt_geoids": null
+            },
+            "lineage": null,
+            "duplicates": null,
+            "extra_properties": null,
+            "subtype": null,
+            "active_since": "2025-03-06T22:25:52.353401",
+            "deprecated_since": null,
+            "parents": null
         },
+        "platform": "FR",
+        "release_date": "2025-03-06",
+        "created": null,
+        "updated": null,
+        "deleted": null
+    },
     "blockDispatching": true,
     "state": "CREATED",
     "version": "0"

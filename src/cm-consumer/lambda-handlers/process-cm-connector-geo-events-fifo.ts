@@ -2,7 +2,7 @@ import { BatchProcessor, EventType, processPartialResponse } from "@aws-lambda-p
 import { enableLambdaPowertoolsLoggingAndMetrics } from "@shared/cross-cutting/lambda-logging-middleware";
 import { SSotEntityName } from "@shared/models/cm-consumer-constants";
 import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
-import { createOrUpdateClassified as createOrUpdateClassifiedDynamoDB, markClassifiedAsDeleted as markClassifiedAsDeletedDynamoDB } from "cm-consumer/adapters/geo-materialized-view-dynamodb";
+import { createOrUpdateGeo , markGeoAsDeleted } from "cm-consumer/adapters/geo-materialized-view-dynamodb";
 import { logger } from "@shared/cross-cutting/logger";
 //import * as fs from 'fs';
 
@@ -21,7 +21,8 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
   logger.warn(e.type);
   switch (e.type) {
     case `${SSotEntityName}.deleted.v1`: { 
-      await markClassifiedAsDeletedDynamoDB({ geoId, updateDate: e.data.updateDate });
+      await markGeoAsDeleted({ id: geoId, updateDate: e.data.updateDate, classified: e.data });
+      //  id: string, updateDate: any, classified: GeoManagementStructure 
       break;
     }
        
@@ -37,7 +38,7 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
 
       try {
       
-        await createOrUpdateClassifiedDynamoDB(geoId, e.data, geoObject);
+        await createOrUpdateGeo(geoId, e.data, geoObject);
          
       } catch (error) {
         logger.error('Error processing classified', { 

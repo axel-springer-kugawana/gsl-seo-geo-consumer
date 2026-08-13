@@ -41,6 +41,8 @@ module "cm_consumer_fifo" {
   ssot_name    = var.ssot_name
   application  = "gm-consumer-fifo"
   environment  = var.environment  
-  dynamodb_arn = module.dynamodb-ssot-geo-updated.properties.dynamodb_arn
-  dynamodb_table_name = module.dynamodb-ssot-geo-updated.properties.dynamodb_table_name
+  updated_dynamodb_arn        = module.dynamodb-ssot-geo-updated.properties.dynamodb_arn
+  updated_dynamodb_table_name = module.dynamodb-ssot-geo-updated.properties.dynamodb_table_name
+  deleted_dynamodb_arn        = module.dynamodb-ssot-geo-deleted.properties.dynamodb_arn
+  deleted_dynamodb_table_name = module.dynamodb-ssot-geo-deleted.properties.dynamodb_table_name
 }
