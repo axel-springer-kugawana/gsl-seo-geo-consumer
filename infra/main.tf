@@ -10,10 +10,10 @@ module "cm_connector" {
   ssot_name   = var.ssot_name
 }
 
-module "dynamodb-ssot-geo" {
+module "dynamodb-ssot-geo-updated" {
   partition_key = "AvivGeoId"
   source      = "./modules/dynamodb"
-  application = "gsl-seo-geo-ssot-${var.environment}"
+  application = "gsl-seo-geo-updated-${var.environment}"
   environment = var.environment
 }
 
@@ -41,6 +41,6 @@ module "cm_consumer_fifo" {
   ssot_name    = var.ssot_name
   application  = "gm-consumer-fifo"
   environment  = var.environment  
-  dynamodb_arn = module.dynamodb-ssot-geo.properties.dynamodb_arn
-  dynamodb_table_name = module.dynamodb-ssot-geo.properties.dynamodb_table_name
+  dynamodb_arn = module.dynamodb-ssot-geo-updated.properties.dynamodb_arn
+  dynamodb_table_name = module.dynamodb-ssot-geo-updated.properties.dynamodb_table_name
 }
