@@ -7,12 +7,15 @@ import { logger } from "@shared/cross-cutting/logger";
 
 const handleClassifiedEvent = async (event: GeoManagementEvent): Promise<void> => {
 
-    logger.info("Handling classified event", { eventType: event.eventType, eventData: event.data });
-    switch (event.eventType) {
+    logger.info("Handling classified event", { eventType: event.type, eventData: event.data });
+     const geoData = event.data;//await getClassifiedById(event.link);
+            
+    switch (event.type) {
         case GeoEventType.DELETED:
             await publishFullClassifiedEvent({
                 event: "deleted",
                 data: {
+                     ...geoData,
                     id: event.geoId,
                     updateDate: new Date(event.time).toISOString()
                 }
@@ -20,16 +23,15 @@ const handleClassifiedEvent = async (event: GeoManagementEvent): Promise<void> =
             break;
         case GeoEventType.CREATED:
         case GeoEventType.UPDATED:
-            const classified = event.data;//await getClassifiedById(event.link);
-            await publishFullClassifiedEvent({
-                event: event.eventType === GeoEventType.CREATED ? "created" : "updated",
+           await publishFullClassifiedEvent({
+                event: event.type === GeoEventType.CREATED ? "created" : "updated",
                 data: {
-                    ...classified
+                    ...geoData
                 }
             });
             break;
         default:
-            throw new Error(`Unsupported event type: ${event.eventType}`);
+            throw new Error(`Unsupported event type: ${event.type}`);
             break;
     }
 }

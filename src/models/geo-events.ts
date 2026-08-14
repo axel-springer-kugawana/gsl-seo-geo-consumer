@@ -1,13 +1,13 @@
 import { GeoManagementStructure } from './geoManagementStructure'
 
 export enum GeoEventType {
-  CREATED = 'CREATED',
-  UPDATED = 'UPDATED',
-  DELETED = 'DELETED',
+  CREATED = 'geo.created',
+  UPDATED = 'geo.updated',
+  DELETED = 'geo.deleted',
 }
 
 export interface GeoManagementEvent {
-  eventType : GeoEventType
+  type : GeoEventType
   data: GeoManagementStructure
   time: number
   requestTime: number
