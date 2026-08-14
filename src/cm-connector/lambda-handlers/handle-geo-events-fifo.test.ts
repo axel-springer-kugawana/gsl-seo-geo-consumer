@@ -192,7 +192,7 @@ describe('handle geo event lambda', () => {
 
         expect(messageBodyInJson.source).toBe("geo-management-connector");
         expect(messageBodyInJson.type).toBe("geo.deleted.v1");
-        expect(messageBodyInJson.data.id).toBe(geoId);
+        expect(messageBodyInJson.data.geoId).toBe(geoId);
 
 
     });

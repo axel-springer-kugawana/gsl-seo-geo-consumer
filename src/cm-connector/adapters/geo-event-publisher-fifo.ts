@@ -11,7 +11,7 @@ const sqsClient = new SQSClient({});
 type GeoFullEvent= {
     event: "deleted",
     data: {
-        id: string,
+        //id: string,
         updateDate: string
     }
 } | {

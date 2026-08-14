@@ -16,7 +16,7 @@ const handleClassifiedEvent = async (event: GeoManagementEvent): Promise<void> =
                 event: "deleted",
                 data: {
                      ...geoData,
-                    id: event.geoId,
+                 //   id: geoData.id,
                     updateDate: new Date(event.time).toISOString()
                 }
             });
