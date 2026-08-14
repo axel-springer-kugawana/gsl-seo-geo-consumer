@@ -155,7 +155,6 @@ execute sqs event :
 
 * event format :
 
-
 {
     "id": "83cfbb07-9544-46a3-a62b-33651a708922",
     "source": "geo-management-dispatch",

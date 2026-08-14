@@ -7,6 +7,7 @@ import { logger } from "@shared/cross-cutting/logger";
 
 const handleClassifiedEvent = async (event: GeoManagementEvent): Promise<void> => {
 
+    logger.info("Handling classified event", { eventType: event.eventType, eventData: event.data });
     switch (event.eventType) {
         case GeoEventType.DELETED:
             await publishFullClassifiedEvent({
@@ -28,7 +29,7 @@ const handleClassifiedEvent = async (event: GeoManagementEvent): Promise<void> =
             });
             break;
         default:
-
+            throw new Error(`Unsupported event type: ${event.eventType}`);
             break;
     }
 }
@@ -42,6 +43,8 @@ export const queueSourceHandler = async (event: SQSEvent, context: Context): Pro
         const geoEvent = JSON.parse(record.body) as GeoManagementEvent;
         logger.info("Processing geo event", { geoEvent });
         return await handleClassifiedEvent(geoEvent);
+
+        logger.info("end of processing geo event", { geoEvent });
     }, processor, {
         context,
     });

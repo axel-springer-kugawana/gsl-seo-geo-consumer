@@ -55,4 +55,21 @@ describe("process cm connector geo events fifo lambda", () => {
     });
     expect(createOrUpdateGeo).not.toHaveBeenCalled();
   });
+
+  test("should fail the record as a batch item failure when the event type is not mapped, so it can be routed to the DLQ", async () => {
+
+    // arrange
+    const unmappedEvent = { ...createdEvent, type: "geo.unknown.v1" };
+    const goodRecord = createFakeSQSEnvelope(uuidv4(), createdEvent);
+    const badRecord = createFakeSQSEnvelope(uuidv4(), unmappedEvent);
+    const sqsEvent: SQSEvent = { Records: [goodRecord, badRecord] };
+
+    // act
+    const response = await lambdaHandler(sqsEvent, createFakeLambdaContext() as any);
+
+    // assert
+    expect(response.batchItemFailures).toEqual([{ itemIdentifier: badRecord.messageId }]);
+    expect(createOrUpdateGeo).toHaveBeenCalledTimes(1);
+    expect(markGeoAsDeleted).not.toHaveBeenCalled();
+  });
 });

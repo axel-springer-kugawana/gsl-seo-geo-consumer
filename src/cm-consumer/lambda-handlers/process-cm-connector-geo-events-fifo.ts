@@ -31,8 +31,9 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
       //  id: string, updateDate: any, classified: GeoManagementStructure 
       break;
     }
-       
-    default: {
+
+    case `${SSotEntityName}.created.v1`:
+    case `${SSotEntityName}.updated.v1`: {
 
       const geoObject = e.data as GeoManagementStructure;
 
@@ -56,6 +57,11 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
         throw error; // Re-throw to mark the batch item as failed
       }
       break;
+    }
+
+    default: {
+      // Unmapped event type: fail the record so it lands on the DLQ instead of being silently mis-processed
+      throw new Error(`Unsupported event type "${e.type}" for record ${record.messageId}`);
     }
   }
 }
