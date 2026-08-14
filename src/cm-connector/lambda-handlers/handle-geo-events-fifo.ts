@@ -39,14 +39,14 @@ const handleClassifiedEvent = async (event: GeoManagementEvent): Promise<void> =
 const processor = new BatchProcessor(EventType.SQS);
 
 export const queueSourceHandler = async (event: SQSEvent, context: Context): Promise<SQSBatchResponse> => {
-    logger.info("Received SQS event", { event });
+    // logger.info("Received SQS event", { event });
 
     return processPartialResponse(event, async (record: SQSRecord) => {
         const geoEvent = JSON.parse(record.body) as GeoManagementEvent;
-        logger.info("Processing geo event", { geoEvent });
+        //logger.info("Processing geo event", { geoEvent });
         return await handleClassifiedEvent(geoEvent);
 
-        logger.info("end of processing geo event", { geoEvent });
+        //logger.info("end of processing geo event", { geoEvent });
     }, processor, {
         context,
     });

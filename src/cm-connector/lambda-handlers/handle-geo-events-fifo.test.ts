@@ -33,7 +33,7 @@ describe('handle geo event lambda', () => {
             geoId,
             link: `/IWT/${geoId}`,
             eventTime: 1676537758336,
-            eventType: "UPDATED",
+            type: "geo.updated",
             data: exepctedResponse
         }];
 
@@ -96,7 +96,8 @@ describe('handle geo event lambda', () => {
             id:  uuidv4(),
             geoId,
             link: `/IWT/${geoId}`,
-            eventType: "CREATED",
+           
+              type: "geo.created",
             eventTime: 1676537758336,
             data: exepctedResponse
         }];
@@ -161,7 +162,7 @@ describe('handle geo event lambda', () => {
             link: `/IWT/${geoId}`,
             eventTime: 1676537758336,            
             time: 1676537758336,
-            eventType: "DELETED",
+               type: "geo.deleted",
             data: exepctedResponse
         }];
         // const events = [{
