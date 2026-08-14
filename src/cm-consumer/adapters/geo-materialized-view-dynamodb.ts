@@ -125,25 +125,26 @@ const createOrUpdateGeo = async (id: string, data: any, classified: GeoManagemen
 }
 
 
-const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, classified: GeoManagementStructure }): Promise<void> => {
+const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, geo: GeoManagementStructure }): Promise<void> => {
 
   logger.warn("Marking geo as deleted", {
     id: deleteCommand.id,
     updateDate: deleteCommand.updateDate,
-    classified: deleteCommand.classified
+    classified: deleteCommand.geo,
+    geo: deleteCommand.geo
   });
 
   var deletedGeo = {
-    AvivGeoId: deleteCommand.classified?.id,
+    AvivGeoId: deleteCommand.geo?.id,
     Version: deleteCommand.updateDate?.toString(),
-    Fallbacks: deleteCommand.classified.deleted?.fallback,
-    //  release_date: deleteCommand.classified.deleted?.release_date,
-    Type: deleteCommand.classified?.type,
+    Fallbacks: deleteCommand.geo.deleted?.fallback,
+    //  release_date: deleteCommand.geo.deleted?.release_date,
+    Type: deleteCommand.geo?.type,
   };
 
   logger.warn("step 2 : Marshalled deleted geodata to DynamoDB format", {
     id: deleteCommand.id,
-    deletedGeo
+    deletedGeo : deletedGeo
   });
   // Marshall the geodata to DynamoDB format
   const marshalledData = marshall(deletedGeo, { removeUndefinedValues: true });

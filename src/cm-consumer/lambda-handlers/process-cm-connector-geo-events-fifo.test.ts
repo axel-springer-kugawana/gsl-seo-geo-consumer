@@ -51,7 +51,7 @@ describe("process cm connector geo events fifo lambda", () => {
     expect(markGeoAsDeleted).toHaveBeenCalledWith({
       id: deletedEvent.data.id,
       updateDate: deletedEvent.data.updateDate,
-      classified: deletedEvent.data,
+      geo: deletedEvent.data,
     });
     expect(createOrUpdateGeo).not.toHaveBeenCalled();
   });

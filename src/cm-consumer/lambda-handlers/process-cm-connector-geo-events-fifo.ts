@@ -22,12 +22,14 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
   //const body = await fs.readFileSync("cm-consumer/lambda-handlers/fakes/231116WBR1KI.json", "utf8");
   const e = JSON.parse(record.body);
 
+  logger.warn('Processing record', { record : e });
+
   const geoId = e?.data?.id ?? e?.geoId;
 
   logger.warn(e.type);
   switch (e.type) {
     case `${SSotEntityName}.deleted.v1`: { 
-      await markGeoAsDeleted({ id: geoId, updateDate: e.data.updateDate, classified: e.data });
+      await markGeoAsDeleted({ id: geoId, updateDate: e.data.updateDate, geo: e.data });
       //  id: string, updateDate: any, classified: GeoManagementStructure 
       break;
     }
