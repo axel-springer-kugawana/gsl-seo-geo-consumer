@@ -13,6 +13,12 @@ const processor = new BatchProcessor(EventType.SQS);
 
 export const recordHandler = async (record: SQSRecord, context: Context): Promise<void> => {
 
+  logger.warn('Processing record', { recordId: record.messageId
+    ,eventSource: record.eventSource
+    , eventSourceARN: record.eventSourceARN
+    , awsRequestId: context.awsRequestId 
+  , recordBody: record.body});
+
   //const body = await fs.readFileSync("cm-consumer/lambda-handlers/fakes/231116WBR1KI.json", "utf8");
   const e = JSON.parse(record.body);
 
