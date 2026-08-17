@@ -19,7 +19,7 @@ const ddbClient = new DynamoDBClient(
     : {}
 );
 
-const persistGeoData = async (id: string, marshalledData: Record<string, any>, tableName: string, versionValue: string): Promise<void> => {
+const updateDataInDynamoDB = async (id: string, marshalledData: Record<string, any>, tableName: string, versionValue: string): Promise<void> => {
   // Build UpdateExpression dynamically, excluding the partition key (AvivGeoId)
   const updateExpressions: string[] = [];
   const expressionAttributeValues: Record<string, any> = {};
@@ -72,14 +72,10 @@ const persistGeoData = async (id: string, marshalledData: Record<string, any>, t
       })
       logger.warn(e)
     } else {
-
-
       logger.warn("Error While update / creating DynamoDB Record", {
-        classified: id
-      })
-
-
-      logger.warn("Error : " + JSON.stringify(e));
+        geoid: id,
+        Error : JSON.stringify(e)
+      });
 
       throw e;
     }
@@ -87,52 +83,21 @@ const persistGeoData = async (id: string, marshalledData: Record<string, any>, t
 }
 
 const createOrUpdateGeo = async (id: string, data: any, classified: GeoManagementStructure): Promise<void> => {
-
-  logger.warn("step 1: Transforming classified to geodata", {
-    id,
-    classified
-  });
-
   const geoData = transformGeoManagementToGeo(classified);
 
-  logger.warn("step 2: Transformed classified to geodata", {
-    id,
-    geoData
-  });
-  
   // Marshall the geodata to DynamoDB format
   const marshalledData = marshall(geoData, { removeUndefinedValues: true });
-
 
   const tableName = isLocal ? "seo-ssot-classified-fifo" : process.env.MV_UPDATED_TABLE_NAME;
 
   if (!tableName) {
-  throw new Error("MV_UPDATED_TABLE_NAME environment variable is not set");
+    throw new Error("MV_UPDATED_TABLE_NAME environment variable is not set");
+  }
+
+  await updateDataInDynamoDB(id, marshalledData, tableName, data?.metadata?.updateDate?.toString() ?? Date.now().toString());
 }
 
-  logger.warn("step 3: Persisting geodata to DynamoDB", {
-    id,
-    tableName,
-    marshalledData
-  });
-  await persistGeoData(id, marshalledData, tableName, data?.metadata?.updateDate?.toString() ?? Date.now().toString());
-
-  logger.warn("step 4 : Persisted geodata to DynamoDB", {
-    id,
-    tableName,
-    marshalledData
-  });
-}
-
-
-const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, geo: GeoManagementStructure }): Promise<void> => {
-
-  logger.warn("Marking geo as deleted", {
-    id: deleteCommand.id,
-    updateDate: deleteCommand.updateDate,
-    classified: deleteCommand.geo,
-    geo: deleteCommand.geo
-  });
+const markDataAsDeleted = async (deleteCommand: { id: string, updateDate: any, geo: GeoManagementStructure }): Promise<void> => {
 
   var deletedGeo = {
     AvivGeoId: deleteCommand.geo?.id,
@@ -142,32 +107,19 @@ const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, ge
     Type: deleteCommand.geo?.type,
   };
 
-  logger.warn("step 2 : Marshalled deleted geodata to DynamoDB format", {
-    id: deleteCommand.id,
-    deletedGeo : deletedGeo
-  });
   // Marshall the geodata to DynamoDB format
   const marshalledData = marshall(deletedGeo, { removeUndefinedValues: true });
 
-
   const tableName = isLocal ? "seo-ssot-classified-fifo" : process.env.MV_DELETED_TABLE_NAME;
 
-    if (!tableName) {
-  throw new Error("MV_DELETED_TABLE_NAME environment variable is not set");
-}
+  if (!tableName) {
+    throw new Error("MV_DELETED_TABLE_NAME environment variable is not set");
+  }
 
-
-  await persistGeoData(deleteCommand.id, marshalledData, tableName, deleteCommand.updateDate?.toString() ?? Date.now().toString());
-
+  await updateDataInDynamoDB(deleteCommand.id, marshalledData, tableName, deleteCommand.updateDate?.toString() ?? Date.now().toString());
 
   const onDayInSeconds = 60 * 60 * 24 * 1;
   const expiryTime = Math.floor(Date.now() / 1000) + onDayInSeconds;
-
-  logger.warn("step 3 : Marking geo as soft deleted in updated table", {
-    id: deleteCommand.id,
-    expiryTime,
-    updateDate: deleteCommand.updateDate
-  });
 
   const removeGeoFromReferentialResult = await ddbClient.send(new UpdateItemCommand({
     TableName: process.env.MV_UPDATED_TABLE_NAME,
@@ -209,5 +161,5 @@ const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, ge
 
 export {
   createOrUpdateGeo,
-  markGeoAsDeleted
+  markDataAsDeleted as markGeoAsDeleted
 }

@@ -7,7 +7,10 @@ export const transformGeoManagementToGeo = (geoMgmt: GeoManagementStructure): Ge
   if (!feature) {
     throw new Error('current_feature is required for transformation');
   }
+  //TODO : enrich from api to get the missing fields (country, province, region, municipality, legacy mappings, etc.)
 
+
+  
   // Transform names from Record<string, NameStructure[]> to GeoName[]
   const transformedNames: GeoName[] = Object.entries(feature.names).flatMap(([language, nameArray]) => nameArray.map(name => ({
     DisplayName: name.display_name,
@@ -17,14 +20,9 @@ export const transformGeoManagementToGeo = (geoMgmt: GeoManagementStructure): Ge
   }))
   );
 
-  // Extract legacy mappings
-  const immoweltMappings = feature.mapping.immowelt_geoids || [];
-  const logicImmoMapping = feature.mapping.logicimmo?.[0] || null;
-  const selogerMapping = feature.mapping.atlas?.[0] || null;
-
   return {
     AvivGeoId: feature.id,
-    Version: "1.0.0",
+    Version: "3.2",
     AvailableNeighborhoods: [],
     Code: feature.administrative_code || "",
     Country: {
@@ -34,42 +32,19 @@ export const transformGeoManagementToGeo = (geoMgmt: GeoManagementStructure): Ge
       Names: [],
     },
     CountryCode: "",
-    ImmoweltLegacyMappings: immoweltMappings,
+    ImmoweltLegacyMappings: null, // Assuming you will fill this based on your data structure
     IsFictive: feature.fictive,
     Level: feature.level,
-    LogicImmoLegacyMapping: logicImmoMapping ? {
-      AvivGeoId: logicImmoMapping.id,
-      Code: "",
-      Parents: [],
-      SecondarySlug: "",
-      Slug: "",
-    } : null,
-    Municipality: {
-      AvivGeoId: "",
-      IsFictive: false,
-      Names: [],
-    },
+    LogicImmoLegacyMapping:  null,
+    Municipality:  null,
     Names: transformedNames,
     NeighbouringGeoLevels: [],
     PostalCodes: feature.postal_codes,
-    Province: {
-      AvivGeoId: "",
-      IsFictive: false,
-      Names: [],
-    },
-    Region: {
-      AvivGeoId: "",
-      IsFictive: false,
-      Names: [],
-    },
-    SelogerLegacyMapping: selogerMapping ? {
-      AvivGeoId: selogerMapping.id,
-      Code: selogerMapping.metadata?.source_id,
-      Slug: "",
-      Parents: [],
-    } : null,
+    Province:  null,
+    Region:  null,
+    SelogerLegacyMapping:  null,
     SurroundingMunicipalitiesIds: [],
     ttl: 0,
     UpdateDate: geoMgmt.updated || geoMgmt.created || new Date().toISOString(),
-  } as Geo;
+  } as unknown as Geo;
 };
