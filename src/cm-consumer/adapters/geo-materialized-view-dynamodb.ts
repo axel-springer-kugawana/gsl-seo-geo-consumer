@@ -4,7 +4,7 @@ import { fromSSO } from "@aws-sdk/credential-provider-sso";
 import { logger } from "@shared/cross-cutting/logger";
 
 import { GeoManagementStructure } from "@models";
-import { transformGeoManagementToGeo } from "./transformGeoManagementToGeo";
+import { transformGeoManagementToGeo } from "./geoMapper";
 // Configuration du client DynamoDB avec SSO pour le développement local
 const isLocal = process.env.AWS_EXECUTION_ENV === undefined;
 

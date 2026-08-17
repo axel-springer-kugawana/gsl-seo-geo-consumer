@@ -39,12 +39,6 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
 
       const geoObject = e.data as GeoManagementStructure;
 
-      // logger.warn('fifo upsert classified', { 
-      //   classifiedId, 
-      //   type: e.type, 
-      //   data: classifiedObject
-      // });
-
       try {
       
         await createOrUpdateGeo(geoId, e.data, geoObject);
