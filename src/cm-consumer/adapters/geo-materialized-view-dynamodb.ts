@@ -27,27 +27,27 @@ const ddbClient = new DynamoDBClient(
     : {}
 );
 
-  const mapParentToGeoEntity = (parent: components["schemas"]["ParentFeature"]): GeoEntityBase | null => {
-    if (!parent.id) {
-      return null;
-    }
+const mapParentToGeoEntity = (parent: components["schemas"]["ParentFeature"]): GeoEntityBase | null => {
+  if (!parent.id) {
+    return null;
+  }
 
-    const names: GeoName[] = Object.entries(parent.names ?? {}).flatMap(([language, localizedNames]) =>
-      (localizedNames ?? []).map(name => ({
-        DisplayName: name.display_name ?? name.name ?? "",
-        Language: language,
-        Name: name.name ?? name.display_name ?? "",
-        Slug: name.slug ?? "",
-      }))
-    );
+  const names: GeoName[] = Object.entries(parent.names ?? {}).flatMap(([language, localizedNames]) =>
+    (localizedNames ?? []).map(name => ({
+      DisplayName: name.display_name ?? name.name ?? "",
+      Language: language,
+      Name: name.name ?? name.display_name ?? "",
+      Slug: name.slug ?? "",
+    }))
+  );
 
-    return {
-      AvivGeoId: parent.id,
-      Code: parent.administrative_code ?? undefined,
-      IsFictive: parent.fictive ?? false,
-      Names: names,
-    };
+  return {
+    AvivGeoId: parent.id,
+    Code: parent.administrative_code ?? undefined,
+    IsFictive: parent.fictive ?? false,
+    Names: names,
   };
+};
 
 const updateDataInDynamoDB = async (id: string, marshalledData: Record<string, any>, tableName: string, versionValue: string): Promise<void> => {
   // Build UpdateExpression dynamically, excluding the partition key (AvivGeoId)
@@ -112,42 +112,47 @@ const updateDataInDynamoDB = async (id: string, marshalledData: Record<string, a
   }
 }
 
-const createOrUpdateGeo = async (id: string, data: any, classified: GeoManagementStructure): Promise<void> => {
-  const geoData = transformGeoManagementToGeo(classified);
+const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStructure): Promise<void> => {
+  const geoData = transformGeoManagementToGeo(geo);
 
   // Marshall the geodata to DynamoDB format
   let marshalledData = marshall(geoData, { removeUndefinedValues: true });
 
+  logger.info("Fetching geo hierarchy enrichment for classified", {
+    classifiedId: geo.id,
+    geoId: geoData.AvivGeoId
+  });
+
   try {
-   
-const avivGeoId = classified.id;
+
+    const avivGeoId = geo.id;
 
 
     const apisecrets = await getClassifiedApiSecret();
     const cliApi = createClient<paths>({
-        baseUrl: apisecrets.GeoPlaceApiUrl,
+      baseUrl: apisecrets.GeoPlaceApiUrl,
     })
 
     const myMiddleware: Middleware = {
-        async onRequest(req, options) {
-            req.headers.set("accept", "application/json");
-            req.headers.set("X-Api-Key", apisecrets.GeoPlaceApiKey);
-            return req;
-        }
+      async onRequest(req, options) {
+        req.headers.set("accept", "application/json");
+        req.headers.set("X-Api-Key", apisecrets.GeoPlaceApiKey);
+        return req;
+      }
     };
     cliApi.use(myMiddleware);
     const {
-        data, // only present if 2XX response
-        error, // only present if 4XX or 5XX response
+      data, // only present if 2XX response
+      error, // only present if 4XX or 5XX response
     } = await cliApi.GET("/places/{place_id}", {
-        params: {
-            path: { place_id: avivGeoId },
-        }
+      params: {
+        path: { place_id: avivGeoId },
+      }
     });
     if (error != null && error != undefined) {
 
-        throw new Error("API response error: " + JSON.stringify(error));
-        //logger.error("error while calling api geo for getGeoHierarchyEnrichmentById <<id " + avivGeoId + '>>  trace<<' + JSON.stringify(error) + '>>');
+      throw new Error("API response error: " + JSON.stringify(error));
+      //logger.error("error while calling api geo for getGeoHierarchyEnrichmentById <<id " + avivGeoId + '>>  trace<<' + JSON.stringify(error) + '>>');
     }
     if (data != null) {
       for (const parent of data.item.parents ?? []) {
@@ -175,10 +180,11 @@ const avivGeoId = classified.id;
       }
     }
 
-    
+
   } catch (error) {
     logger.error("error while calling api geo ", {
-      id: classified.id
+      id: geo.id,
+      error: JSON.stringify(error)
     });
 
   }
