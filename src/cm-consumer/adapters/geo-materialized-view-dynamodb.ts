@@ -131,7 +131,7 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
 
     const apisecrets = await getClassifiedApiSecret();
     const cliApi = createClient<paths>({
-      baseUrl: apisecrets.GeoPlaceApiUrl,
+      baseUrl: `${apisecrets.GeoPlaceApiUrl}/v1`,
     })
 
     logger.info("step 2 : set Middleware for api key", { apisecrets: apisecrets.GeoPlaceApiKey, baseUrl: apisecrets.GeoPlaceApiUrl });
@@ -155,7 +155,7 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
     const {
       data, // only present if 2XX response
       error, // only present if 4XX or 5XX response
-    } = await cliApi.GET("v1/places/{place_id}", {
+    } = await cliApi.GET("/places/{place_id}", {
       params: {
         path: { place_id: avivGeoId },
       }
