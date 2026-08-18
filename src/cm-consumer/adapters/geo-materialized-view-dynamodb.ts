@@ -2,9 +2,17 @@ import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { fromSSO } from "@aws-sdk/credential-provider-sso";
 import { logger } from "@shared/cross-cutting/logger";
-
+import { getClassifiedApiSecret } from "../adapters/classified-api-secrets";
+// import axios from 'axios';
 import { GeoManagementStructure } from "@models";
 import { transformGeoManagementToGeo } from "./geoMapper";
+import { paths, components } from '../../shared/models/geo-api';
+import createClient from 'openapi-fetch';
+import { GeoEntityBase, GeoName } from '../../shared/models/geo/1.0.0/geo';
+
+import { Middleware } from 'openapi-fetch';
+
+
 // Configuration du client DynamoDB avec SSO pour le développement local
 const isLocal = process.env.AWS_EXECUTION_ENV === undefined;
 
@@ -18,6 +26,28 @@ const ddbClient = new DynamoDBClient(
     }
     : {}
 );
+
+  const mapParentToGeoEntity = (parent: components["schemas"]["ParentFeature"]): GeoEntityBase | null => {
+    if (!parent.id) {
+      return null;
+    }
+
+    const names: GeoName[] = Object.entries(parent.names ?? {}).flatMap(([language, localizedNames]) =>
+      (localizedNames ?? []).map(name => ({
+        DisplayName: name.display_name ?? name.name ?? "",
+        Language: language,
+        Name: name.name ?? name.display_name ?? "",
+        Slug: name.slug ?? "",
+      }))
+    );
+
+    return {
+      AvivGeoId: parent.id,
+      Code: parent.administrative_code ?? undefined,
+      IsFictive: parent.fictive ?? false,
+      Names: names,
+    };
+  };
 
 const updateDataInDynamoDB = async (id: string, marshalledData: Record<string, any>, tableName: string, versionValue: string): Promise<void> => {
   // Build UpdateExpression dynamically, excluding the partition key (AvivGeoId)
@@ -74,7 +104,7 @@ const updateDataInDynamoDB = async (id: string, marshalledData: Record<string, a
     } else {
       logger.warn("Error While update / creating DynamoDB Record", {
         geoid: id,
-        Error : JSON.stringify(e)
+        Error: JSON.stringify(e)
       });
 
       throw e;
@@ -86,7 +116,75 @@ const createOrUpdateGeo = async (id: string, data: any, classified: GeoManagemen
   const geoData = transformGeoManagementToGeo(classified);
 
   // Marshall the geodata to DynamoDB format
-  const marshalledData = marshall(geoData, { removeUndefinedValues: true });
+  let marshalledData = marshall(geoData, { removeUndefinedValues: true });
+
+  try {
+   
+const avivGeoId = classified.id;
+
+
+    const apisecrets = await getClassifiedApiSecret();
+    const cliApi = createClient<paths>({
+        baseUrl: apisecrets.GeoPlaceApiUrl,
+    })
+
+    const myMiddleware: Middleware = {
+        async onRequest(req, options) {
+            req.headers.set("accept", "application/json");
+            req.headers.set("X-Api-Key", apisecrets.GeoPlaceApiKey);
+            return req;
+        }
+    };
+    cliApi.use(myMiddleware);
+    const {
+        data, // only present if 2XX response
+        error, // only present if 4XX or 5XX response
+    } = await cliApi.GET("/places/{place_id}", {
+        params: {
+            path: { place_id: avivGeoId },
+        }
+    });
+    if (error != null && error != undefined) {
+
+        throw new Error("API response error: " + JSON.stringify(error));
+        //logger.error("error while calling api geo for getGeoHierarchyEnrichmentById <<id " + avivGeoId + '>>  trace<<' + JSON.stringify(error) + '>>');
+    }
+    if (data != null) {
+      for (const parent of data.item.parents ?? []) {
+        const mappedParent = mapParentToGeoEntity(parent);
+
+        if (!mappedParent) {
+          continue;
+        }
+
+        switch (parent.type?.toLowerCase()) {
+          case "country":
+            geoData.Country = mappedParent;
+            break;
+          case "region":
+            geoData.Region = mappedParent;
+            break;
+          case "province":
+            geoData.Province = mappedParent;
+            break;
+          case "municipality":
+          case "city":
+            geoData.Municipality = mappedParent;
+            break;
+        }
+      }
+    }
+
+    
+  } catch (error) {
+    logger.error("error while calling api geo ", {
+      id: classified.id
+    });
+
+  }
+
+  marshalledData = marshall(geoData, { removeUndefinedValues: true });
+
 
   const tableName = isLocal ? "seo-ssot-classified-fifo" : process.env.MV_UPDATED_TABLE_NAME;
 

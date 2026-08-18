@@ -5,7 +5,7 @@
 
 
 export interface paths {
-  "/v1/health": {
+  "/health": {
     /**
      * Health Controller
      * @description Get API health status.
@@ -15,63 +15,103 @@ export interface paths {
      *
      * Service status may be `pass`, `warn` or `fail`.
      */
-    get: operations["health_controller_v1_health_get"];
+    get: operations["health_controller_health_get"];
   };
-  "/v1/places/{place_id}": {
+  "/places/geoms": {
+    /** Get Geom By Ids */
+    get: operations["get_geom_by_ids_places_geoms_get"];
+  };
+  "/places/{place_id}": {
     /** Get Feature By Id */
-    get: operations["get_feature_by_id_v1_places__place_id__get"];
+    get: operations["get_feature_by_id_places__place_id__get"];
   };
-  "/v1/places": {
+  "/places": {
     /** Get Feature By Ids */
-    get: operations["get_feature_by_ids_v1_places_get"];
+    get: operations["get_feature_by_ids_places_get"];
   };
-  "/v1/places/{place_id}/geom": {
+  "/places/{place_id}/geom": {
     /** Get Geom By Id */
-    get: operations["get_geom_by_id_v1_places__place_id__geom_get"];
+    get: operations["get_geom_by_id_places__place_id__geom_get"];
   };
-  "/v1/places/point/{longitude}/{latitude}": {
+  "/places/point/{longitude}/{latitude}": {
     /** Get Feature By Coordinates */
-    get: operations["get_feature_by_coordinates_v1_places_point__longitude___latitude__get"];
+    get: operations["get_feature_by_coordinates_places_point__longitude___latitude__get"];
   };
-  "/v1/places/radius/{longitude}/{latitude}/{radius}": {
+  "/places/radius/{longitude}/{latitude}/{radius}": {
     /** Get Feature By Circle */
-    get: operations["get_feature_by_circle_v1_places_radius__longitude___latitude___radius__get"];
+    get: operations["get_feature_by_circle_places_radius__longitude___latitude___radius__get"];
   };
-  "/v1/places/legacy/gsl-atlas/{atlas_id}": {
+  "/places/legacy/gsl-atlas/{atlas_id}": {
     /** Get Feature By Atlas Reference */
-    get: operations["get_feature_by_atlas_reference_v1_places_legacy_gsl_atlas__atlas_id__get"];
+    get: operations["get_feature_by_atlas_reference_places_legacy_gsl_atlas__atlas_id__get"];
   };
-  "/v1/places/legacy/gsl-places/{places_id}": {
+  "/places/legacy/gsl-places/{places_id}": {
     /** Get Feature By Places Reference */
-    get: operations["get_feature_by_places_reference_v1_places_legacy_gsl_places__places_id__get"];
+    get: operations["get_feature_by_places_reference_places_legacy_gsl_places__places_id__get"];
   };
-  "/v1/places/legacy/logicimmo/{logicimmo_id}": {
+  "/places/legacy/gsl-places-metadata/{metadata_key}/{metadata_type}": {
+    /** Get Feature By Places Metadata */
+    get: operations["get_feature_by_places_metadata_places_legacy_gsl_places_metadata__metadata_key___metadata_type__get"];
+  };
+  "/places/legacy/logicimmo/{logicimmo_id}": {
     /** Get Feature By Logicimmo Reference */
-    get: operations["get_feature_by_logicimmo_reference_v1_places_legacy_logicimmo__logicimmo_id__get"];
+    get: operations["get_feature_by_logicimmo_reference_places_legacy_logicimmo__logicimmo_id__get"];
   };
-  "/v1/places/legacy/immowelt/{immowelt_id}": {
+  "/places/legacy/immowelt/{immowelt_id}": {
     /** Get Feature By Immowelt Reference */
-    get: operations["get_feature_by_immowelt_reference_v1_places_legacy_immowelt__immowelt_id__get"];
+    get: operations["get_feature_by_immowelt_reference_places_legacy_immowelt__immowelt_id__get"];
   };
-  "/v1/places/legacy/immoweb/{immoweb_id}/{immoweb_type}": {
+  "/places/legacy/immowelt_geoid/{geoid_id}": {
+    /** Get Feature By Immowelt Geoid Reference */
+    get: operations["get_feature_by_immowelt_geoid_reference_places_legacy_immowelt_geoid__geoid_id__get"];
+  };
+  "/places/legacy/immoweb/{immoweb_id}/{immoweb_type}": {
     /** Get Feature By Immoweb Reference */
-    get: operations["get_feature_by_immoweb_reference_v1_places_legacy_immoweb__immoweb_id___immoweb_type__get"];
+    get: operations["get_feature_by_immoweb_reference_places_legacy_immoweb__immoweb_id___immoweb_type__get"];
   };
-  "/v1/places/legacy/meilleursagents/{ma_platform}/{ma_id}/{ma_type}": {
+  "/places/legacy/meilleursagents/{ma_platform}/{ma_id}/{ma_type}": {
     /** Get Feature By Meilleursagents Reference */
-    get: operations["get_feature_by_meilleursagents_reference_v1_places_legacy_meilleursagents__ma_platform___ma_id___ma_type__get"];
+    get: operations["get_feature_by_meilleursagents_reference_places_legacy_meilleursagents__ma_platform___ma_id___ma_type__get"];
   };
-  "/v1/relation/describe": {
+  "/places/external/iso-3166": {
+    /** Get Feature By Iso 3166 */
+    get: operations["get_feature_by_iso_3166_places_external_iso_3166_get"];
+  };
+  "/places/external/postal_code": {
+    /** Get Feature By Postal Code */
+    get: operations["get_feature_by_postal_code_places_external_postal_code_get"];
+  };
+  "/relation/describe": {
     /** Get Geo Layers Pyramid */
-    get: operations["get_geo_layers_pyramid_v1_relation_describe_get"];
+    get: operations["get_geo_layers_pyramid_relation_describe_get"];
   };
-  "/v1/relation/neighbors/{place_id}": {
+  "/relation/neighbors/{place_id}": {
     /** Get Neighbors */
-    get: operations["get_neighbors_v1_relation_neighbors__place_id__get"];
+    get: operations["get_neighbors_relation_neighbors__place_id__get"];
   };
-  "/v1/relation/{place_id}": {
+  "/relation/{place_id}": {
     /** Get Custom Relation */
-    get: operations["get_custom_relation_v1_relation__place_id__get"];
+    get: operations["get_custom_relation_relation__place_id__get"];
+  };
+  "/lineage": {
+    /** Get Lineage Entries */
+    get: operations["get_lineage_entries_lineage_get"];
+  };
+  "/business/random/address": {
+    /** Get Random Address */
+    get: operations["get_random_address_business_random_address_get"];
+  };
+  "/business/enrichment": {
+    /** Get Enrichment */
+    get: operations["get_enrichment_business_enrichment_get"];
+  };
+  "/history/{place_id}": {
+    /** Get History By Id */
+    get: operations["get_history_by_id_history__place_id__get"];
+  };
+  "/history": {
+    /** Get History */
+    get: operations["get_history_history_get"];
   };
 }
 
@@ -81,11 +121,21 @@ export interface components {
   schemas: {
     /** AtlasMapping */
     AtlasMapping: {
-      metric?: (components["schemas"]["MappingMetrics"] | null) | null;
+      metric?: components["schemas"]["MappingMetrics"] | null;
       /** Id */
-      id?: (string | null) | null;
+      id?: string | null;
       /** Type */
-      type?: (string | null) | null;
+      type?: string | null;
+      metadata?: components["schemas"]["AtlasMetadataMapping"] | null;
+    };
+    /** AtlasMetadataMapping */
+    AtlasMetadataMapping: {
+      /** Version */
+      version?: string | null;
+      /** Source Id */
+      source_id?: string | null;
+      /** Source Name */
+      source_name?: string | null;
     };
     /** Centroids */
     Centroids: {
@@ -94,8 +144,8 @@ export interface components {
       /** Lng */
       lng: number | null;
       centroid: components["schemas"]["Coordinates"];
-      point_on_surface?: (components["schemas"]["Coordinates"] | null) | null;
-      max_inscribed_circle?: (components["schemas"]["Coordinates"] | null) | null;
+      point_on_surface?: components["schemas"]["Coordinates"] | null;
+      max_inscribed_circle?: components["schemas"]["Coordinates"] | null;
     };
     /** Coordinates */
     Coordinates: {
@@ -103,6 +153,47 @@ export interface components {
       lat: number | null;
       /** Lng */
       lng: number | null;
+    };
+    /** CountryReleaseModel */
+    CountryReleaseModel: {
+      /**
+       * Release Date
+       * Format: date
+       * @default 2000-01-01
+       */
+      release_date?: string;
+    };
+    /** DisplayInfo */
+    DisplayInfo: {
+      /** Avivgeoid */
+      avivGeoId: string;
+      /** Countrycode */
+      countryCode: string;
+      /** Country */
+      country: {
+        [key: string]: string;
+      };
+      /** City */
+      city?: {
+        [key: string]: string;
+      } | null;
+      /** Postalcode */
+      postalCode?: string | null;
+      /** Neighborhood */
+      neighborhood?: {
+        [key: string]: string;
+      } | null;
+      /** Street */
+      street?: {
+        [key: string]: string;
+      } | null;
+      /** Housenumber */
+      houseNumber?: string | null;
+      /** Inscribedpolygon */
+      inscribedPolygon?: string | null;
+      /** Israndomised */
+      isRandomised: boolean;
+      coordinates: components["schemas"]["Coordinates"];
     };
     /** Duplicate */
     Duplicate: {
@@ -121,45 +212,68 @@ export interface components {
       list: components["schemas"]["Duplicate"][];
       highest: components["schemas"]["Duplicate"];
     };
+    /** EnrichmentResponse */
+    EnrichmentResponse: {
+      display: components["schemas"]["DisplayInfo"];
+      hierarchy: components["schemas"]["Hierarchy"];
+      schools?: components["schemas"]["Schools"] | null;
+      metadata: components["schemas"]["PlaceAPIMetadata"];
+      validatedCoordinates: components["schemas"]["Coordinates"] | null;
+    };
     /** Feature */
     Feature: {
       /** Id */
-      id?: (string | null) | null;
+      id?: string | null;
       /** Type */
-      type?: (string | null) | null;
+      type?: string | null;
       /** Type Key */
-      type_key?: (string | null) | null;
+      type_key?: string | null;
       /** Level */
-      level?: (number | null) | null;
+      level?: number | null;
       /** Active */
-      active?: (boolean | null) | null;
+      active?: boolean | null;
+      /** Fictive */
+      fictive?: boolean | null;
       /** Language */
-      language?: (string | null) | null;
+      language?: string | null;
       /** Names */
-      names?: ({
+      names?: {
         [key: string]: components["schemas"]["LocalizedName"][];
-      } | null) | null;
+      } | null;
       /** Administrative Code */
-      administrative_code?: (string | null) | null;
+      administrative_code?: string | null;
       /** Main Postal Code */
-      main_postal_code?: (string | null) | null;
+      main_postal_code?: string | null;
       /** Postal Codes */
-      postal_codes?: (string[] | null) | null;
+      postal_codes?: string[] | null;
       /** Area */
-      area?: (number | null) | null;
+      area?: number | null;
       coordinates: components["schemas"]["Centroids"];
       viewport: components["schemas"]["GeoRectangle"];
       bounding_box: components["schemas"]["GeoRectangle"];
       /** Weight */
-      weight?: (number | null) | null;
-      mapping?: (components["schemas"]["Mapping"] | null) | null;
-      duplicates?: (components["schemas"]["Duplicates"] | null) | null;
+      weight?: number | null;
+      mapping?: components["schemas"]["Mapping"] | null;
+      lineage?: components["schemas"]["Lineage"] | null;
+      duplicates?: components["schemas"]["Duplicates"] | null;
       /** Extra Properties */
-      extra_properties?: (Record<string, never> | null) | null;
-      subtype?: (components["schemas"]["PoiSubtype"] | null) | null;
+      extra_properties?: {
+        [key: string]: unknown;
+      } | null;
+      /** Subtype */
+      subtype?: components["schemas"]["PoiSubtype"] | components["schemas"]["GermanAD06Subtype"] | components["schemas"]["FrenchAD08Subtype"] | components["schemas"]["SchoolSubtype"] | null;
+      /** Active Since */
+      active_since?: string | null;
+      /** Deprecated Since */
+      deprecated_since?: string | null;
       /** Parents */
-      parents?: (components["schemas"]["ParentFeature"][] | null) | null;
+      parents?: components["schemas"]["ParentFeature"][] | null;
     };
+    /**
+     * FrenchAD08Subtype
+     * @enum {string}
+     */
+    FrenchAD08Subtype: "Ancienne Commune";
     /** GeoJSON */
     GeoJSON: {
       /** Type */
@@ -172,7 +286,7 @@ export interface components {
       /** Type */
       type: string;
       geometry: components["schemas"]["GeoJSON"];
-      properties: components["schemas"]["Properties"];
+      properties: components["schemas"]["Properties"] | null;
     };
     /** GeoLayer */
     GeoLayer: {
@@ -196,6 +310,11 @@ export interface components {
       ne: components["schemas"]["Coordinates"];
       sw: components["schemas"]["Coordinates"];
     };
+    /**
+     * GermanAD06Subtype
+     * @enum {string}
+     */
+    GermanAD06Subtype: "Stadtkreis" | "Landkreis";
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
@@ -211,12 +330,13 @@ export interface components {
       status: components["schemas"]["HealthEnum"];
       /**
        * Version
-       * @default 1.35.4
+       * @default 1.73.0
        */
       version?: string;
+      data_version?: components["schemas"]["ReleaseModel"] | null;
       /**
        * Blueprint Version
-       * @default 4.10.4
+       * @default 11.0.1
        */
       blueprint_version?: string;
       /** Settings */
@@ -234,51 +354,247 @@ export interface components {
       /** Error */
       error?: string | null;
     };
+    /** Hierarchy */
+    Hierarchy: {
+      /** Ad02 */
+      AD02?: components["schemas"]["HierarchyItem"][] | null;
+      /** Ad03 */
+      AD03?: components["schemas"]["HierarchyItem"][] | null;
+      /** Ad04 */
+      AD04?: components["schemas"]["HierarchyItem"][] | null;
+      /** Ad05 */
+      AD05?: components["schemas"]["HierarchyItem"][] | null;
+      /** Ad06 */
+      AD06?: components["schemas"]["HierarchyItem"][] | null;
+      /** Ad07 */
+      AD07?: components["schemas"]["HierarchyItem"][] | null;
+      /** Ad08 */
+      AD08?: components["schemas"]["HierarchyItem"][] | null;
+      /** Ad09 */
+      AD09?: components["schemas"]["HierarchyItem"][] | null;
+      /** Poco */
+      POCO?: components["schemas"]["HierarchyItem"][] | null;
+      /** Nbh1 */
+      NBH1?: components["schemas"]["HierarchyItem"][] | null;
+      /** Nbh2 */
+      NBH2?: components["schemas"]["HierarchyItem"][] | null;
+      /** Nbh3 */
+      NBH3?: components["schemas"]["HierarchyItem"][] | null;
+      /** Stu1 */
+      STU1?: components["schemas"]["HierarchyItem"][] | null;
+      /** Stu2 */
+      STU2?: components["schemas"]["HierarchyItem"][] | null;
+      /** Stu3 */
+      STU3?: components["schemas"]["HierarchyItem"][] | null;
+      /** Bloc */
+      BLOC?: components["schemas"]["HierarchyItem"][] | null;
+      /** Parc */
+      PARC?: components["schemas"]["HierarchyItem"][] | null;
+      /** Bild */
+      BILD?: components["schemas"]["HierarchyItem"][] | null;
+      /** Strt */
+      STRT?: components["schemas"]["HierarchyItem"][] | null;
+      /** Honu */
+      HONU?: components["schemas"]["HierarchyItem"][] | null;
+    };
+    /** HierarchyItem */
+    HierarchyItem: {
+      /** Id */
+      id: string;
+      /** Type */
+      type: string;
+      /** Level */
+      level: number;
+      /** Names */
+      names?: {
+        [key: string]: string;
+      } | null;
+      legacyMapping?: components["schemas"]["LegacyMapping"] | null;
+    };
+    /** History */
+    History: {
+      /** Id */
+      id: string;
+      type: components["schemas"]["HistoryType"];
+      current_feature: components["schemas"]["Feature"] | null;
+      platform: components["schemas"]["HistoryCountry"];
+      /**
+       * Release Date
+       * Format: date
+       */
+      release_date: string;
+      created?: components["schemas"]["HistoryCreated"] | null;
+      updated?: components["schemas"]["HistoryUpdated"] | null;
+      deleted?: components["schemas"]["HistoryDeleted"] | null;
+    };
+    /** HistoryAPIResponse */
+    HistoryAPIResponse: {
+      /** Items */
+      items: components["schemas"]["History"][];
+      metadata: components["schemas"]["PlaceAPIMetadata"];
+    };
+    /**
+     * HistoryCountry
+     * @enum {string}
+     */
+    HistoryCountry: "AT" | "BE" | "CH" | "DE" | "FR" | "MUNDO";
+    /** HistoryCreated */
+    HistoryCreated: {
+      /** Fallback */
+      fallback: components["schemas"]["HistoryFallbackLineage"][];
+    };
+    /** HistoryDeleted */
+    HistoryDeleted: {
+      /** Fallback */
+      fallback: components["schemas"]["HistoryFallbackLineage"][];
+    };
+    /** HistoryFallbackLineage */
+    HistoryFallbackLineage: {
+      /**
+       * Type
+       * @default LINEAGE
+       */
+      type?: string;
+      /** Descendant Id */
+      descendant_id: string;
+      /** Ancestor Id */
+      ancestor_id: string;
+    };
+    /**
+     * HistoryTablename
+     * @enum {string}
+     */
+    HistoryTablename: "attribute" | "geom" | "mapping" | "link";
+    /**
+     * HistoryType
+     * @enum {string}
+     */
+    HistoryType: "CREATED" | "DELETED" | "UPDATED";
+    /** HistoryUpdated */
+    HistoryUpdated: {
+      /** Impacted Data */
+      impacted_data: components["schemas"]["HistoryTablename"][];
+    };
     /** ImmowebMapping */
     ImmowebMapping: {
-      metric?: (components["schemas"]["MappingMetrics"] | null) | null;
+      metric?: components["schemas"]["MappingMetrics"] | null;
       /** Id */
-      id?: (string | null) | null;
+      id?: string | null;
       /** Type */
-      type?: (string | null) | null;
+      type?: string | null;
+      metadata?: components["schemas"]["ImmowebMetadataMapping"] | null;
+    };
+    /** ImmowebMetadataMapping */
+    ImmowebMetadataMapping: {
+      /** Provinces */
+      provinces?: string | null;
+      /** Districts */
+      districts?: string | null;
+      /** Postalcodes */
+      postalCodes?: string | null;
+    };
+    /** ImmoweltGeoidsMapping */
+    ImmoweltGeoidsMapping: {
+      metric?: components["schemas"]["MappingMetrics"] | null;
+      /** Id */
+      id?: string | null;
     };
     /** ImmoweltMapping */
     ImmoweltMapping: {
-      metric?: (components["schemas"]["MappingMetrics"] | null) | null;
+      metric?: components["schemas"]["MappingMetrics"] | null;
       /** Id */
-      id?: (string | null) | null;
+      id?: string | null;
       /** Type */
-      type?: (string | null) | null;
+      type?: string | null;
     };
     /**
      * ImmoweltTypeEnum
      * @enum {string}
      */
     ImmoweltTypeEnum: "locality" | "province" | "region" | "district";
+    /** Iso3166Mapping */
+    Iso3166Mapping: {
+      metric?: components["schemas"]["MappingMetrics"] | null;
+      /** Id */
+      id?: string | null;
+      /** Type */
+      type?: string | null;
+    };
+    /** LegacyMapping */
+    LegacyMapping: {
+      immowelt?: components["schemas"]["LegacyMappingItem"] | null;
+      meilleursagents?: components["schemas"]["LegacyMappingItem"] | null;
+      selogerPlaces?: components["schemas"]["LegacyMappingItem"] | null;
+    };
+    /** LegacyMappingItem */
+    LegacyMappingItem: {
+      /** Id */
+      id?: string | null;
+      /** Type */
+      type?: string | null;
+      /** Inseecodes */
+      inseeCodes?: number | null;
+    };
+    /** Lineage */
+    Lineage: {
+      /** Ancestors */
+      ancestors?: components["schemas"]["LineageElement"][] | null;
+      /** Descendants */
+      descendants?: components["schemas"]["LineageElement"][] | null;
+    };
+    /** LineageElement */
+    LineageElement: {
+      /** Descendant Id */
+      descendant_id: string;
+      /** Ancestor Id */
+      ancestor_id: string;
+      /** Coefficient */
+      coefficient: number;
+      /** Depth */
+      depth: number;
+      /** Active */
+      active: boolean;
+    };
+    /** LineageEntry */
+    LineageEntry: {
+      /** Descendant Id */
+      descendant_id: string | null;
+      /** Ancestor Id */
+      ancestor_id: string | null;
+      /** Coefficient */
+      coefficient: number;
+      /**
+       * Since
+       * Format: date-time
+       */
+      since: string;
+    };
     /** LocalizedName */
     LocalizedName: {
       /** Name */
-      name?: (string | null) | null;
+      name?: string | null;
       /** Display Name */
-      display_name?: (string | null) | null;
+      display_name?: string | null;
+      /** Slug */
+      slug?: string | null;
       /** Name Rank */
-      name_rank?: (number | null) | null;
+      name_rank?: number | null;
       /** Name Root */
-      name_root?: (string | null) | null;
+      name_root?: string | null;
       /** Name Prefix */
-      name_prefix?: (string | null) | null;
+      name_prefix?: string | null;
       /** Name Prepositions */
-      name_prepositions?: ({
+      name_prepositions?: {
         [key: string]: string;
-      } | null) | null;
+      } | null;
     };
     /** LogicimmoMapping */
     LogicimmoMapping: {
-      metric?: (components["schemas"]["MappingMetrics"] | null) | null;
+      metric?: components["schemas"]["MappingMetrics"] | null;
       /** Id */
-      id?: (string | null) | null;
+      id?: string | null;
       /** Type */
-      type?: (string | null) | null;
+      type?: string | null;
     };
     /**
      * MaTypeEnum
@@ -288,92 +604,127 @@ export interface components {
     /** Mapping */
     Mapping: {
       /** Atlas */
-      atlas?: (components["schemas"]["AtlasMapping"][] | null) | null;
+      atlas?: components["schemas"]["AtlasMapping"][] | null;
       /** Places */
-      places?: (components["schemas"]["PlacesMapping"][] | null) | null;
+      places?: components["schemas"]["PlacesMapping"][] | null;
       /** Immoweb */
-      immoweb?: (components["schemas"]["ImmowebMapping"][] | null) | null;
+      immoweb?: components["schemas"]["ImmowebMapping"][] | null;
       /** Immowelt */
-      immowelt?: (components["schemas"]["ImmoweltMapping"][] | null) | null;
+      immowelt?: components["schemas"]["ImmoweltMapping"][] | null;
       /** Logicimmo */
-      logicimmo?: (components["schemas"]["LogicimmoMapping"][] | null) | null;
+      logicimmo?: components["schemas"]["LogicimmoMapping"][] | null;
       /** Meilleursagents */
-      meilleursagents?: (components["schemas"]["MeilleursAgentsMapping"][] | null) | null;
+      meilleursagents?: components["schemas"]["MeilleursAgentsMapping"][] | null;
+      /** Iso3166 */
+      iso3166?: components["schemas"]["Iso3166Mapping"][] | null;
+      /** Immowelt-Geoids */
+      "immowelt-geoids"?: components["schemas"]["ImmoweltGeoidsMapping"][] | null;
     };
     /** MappingMetrics */
     MappingMetrics: {
-      /** Testname */
-      testname: string;
       /** Confidence */
       confidence: number;
+      /** Testname */
+      testname?: string | null;
     };
     /** MeilleursAgentsMapping */
     MeilleursAgentsMapping: {
-      metric?: (components["schemas"]["MappingMetrics"] | null) | null;
+      metric?: components["schemas"]["MappingMetrics"] | null;
       /** Id */
-      id?: (number | null) | null;
+      id?: number | null;
       /** Type */
-      type?: (string | null) | null;
+      type?: string | null;
       /** Platform */
-      platform?: (string | null) | null;
+      platform?: string | null;
     };
     /** ParentFeature */
     ParentFeature: {
       /** Id */
-      id?: (string | null) | null;
+      id?: string | null;
       /** Type */
-      type?: (string | null) | null;
+      type?: string | null;
       /** Type Key */
-      type_key?: (string | null) | null;
+      type_key?: string | null;
       /** Level */
-      level?: (number | null) | null;
+      level?: number | null;
       /** Active */
-      active?: (boolean | null) | null;
+      active?: boolean | null;
+      /** Fictive */
+      fictive?: boolean | null;
       /** Language */
-      language?: (string | null) | null;
+      language?: string | null;
       /** Names */
-      names?: ({
+      names?: {
         [key: string]: components["schemas"]["LocalizedName"][];
-      } | null) | null;
+      } | null;
       /** Administrative Code */
-      administrative_code?: (string | null) | null;
+      administrative_code?: string | null;
       /** Main Postal Code */
-      main_postal_code?: (string | null) | null;
+      main_postal_code?: string | null;
       /** Postal Codes */
-      postal_codes?: (string[] | null) | null;
+      postal_codes?: string[] | null;
       /** Area */
-      area?: (number | null) | null;
+      area?: number | null;
       coordinates: components["schemas"]["Centroids"];
       viewport: components["schemas"]["GeoRectangle"];
       bounding_box: components["schemas"]["GeoRectangle"];
       /** Weight */
-      weight?: (number | null) | null;
-      mapping?: (components["schemas"]["Mapping"] | null) | null;
-      duplicates?: (components["schemas"]["Duplicates"] | null) | null;
+      weight?: number | null;
+      mapping?: components["schemas"]["Mapping"] | null;
+      lineage?: components["schemas"]["Lineage"] | null;
+      duplicates?: components["schemas"]["Duplicates"] | null;
       /** Extra Properties */
-      extra_properties?: (Record<string, never> | null) | null;
-      subtype?: (components["schemas"]["PoiSubtype"] | null) | null;
+      extra_properties?: {
+        [key: string]: unknown;
+      } | null;
+      /** Subtype */
+      subtype?: components["schemas"]["PoiSubtype"] | components["schemas"]["GermanAD06Subtype"] | components["schemas"]["FrenchAD08Subtype"] | components["schemas"]["SchoolSubtype"] | null;
+      /** Active Since */
+      active_since?: string | null;
+      /** Deprecated Since */
+      deprecated_since?: string | null;
       /** Parents */
       parents?: null;
+    };
+    /** PlaceAPIDictResponse */
+    PlaceAPIDictResponse: {
+      /** Items */
+      items: {
+        [key: string]: components["schemas"]["Feature"][];
+      };
+      metadata: components["schemas"]["PlaceAPIMetadata"];
+    };
+    /** PlaceAPIGeoJSONMultiResponse */
+    PlaceAPIGeoJSONMultiResponse: {
+      /** Items */
+      items: components["schemas"]["GeoJSONResponse"][];
+      metadata: components["schemas"]["PlaceAPIMetadata"];
     };
     /** PlaceAPIGeoJSONResponse */
     PlaceAPIGeoJSONResponse: {
       result: components["schemas"]["GeoJSONResponse"];
       metadata: components["schemas"]["PlaceAPIMetadata"];
     };
+    /** PlaceAPILineageResponse */
+    PlaceAPILineageResponse: {
+      /** Items */
+      items: components["schemas"]["LineageEntry"][];
+      metadata: components["schemas"]["PlaceAPIMetadata"];
+    };
     /** PlaceAPIMetadata */
     PlaceAPIMetadata: {
       /** Query Duration */
-      query_duration?: (number | null) | null;
+      query_duration?: number | null;
       /** Next Page Keyset */
-      next_page_keyset?: (number | null) | null;
+      next_page_keyset?: number | null;
       /**
        * Count
        * @default 1
        */
       count?: number;
       /** Level Of Detail */
-      level_of_detail?: (number | null) | null;
+      level_of_detail?: number | null;
+      data_version?: components["schemas"]["ReleaseModel"] | null;
     };
     /** PlaceAPIMultiResponse */
     PlaceAPIMultiResponse: {
@@ -388,33 +739,35 @@ export interface components {
     };
     /** PlacesMapping */
     PlacesMapping: {
-      metric?: (components["schemas"]["MappingMetrics"] | null) | null;
+      metric?: components["schemas"]["MappingMetrics"] | null;
       /** Id */
-      id?: (string | null) | null;
+      id?: string | null;
       /** Type */
-      type?: (string | null) | null;
-      metadata?: (components["schemas"]["PlacesMetadataMapping"] | null) | null;
+      type?: string | null;
+      metadata?: components["schemas"]["PlacesMetadataMapping"] | null;
     };
     /** PlacesMetadataMapping */
     PlacesMetadataMapping: {
       /** Countries */
-      countries?: (number | null) | null;
+      countries?: number | null;
       /** Divisions */
-      divisions?: (number | null) | null;
+      divisions?: number | null;
       /** Subdivisions */
-      subDivisions?: (string | null) | null;
+      subDivisions?: string | null;
       /** Inseecodes */
-      inseeCodes?: (number | null) | null;
+      inseeCodes?: number | null;
       /** Districts */
-      districts?: (number | null) | null;
+      districts?: number | null;
     };
     /**
      * PoiSubtype
      * @enum {string}
      */
-    PoiSubtype: "GROCERY" | "GROCERY.MIXED" | "GROCERY.MIXED.LOCAL_STORE" | "GROCERY.MIXED.SUPERMARKET" | "GROCERY.MIXED.GENERAL_STORE" | "GROCERY.MIXED.WHOLESALE" | "GROCERY.MIXED.MARKETPLACE" | "GROCERY.SPECIALIZED" | "GROCERY.SPECIALIZED.BAKERY" | "GROCERY.SPECIALIZED.BUTCHER" | "GROCERY.SPECIALIZED.CHEESE" | "GROCERY.SPECIALIZED.CHOCOLATE" | "GROCERY.SPECIALIZED.COFFEE" | "GROCERY.SPECIALIZED.CONFECTIONERY" | "GROCERY.SPECIALIZED.DAIRY" | "GROCERY.SPECIALIZED.DELICATESSEN" | "GROCERY.SPECIALIZED.SHOP_FARM" | "GROCERY.SPECIALIZED.FROZEN_FOOD" | "GROCERY.SPECIALIZED.GREENGROCER" | "GROCERY.SPECIALIZED.HEALTH_FOOD" | "GROCERY.SPECIALIZED.ICECREAM" | "GROCERY.SPECIALIZED.PASTA" | "GROCERY.SPECIALIZED.PASTRY" | "GROCERY.SPECIALIZED.SEAFOOD" | "GROCERY.SPECIALIZED.SPICES" | "GROCERY.SPECIALIZED.TEA" | "GROCERY.DRINKS" | "GROCERY.DRINKS.ALCOHOL" | "GROCERY.DRINKS.BEVERAGES" | "GROCERY.DRINKS.WINE" | "GROCERY.DRINKS.WATER" | "HEALTH" | "HEALTH.ESTABLISHMENT" | "HEALTH.ESTABLISHMENT.CLINIC" | "HEALTH.ESTABLISHMENT.HOSPITAL" | "HEALTH.ESTABLISHMENT.LABORATORY" | "HEALTH.ESTABLISHMENT.SOCIAL_FACILITY" | "HEALTH.ESTABLISHMENT.NURSING_HOME" | "HEALTH.PRODUCT" | "HEALTH.PRODUCT.PHARMACY" | "HEALTH.PRODUCT.MEDICAL_SUPPLY" | "HEALTH.PRODUCT.OPTICIAN" | "HEALTH.PRODUCT.AUDIOLOGIST" | "HEALTH.SPECIALIST" | "HEALTH.SPECIALIST.DOCTOR" | "HEALTH.SPECIALIST.DENTIST" | "HEALTH.SPECIALIST.OPTOMETRIST" | "HEALTH.SPECIALIST.AUDIOLOGIST" | "HEALTH.SPECIALIST.MIDWIFE" | "HEALTH.SPECIALIST.NURSE" | "HEALTH.SPECIALIST.OCCUPATIONAL_THERAPIST" | "HEALTH.SPECIALIST.PHYSIOTHERAPIST" | "HEALTH.SPECIALIST.REHABILITATION" | "HEALTH.SPECIALIST.SPEECH_THERAPIST" | "HEALTH.SPECIALIST.ALTERNATIVE_MEDICINE" | "EDUCATION" | "EDUCATION.CORE" | "EDUCATION.CORE.KINDERGARTEN" | "EDUCATION.CORE.SCHOOL" | "EDUCATION.CORE.UNIVERSITY" | "EDUCATION.CORE.COLLEGE" | "EDUCATION.SKILLS_LEARNING" | "EDUCATION.SKILLS_LEARNING.DRIVING_SCHOOL" | "EDUCATION.SKILLS_LEARNING.MUSIC_SCHOOL" | "EDUCATION.SKILLS_LEARNING.LANGUAGE_SCHOOL" | "EDUCATION.SKILLS_LEARNING.SKILLS_TRAINING" | "EDUCATION.MATERIAL" | "EDUCATION.MATERIAL.LIBRARY" | "EDUCATION.MATERIAL.BOOK_SHOP" | "TRANSPORT" | "TRANSPORT.TRAIN" | "TRANSPORT.TRAIN.STATION" | "TRANSPORT.TRAIN.INTERCITY_LINE" | "TRANSPORT.TRAIN.HIGHSPEED_LINE" | "TRANSPORT.URBAN_TRAIN" | "TRANSPORT.URBAN_TRAIN.STATION" | "TRANSPORT.URBAN_TRAIN.LINE" | "TRANSPORT.SUBWAY" | "TRANSPORT.SUBWAY.STATION" | "TRANSPORT.SUBWAY.LINE" | "TRANSPORT.TRAM" | "TRANSPORT.TRAM.STATION" | "TRANSPORT.TRAM.LINE" | "TRANSPORT.BUS_STOP" | "SHOPPING" | "SHOPPING.LUXURY" | "SHOPPING.LUXURY.JEWELRY" | "SHOPPING.LUXURY.PERFUMERY" | "SHOPPING.LUXURY.WATCHES" | "SHOPPING.LUXURY.FASHION" | "SHOPPING.LUXURY.ART" | "SHOPPING.CLOTHING" | "SHOPPING.CLOTHING.CLOTHES" | "SHOPPING.CLOTHING.LEATHER" | "SHOPPING.CLOTHING.SHOES" | "SHOPPING.CLOTHING.BAG" | "SHOPPING.CLOTHING.FABRIC" | "SHOPPING.CARE" | "SHOPPING.CARE.HAIR_SUPPLY" | "SHOPPING.CARE.BEAUTY" | "SHOPPING.CARE.BABY_GOODS" | "SHOPPING.CARE.TATTOO" | "SHOPPING.MIXED" | "SHOPPING.MIXED.DRUGSTORE" | "SHOPPING.MIXED.SHOPPING_CENTER" | "SHOPPING.MIXED.STATIONERY" | "SHOPPING.MIXED.VARIETY_STORE" | "SHOPPING.LEISURE" | "SHOPPING.LEISURE.GIFTS" | "SHOPPING.LEISURE.PARTY" | "SHOPPING.LEISURE.TOYS" | "SHOPPING.LEISURE.SPORTS" | "SHOPPING.LEISURE.KIOSK" | "SHOPPING.LEISURE.CRAFT" | "SHOPPING.LEISURE.MUSIC" | "SHOPPING.LEISURE.CAMERA" | "SHOPPING.LEISURE.MOBILE" | "SHOPPING.LEISURE.COMPUTE" | "SHOPPING.LEISURE.VIDEO_GAMES" | "SHOPPING.LEISURE.EROTIC" | "SHOPPING.HOME" | "SHOPPING.HOME.APPLIANCE" | "SHOPPING.HOME.FURNITURE" | "SHOPPING.HOME.DECORATION" | "SHOPPING.HOME.SECOND_HAND" | "SHOPPING.HOME.ELECTRICAL" | "SHOPPING.HOME.HARDWARE" | "SHOPPING.HOME.MATERIAL" | "SHOPPING.HOME.PAINT" | "SHOPPING.HOME.GARDEN" | "SHOPPING.HOME.ENERGY" | "SHOPPING.VEHICLE" | "SHOPPING.VEHICLE.CAR" | "SHOPPING.VEHICLE.BICYCLE" | "SHOPPING.VEHICLE.CAR_PARTS" | "FACILITY" | "FACILITY.DIVERSE" | "FACILITY.DIVERSE.LAUNDRY" | "FACILITY.DIVERSE.TAILOR" | "FACILITY.DIVERSE.FLORIST" | "FACILITY.DIVERSE.LOCKSMITH" | "FACILITY.DIVERSE.PHOTOGRAPHER" | "FACILITY.DIVERSE.INTERNET_CAFE" | "FACILITY.DIVERSE.PRINTING" | "FACILITY.DIVERSE.SHOE_REPAIR" | "FACILITY.DIVERSE.REPAIR_SHOP" | "FACILITY.DIVERSE.COURIER" | "FACILITY.DIVERSE.TRAVEL_AGENCY" | "FACILITY.DIVERSE.EMPLOYMENT_AGENCY" | "FACILITY.CARE" | "FACILITY.CARE.MASSAGE" | "FACILITY.CARE.HAIRDRESSER" | "FACILITY.CARE.BEAUTY_PARLOR" | "FACILITY.CARE.SAUNA" | "FACILITY.CARE.TANNING_SALON" | "FACILITY.ARTISAN" | "FACILITY.ARTISAN.CARPENTER" | "FACILITY.ARTISAN.FLOORER" | "FACILITY.ARTISAN.MASON" | "FACILITY.ARTISAN.PLUMBER" | "FACILITY.ARTISAN.PAINTER" | "FACILITY.ARTISAN.ELECTRICIAN" | "FACILITY.ARTISAN.GARDENER" | "FACILITY.ARTISAN.CATERER" | "FACILITY.ARTISAN.ROOFER" | "FACILITY.ARTISAN.METAL_WORKER" | "FACILITY.WASTE" | "FACILITY.WASTE.RECYCLING" | "FACILITY.WASTE.WASTE_DISPOSAL" | "FACILITY.WASTE.WASTE_BASKET" | "FACILITY.PET" | "FACILITY.PET.VETERINARY" | "FACILITY.PET.PETSHOP" | "FACILITY.PET.GROOMING" | "FACILITY.PUBLIC_SERVICE" | "FACILITY.PUBLIC_SERVICE.TOWNHALL" | "FACILITY.PUBLIC_SERVICE.COURTHOUSE" | "FACILITY.PUBLIC_SERVICE.POLICE" | "FACILITY.PUBLIC_SERVICE.FIRESTATION" | "FACILITY.PUBLIC_SERVICE.POST_OFFICE" | "FACILITY.PUBLIC_SERVICE.PUBLIC_BATH" | "FACILITY.PUBLIC_SERVICE.PRISON" | "FACILITY.RESTING_PLACE" | "FACILITY.RESTING_PLACE.CEMETERY" | "FACILITY.RESTING_PLACE.GRAVEYARD" | "FACILITY.RESTING_PLACE.CREMATORIUM" | "FACILITY.RESTING_PLACE.FUNERAL_HALL" | "FACILITY.RESTING_PLACE.GRAVE" | "FACILITY.URBAN_PROPS" | "FACILITY.URBAN_PROPS.POST_BOX" | "FACILITY.URBAN_PROPS.PARCEL_LOCKER" | "FACILITY.URBAN_PROPS.VENDING_MACHINE" | "FACILITY.URBAN_PROPS.TELEPHONE" | "FACILITY.URBAN_PROPS.PHOTOBOOTH" | "FACILITY.URBAN_PROPS.WATER" | "FACILITY.URBAN_PROPS.SHELTER" | "FACILITY.URBAN_PROPS.SHOWER" | "FACILITY.URBAN_PROPS.TOILETS" | "FACILITY.URBAN_PROPS.DOG_TOILET" | "FACILITY.URBAN_PROPS.SEAT" | "FACILITY.URBAN_PROPS.TABLE" | "FACILITY.FINANCIAL" | "FACILITY.FINANCIAL.ATM" | "FACILITY.FINANCIAL.BANK" | "FACILITY.FINANCIAL.BUREAU_DE_CHANGE" | "FACILITY.VEHICLE" | "FACILITY.VEHICLE.CAR_REPAIR" | "FACILITY.VEHICLE.GARAGES" | "FACILITY.VEHICLE.BICYCLE_PARKING" | "FACILITY.VEHICLE.BICYCLE_REPAIR_STATION" | "FACILITY.VEHICLE.BICYCLE_RENTAL" | "FACILITY.VEHICLE.BOAT_RENTAL" | "FACILITY.VEHICLE.BOAT_SHARING" | "FACILITY.VEHICLE.CAR_WASH" | "FACILITY.VEHICLE.VEHICLE_INSPECTION" | "FACILITY.VEHICLE.CHARGING_STATION" | "FACILITY.VEHICLE.FUEL" | "FACILITY.VEHICLE.PARKING" | "FACILITY.VEHICLE.MOTORCYCLE_PARKING" | "FACILITY.EATING" | "FACILITY.EATING.RESTAURANT" | "FACILITY.EATING.FAST_FOOD" | "FACILITY.EATING.ICECREAM" | "FACILITY.DRINKING" | "FACILITY.DRINKING.CAFE" | "FACILITY.DRINKING.BAR" | "FACILITY.DRINKING.PUB" | "FACILITY.DRINKING.BIERGARDEN" | "FACILITY.ACCOMODATION" | "FACILITY.ACCOMODATION.HOTEL" | "FACILITY.ACCOMODATION.HOSTEL" | "FACILITY.ACCOMODATION.MOTEL" | "FACILITY.ACCOMODATION.CAMP_SITE" | "FACILITY.ACCOMODATION.TOURISM_APPARTMENT" | "LEISURE" | "LEISURE.CULTURE" | "LEISURE.CULTURE.CINEMA" | "LEISURE.CULTURE.MUSIC" | "LEISURE.CULTURE.THEATRE" | "LEISURE.CULTURE.DANCE" | "LEISURE.CULTURE.ARTS" | "LEISURE.CULTURE.MUSEUM" | "LEISURE.CULTURE.PLANETARIUM" | "LEISURE.CULTURE.GALLERY" | "LEISURE.CULTURE.EVENTS_VENUE" | "LEISURE.CULTURE.THEME_PARK" | "LEISURE.CULTURE.STADIUM" | "LEISURE.NIGHTLIFE" | "LEISURE.NIGHTLIFE.CASINO" | "LEISURE.NIGHTLIFE.NIGHTCLUB" | "LEISURE.NIGHTLIFE.GAMBLING" | "LEISURE.NIGHTLIFE.SEX" | "LEISURE.OUTDOOR" | "LEISURE.OUTDOOR.PARK" | "LEISURE.OUTDOOR.ZOO" | "LEISURE.OUTDOOR.SQUARE" | "LEISURE.OUTDOOR.SWIMMING_AREA" | "LEISURE.OUTDOOR.PICNIC_SITE" | "LEISURE.OUTDOOR.FITNESS" | "LEISURE.OUTDOOR.PLAYGROUND" | "LEISURE.OUTDOOR.RESORT" | "LEISURE.OUTDOOR.NATURE_RESERVE" | "LEISURE.OUTDOOR.FOREST" | "LEISURE.SPORT" | "LEISURE.SPORT.SPORTS_CENTRE" | "LEISURE.SPORT.SWIMMING_POOL" | "LEISURE.SPORT.GYM" | "LEISURE.SPORT.BASKETBALL" | "LEISURE.SPORT.BILLIARDS" | "LEISURE.SPORT.BOWLING" | "LEISURE.SPORT.BOXING" | "LEISURE.SPORT.CHESS" | "LEISURE.SPORT.CLIMBING" | "LEISURE.SPORT.CROSSFIT" | "LEISURE.SPORT.EQUESTRIAN" | "LEISURE.SPORT.FISHING" | "LEISURE.SPORT.FOOTBALL" | "LEISURE.SPORT.GOLF" | "LEISURE.SPORT.HANDBALL" | "LEISURE.SPORT.MARTIAL_ARTS" | "LEISURE.SPORT.MOTOCROSS" | "LEISURE.SPORT.SHOOTING" | "LEISURE.SPORT.SKIING" | "LEISURE.SPORT.TABLE_TENNIS" | "LEISURE.SPORT.TENNIS" | "LEISURE.SPORT.YOGA" | "HIGHLIGHT" | "HIGHLIGHT.RELIGION" | "HIGHLIGHT.RELIGION.MONASTERY" | "HIGHLIGHT.RELIGION.CHAPEL" | "HIGHLIGHT.RELIGION.CHURCH" | "HIGHLIGHT.RELIGION.CATHEDRAL" | "HIGHLIGHT.RELIGION.CROSS" | "HIGHLIGHT.RELIGION.SHRINE" | "HIGHLIGHT.RELIGION.WAYSIDE_SHRINE" | "HIGHLIGHT.RELIGION.MOSQUE" | "HIGHLIGHT.RELIGION.SYNAGOGE" | "HIGHLIGHT.LANDMARK" | "HIGHLIGHT.LANDMARK.ARCHEOLOGICAL" | "HIGHLIGHT.LANDMARK.BUNKER" | "HIGHLIGHT.LANDMARK.CASTLE" | "HIGHLIGHT.LANDMARK.CHARCOAL_PILE" | "HIGHLIGHT.LANDMARK.CITY_GATE" | "HIGHLIGHT.LANDMARK.CITY_WALL" | "HIGHLIGHT.LANDMARK.FOUNTAIN" | "HIGHLIGHT.LANDMARK.MEMORIAL" | "HIGHLIGHT.LANDMARK.MONUMENT" | "HIGHLIGHT.LANDMARK.MILESTONE" | "HIGHLIGHT.LANDMARK.MINE" | "HIGHLIGHT.LANDMARK.RUINS" | "HIGHLIGHT.LANDMARK.STATUE" | "ACTIVITY" | "ACTIVITY.GOVERNMENT" | "ACTIVITY.GOVERNMENT.OFFICE" | "ACTIVITY.GOVERNMENT.LEGISLATIVE" | "ACTIVITY.GOVERNMENT.EMBASSY" | "ACTIVITY.GOVERNMENT.CONSULATE" | "ACTIVITY.GOVERNMENT.TAX" | "ACTIVITY.GOVERNMENT.ADMINISTRATIVE" | "ACTIVITY.GOVERNMENT.MINISTRY" | "ACTIVITY.GOVERNMENT.CADASTRE" | "ACTIVITY.GOVERNMENT.AUDIT" | "ACTIVITY.GOVERNMENT.EMERGENCY" | "ACTIVITY.MILITARY" | "ACTIVITY.MILITARY.AREA" | "ACTIVITY.MILITARY.BASE" | "ACTIVITY.MILITARY.OFFICE" | "ACTIVITY.MILITARY.ACADEMY" | "ACTIVITY.MILITARY.TRAINING_AREA" | "ACTIVITY.MILITARY.AIRFIELD" | "ACTIVITY.POWER" | "ACTIVITY.POWER.COAL_PLANT" | "ACTIVITY.POWER.OIL_PLANT" | "ACTIVITY.POWER.GAS_PLANT" | "ACTIVITY.POWER.HYDRO_PLANT" | "ACTIVITY.POWER.BIOMASS_PLANT" | "ACTIVITY.POWER.NUCLEAR_PLANT" | "ACTIVITY.POWER.WASTE_PLANT" | "ACTIVITY.POWER.SOLARFARM" | "ACTIVITY.POWER.WINDFARM" | "ACTIVITY.INDUSTRY" | "ACTIVITY.INDUSTRY.OIL" | "ACTIVITY.INDUSTRY.GAS" | "ACTIVITY.INDUSTRY.QUARRY" | "ACTIVITY.INDUSTRY.MINE" | "ACTIVITY.INDUSTRY.WATER" | "ACTIVITY.INDUSTRY.DAM" | "ACTIVITY.INDUSTRY.SALTPOND" | "ACTIVITY.INDUSTRY.WASTE_WATER" | "ACTIVITY.INDUSTRY.WATER_TOWER" | "ACTIVITY.INDUSTRY.HARBOR" | "ACTIVITY.INDUSTRY.LOGISTICS" | "ACTIVITY.INDUSTRY.POST_DEPOT" | "ACTIVITY.INDUSTRY.BRICKYARD" | "ACTIVITY.INDUSTRY.DEPOT" | "ACTIVITY.INDUSTRY.SCRAP_YARD" | "ACTIVITY.INDUSTRY.SHIPYARD" | "ACTIVITY.INDUSTRY.MILL" | "ACTIVITY.INDUSTRY.BAKERY" | "ACTIVITY.INDUSTRY.SLAUGHTERHOUSE" | "ACTIVITY.INDUSTRY.FARM" | "ACTIVITY.SERVICE" | "ACTIVITY.SERVICE.ACCOUNTANT" | "ACTIVITY.SERVICE.ARCHITECT" | "ACTIVITY.SERVICE.ADVERTISING" | "ACTIVITY.SERVICE.CHAMBER" | "ACTIVITY.SERVICE.COMPANY" | "ACTIVITY.SERVICE.ENGINEER" | "ACTIVITY.SERVICE.LAWYER" | "ACTIVITY.SERVICE.LOGISTICS" | "ACTIVITY.SERVICE.NEWSPAPER" | "ACTIVITY.SERVICE.NOTARY" | "ACTIVITY.SERVICE.PUBLISHER" | "ACTIVITY.SERVICE.RESEARCH" | "ACTIVITY.SERVICE.STUDIO" | "ACTIVITY.SERVICE.SURVEYOR" | "ACTIVITY.SERVICE.TAX_ADVISOR";
+    PoiSubtype: "GROCERY" | "GROCERY.MIXED" | "GROCERY.MIXED.LOCAL_STORE" | "GROCERY.MIXED.SUPERMARKET" | "GROCERY.MIXED.GENERAL_STORE" | "GROCERY.MIXED.WHOLESALE" | "GROCERY.MIXED.MARKETPLACE" | "GROCERY.SPECIALIZED" | "GROCERY.SPECIALIZED.BAKERY" | "GROCERY.SPECIALIZED.BUTCHER" | "GROCERY.SPECIALIZED.CHEESE" | "GROCERY.SPECIALIZED.CHOCOLATE" | "GROCERY.SPECIALIZED.COFFEE" | "GROCERY.SPECIALIZED.CONFECTIONERY" | "GROCERY.SPECIALIZED.DAIRY" | "GROCERY.SPECIALIZED.DELICATESSEN" | "GROCERY.SPECIALIZED.SHOP_FARM" | "GROCERY.SPECIALIZED.FROZEN_FOOD" | "GROCERY.SPECIALIZED.GREENGROCER" | "GROCERY.SPECIALIZED.HEALTH_FOOD" | "GROCERY.SPECIALIZED.ICECREAM" | "GROCERY.SPECIALIZED.PASTA" | "GROCERY.SPECIALIZED.PASTRY" | "GROCERY.SPECIALIZED.SEAFOOD" | "GROCERY.SPECIALIZED.SPICES" | "GROCERY.SPECIALIZED.TEA" | "GROCERY.DRINKS" | "GROCERY.DRINKS.ALCOHOL" | "GROCERY.DRINKS.BEVERAGES" | "GROCERY.DRINKS.WINE" | "GROCERY.DRINKS.WATER" | "HEALTH" | "HEALTH.ESTABLISHMENT" | "HEALTH.ESTABLISHMENT.CLINIC" | "HEALTH.ESTABLISHMENT.HOSPITAL" | "HEALTH.ESTABLISHMENT.LABORATORY" | "HEALTH.ESTABLISHMENT.SOCIAL_FACILITY" | "HEALTH.ESTABLISHMENT.NURSING_HOME" | "HEALTH.PRODUCT" | "HEALTH.PRODUCT.PHARMACY" | "HEALTH.PRODUCT.MEDICAL_SUPPLY" | "HEALTH.PRODUCT.OPTICIAN" | "HEALTH.PRODUCT.AUDIOLOGIST" | "HEALTH.SPECIALIST" | "HEALTH.SPECIALIST.DOCTOR" | "HEALTH.SPECIALIST.DENTIST" | "HEALTH.SPECIALIST.OPTOMETRIST" | "HEALTH.SPECIALIST.AUDIOLOGIST" | "HEALTH.SPECIALIST.MIDWIFE" | "HEALTH.SPECIALIST.NURSE" | "HEALTH.SPECIALIST.OCCUPATIONAL_THERAPIST" | "HEALTH.SPECIALIST.PHYSIOTHERAPIST" | "HEALTH.SPECIALIST.REHABILITATION" | "HEALTH.SPECIALIST.SPEECH_THERAPIST" | "HEALTH.SPECIALIST.ALTERNATIVE_MEDICINE" | "EDUCATION" | "EDUCATION.CORE" | "EDUCATION.CORE.KINDERGARTEN" | "EDUCATION.CORE.SCHOOL" | "EDUCATION.CORE.UNIVERSITY" | "EDUCATION.CORE.COLLEGE" | "EDUCATION.SKILLS_LEARNING" | "EDUCATION.SKILLS_LEARNING.DRIVING_SCHOOL" | "EDUCATION.SKILLS_LEARNING.MUSIC_SCHOOL" | "EDUCATION.SKILLS_LEARNING.LANGUAGE_SCHOOL" | "EDUCATION.SKILLS_LEARNING.SKILLS_TRAINING" | "EDUCATION.MATERIAL" | "EDUCATION.MATERIAL.LIBRARY" | "EDUCATION.MATERIAL.BOOK_SHOP" | "TRANSPORT" | "TRANSPORT.TRAIN" | "TRANSPORT.TRAIN.STATION" | "TRANSPORT.TRAIN.INTERCITY_LINE" | "TRANSPORT.TRAIN.HIGHSPEED_LINE" | "TRANSPORT.URBAN_TRAIN" | "TRANSPORT.URBAN_TRAIN.STATION" | "TRANSPORT.URBAN_TRAIN.LINE" | "TRANSPORT.SUBWAY" | "TRANSPORT.SUBWAY.STATION" | "TRANSPORT.SUBWAY.LINE" | "TRANSPORT.TRAM" | "TRANSPORT.TRAM.STATION" | "TRANSPORT.TRAM.LINE" | "TRANSPORT.BUS_STOP" | "TRANSPORT.AIRPORT" | "TRANSPORT.AIRSTRIP" | "TRANSPORT.HELIPORT" | "TRANSPORT.FERRY" | "TRANSPORT.SEAPORT" | "TRANSPORT.LIGHTHOUSE" | "TRANSPORT.BRIDGE" | "SHOPPING" | "SHOPPING.LUXURY" | "SHOPPING.LUXURY.JEWELRY" | "SHOPPING.LUXURY.PERFUMERY" | "SHOPPING.LUXURY.WATCHES" | "SHOPPING.LUXURY.FASHION" | "SHOPPING.LUXURY.ART" | "SHOPPING.CLOTHING" | "SHOPPING.CLOTHING.CLOTHES" | "SHOPPING.CLOTHING.LEATHER" | "SHOPPING.CLOTHING.SHOES" | "SHOPPING.CLOTHING.BAG" | "SHOPPING.CLOTHING.FABRIC" | "SHOPPING.CARE" | "SHOPPING.CARE.HAIR_SUPPLY" | "SHOPPING.CARE.BEAUTY" | "SHOPPING.CARE.BABY_GOODS" | "SHOPPING.CARE.TATTOO" | "SHOPPING.MIXED" | "SHOPPING.MIXED.DRUGSTORE" | "SHOPPING.MIXED.SHOPPING_CENTER" | "SHOPPING.MIXED.STATIONERY" | "SHOPPING.MIXED.VARIETY_STORE" | "SHOPPING.LEISURE" | "SHOPPING.LEISURE.GIFTS" | "SHOPPING.LEISURE.PARTY" | "SHOPPING.LEISURE.TOYS" | "SHOPPING.LEISURE.SPORTS" | "SHOPPING.LEISURE.KIOSK" | "SHOPPING.LEISURE.CRAFT" | "SHOPPING.LEISURE.MUSIC" | "SHOPPING.LEISURE.CAMERA" | "SHOPPING.LEISURE.MOBILE" | "SHOPPING.LEISURE.COMPUTE" | "SHOPPING.LEISURE.VIDEO_GAMES" | "SHOPPING.LEISURE.EROTIC" | "SHOPPING.HOME" | "SHOPPING.HOME.APPLIANCE" | "SHOPPING.HOME.FURNITURE" | "SHOPPING.HOME.DECORATION" | "SHOPPING.HOME.SECOND_HAND" | "SHOPPING.HOME.ELECTRICAL" | "SHOPPING.HOME.HARDWARE" | "SHOPPING.HOME.MATERIAL" | "SHOPPING.HOME.PAINT" | "SHOPPING.HOME.GARDEN" | "SHOPPING.HOME.ENERGY" | "SHOPPING.VEHICLE" | "SHOPPING.VEHICLE.CAR" | "SHOPPING.VEHICLE.BICYCLE" | "SHOPPING.VEHICLE.CAR_PARTS" | "FACILITY" | "FACILITY.DIVERSE" | "FACILITY.DIVERSE.LAUNDRY" | "FACILITY.DIVERSE.TAILOR" | "FACILITY.DIVERSE.FLORIST" | "FACILITY.DIVERSE.LOCKSMITH" | "FACILITY.DIVERSE.PHOTOGRAPHER" | "FACILITY.DIVERSE.INTERNET_CAFE" | "FACILITY.DIVERSE.PRINTING" | "FACILITY.DIVERSE.SHOE_REPAIR" | "FACILITY.DIVERSE.REPAIR_SHOP" | "FACILITY.DIVERSE.COURIER" | "FACILITY.DIVERSE.TRAVEL_AGENCY" | "FACILITY.DIVERSE.EMPLOYMENT_AGENCY" | "FACILITY.CARE" | "FACILITY.CARE.MASSAGE" | "FACILITY.CARE.HAIRDRESSER" | "FACILITY.CARE.BEAUTY_PARLOR" | "FACILITY.CARE.SAUNA" | "FACILITY.CARE.TANNING_SALON" | "FACILITY.ARTISAN" | "FACILITY.ARTISAN.CARPENTER" | "FACILITY.ARTISAN.FLOORER" | "FACILITY.ARTISAN.MASON" | "FACILITY.ARTISAN.PLUMBER" | "FACILITY.ARTISAN.PAINTER" | "FACILITY.ARTISAN.ELECTRICIAN" | "FACILITY.ARTISAN.GARDENER" | "FACILITY.ARTISAN.CATERER" | "FACILITY.ARTISAN.ROOFER" | "FACILITY.ARTISAN.METAL_WORKER" | "FACILITY.WASTE" | "FACILITY.WASTE.RECYCLING" | "FACILITY.WASTE.WASTE_DISPOSAL" | "FACILITY.WASTE.WASTE_BASKET" | "FACILITY.PETS" | "FACILITY.PETS.VETERINARY" | "FACILITY.PETS.PETSHOP" | "FACILITY.PETS.GROOMING" | "FACILITY.PUBLIC_SERVICE" | "FACILITY.PUBLIC_SERVICE.TOWNHALL" | "FACILITY.PUBLIC_SERVICE.COURTHOUSE" | "FACILITY.PUBLIC_SERVICE.POLICE" | "FACILITY.PUBLIC_SERVICE.FIRESTATION" | "FACILITY.PUBLIC_SERVICE.POST_OFFICE" | "FACILITY.PUBLIC_SERVICE.PUBLIC_BATH" | "FACILITY.PUBLIC_SERVICE.PRISON" | "FACILITY.RESTING_PLACE" | "FACILITY.RESTING_PLACE.CEMETERY" | "FACILITY.RESTING_PLACE.GRAVEYARD" | "FACILITY.RESTING_PLACE.CREMATORIUM" | "FACILITY.RESTING_PLACE.FUNERAL_HALL" | "FACILITY.RESTING_PLACE.GRAVE" | "FACILITY.URBAN_PROPS" | "FACILITY.URBAN_PROPS.POST_BOX" | "FACILITY.URBAN_PROPS.PARCEL_LOCKER" | "FACILITY.URBAN_PROPS.VENDING_MACHINE" | "FACILITY.URBAN_PROPS.TELEPHONE" | "FACILITY.URBAN_PROPS.PHOTOBOOTH" | "FACILITY.URBAN_PROPS.WATER" | "FACILITY.URBAN_PROPS.SHELTER" | "FACILITY.URBAN_PROPS.SHOWER" | "FACILITY.URBAN_PROPS.TOILETS" | "FACILITY.URBAN_PROPS.DOG_TOILET" | "FACILITY.URBAN_PROPS.SEAT" | "FACILITY.URBAN_PROPS.TABLE" | "FACILITY.FINANCIAL" | "FACILITY.FINANCIAL.ATM" | "FACILITY.FINANCIAL.BANK" | "FACILITY.FINANCIAL.BUREAU_DE_CHANGE" | "FACILITY.VEHICLE" | "FACILITY.VEHICLE.CAR_REPAIR" | "FACILITY.VEHICLE.GARAGES" | "FACILITY.VEHICLE.BICYCLE_PARKING" | "FACILITY.VEHICLE.BICYCLE_REPAIR_STATION" | "FACILITY.VEHICLE.BICYCLE_RENTAL" | "FACILITY.VEHICLE.BOAT_RENTAL" | "FACILITY.VEHICLE.BOAT_SHARING" | "FACILITY.VEHICLE.CAR_WASH" | "FACILITY.VEHICLE.VEHICLE_INSPECTION" | "FACILITY.VEHICLE.CHARGING_STATION" | "FACILITY.VEHICLE.FUEL" | "FACILITY.VEHICLE.PARKING" | "FACILITY.VEHICLE.MOTORCYCLE_PARKING" | "FACILITY.EATING" | "FACILITY.EATING.RESTAURANT" | "FACILITY.EATING.FAST_FOOD" | "FACILITY.EATING.ICECREAM" | "FACILITY.DRINKING" | "FACILITY.DRINKING.CAFE" | "FACILITY.DRINKING.BAR" | "FACILITY.DRINKING.PUB" | "FACILITY.DRINKING.BIERGARDEN" | "FACILITY.ACCOMODATION" | "FACILITY.ACCOMODATION.HOTEL" | "FACILITY.ACCOMODATION.HOSTEL" | "FACILITY.ACCOMODATION.MOTEL" | "FACILITY.ACCOMODATION.CAMP_SITE" | "FACILITY.ACCOMODATION.TOURISM_APPARTMENT" | "LEISURE" | "LEISURE.CULTURE" | "LEISURE.CULTURE.CINEMA" | "LEISURE.CULTURE.MUSIC" | "LEISURE.CULTURE.THEATRE" | "LEISURE.CULTURE.DANCE" | "LEISURE.CULTURE.ARTS" | "LEISURE.CULTURE.MUSEUM" | "LEISURE.CULTURE.PLANETARIUM" | "LEISURE.CULTURE.GALLERY" | "LEISURE.CULTURE.EVENTS_VENUE" | "LEISURE.CULTURE.THEME_PARK" | "LEISURE.CULTURE.STADIUM" | "LEISURE.NIGHTLIFE" | "LEISURE.NIGHTLIFE.CASINO" | "LEISURE.NIGHTLIFE.NIGHTCLUB" | "LEISURE.NIGHTLIFE.GAMBLING" | "LEISURE.NIGHTLIFE.SEX" | "LEISURE.OUTDOOR" | "LEISURE.OUTDOOR.PARK" | "LEISURE.OUTDOOR.ZOO" | "LEISURE.OUTDOOR.SQUARE" | "LEISURE.OUTDOOR.SWIMMING_AREA" | "LEISURE.OUTDOOR.PICNIC_SITE" | "LEISURE.OUTDOOR.FITNESS" | "LEISURE.OUTDOOR.PLAYGROUND" | "LEISURE.OUTDOOR.RESORT" | "LEISURE.OUTDOOR.NATURE_RESERVE" | "LEISURE.OUTDOOR.FOREST" | "LEISURE.SPORT" | "LEISURE.SPORT.SPORTS_CENTRE" | "LEISURE.SPORT.SWIMMING_POOL" | "LEISURE.SPORT.GYM" | "LEISURE.SPORT.BASKETBALL" | "LEISURE.SPORT.BILLIARDS" | "LEISURE.SPORT.BOWLING" | "LEISURE.SPORT.BOXING" | "LEISURE.SPORT.CHESS" | "LEISURE.SPORT.CLIMBING" | "LEISURE.SPORT.CROSSFIT" | "LEISURE.SPORT.EQUESTRIAN" | "LEISURE.SPORT.FISHING" | "LEISURE.SPORT.FOOTBALL" | "LEISURE.SPORT.GOLF" | "LEISURE.SPORT.HANDBALL" | "LEISURE.SPORT.MARTIAL_ARTS" | "LEISURE.SPORT.MOTOCROSS" | "LEISURE.SPORT.SHOOTING" | "LEISURE.SPORT.SKIING" | "LEISURE.SPORT.TABLE_TENNIS" | "LEISURE.SPORT.TENNIS" | "LEISURE.SPORT.YOGA" | "HIGHLIGHT" | "HIGHLIGHT.RELIGION" | "HIGHLIGHT.RELIGION.MONASTERY" | "HIGHLIGHT.RELIGION.CHAPEL" | "HIGHLIGHT.RELIGION.CHURCH" | "HIGHLIGHT.RELIGION.CATHEDRAL" | "HIGHLIGHT.RELIGION.CROSS" | "HIGHLIGHT.RELIGION.SHRINE" | "HIGHLIGHT.RELIGION.WAYSIDE_SHRINE" | "HIGHLIGHT.RELIGION.MOSQUE" | "HIGHLIGHT.RELIGION.SYNAGOGE" | "HIGHLIGHT.LANDMARK" | "HIGHLIGHT.LANDMARK.ARCHEOLOGICAL" | "HIGHLIGHT.LANDMARK.BUNKER" | "HIGHLIGHT.LANDMARK.CASTLE" | "HIGHLIGHT.LANDMARK.CHARCOAL_PILE" | "HIGHLIGHT.LANDMARK.CITY_GATE" | "HIGHLIGHT.LANDMARK.CITY_WALL" | "HIGHLIGHT.LANDMARK.FOUNTAIN" | "HIGHLIGHT.LANDMARK.MEMORIAL" | "HIGHLIGHT.LANDMARK.MONUMENT" | "HIGHLIGHT.LANDMARK.MILESTONE" | "HIGHLIGHT.LANDMARK.MINE" | "HIGHLIGHT.LANDMARK.RUINS" | "HIGHLIGHT.LANDMARK.STATUE" | "ACTIVITY" | "ACTIVITY.GOVERNMENT" | "ACTIVITY.GOVERNMENT.OFFICE" | "ACTIVITY.GOVERNMENT.LEGISLATIVE" | "ACTIVITY.GOVERNMENT.EMBASSY" | "ACTIVITY.GOVERNMENT.CONSULATE" | "ACTIVITY.GOVERNMENT.TAX" | "ACTIVITY.GOVERNMENT.ADMINISTRATIVE" | "ACTIVITY.GOVERNMENT.MINISTRY" | "ACTIVITY.GOVERNMENT.CADASTRE" | "ACTIVITY.GOVERNMENT.AUDIT" | "ACTIVITY.GOVERNMENT.EMERGENCY" | "ACTIVITY.MILITARY" | "ACTIVITY.MILITARY.AREA" | "ACTIVITY.MILITARY.BASE" | "ACTIVITY.MILITARY.OFFICE" | "ACTIVITY.MILITARY.ACADEMY" | "ACTIVITY.MILITARY.TRAINING_AREA" | "ACTIVITY.MILITARY.AIRFIELD" | "ACTIVITY.POWER" | "ACTIVITY.POWER.COAL_PLANT" | "ACTIVITY.POWER.OIL_PLANT" | "ACTIVITY.POWER.GAS_PLANT" | "ACTIVITY.POWER.HYDRO_PLANT" | "ACTIVITY.POWER.BIOMASS_PLANT" | "ACTIVITY.POWER.NUCLEAR_PLANT" | "ACTIVITY.POWER.WASTE_PLANT" | "ACTIVITY.POWER.SOLARFARM" | "ACTIVITY.POWER.WINDFARM" | "ACTIVITY.INDUSTRY" | "ACTIVITY.INDUSTRY.OIL" | "ACTIVITY.INDUSTRY.GAS" | "ACTIVITY.INDUSTRY.QUARRY" | "ACTIVITY.INDUSTRY.MINE" | "ACTIVITY.INDUSTRY.WATER" | "ACTIVITY.INDUSTRY.DAM" | "ACTIVITY.INDUSTRY.SALTPOND" | "ACTIVITY.INDUSTRY.WASTE_WATER" | "ACTIVITY.INDUSTRY.WATER_TOWER" | "ACTIVITY.INDUSTRY.HARBOR" | "ACTIVITY.INDUSTRY.LOGISTICS" | "ACTIVITY.INDUSTRY.POST_DEPOT" | "ACTIVITY.INDUSTRY.BRICKYARD" | "ACTIVITY.INDUSTRY.DEPOT" | "ACTIVITY.INDUSTRY.SCRAP_YARD" | "ACTIVITY.INDUSTRY.SHIPYARD" | "ACTIVITY.INDUSTRY.MILL" | "ACTIVITY.INDUSTRY.BAKERY" | "ACTIVITY.INDUSTRY.SLAUGHTERHOUSE" | "ACTIVITY.INDUSTRY.FARM" | "ACTIVITY.SERVICE" | "ACTIVITY.SERVICE.ACCOUNTANT" | "ACTIVITY.SERVICE.ARCHITECT" | "ACTIVITY.SERVICE.ADVERTISING" | "ACTIVITY.SERVICE.CHAMBER" | "ACTIVITY.SERVICE.COMPANY" | "ACTIVITY.SERVICE.ENGINEER" | "ACTIVITY.SERVICE.LAWYER" | "ACTIVITY.SERVICE.LOGISTICS" | "ACTIVITY.SERVICE.NEWSPAPER" | "ACTIVITY.SERVICE.NOTARY" | "ACTIVITY.SERVICE.PUBLISHER" | "ACTIVITY.SERVICE.RESEARCH" | "ACTIVITY.SERVICE.STUDIO" | "ACTIVITY.SERVICE.SURVEYOR" | "ACTIVITY.SERVICE.TAX_ADVISOR";
     /** Properties */
     Properties: {
+      /** Id */
+      id: string;
       coordinates: components["schemas"]["Centroids"];
       viewport: components["schemas"]["GeoRectangle"];
       maximized_viewport: components["schemas"]["GeoRectangle"];
@@ -425,6 +778,75 @@ export interface components {
       /** Layers */
       layers: components["schemas"]["GeoLayer"][];
     };
+    /** ReleaseModel */
+    ReleaseModel: {
+      AT: components["schemas"]["CountryReleaseModel"];
+      BE: components["schemas"]["CountryReleaseModel"];
+      CH: components["schemas"]["CountryReleaseModel"];
+      DE: components["schemas"]["CountryReleaseModel"];
+      FR: components["schemas"]["CountryReleaseModel"];
+      MUNDO: components["schemas"]["CountryReleaseModel"];
+    };
+    /** RoutingItem */
+    RoutingItem: {
+      /** Travel Mode */
+      travel_mode: string;
+      /** Travel Time S */
+      travel_time_s?: number | null;
+      /** Travel Distance Km */
+      travel_distance_km?: number | null;
+    };
+    /** SchoolAddress */
+    SchoolAddress: {
+      /** Address */
+      address?: string | null;
+      /** Municipality */
+      municipality?: string | null;
+      /** Postal Code */
+      postal_code?: string | null;
+    };
+    /** SchoolItem */
+    SchoolItem: {
+      /** Id */
+      id: string;
+      /** Names */
+      names?: {
+        [key: string]: string;
+      } | null;
+      /** Source */
+      source: string;
+      /** Distance Km */
+      distance_km?: number | null;
+      coordinates?: components["schemas"]["Coordinates"] | null;
+      /** Status */
+      status?: string | null;
+      /** Isced Level */
+      isced_level?: string[] | null;
+      origin_address?: components["schemas"]["SchoolAddress"] | null;
+      /** Statistics */
+      statistics?: components["schemas"]["StatisticItem"][] | null;
+      /** Routing */
+      routing?: components["schemas"]["RoutingItem"][] | null;
+    };
+    /**
+     * SchoolSubtype
+     * @enum {string}
+     */
+    SchoolSubtype: "HIGH_SCHOOL" | "SECONDARY_SCHOOL" | "PRIMARY_SCHOOL";
+    /** Schools */
+    Schools: {
+      /** Primary School */
+      PRIMARY_SCHOOL?: components["schemas"]["SchoolItem"][] | null;
+      /** Secondary School */
+      SECONDARY_SCHOOL?: components["schemas"]["SchoolItem"][] | null;
+      /** High School */
+      HIGH_SCHOOL?: components["schemas"]["SchoolItem"][] | null;
+    };
+    /**
+     * SeLogerMetadataTypeEnum
+     * @enum {string}
+     */
+    SeLogerMetadataTypeEnum: "countries" | "divisions" | "subDivisions" | "inseeCodes" | "districts";
     /**
      * SortOrder
      * @enum {string}
@@ -435,11 +857,22 @@ export interface components {
      * @enum {string}
      */
     SortType: "id" | "name" | "administrative_code" | "weight";
+    /** StatisticItem */
+    StatisticItem: {
+      /** Name */
+      name: string;
+      /** Value */
+      value?: unknown;
+      /** Vintage Year */
+      vintage_year?: number | null;
+      /** Provider */
+      provider?: string | null;
+    };
     /**
      * TypeKeyEnum
      * @enum {string}
      */
-    TypeKeyEnum: "AD02" | "AD03" | "AD04" | "AD05" | "AD06" | "AD07" | "AD08" | "POCO" | "AD09" | "NBH1" | "STU1" | "NBH2" | "STU2" | "NBH3" | "STU3" | "STRT" | "BLOC" | "PARC" | "BILD" | "HONU" | "POFI";
+    TypeKeyEnum: "AD02" | "AD03" | "AD04" | "AD05" | "AD06" | "AD07" | "AD08" | "POCO" | "AD09" | "NBH1" | "STU1" | "NBH2" | "STU2" | "NBH3" | "STU3" | "STRT" | "BLOC" | "PARC" | "BILD" | "HONU" | "POFI" | "SKOL";
     /** ValidationError */
     ValidationError: {
       /** Location */
@@ -470,7 +903,7 @@ export interface operations {
    *
    * Service status may be `pass`, `warn` or `fail`.
    */
-  health_controller_v1_health_get: {
+  health_controller_health_get: {
     responses: {
       /** @description Successful Response */
       200: {
@@ -516,8 +949,77 @@ export interface operations {
       };
     };
   };
+  /** Get Geom By Ids */
+  get_geom_by_ids_places_geoms_get: {
+    parameters: {
+      query: {
+        /** @description List of PlaceId to look for. */
+        place_ids: string[];
+        /** @description The level of detail you want to retrieve the geometry in. 18 is the most detailed and the heaviest, 4 is the least detailed and the lightest. */
+        level_of_detail?: number | null;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PlaceAPIGeoJSONMultiResponse"];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        content: never;
+      };
+      /**
+       * @description
+       * Can happen if :
+       * - you use an invalid ApiKey ([here to have the apikey](https://avivgroup.atlassian.net/wiki/spaces/AGRS/pages/248876591/Request+your+AVIV+Geo+Services+or+Mapbox+API+key+here))
+       * - your access is not allowed by the [WAF](https://avivgroup.atlassian.net/wiki/spaces/AEP/pages/205758886/AWS+WAF) (ex: not from the VPN)
+       * - your request is not allowed by a [WAF](https://avivgroup.atlassian.net/wiki/spaces/AEP/pages/205758886/AWS+WAF) security rule (ex: SQL injection protection)
+       */
+      403: {
+        content: {
+          "text/html": string;
+        };
+      };
+      /** @description Not Found */
+      404: {
+        content: never;
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+      /** @description Raised in case of network issue with AWS API Gateway, must be ephemeral. */
+      502: {
+        content: {
+          "application/json": {
+            /**
+             * Format: string
+             * @example Bad gateway
+             */
+            message?: string;
+          };
+        };
+      };
+      /** @description Raised in case of network issue with AWS API Gateway, must be ephemeral. */
+      504: {
+        content: {
+          "application/json": {
+            /**
+             * Format: string
+             * @example Network error communicating with endpoint
+             */
+            message?: string;
+          };
+        };
+      };
+    };
+  };
   /** Get Feature By Id */
-  get_feature_by_id_v1_places__place_id__get: {
+  get_feature_by_id_places__place_id__get: {
     parameters: {
       path: {
         /** @description The id of the place, in format <type><country><index>, see available types on /relation/describe */
@@ -584,13 +1086,13 @@ export interface operations {
     };
   };
   /** Get Feature By Ids */
-  get_feature_by_ids_v1_places_get: {
+  get_feature_by_ids_places_get: {
     parameters: {
       query: {
         /** @description List of PlaceId to look for. */
         place_ids: string[];
         /** @description You can choose which parents you will retrieve, to see available types you can consume /relation/describe endpoint. */
-        parent_types?: AD02 | AD03 | AD04 | AD05 | AD06 | AD07 | AD08 | POCO | AD09 | NBH1 | STU1 | NBH2 | STU2 | NBH3 | STU3 | STRT | BLOC | PARC | BILD | HONU | POFI;
+        parent_types?: AD02 | AD03 | AD04 | AD05 | AD06 | AD07 | AD08 | POCO | AD09 | NBH1 | STU1 | NBH2 | STU2 | NBH3 | STU3 | STRT | BLOC | PARC | BILD | HONU | POFI | SKOL;
       };
     };
     responses: {
@@ -653,11 +1155,11 @@ export interface operations {
     };
   };
   /** Get Geom By Id */
-  get_geom_by_id_v1_places__place_id__geom_get: {
+  get_geom_by_id_places__place_id__geom_get: {
     parameters: {
       query?: {
         /** @description The level of detail you want to retrieve the geometry in. 18 is the most detailed and the heaviest, 4 is the least detailed and the lightest. */
-        level_of_detail?: number;
+        level_of_detail?: number | null;
       };
       path: {
         /** @description The id of the place, in format <type><country><index>, see available types on /relation/describe */
@@ -724,11 +1226,11 @@ export interface operations {
     };
   };
   /** Get Feature By Coordinates */
-  get_feature_by_coordinates_v1_places_point__longitude___latitude__get: {
+  get_feature_by_coordinates_places_point__longitude___latitude__get: {
     parameters: {
       query?: {
         /** @description You can choose which parents you will retrieve, to see available types you can consume /relation/describe endpoint. */
-        parent_types?: AD02 | AD03 | AD04 | AD05 | AD06 | AD07 | AD08 | POCO | AD09 | NBH1 | STU1 | NBH2 | STU2 | NBH3 | STU3 | STRT | BLOC | PARC | BILD | HONU | POFI;
+        parent_types?: AD02 | AD03 | AD04 | AD05 | AD06 | AD07 | AD08 | POCO | AD09 | NBH1 | STU1 | NBH2 | STU2 | NBH3 | STU3 | STRT | BLOC | PARC | BILD | HONU | POFI | SKOL;
       };
       path: {
         /** @description Longitude */
@@ -793,15 +1295,15 @@ export interface operations {
     };
   };
   /** Get Feature By Circle */
-  get_feature_by_circle_v1_places_radius__longitude___latitude___radius__get: {
+  get_feature_by_circle_places_radius__longitude___latitude___radius__get: {
     parameters: {
       query: {
         /** @description You can choose which parents you will retrieve, to see available types you can consume /relation/describe endpoint. */
-        parent_types?: AD02 | AD03 | AD04 | AD05 | AD06 | AD07 | AD08 | POCO | AD09 | NBH1 | STU1 | NBH2 | STU2 | NBH3 | STU3 | STRT | BLOC | PARC | BILD | HONU | POFI;
+        parent_types?: AD02 | AD03 | AD04 | AD05 | AD06 | AD07 | AD08 | POCO | AD09 | NBH1 | STU1 | NBH2 | STU2 | NBH3 | STU3 | STRT | BLOC | PARC | BILD | HONU | POFI | SKOL;
         /** @description The place type you want to use, to see available types you can consume /relation/describe endpoint. */
         place_type: components["schemas"]["TypeKeyEnum"];
         /** @description The subtypes you want to use depending type.to see available types you can consume /relation/describe endpoint. */
-        subtypes?: GROCERY | GROCERY.MIXED | GROCERY.MIXED.LOCAL_STORE | GROCERY.MIXED.SUPERMARKET | GROCERY.MIXED.GENERAL_STORE | GROCERY.MIXED.WHOLESALE | GROCERY.MIXED.MARKETPLACE | GROCERY.SPECIALIZED | GROCERY.SPECIALIZED.BAKERY | GROCERY.SPECIALIZED.BUTCHER | GROCERY.SPECIALIZED.CHEESE | GROCERY.SPECIALIZED.CHOCOLATE | GROCERY.SPECIALIZED.COFFEE | GROCERY.SPECIALIZED.CONFECTIONERY | GROCERY.SPECIALIZED.DAIRY | GROCERY.SPECIALIZED.DELICATESSEN | GROCERY.SPECIALIZED.SHOP_FARM | GROCERY.SPECIALIZED.FROZEN_FOOD | GROCERY.SPECIALIZED.GREENGROCER | GROCERY.SPECIALIZED.HEALTH_FOOD | GROCERY.SPECIALIZED.ICECREAM | GROCERY.SPECIALIZED.PASTA | GROCERY.SPECIALIZED.PASTRY | GROCERY.SPECIALIZED.SEAFOOD | GROCERY.SPECIALIZED.SPICES | GROCERY.SPECIALIZED.TEA | GROCERY.DRINKS | GROCERY.DRINKS.ALCOHOL | GROCERY.DRINKS.BEVERAGES | GROCERY.DRINKS.WINE | GROCERY.DRINKS.WATER | HEALTH | HEALTH.ESTABLISHMENT | HEALTH.ESTABLISHMENT.CLINIC | HEALTH.ESTABLISHMENT.HOSPITAL | HEALTH.ESTABLISHMENT.LABORATORY | HEALTH.ESTABLISHMENT.SOCIAL_FACILITY | HEALTH.ESTABLISHMENT.NURSING_HOME | HEALTH.PRODUCT | HEALTH.PRODUCT.PHARMACY | HEALTH.PRODUCT.MEDICAL_SUPPLY | HEALTH.PRODUCT.OPTICIAN | HEALTH.PRODUCT.AUDIOLOGIST | HEALTH.SPECIALIST | HEALTH.SPECIALIST.DOCTOR | HEALTH.SPECIALIST.DENTIST | HEALTH.SPECIALIST.OPTOMETRIST | HEALTH.SPECIALIST.AUDIOLOGIST | HEALTH.SPECIALIST.MIDWIFE | HEALTH.SPECIALIST.NURSE | HEALTH.SPECIALIST.OCCUPATIONAL_THERAPIST | HEALTH.SPECIALIST.PHYSIOTHERAPIST | HEALTH.SPECIALIST.REHABILITATION | HEALTH.SPECIALIST.SPEECH_THERAPIST | HEALTH.SPECIALIST.ALTERNATIVE_MEDICINE | EDUCATION | EDUCATION.CORE | EDUCATION.CORE.KINDERGARTEN | EDUCATION.CORE.SCHOOL | EDUCATION.CORE.UNIVERSITY | EDUCATION.CORE.COLLEGE | EDUCATION.SKILLS_LEARNING | EDUCATION.SKILLS_LEARNING.DRIVING_SCHOOL | EDUCATION.SKILLS_LEARNING.MUSIC_SCHOOL | EDUCATION.SKILLS_LEARNING.LANGUAGE_SCHOOL | EDUCATION.SKILLS_LEARNING.SKILLS_TRAINING | EDUCATION.MATERIAL | EDUCATION.MATERIAL.LIBRARY | EDUCATION.MATERIAL.BOOK_SHOP | TRANSPORT | TRANSPORT.TRAIN | TRANSPORT.TRAIN.STATION | TRANSPORT.TRAIN.INTERCITY_LINE | TRANSPORT.TRAIN.HIGHSPEED_LINE | TRANSPORT.URBAN_TRAIN | TRANSPORT.URBAN_TRAIN.STATION | TRANSPORT.URBAN_TRAIN.LINE | TRANSPORT.SUBWAY | TRANSPORT.SUBWAY.STATION | TRANSPORT.SUBWAY.LINE | TRANSPORT.TRAM | TRANSPORT.TRAM.STATION | TRANSPORT.TRAM.LINE | TRANSPORT.BUS_STOP | SHOPPING | SHOPPING.LUXURY | SHOPPING.LUXURY.JEWELRY | SHOPPING.LUXURY.PERFUMERY | SHOPPING.LUXURY.WATCHES | SHOPPING.LUXURY.FASHION | SHOPPING.LUXURY.ART | SHOPPING.CLOTHING | SHOPPING.CLOTHING.CLOTHES | SHOPPING.CLOTHING.LEATHER | SHOPPING.CLOTHING.SHOES | SHOPPING.CLOTHING.BAG | SHOPPING.CLOTHING.FABRIC | SHOPPING.CARE | SHOPPING.CARE.HAIR_SUPPLY | SHOPPING.CARE.BEAUTY | SHOPPING.CARE.BABY_GOODS | SHOPPING.CARE.TATTOO | SHOPPING.MIXED | SHOPPING.MIXED.DRUGSTORE | SHOPPING.MIXED.SHOPPING_CENTER | SHOPPING.MIXED.STATIONERY | SHOPPING.MIXED.VARIETY_STORE | SHOPPING.LEISURE | SHOPPING.LEISURE.GIFTS | SHOPPING.LEISURE.PARTY | SHOPPING.LEISURE.TOYS | SHOPPING.LEISURE.SPORTS | SHOPPING.LEISURE.KIOSK | SHOPPING.LEISURE.CRAFT | SHOPPING.LEISURE.MUSIC | SHOPPING.LEISURE.CAMERA | SHOPPING.LEISURE.MOBILE | SHOPPING.LEISURE.COMPUTE | SHOPPING.LEISURE.VIDEO_GAMES | SHOPPING.LEISURE.EROTIC | SHOPPING.HOME | SHOPPING.HOME.APPLIANCE | SHOPPING.HOME.FURNITURE | SHOPPING.HOME.DECORATION | SHOPPING.HOME.SECOND_HAND | SHOPPING.HOME.ELECTRICAL | SHOPPING.HOME.HARDWARE | SHOPPING.HOME.MATERIAL | SHOPPING.HOME.PAINT | SHOPPING.HOME.GARDEN | SHOPPING.HOME.ENERGY | SHOPPING.VEHICLE | SHOPPING.VEHICLE.CAR | SHOPPING.VEHICLE.BICYCLE | SHOPPING.VEHICLE.CAR_PARTS | FACILITY | FACILITY.DIVERSE | FACILITY.DIVERSE.LAUNDRY | FACILITY.DIVERSE.TAILOR | FACILITY.DIVERSE.FLORIST | FACILITY.DIVERSE.LOCKSMITH | FACILITY.DIVERSE.PHOTOGRAPHER | FACILITY.DIVERSE.INTERNET_CAFE | FACILITY.DIVERSE.PRINTING | FACILITY.DIVERSE.SHOE_REPAIR | FACILITY.DIVERSE.REPAIR_SHOP | FACILITY.DIVERSE.COURIER | FACILITY.DIVERSE.TRAVEL_AGENCY | FACILITY.DIVERSE.EMPLOYMENT_AGENCY | FACILITY.CARE | FACILITY.CARE.MASSAGE | FACILITY.CARE.HAIRDRESSER | FACILITY.CARE.BEAUTY_PARLOR | FACILITY.CARE.SAUNA | FACILITY.CARE.TANNING_SALON | FACILITY.ARTISAN | FACILITY.ARTISAN.CARPENTER | FACILITY.ARTISAN.FLOORER | FACILITY.ARTISAN.MASON | FACILITY.ARTISAN.PLUMBER | FACILITY.ARTISAN.PAINTER | FACILITY.ARTISAN.ELECTRICIAN | FACILITY.ARTISAN.GARDENER | FACILITY.ARTISAN.CATERER | FACILITY.ARTISAN.ROOFER | FACILITY.ARTISAN.METAL_WORKER | FACILITY.WASTE | FACILITY.WASTE.RECYCLING | FACILITY.WASTE.WASTE_DISPOSAL | FACILITY.WASTE.WASTE_BASKET | FACILITY.PET | FACILITY.PET.VETERINARY | FACILITY.PET.PETSHOP | FACILITY.PET.GROOMING | FACILITY.PUBLIC_SERVICE | FACILITY.PUBLIC_SERVICE.TOWNHALL | FACILITY.PUBLIC_SERVICE.COURTHOUSE | FACILITY.PUBLIC_SERVICE.POLICE | FACILITY.PUBLIC_SERVICE.FIRESTATION | FACILITY.PUBLIC_SERVICE.POST_OFFICE | FACILITY.PUBLIC_SERVICE.PUBLIC_BATH | FACILITY.PUBLIC_SERVICE.PRISON | FACILITY.RESTING_PLACE | FACILITY.RESTING_PLACE.CEMETERY | FACILITY.RESTING_PLACE.GRAVEYARD | FACILITY.RESTING_PLACE.CREMATORIUM | FACILITY.RESTING_PLACE.FUNERAL_HALL | FACILITY.RESTING_PLACE.GRAVE | FACILITY.URBAN_PROPS | FACILITY.URBAN_PROPS.POST_BOX | FACILITY.URBAN_PROPS.PARCEL_LOCKER | FACILITY.URBAN_PROPS.VENDING_MACHINE | FACILITY.URBAN_PROPS.TELEPHONE | FACILITY.URBAN_PROPS.PHOTOBOOTH | FACILITY.URBAN_PROPS.WATER | FACILITY.URBAN_PROPS.SHELTER | FACILITY.URBAN_PROPS.SHOWER | FACILITY.URBAN_PROPS.TOILETS | FACILITY.URBAN_PROPS.DOG_TOILET | FACILITY.URBAN_PROPS.SEAT | FACILITY.URBAN_PROPS.TABLE | FACILITY.FINANCIAL | FACILITY.FINANCIAL.ATM | FACILITY.FINANCIAL.BANK | FACILITY.FINANCIAL.BUREAU_DE_CHANGE | FACILITY.VEHICLE | FACILITY.VEHICLE.CAR_REPAIR | FACILITY.VEHICLE.GARAGES | FACILITY.VEHICLE.BICYCLE_PARKING | FACILITY.VEHICLE.BICYCLE_REPAIR_STATION | FACILITY.VEHICLE.BICYCLE_RENTAL | FACILITY.VEHICLE.BOAT_RENTAL | FACILITY.VEHICLE.BOAT_SHARING | FACILITY.VEHICLE.CAR_WASH | FACILITY.VEHICLE.VEHICLE_INSPECTION | FACILITY.VEHICLE.CHARGING_STATION | FACILITY.VEHICLE.FUEL | FACILITY.VEHICLE.PARKING | FACILITY.VEHICLE.MOTORCYCLE_PARKING | FACILITY.EATING | FACILITY.EATING.RESTAURANT | FACILITY.EATING.FAST_FOOD | FACILITY.EATING.ICECREAM | FACILITY.DRINKING | FACILITY.DRINKING.CAFE | FACILITY.DRINKING.BAR | FACILITY.DRINKING.PUB | FACILITY.DRINKING.BIERGARDEN | FACILITY.ACCOMODATION | FACILITY.ACCOMODATION.HOTEL | FACILITY.ACCOMODATION.HOSTEL | FACILITY.ACCOMODATION.MOTEL | FACILITY.ACCOMODATION.CAMP_SITE | FACILITY.ACCOMODATION.TOURISM_APPARTMENT | LEISURE | LEISURE.CULTURE | LEISURE.CULTURE.CINEMA | LEISURE.CULTURE.MUSIC | LEISURE.CULTURE.THEATRE | LEISURE.CULTURE.DANCE | LEISURE.CULTURE.ARTS | LEISURE.CULTURE.MUSEUM | LEISURE.CULTURE.PLANETARIUM | LEISURE.CULTURE.GALLERY | LEISURE.CULTURE.EVENTS_VENUE | LEISURE.CULTURE.THEME_PARK | LEISURE.CULTURE.STADIUM | LEISURE.NIGHTLIFE | LEISURE.NIGHTLIFE.CASINO | LEISURE.NIGHTLIFE.NIGHTCLUB | LEISURE.NIGHTLIFE.GAMBLING | LEISURE.NIGHTLIFE.SEX | LEISURE.OUTDOOR | LEISURE.OUTDOOR.PARK | LEISURE.OUTDOOR.ZOO | LEISURE.OUTDOOR.SQUARE | LEISURE.OUTDOOR.SWIMMING_AREA | LEISURE.OUTDOOR.PICNIC_SITE | LEISURE.OUTDOOR.FITNESS | LEISURE.OUTDOOR.PLAYGROUND | LEISURE.OUTDOOR.RESORT | LEISURE.OUTDOOR.NATURE_RESERVE | LEISURE.OUTDOOR.FOREST | LEISURE.SPORT | LEISURE.SPORT.SPORTS_CENTRE | LEISURE.SPORT.SWIMMING_POOL | LEISURE.SPORT.GYM | LEISURE.SPORT.BASKETBALL | LEISURE.SPORT.BILLIARDS | LEISURE.SPORT.BOWLING | LEISURE.SPORT.BOXING | LEISURE.SPORT.CHESS | LEISURE.SPORT.CLIMBING | LEISURE.SPORT.CROSSFIT | LEISURE.SPORT.EQUESTRIAN | LEISURE.SPORT.FISHING | LEISURE.SPORT.FOOTBALL | LEISURE.SPORT.GOLF | LEISURE.SPORT.HANDBALL | LEISURE.SPORT.MARTIAL_ARTS | LEISURE.SPORT.MOTOCROSS | LEISURE.SPORT.SHOOTING | LEISURE.SPORT.SKIING | LEISURE.SPORT.TABLE_TENNIS | LEISURE.SPORT.TENNIS | LEISURE.SPORT.YOGA | HIGHLIGHT | HIGHLIGHT.RELIGION | HIGHLIGHT.RELIGION.MONASTERY | HIGHLIGHT.RELIGION.CHAPEL | HIGHLIGHT.RELIGION.CHURCH | HIGHLIGHT.RELIGION.CATHEDRAL | HIGHLIGHT.RELIGION.CROSS | HIGHLIGHT.RELIGION.SHRINE | HIGHLIGHT.RELIGION.WAYSIDE_SHRINE | HIGHLIGHT.RELIGION.MOSQUE | HIGHLIGHT.RELIGION.SYNAGOGE | HIGHLIGHT.LANDMARK | HIGHLIGHT.LANDMARK.ARCHEOLOGICAL | HIGHLIGHT.LANDMARK.BUNKER | HIGHLIGHT.LANDMARK.CASTLE | HIGHLIGHT.LANDMARK.CHARCOAL_PILE | HIGHLIGHT.LANDMARK.CITY_GATE | HIGHLIGHT.LANDMARK.CITY_WALL | HIGHLIGHT.LANDMARK.FOUNTAIN | HIGHLIGHT.LANDMARK.MEMORIAL | HIGHLIGHT.LANDMARK.MONUMENT | HIGHLIGHT.LANDMARK.MILESTONE | HIGHLIGHT.LANDMARK.MINE | HIGHLIGHT.LANDMARK.RUINS | HIGHLIGHT.LANDMARK.STATUE | ACTIVITY | ACTIVITY.GOVERNMENT | ACTIVITY.GOVERNMENT.OFFICE | ACTIVITY.GOVERNMENT.LEGISLATIVE | ACTIVITY.GOVERNMENT.EMBASSY | ACTIVITY.GOVERNMENT.CONSULATE | ACTIVITY.GOVERNMENT.TAX | ACTIVITY.GOVERNMENT.ADMINISTRATIVE | ACTIVITY.GOVERNMENT.MINISTRY | ACTIVITY.GOVERNMENT.CADASTRE | ACTIVITY.GOVERNMENT.AUDIT | ACTIVITY.GOVERNMENT.EMERGENCY | ACTIVITY.MILITARY | ACTIVITY.MILITARY.AREA | ACTIVITY.MILITARY.BASE | ACTIVITY.MILITARY.OFFICE | ACTIVITY.MILITARY.ACADEMY | ACTIVITY.MILITARY.TRAINING_AREA | ACTIVITY.MILITARY.AIRFIELD | ACTIVITY.POWER | ACTIVITY.POWER.COAL_PLANT | ACTIVITY.POWER.OIL_PLANT | ACTIVITY.POWER.GAS_PLANT | ACTIVITY.POWER.HYDRO_PLANT | ACTIVITY.POWER.BIOMASS_PLANT | ACTIVITY.POWER.NUCLEAR_PLANT | ACTIVITY.POWER.WASTE_PLANT | ACTIVITY.POWER.SOLARFARM | ACTIVITY.POWER.WINDFARM | ACTIVITY.INDUSTRY | ACTIVITY.INDUSTRY.OIL | ACTIVITY.INDUSTRY.GAS | ACTIVITY.INDUSTRY.QUARRY | ACTIVITY.INDUSTRY.MINE | ACTIVITY.INDUSTRY.WATER | ACTIVITY.INDUSTRY.DAM | ACTIVITY.INDUSTRY.SALTPOND | ACTIVITY.INDUSTRY.WASTE_WATER | ACTIVITY.INDUSTRY.WATER_TOWER | ACTIVITY.INDUSTRY.HARBOR | ACTIVITY.INDUSTRY.LOGISTICS | ACTIVITY.INDUSTRY.POST_DEPOT | ACTIVITY.INDUSTRY.BRICKYARD | ACTIVITY.INDUSTRY.DEPOT | ACTIVITY.INDUSTRY.SCRAP_YARD | ACTIVITY.INDUSTRY.SHIPYARD | ACTIVITY.INDUSTRY.MILL | ACTIVITY.INDUSTRY.BAKERY | ACTIVITY.INDUSTRY.SLAUGHTERHOUSE | ACTIVITY.INDUSTRY.FARM | ACTIVITY.SERVICE | ACTIVITY.SERVICE.ACCOUNTANT | ACTIVITY.SERVICE.ARCHITECT | ACTIVITY.SERVICE.ADVERTISING | ACTIVITY.SERVICE.CHAMBER | ACTIVITY.SERVICE.COMPANY | ACTIVITY.SERVICE.ENGINEER | ACTIVITY.SERVICE.LAWYER | ACTIVITY.SERVICE.LOGISTICS | ACTIVITY.SERVICE.NEWSPAPER | ACTIVITY.SERVICE.NOTARY | ACTIVITY.SERVICE.PUBLISHER | ACTIVITY.SERVICE.RESEARCH | ACTIVITY.SERVICE.STUDIO | ACTIVITY.SERVICE.SURVEYOR | ACTIVITY.SERVICE.TAX_ADVISOR;
+        subtypes?: Stadtkreis | Landkreis | GROCERY | GROCERY.MIXED | GROCERY.MIXED.LOCAL_STORE | GROCERY.MIXED.SUPERMARKET | GROCERY.MIXED.GENERAL_STORE | GROCERY.MIXED.WHOLESALE | GROCERY.MIXED.MARKETPLACE | GROCERY.SPECIALIZED | GROCERY.SPECIALIZED.BAKERY | GROCERY.SPECIALIZED.BUTCHER | GROCERY.SPECIALIZED.CHEESE | GROCERY.SPECIALIZED.CHOCOLATE | GROCERY.SPECIALIZED.COFFEE | GROCERY.SPECIALIZED.CONFECTIONERY | GROCERY.SPECIALIZED.DAIRY | GROCERY.SPECIALIZED.DELICATESSEN | GROCERY.SPECIALIZED.SHOP_FARM | GROCERY.SPECIALIZED.FROZEN_FOOD | GROCERY.SPECIALIZED.GREENGROCER | GROCERY.SPECIALIZED.HEALTH_FOOD | GROCERY.SPECIALIZED.ICECREAM | GROCERY.SPECIALIZED.PASTA | GROCERY.SPECIALIZED.PASTRY | GROCERY.SPECIALIZED.SEAFOOD | GROCERY.SPECIALIZED.SPICES | GROCERY.SPECIALIZED.TEA | GROCERY.DRINKS | GROCERY.DRINKS.ALCOHOL | GROCERY.DRINKS.BEVERAGES | GROCERY.DRINKS.WINE | GROCERY.DRINKS.WATER | HEALTH | HEALTH.ESTABLISHMENT | HEALTH.ESTABLISHMENT.CLINIC | HEALTH.ESTABLISHMENT.HOSPITAL | HEALTH.ESTABLISHMENT.LABORATORY | HEALTH.ESTABLISHMENT.SOCIAL_FACILITY | HEALTH.ESTABLISHMENT.NURSING_HOME | HEALTH.PRODUCT | HEALTH.PRODUCT.PHARMACY | HEALTH.PRODUCT.MEDICAL_SUPPLY | HEALTH.PRODUCT.OPTICIAN | HEALTH.PRODUCT.AUDIOLOGIST | HEALTH.SPECIALIST | HEALTH.SPECIALIST.DOCTOR | HEALTH.SPECIALIST.DENTIST | HEALTH.SPECIALIST.OPTOMETRIST | HEALTH.SPECIALIST.AUDIOLOGIST | HEALTH.SPECIALIST.MIDWIFE | HEALTH.SPECIALIST.NURSE | HEALTH.SPECIALIST.OCCUPATIONAL_THERAPIST | HEALTH.SPECIALIST.PHYSIOTHERAPIST | HEALTH.SPECIALIST.REHABILITATION | HEALTH.SPECIALIST.SPEECH_THERAPIST | HEALTH.SPECIALIST.ALTERNATIVE_MEDICINE | EDUCATION | EDUCATION.CORE | EDUCATION.CORE.KINDERGARTEN | EDUCATION.CORE.SCHOOL | EDUCATION.CORE.UNIVERSITY | EDUCATION.CORE.COLLEGE | EDUCATION.SKILLS_LEARNING | EDUCATION.SKILLS_LEARNING.DRIVING_SCHOOL | EDUCATION.SKILLS_LEARNING.MUSIC_SCHOOL | EDUCATION.SKILLS_LEARNING.LANGUAGE_SCHOOL | EDUCATION.SKILLS_LEARNING.SKILLS_TRAINING | EDUCATION.MATERIAL | EDUCATION.MATERIAL.LIBRARY | EDUCATION.MATERIAL.BOOK_SHOP | TRANSPORT | TRANSPORT.TRAIN | TRANSPORT.TRAIN.STATION | TRANSPORT.TRAIN.INTERCITY_LINE | TRANSPORT.TRAIN.HIGHSPEED_LINE | TRANSPORT.URBAN_TRAIN | TRANSPORT.URBAN_TRAIN.STATION | TRANSPORT.URBAN_TRAIN.LINE | TRANSPORT.SUBWAY | TRANSPORT.SUBWAY.STATION | TRANSPORT.SUBWAY.LINE | TRANSPORT.TRAM | TRANSPORT.TRAM.STATION | TRANSPORT.TRAM.LINE | TRANSPORT.BUS_STOP | TRANSPORT.AIRPORT | TRANSPORT.AIRSTRIP | TRANSPORT.HELIPORT | TRANSPORT.FERRY | TRANSPORT.SEAPORT | TRANSPORT.LIGHTHOUSE | TRANSPORT.BRIDGE | SHOPPING | SHOPPING.LUXURY | SHOPPING.LUXURY.JEWELRY | SHOPPING.LUXURY.PERFUMERY | SHOPPING.LUXURY.WATCHES | SHOPPING.LUXURY.FASHION | SHOPPING.LUXURY.ART | SHOPPING.CLOTHING | SHOPPING.CLOTHING.CLOTHES | SHOPPING.CLOTHING.LEATHER | SHOPPING.CLOTHING.SHOES | SHOPPING.CLOTHING.BAG | SHOPPING.CLOTHING.FABRIC | SHOPPING.CARE | SHOPPING.CARE.HAIR_SUPPLY | SHOPPING.CARE.BEAUTY | SHOPPING.CARE.BABY_GOODS | SHOPPING.CARE.TATTOO | SHOPPING.MIXED | SHOPPING.MIXED.DRUGSTORE | SHOPPING.MIXED.SHOPPING_CENTER | SHOPPING.MIXED.STATIONERY | SHOPPING.MIXED.VARIETY_STORE | SHOPPING.LEISURE | SHOPPING.LEISURE.GIFTS | SHOPPING.LEISURE.PARTY | SHOPPING.LEISURE.TOYS | SHOPPING.LEISURE.SPORTS | SHOPPING.LEISURE.KIOSK | SHOPPING.LEISURE.CRAFT | SHOPPING.LEISURE.MUSIC | SHOPPING.LEISURE.CAMERA | SHOPPING.LEISURE.MOBILE | SHOPPING.LEISURE.COMPUTE | SHOPPING.LEISURE.VIDEO_GAMES | SHOPPING.LEISURE.EROTIC | SHOPPING.HOME | SHOPPING.HOME.APPLIANCE | SHOPPING.HOME.FURNITURE | SHOPPING.HOME.DECORATION | SHOPPING.HOME.SECOND_HAND | SHOPPING.HOME.ELECTRICAL | SHOPPING.HOME.HARDWARE | SHOPPING.HOME.MATERIAL | SHOPPING.HOME.PAINT | SHOPPING.HOME.GARDEN | SHOPPING.HOME.ENERGY | SHOPPING.VEHICLE | SHOPPING.VEHICLE.CAR | SHOPPING.VEHICLE.BICYCLE | SHOPPING.VEHICLE.CAR_PARTS | FACILITY | FACILITY.DIVERSE | FACILITY.DIVERSE.LAUNDRY | FACILITY.DIVERSE.TAILOR | FACILITY.DIVERSE.FLORIST | FACILITY.DIVERSE.LOCKSMITH | FACILITY.DIVERSE.PHOTOGRAPHER | FACILITY.DIVERSE.INTERNET_CAFE | FACILITY.DIVERSE.PRINTING | FACILITY.DIVERSE.SHOE_REPAIR | FACILITY.DIVERSE.REPAIR_SHOP | FACILITY.DIVERSE.COURIER | FACILITY.DIVERSE.TRAVEL_AGENCY | FACILITY.DIVERSE.EMPLOYMENT_AGENCY | FACILITY.CARE | FACILITY.CARE.MASSAGE | FACILITY.CARE.HAIRDRESSER | FACILITY.CARE.BEAUTY_PARLOR | FACILITY.CARE.SAUNA | FACILITY.CARE.TANNING_SALON | FACILITY.ARTISAN | FACILITY.ARTISAN.CARPENTER | FACILITY.ARTISAN.FLOORER | FACILITY.ARTISAN.MASON | FACILITY.ARTISAN.PLUMBER | FACILITY.ARTISAN.PAINTER | FACILITY.ARTISAN.ELECTRICIAN | FACILITY.ARTISAN.GARDENER | FACILITY.ARTISAN.CATERER | FACILITY.ARTISAN.ROOFER | FACILITY.ARTISAN.METAL_WORKER | FACILITY.WASTE | FACILITY.WASTE.RECYCLING | FACILITY.WASTE.WASTE_DISPOSAL | FACILITY.WASTE.WASTE_BASKET | FACILITY.PETS | FACILITY.PETS.VETERINARY | FACILITY.PETS.PETSHOP | FACILITY.PETS.GROOMING | FACILITY.PUBLIC_SERVICE | FACILITY.PUBLIC_SERVICE.TOWNHALL | FACILITY.PUBLIC_SERVICE.COURTHOUSE | FACILITY.PUBLIC_SERVICE.POLICE | FACILITY.PUBLIC_SERVICE.FIRESTATION | FACILITY.PUBLIC_SERVICE.POST_OFFICE | FACILITY.PUBLIC_SERVICE.PUBLIC_BATH | FACILITY.PUBLIC_SERVICE.PRISON | FACILITY.RESTING_PLACE | FACILITY.RESTING_PLACE.CEMETERY | FACILITY.RESTING_PLACE.GRAVEYARD | FACILITY.RESTING_PLACE.CREMATORIUM | FACILITY.RESTING_PLACE.FUNERAL_HALL | FACILITY.RESTING_PLACE.GRAVE | FACILITY.URBAN_PROPS | FACILITY.URBAN_PROPS.POST_BOX | FACILITY.URBAN_PROPS.PARCEL_LOCKER | FACILITY.URBAN_PROPS.VENDING_MACHINE | FACILITY.URBAN_PROPS.TELEPHONE | FACILITY.URBAN_PROPS.PHOTOBOOTH | FACILITY.URBAN_PROPS.WATER | FACILITY.URBAN_PROPS.SHELTER | FACILITY.URBAN_PROPS.SHOWER | FACILITY.URBAN_PROPS.TOILETS | FACILITY.URBAN_PROPS.DOG_TOILET | FACILITY.URBAN_PROPS.SEAT | FACILITY.URBAN_PROPS.TABLE | FACILITY.FINANCIAL | FACILITY.FINANCIAL.ATM | FACILITY.FINANCIAL.BANK | FACILITY.FINANCIAL.BUREAU_DE_CHANGE | FACILITY.VEHICLE | FACILITY.VEHICLE.CAR_REPAIR | FACILITY.VEHICLE.GARAGES | FACILITY.VEHICLE.BICYCLE_PARKING | FACILITY.VEHICLE.BICYCLE_REPAIR_STATION | FACILITY.VEHICLE.BICYCLE_RENTAL | FACILITY.VEHICLE.BOAT_RENTAL | FACILITY.VEHICLE.BOAT_SHARING | FACILITY.VEHICLE.CAR_WASH | FACILITY.VEHICLE.VEHICLE_INSPECTION | FACILITY.VEHICLE.CHARGING_STATION | FACILITY.VEHICLE.FUEL | FACILITY.VEHICLE.PARKING | FACILITY.VEHICLE.MOTORCYCLE_PARKING | FACILITY.EATING | FACILITY.EATING.RESTAURANT | FACILITY.EATING.FAST_FOOD | FACILITY.EATING.ICECREAM | FACILITY.DRINKING | FACILITY.DRINKING.CAFE | FACILITY.DRINKING.BAR | FACILITY.DRINKING.PUB | FACILITY.DRINKING.BIERGARDEN | FACILITY.ACCOMODATION | FACILITY.ACCOMODATION.HOTEL | FACILITY.ACCOMODATION.HOSTEL | FACILITY.ACCOMODATION.MOTEL | FACILITY.ACCOMODATION.CAMP_SITE | FACILITY.ACCOMODATION.TOURISM_APPARTMENT | LEISURE | LEISURE.CULTURE | LEISURE.CULTURE.CINEMA | LEISURE.CULTURE.MUSIC | LEISURE.CULTURE.THEATRE | LEISURE.CULTURE.DANCE | LEISURE.CULTURE.ARTS | LEISURE.CULTURE.MUSEUM | LEISURE.CULTURE.PLANETARIUM | LEISURE.CULTURE.GALLERY | LEISURE.CULTURE.EVENTS_VENUE | LEISURE.CULTURE.THEME_PARK | LEISURE.CULTURE.STADIUM | LEISURE.NIGHTLIFE | LEISURE.NIGHTLIFE.CASINO | LEISURE.NIGHTLIFE.NIGHTCLUB | LEISURE.NIGHTLIFE.GAMBLING | LEISURE.NIGHTLIFE.SEX | LEISURE.OUTDOOR | LEISURE.OUTDOOR.PARK | LEISURE.OUTDOOR.ZOO | LEISURE.OUTDOOR.SQUARE | LEISURE.OUTDOOR.SWIMMING_AREA | LEISURE.OUTDOOR.PICNIC_SITE | LEISURE.OUTDOOR.FITNESS | LEISURE.OUTDOOR.PLAYGROUND | LEISURE.OUTDOOR.RESORT | LEISURE.OUTDOOR.NATURE_RESERVE | LEISURE.OUTDOOR.FOREST | LEISURE.SPORT | LEISURE.SPORT.SPORTS_CENTRE | LEISURE.SPORT.SWIMMING_POOL | LEISURE.SPORT.GYM | LEISURE.SPORT.BASKETBALL | LEISURE.SPORT.BILLIARDS | LEISURE.SPORT.BOWLING | LEISURE.SPORT.BOXING | LEISURE.SPORT.CHESS | LEISURE.SPORT.CLIMBING | LEISURE.SPORT.CROSSFIT | LEISURE.SPORT.EQUESTRIAN | LEISURE.SPORT.FISHING | LEISURE.SPORT.FOOTBALL | LEISURE.SPORT.GOLF | LEISURE.SPORT.HANDBALL | LEISURE.SPORT.MARTIAL_ARTS | LEISURE.SPORT.MOTOCROSS | LEISURE.SPORT.SHOOTING | LEISURE.SPORT.SKIING | LEISURE.SPORT.TABLE_TENNIS | LEISURE.SPORT.TENNIS | LEISURE.SPORT.YOGA | HIGHLIGHT | HIGHLIGHT.RELIGION | HIGHLIGHT.RELIGION.MONASTERY | HIGHLIGHT.RELIGION.CHAPEL | HIGHLIGHT.RELIGION.CHURCH | HIGHLIGHT.RELIGION.CATHEDRAL | HIGHLIGHT.RELIGION.CROSS | HIGHLIGHT.RELIGION.SHRINE | HIGHLIGHT.RELIGION.WAYSIDE_SHRINE | HIGHLIGHT.RELIGION.MOSQUE | HIGHLIGHT.RELIGION.SYNAGOGE | HIGHLIGHT.LANDMARK | HIGHLIGHT.LANDMARK.ARCHEOLOGICAL | HIGHLIGHT.LANDMARK.BUNKER | HIGHLIGHT.LANDMARK.CASTLE | HIGHLIGHT.LANDMARK.CHARCOAL_PILE | HIGHLIGHT.LANDMARK.CITY_GATE | HIGHLIGHT.LANDMARK.CITY_WALL | HIGHLIGHT.LANDMARK.FOUNTAIN | HIGHLIGHT.LANDMARK.MEMORIAL | HIGHLIGHT.LANDMARK.MONUMENT | HIGHLIGHT.LANDMARK.MILESTONE | HIGHLIGHT.LANDMARK.MINE | HIGHLIGHT.LANDMARK.RUINS | HIGHLIGHT.LANDMARK.STATUE | ACTIVITY | ACTIVITY.GOVERNMENT | ACTIVITY.GOVERNMENT.OFFICE | ACTIVITY.GOVERNMENT.LEGISLATIVE | ACTIVITY.GOVERNMENT.EMBASSY | ACTIVITY.GOVERNMENT.CONSULATE | ACTIVITY.GOVERNMENT.TAX | ACTIVITY.GOVERNMENT.ADMINISTRATIVE | ACTIVITY.GOVERNMENT.MINISTRY | ACTIVITY.GOVERNMENT.CADASTRE | ACTIVITY.GOVERNMENT.AUDIT | ACTIVITY.GOVERNMENT.EMERGENCY | ACTIVITY.MILITARY | ACTIVITY.MILITARY.AREA | ACTIVITY.MILITARY.BASE | ACTIVITY.MILITARY.OFFICE | ACTIVITY.MILITARY.ACADEMY | ACTIVITY.MILITARY.TRAINING_AREA | ACTIVITY.MILITARY.AIRFIELD | ACTIVITY.POWER | ACTIVITY.POWER.COAL_PLANT | ACTIVITY.POWER.OIL_PLANT | ACTIVITY.POWER.GAS_PLANT | ACTIVITY.POWER.HYDRO_PLANT | ACTIVITY.POWER.BIOMASS_PLANT | ACTIVITY.POWER.NUCLEAR_PLANT | ACTIVITY.POWER.WASTE_PLANT | ACTIVITY.POWER.SOLARFARM | ACTIVITY.POWER.WINDFARM | ACTIVITY.INDUSTRY | ACTIVITY.INDUSTRY.OIL | ACTIVITY.INDUSTRY.GAS | ACTIVITY.INDUSTRY.QUARRY | ACTIVITY.INDUSTRY.MINE | ACTIVITY.INDUSTRY.WATER | ACTIVITY.INDUSTRY.DAM | ACTIVITY.INDUSTRY.SALTPOND | ACTIVITY.INDUSTRY.WASTE_WATER | ACTIVITY.INDUSTRY.WATER_TOWER | ACTIVITY.INDUSTRY.HARBOR | ACTIVITY.INDUSTRY.LOGISTICS | ACTIVITY.INDUSTRY.POST_DEPOT | ACTIVITY.INDUSTRY.BRICKYARD | ACTIVITY.INDUSTRY.DEPOT | ACTIVITY.INDUSTRY.SCRAP_YARD | ACTIVITY.INDUSTRY.SHIPYARD | ACTIVITY.INDUSTRY.MILL | ACTIVITY.INDUSTRY.BAKERY | ACTIVITY.INDUSTRY.SLAUGHTERHOUSE | ACTIVITY.INDUSTRY.FARM | ACTIVITY.SERVICE | ACTIVITY.SERVICE.ACCOUNTANT | ACTIVITY.SERVICE.ARCHITECT | ACTIVITY.SERVICE.ADVERTISING | ACTIVITY.SERVICE.CHAMBER | ACTIVITY.SERVICE.COMPANY | ACTIVITY.SERVICE.ENGINEER | ACTIVITY.SERVICE.LAWYER | ACTIVITY.SERVICE.LOGISTICS | ACTIVITY.SERVICE.NEWSPAPER | ACTIVITY.SERVICE.NOTARY | ACTIVITY.SERVICE.PUBLISHER | ACTIVITY.SERVICE.RESEARCH | ACTIVITY.SERVICE.STUDIO | ACTIVITY.SERVICE.SURVEYOR | ACTIVITY.SERVICE.TAX_ADVISOR | HIGH_SCHOOL | SECONDARY_SCHOOL | PRIMARY_SCHOOL;
         /**
          * @description The key from which you want your result set to start from.<details><summary>Click here to get details on how this works.</summary>
          *
@@ -885,7 +1387,7 @@ export interface operations {
     };
   };
   /** Get Feature By Atlas Reference */
-  get_feature_by_atlas_reference_v1_places_legacy_gsl_atlas__atlas_id__get: {
+  get_feature_by_atlas_reference_places_legacy_gsl_atlas__atlas_id__get: {
     parameters: {
       path: {
         /** @description ID in the legacy GSL Atlas referential */
@@ -948,7 +1450,7 @@ export interface operations {
     };
   };
   /** Get Feature By Places Reference */
-  get_feature_by_places_reference_v1_places_legacy_gsl_places__places_id__get: {
+  get_feature_by_places_reference_places_legacy_gsl_places__places_id__get: {
     parameters: {
       path: {
         /** @description ID in the legacy GSL Places referential */
@@ -1010,8 +1512,73 @@ export interface operations {
       };
     };
   };
+  /** Get Feature By Places Metadata */
+  get_feature_by_places_metadata_places_legacy_gsl_places_metadata__metadata_key___metadata_type__get: {
+    parameters: {
+      path: {
+        /** @description Key in the legacy GSL Places referential (different from places_id) */
+        metadata_key: string;
+        /** @description GSL Places metadata type used in the legacy URLs */
+        metadata_type: components["schemas"]["SeLogerMetadataTypeEnum"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PlaceAPISingleResponse"];
+        };
+      };
+      /**
+       * @description
+       * Can happen if :
+       * - you use an invalid ApiKey ([here to have the apikey](https://avivgroup.atlassian.net/wiki/spaces/AGRS/pages/248876591/Request+your+AVIV+Geo+Services+or+Mapbox+API+key+here))
+       * - your access is not allowed by the [WAF](https://avivgroup.atlassian.net/wiki/spaces/AEP/pages/205758886/AWS+WAF) (ex: not from the VPN)
+       * - your request is not allowed by a [WAF](https://avivgroup.atlassian.net/wiki/spaces/AEP/pages/205758886/AWS+WAF) security rule (ex: SQL injection protection)
+       */
+      403: {
+        content: {
+          "text/html": string;
+        };
+      };
+      /** @description Not Found */
+      404: {
+        content: never;
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+      /** @description Raised in case of network issue with AWS API Gateway, must be ephemeral. */
+      502: {
+        content: {
+          "application/json": {
+            /**
+             * Format: string
+             * @example Bad gateway
+             */
+            message?: string;
+          };
+        };
+      };
+      /** @description Raised in case of network issue with AWS API Gateway, must be ephemeral. */
+      504: {
+        content: {
+          "application/json": {
+            /**
+             * Format: string
+             * @example Network error communicating with endpoint
+             */
+            message?: string;
+          };
+        };
+      };
+    };
+  };
   /** Get Feature By Logicimmo Reference */
-  get_feature_by_logicimmo_reference_v1_places_legacy_logicimmo__logicimmo_id__get: {
+  get_feature_by_logicimmo_reference_places_legacy_logicimmo__logicimmo_id__get: {
     parameters: {
       query?: {
         /** @description Logicimmo place_type */
@@ -1078,7 +1645,7 @@ export interface operations {
     };
   };
   /** Get Feature By Immowelt Reference */
-  get_feature_by_immowelt_reference_v1_places_legacy_immowelt__immowelt_id__get: {
+  get_feature_by_immowelt_reference_places_legacy_immowelt__immowelt_id__get: {
     parameters: {
       path: {
         /** @description ID in the legacy ImmoWelt referential */
@@ -1140,8 +1707,71 @@ export interface operations {
       };
     };
   };
+  /** Get Feature By Immowelt Geoid Reference */
+  get_feature_by_immowelt_geoid_reference_places_legacy_immowelt_geoid__geoid_id__get: {
+    parameters: {
+      path: {
+        /** @description ID in the legacy ImmoWelt referential */
+        geoid_id: string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PlaceAPISingleResponse"];
+        };
+      };
+      /**
+       * @description
+       * Can happen if :
+       * - you use an invalid ApiKey ([here to have the apikey](https://avivgroup.atlassian.net/wiki/spaces/AGRS/pages/248876591/Request+your+AVIV+Geo+Services+or+Mapbox+API+key+here))
+       * - your access is not allowed by the [WAF](https://avivgroup.atlassian.net/wiki/spaces/AEP/pages/205758886/AWS+WAF) (ex: not from the VPN)
+       * - your request is not allowed by a [WAF](https://avivgroup.atlassian.net/wiki/spaces/AEP/pages/205758886/AWS+WAF) security rule (ex: SQL injection protection)
+       */
+      403: {
+        content: {
+          "text/html": string;
+        };
+      };
+      /** @description Not Found */
+      404: {
+        content: never;
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+      /** @description Raised in case of network issue with AWS API Gateway, must be ephemeral. */
+      502: {
+        content: {
+          "application/json": {
+            /**
+             * Format: string
+             * @example Bad gateway
+             */
+            message?: string;
+          };
+        };
+      };
+      /** @description Raised in case of network issue with AWS API Gateway, must be ephemeral. */
+      504: {
+        content: {
+          "application/json": {
+            /**
+             * Format: string
+             * @example Network error communicating with endpoint
+             */
+            message?: string;
+          };
+        };
+      };
+    };
+  };
   /** Get Feature By Immoweb Reference */
-  get_feature_by_immoweb_reference_v1_places_legacy_immoweb__immoweb_id___immoweb_type__get: {
+  get_feature_by_immoweb_reference_places_legacy_immoweb__immoweb_id___immoweb_type__get: {
     parameters: {
       path: {
         /** @description ID in the legacy ImmoWeb referential */
@@ -1206,7 +1836,7 @@ export interface operations {
     };
   };
   /** Get Feature By Meilleursagents Reference */
-  get_feature_by_meilleursagents_reference_v1_places_legacy_meilleursagents__ma_platform___ma_id___ma_type__get: {
+  get_feature_by_meilleursagents_reference_places_legacy_meilleursagents__ma_platform___ma_id___ma_type__get: {
     parameters: {
       path: {
         /** @description Platform in the legacy MeilleursAgents referential, BE, DE or FR */
@@ -1274,8 +1904,132 @@ export interface operations {
       };
     };
   };
+  /** Get Feature By Iso 3166 */
+  get_feature_by_iso_3166_places_external_iso_3166_get: {
+    parameters: {
+      query: {
+        /** @description List of ISO 3166-1 alpha-2 and alpha-3 codes */
+        ids: string[];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PlaceAPIDictResponse"];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        content: never;
+      };
+      /**
+       * @description
+       * Can happen if :
+       * - you use an invalid ApiKey ([here to have the apikey](https://avivgroup.atlassian.net/wiki/spaces/AGRS/pages/248876591/Request+your+AVIV+Geo+Services+or+Mapbox+API+key+here))
+       * - your access is not allowed by the [WAF](https://avivgroup.atlassian.net/wiki/spaces/AEP/pages/205758886/AWS+WAF) (ex: not from the VPN)
+       * - your request is not allowed by a [WAF](https://avivgroup.atlassian.net/wiki/spaces/AEP/pages/205758886/AWS+WAF) security rule (ex: SQL injection protection)
+       */
+      403: {
+        content: {
+          "text/html": string;
+        };
+      };
+      /** @description Unprocessable Entity */
+      422: {
+        content: never;
+      };
+      /** @description Raised in case of network issue with AWS API Gateway, must be ephemeral. */
+      502: {
+        content: {
+          "application/json": {
+            /**
+             * Format: string
+             * @example Bad gateway
+             */
+            message?: string;
+          };
+        };
+      };
+      /** @description Raised in case of network issue with AWS API Gateway, must be ephemeral. */
+      504: {
+        content: {
+          "application/json": {
+            /**
+             * Format: string
+             * @example Network error communicating with endpoint
+             */
+            message?: string;
+          };
+        };
+      };
+    };
+  };
+  /** Get Feature By Postal Code */
+  get_feature_by_postal_code_places_external_postal_code_get: {
+    parameters: {
+      query: {
+        /** @description List of postal codes */
+        ids: string[];
+        /** @description List of parent_ids(Countries) to which postal codes belong. */
+        parent_ids?: string[] | null;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PlaceAPIDictResponse"];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        content: never;
+      };
+      /**
+       * @description
+       * Can happen if :
+       * - you use an invalid ApiKey ([here to have the apikey](https://avivgroup.atlassian.net/wiki/spaces/AGRS/pages/248876591/Request+your+AVIV+Geo+Services+or+Mapbox+API+key+here))
+       * - your access is not allowed by the [WAF](https://avivgroup.atlassian.net/wiki/spaces/AEP/pages/205758886/AWS+WAF) (ex: not from the VPN)
+       * - your request is not allowed by a [WAF](https://avivgroup.atlassian.net/wiki/spaces/AEP/pages/205758886/AWS+WAF) security rule (ex: SQL injection protection)
+       */
+      403: {
+        content: {
+          "text/html": string;
+        };
+      };
+      /** @description Unprocessable Entity */
+      422: {
+        content: never;
+      };
+      /** @description Raised in case of network issue with AWS API Gateway, must be ephemeral. */
+      502: {
+        content: {
+          "application/json": {
+            /**
+             * Format: string
+             * @example Bad gateway
+             */
+            message?: string;
+          };
+        };
+      };
+      /** @description Raised in case of network issue with AWS API Gateway, must be ephemeral. */
+      504: {
+        content: {
+          "application/json": {
+            /**
+             * Format: string
+             * @example Network error communicating with endpoint
+             */
+            message?: string;
+          };
+        };
+      };
+    };
+  };
   /** Get Geo Layers Pyramid */
-  get_geo_layers_pyramid_v1_relation_describe_get: {
+  get_geo_layers_pyramid_relation_describe_get: {
     responses: {
       /** @description Successful Response */
       200: {
@@ -1322,11 +2076,11 @@ export interface operations {
     };
   };
   /** Get Neighbors */
-  get_neighbors_v1_relation_neighbors__place_id__get: {
+  get_neighbors_relation_neighbors__place_id__get: {
     parameters: {
       query?: {
         /** @description You can choose which parents you will retrieve, to see available types you can consume /relation/describe endpoint. */
-        parent_types?: AD02 | AD03 | AD04 | AD05 | AD06 | AD07 | AD08 | POCO | AD09 | NBH1 | STU1 | NBH2 | STU2 | NBH3 | STU3 | STRT | BLOC | PARC | BILD | HONU | POFI;
+        parent_types?: AD02 | AD03 | AD04 | AD05 | AD06 | AD07 | AD08 | POCO | AD09 | NBH1 | STU1 | NBH2 | STU2 | NBH3 | STU3 | STRT | BLOC | PARC | BILD | HONU | POFI | SKOL;
         /**
          * @description The key from which you want your result set to start from.<details><summary>Click here to get details on how this works.</summary>
          *
@@ -1418,15 +2172,15 @@ export interface operations {
     };
   };
   /** Get Custom Relation */
-  get_custom_relation_v1_relation__place_id__get: {
+  get_custom_relation_relation__place_id__get: {
     parameters: {
       query: {
         /** @description You can choose which parents you will retrieve, to see available types you can consume /relation/describe endpoint. */
-        parent_types?: AD02 | AD03 | AD04 | AD05 | AD06 | AD07 | AD08 | POCO | AD09 | NBH1 | STU1 | NBH2 | STU2 | NBH3 | STU3 | STRT | BLOC | PARC | BILD | HONU | POFI;
+        parent_types?: AD02 | AD03 | AD04 | AD05 | AD06 | AD07 | AD08 | POCO | AD09 | NBH1 | STU1 | NBH2 | STU2 | NBH3 | STU3 | STRT | BLOC | PARC | BILD | HONU | POFI | SKOL;
         /** @description The place type you want to use, to see available types you can consume /relation/describe endpoint. */
         place_type: components["schemas"]["TypeKeyEnum"];
         /** @description The subtypes you want to use depending type.to see available types you can consume /relation/describe endpoint. */
-        subtypes?: GROCERY | GROCERY.MIXED | GROCERY.MIXED.LOCAL_STORE | GROCERY.MIXED.SUPERMARKET | GROCERY.MIXED.GENERAL_STORE | GROCERY.MIXED.WHOLESALE | GROCERY.MIXED.MARKETPLACE | GROCERY.SPECIALIZED | GROCERY.SPECIALIZED.BAKERY | GROCERY.SPECIALIZED.BUTCHER | GROCERY.SPECIALIZED.CHEESE | GROCERY.SPECIALIZED.CHOCOLATE | GROCERY.SPECIALIZED.COFFEE | GROCERY.SPECIALIZED.CONFECTIONERY | GROCERY.SPECIALIZED.DAIRY | GROCERY.SPECIALIZED.DELICATESSEN | GROCERY.SPECIALIZED.SHOP_FARM | GROCERY.SPECIALIZED.FROZEN_FOOD | GROCERY.SPECIALIZED.GREENGROCER | GROCERY.SPECIALIZED.HEALTH_FOOD | GROCERY.SPECIALIZED.ICECREAM | GROCERY.SPECIALIZED.PASTA | GROCERY.SPECIALIZED.PASTRY | GROCERY.SPECIALIZED.SEAFOOD | GROCERY.SPECIALIZED.SPICES | GROCERY.SPECIALIZED.TEA | GROCERY.DRINKS | GROCERY.DRINKS.ALCOHOL | GROCERY.DRINKS.BEVERAGES | GROCERY.DRINKS.WINE | GROCERY.DRINKS.WATER | HEALTH | HEALTH.ESTABLISHMENT | HEALTH.ESTABLISHMENT.CLINIC | HEALTH.ESTABLISHMENT.HOSPITAL | HEALTH.ESTABLISHMENT.LABORATORY | HEALTH.ESTABLISHMENT.SOCIAL_FACILITY | HEALTH.ESTABLISHMENT.NURSING_HOME | HEALTH.PRODUCT | HEALTH.PRODUCT.PHARMACY | HEALTH.PRODUCT.MEDICAL_SUPPLY | HEALTH.PRODUCT.OPTICIAN | HEALTH.PRODUCT.AUDIOLOGIST | HEALTH.SPECIALIST | HEALTH.SPECIALIST.DOCTOR | HEALTH.SPECIALIST.DENTIST | HEALTH.SPECIALIST.OPTOMETRIST | HEALTH.SPECIALIST.AUDIOLOGIST | HEALTH.SPECIALIST.MIDWIFE | HEALTH.SPECIALIST.NURSE | HEALTH.SPECIALIST.OCCUPATIONAL_THERAPIST | HEALTH.SPECIALIST.PHYSIOTHERAPIST | HEALTH.SPECIALIST.REHABILITATION | HEALTH.SPECIALIST.SPEECH_THERAPIST | HEALTH.SPECIALIST.ALTERNATIVE_MEDICINE | EDUCATION | EDUCATION.CORE | EDUCATION.CORE.KINDERGARTEN | EDUCATION.CORE.SCHOOL | EDUCATION.CORE.UNIVERSITY | EDUCATION.CORE.COLLEGE | EDUCATION.SKILLS_LEARNING | EDUCATION.SKILLS_LEARNING.DRIVING_SCHOOL | EDUCATION.SKILLS_LEARNING.MUSIC_SCHOOL | EDUCATION.SKILLS_LEARNING.LANGUAGE_SCHOOL | EDUCATION.SKILLS_LEARNING.SKILLS_TRAINING | EDUCATION.MATERIAL | EDUCATION.MATERIAL.LIBRARY | EDUCATION.MATERIAL.BOOK_SHOP | TRANSPORT | TRANSPORT.TRAIN | TRANSPORT.TRAIN.STATION | TRANSPORT.TRAIN.INTERCITY_LINE | TRANSPORT.TRAIN.HIGHSPEED_LINE | TRANSPORT.URBAN_TRAIN | TRANSPORT.URBAN_TRAIN.STATION | TRANSPORT.URBAN_TRAIN.LINE | TRANSPORT.SUBWAY | TRANSPORT.SUBWAY.STATION | TRANSPORT.SUBWAY.LINE | TRANSPORT.TRAM | TRANSPORT.TRAM.STATION | TRANSPORT.TRAM.LINE | TRANSPORT.BUS_STOP | SHOPPING | SHOPPING.LUXURY | SHOPPING.LUXURY.JEWELRY | SHOPPING.LUXURY.PERFUMERY | SHOPPING.LUXURY.WATCHES | SHOPPING.LUXURY.FASHION | SHOPPING.LUXURY.ART | SHOPPING.CLOTHING | SHOPPING.CLOTHING.CLOTHES | SHOPPING.CLOTHING.LEATHER | SHOPPING.CLOTHING.SHOES | SHOPPING.CLOTHING.BAG | SHOPPING.CLOTHING.FABRIC | SHOPPING.CARE | SHOPPING.CARE.HAIR_SUPPLY | SHOPPING.CARE.BEAUTY | SHOPPING.CARE.BABY_GOODS | SHOPPING.CARE.TATTOO | SHOPPING.MIXED | SHOPPING.MIXED.DRUGSTORE | SHOPPING.MIXED.SHOPPING_CENTER | SHOPPING.MIXED.STATIONERY | SHOPPING.MIXED.VARIETY_STORE | SHOPPING.LEISURE | SHOPPING.LEISURE.GIFTS | SHOPPING.LEISURE.PARTY | SHOPPING.LEISURE.TOYS | SHOPPING.LEISURE.SPORTS | SHOPPING.LEISURE.KIOSK | SHOPPING.LEISURE.CRAFT | SHOPPING.LEISURE.MUSIC | SHOPPING.LEISURE.CAMERA | SHOPPING.LEISURE.MOBILE | SHOPPING.LEISURE.COMPUTE | SHOPPING.LEISURE.VIDEO_GAMES | SHOPPING.LEISURE.EROTIC | SHOPPING.HOME | SHOPPING.HOME.APPLIANCE | SHOPPING.HOME.FURNITURE | SHOPPING.HOME.DECORATION | SHOPPING.HOME.SECOND_HAND | SHOPPING.HOME.ELECTRICAL | SHOPPING.HOME.HARDWARE | SHOPPING.HOME.MATERIAL | SHOPPING.HOME.PAINT | SHOPPING.HOME.GARDEN | SHOPPING.HOME.ENERGY | SHOPPING.VEHICLE | SHOPPING.VEHICLE.CAR | SHOPPING.VEHICLE.BICYCLE | SHOPPING.VEHICLE.CAR_PARTS | FACILITY | FACILITY.DIVERSE | FACILITY.DIVERSE.LAUNDRY | FACILITY.DIVERSE.TAILOR | FACILITY.DIVERSE.FLORIST | FACILITY.DIVERSE.LOCKSMITH | FACILITY.DIVERSE.PHOTOGRAPHER | FACILITY.DIVERSE.INTERNET_CAFE | FACILITY.DIVERSE.PRINTING | FACILITY.DIVERSE.SHOE_REPAIR | FACILITY.DIVERSE.REPAIR_SHOP | FACILITY.DIVERSE.COURIER | FACILITY.DIVERSE.TRAVEL_AGENCY | FACILITY.DIVERSE.EMPLOYMENT_AGENCY | FACILITY.CARE | FACILITY.CARE.MASSAGE | FACILITY.CARE.HAIRDRESSER | FACILITY.CARE.BEAUTY_PARLOR | FACILITY.CARE.SAUNA | FACILITY.CARE.TANNING_SALON | FACILITY.ARTISAN | FACILITY.ARTISAN.CARPENTER | FACILITY.ARTISAN.FLOORER | FACILITY.ARTISAN.MASON | FACILITY.ARTISAN.PLUMBER | FACILITY.ARTISAN.PAINTER | FACILITY.ARTISAN.ELECTRICIAN | FACILITY.ARTISAN.GARDENER | FACILITY.ARTISAN.CATERER | FACILITY.ARTISAN.ROOFER | FACILITY.ARTISAN.METAL_WORKER | FACILITY.WASTE | FACILITY.WASTE.RECYCLING | FACILITY.WASTE.WASTE_DISPOSAL | FACILITY.WASTE.WASTE_BASKET | FACILITY.PET | FACILITY.PET.VETERINARY | FACILITY.PET.PETSHOP | FACILITY.PET.GROOMING | FACILITY.PUBLIC_SERVICE | FACILITY.PUBLIC_SERVICE.TOWNHALL | FACILITY.PUBLIC_SERVICE.COURTHOUSE | FACILITY.PUBLIC_SERVICE.POLICE | FACILITY.PUBLIC_SERVICE.FIRESTATION | FACILITY.PUBLIC_SERVICE.POST_OFFICE | FACILITY.PUBLIC_SERVICE.PUBLIC_BATH | FACILITY.PUBLIC_SERVICE.PRISON | FACILITY.RESTING_PLACE | FACILITY.RESTING_PLACE.CEMETERY | FACILITY.RESTING_PLACE.GRAVEYARD | FACILITY.RESTING_PLACE.CREMATORIUM | FACILITY.RESTING_PLACE.FUNERAL_HALL | FACILITY.RESTING_PLACE.GRAVE | FACILITY.URBAN_PROPS | FACILITY.URBAN_PROPS.POST_BOX | FACILITY.URBAN_PROPS.PARCEL_LOCKER | FACILITY.URBAN_PROPS.VENDING_MACHINE | FACILITY.URBAN_PROPS.TELEPHONE | FACILITY.URBAN_PROPS.PHOTOBOOTH | FACILITY.URBAN_PROPS.WATER | FACILITY.URBAN_PROPS.SHELTER | FACILITY.URBAN_PROPS.SHOWER | FACILITY.URBAN_PROPS.TOILETS | FACILITY.URBAN_PROPS.DOG_TOILET | FACILITY.URBAN_PROPS.SEAT | FACILITY.URBAN_PROPS.TABLE | FACILITY.FINANCIAL | FACILITY.FINANCIAL.ATM | FACILITY.FINANCIAL.BANK | FACILITY.FINANCIAL.BUREAU_DE_CHANGE | FACILITY.VEHICLE | FACILITY.VEHICLE.CAR_REPAIR | FACILITY.VEHICLE.GARAGES | FACILITY.VEHICLE.BICYCLE_PARKING | FACILITY.VEHICLE.BICYCLE_REPAIR_STATION | FACILITY.VEHICLE.BICYCLE_RENTAL | FACILITY.VEHICLE.BOAT_RENTAL | FACILITY.VEHICLE.BOAT_SHARING | FACILITY.VEHICLE.CAR_WASH | FACILITY.VEHICLE.VEHICLE_INSPECTION | FACILITY.VEHICLE.CHARGING_STATION | FACILITY.VEHICLE.FUEL | FACILITY.VEHICLE.PARKING | FACILITY.VEHICLE.MOTORCYCLE_PARKING | FACILITY.EATING | FACILITY.EATING.RESTAURANT | FACILITY.EATING.FAST_FOOD | FACILITY.EATING.ICECREAM | FACILITY.DRINKING | FACILITY.DRINKING.CAFE | FACILITY.DRINKING.BAR | FACILITY.DRINKING.PUB | FACILITY.DRINKING.BIERGARDEN | FACILITY.ACCOMODATION | FACILITY.ACCOMODATION.HOTEL | FACILITY.ACCOMODATION.HOSTEL | FACILITY.ACCOMODATION.MOTEL | FACILITY.ACCOMODATION.CAMP_SITE | FACILITY.ACCOMODATION.TOURISM_APPARTMENT | LEISURE | LEISURE.CULTURE | LEISURE.CULTURE.CINEMA | LEISURE.CULTURE.MUSIC | LEISURE.CULTURE.THEATRE | LEISURE.CULTURE.DANCE | LEISURE.CULTURE.ARTS | LEISURE.CULTURE.MUSEUM | LEISURE.CULTURE.PLANETARIUM | LEISURE.CULTURE.GALLERY | LEISURE.CULTURE.EVENTS_VENUE | LEISURE.CULTURE.THEME_PARK | LEISURE.CULTURE.STADIUM | LEISURE.NIGHTLIFE | LEISURE.NIGHTLIFE.CASINO | LEISURE.NIGHTLIFE.NIGHTCLUB | LEISURE.NIGHTLIFE.GAMBLING | LEISURE.NIGHTLIFE.SEX | LEISURE.OUTDOOR | LEISURE.OUTDOOR.PARK | LEISURE.OUTDOOR.ZOO | LEISURE.OUTDOOR.SQUARE | LEISURE.OUTDOOR.SWIMMING_AREA | LEISURE.OUTDOOR.PICNIC_SITE | LEISURE.OUTDOOR.FITNESS | LEISURE.OUTDOOR.PLAYGROUND | LEISURE.OUTDOOR.RESORT | LEISURE.OUTDOOR.NATURE_RESERVE | LEISURE.OUTDOOR.FOREST | LEISURE.SPORT | LEISURE.SPORT.SPORTS_CENTRE | LEISURE.SPORT.SWIMMING_POOL | LEISURE.SPORT.GYM | LEISURE.SPORT.BASKETBALL | LEISURE.SPORT.BILLIARDS | LEISURE.SPORT.BOWLING | LEISURE.SPORT.BOXING | LEISURE.SPORT.CHESS | LEISURE.SPORT.CLIMBING | LEISURE.SPORT.CROSSFIT | LEISURE.SPORT.EQUESTRIAN | LEISURE.SPORT.FISHING | LEISURE.SPORT.FOOTBALL | LEISURE.SPORT.GOLF | LEISURE.SPORT.HANDBALL | LEISURE.SPORT.MARTIAL_ARTS | LEISURE.SPORT.MOTOCROSS | LEISURE.SPORT.SHOOTING | LEISURE.SPORT.SKIING | LEISURE.SPORT.TABLE_TENNIS | LEISURE.SPORT.TENNIS | LEISURE.SPORT.YOGA | HIGHLIGHT | HIGHLIGHT.RELIGION | HIGHLIGHT.RELIGION.MONASTERY | HIGHLIGHT.RELIGION.CHAPEL | HIGHLIGHT.RELIGION.CHURCH | HIGHLIGHT.RELIGION.CATHEDRAL | HIGHLIGHT.RELIGION.CROSS | HIGHLIGHT.RELIGION.SHRINE | HIGHLIGHT.RELIGION.WAYSIDE_SHRINE | HIGHLIGHT.RELIGION.MOSQUE | HIGHLIGHT.RELIGION.SYNAGOGE | HIGHLIGHT.LANDMARK | HIGHLIGHT.LANDMARK.ARCHEOLOGICAL | HIGHLIGHT.LANDMARK.BUNKER | HIGHLIGHT.LANDMARK.CASTLE | HIGHLIGHT.LANDMARK.CHARCOAL_PILE | HIGHLIGHT.LANDMARK.CITY_GATE | HIGHLIGHT.LANDMARK.CITY_WALL | HIGHLIGHT.LANDMARK.FOUNTAIN | HIGHLIGHT.LANDMARK.MEMORIAL | HIGHLIGHT.LANDMARK.MONUMENT | HIGHLIGHT.LANDMARK.MILESTONE | HIGHLIGHT.LANDMARK.MINE | HIGHLIGHT.LANDMARK.RUINS | HIGHLIGHT.LANDMARK.STATUE | ACTIVITY | ACTIVITY.GOVERNMENT | ACTIVITY.GOVERNMENT.OFFICE | ACTIVITY.GOVERNMENT.LEGISLATIVE | ACTIVITY.GOVERNMENT.EMBASSY | ACTIVITY.GOVERNMENT.CONSULATE | ACTIVITY.GOVERNMENT.TAX | ACTIVITY.GOVERNMENT.ADMINISTRATIVE | ACTIVITY.GOVERNMENT.MINISTRY | ACTIVITY.GOVERNMENT.CADASTRE | ACTIVITY.GOVERNMENT.AUDIT | ACTIVITY.GOVERNMENT.EMERGENCY | ACTIVITY.MILITARY | ACTIVITY.MILITARY.AREA | ACTIVITY.MILITARY.BASE | ACTIVITY.MILITARY.OFFICE | ACTIVITY.MILITARY.ACADEMY | ACTIVITY.MILITARY.TRAINING_AREA | ACTIVITY.MILITARY.AIRFIELD | ACTIVITY.POWER | ACTIVITY.POWER.COAL_PLANT | ACTIVITY.POWER.OIL_PLANT | ACTIVITY.POWER.GAS_PLANT | ACTIVITY.POWER.HYDRO_PLANT | ACTIVITY.POWER.BIOMASS_PLANT | ACTIVITY.POWER.NUCLEAR_PLANT | ACTIVITY.POWER.WASTE_PLANT | ACTIVITY.POWER.SOLARFARM | ACTIVITY.POWER.WINDFARM | ACTIVITY.INDUSTRY | ACTIVITY.INDUSTRY.OIL | ACTIVITY.INDUSTRY.GAS | ACTIVITY.INDUSTRY.QUARRY | ACTIVITY.INDUSTRY.MINE | ACTIVITY.INDUSTRY.WATER | ACTIVITY.INDUSTRY.DAM | ACTIVITY.INDUSTRY.SALTPOND | ACTIVITY.INDUSTRY.WASTE_WATER | ACTIVITY.INDUSTRY.WATER_TOWER | ACTIVITY.INDUSTRY.HARBOR | ACTIVITY.INDUSTRY.LOGISTICS | ACTIVITY.INDUSTRY.POST_DEPOT | ACTIVITY.INDUSTRY.BRICKYARD | ACTIVITY.INDUSTRY.DEPOT | ACTIVITY.INDUSTRY.SCRAP_YARD | ACTIVITY.INDUSTRY.SHIPYARD | ACTIVITY.INDUSTRY.MILL | ACTIVITY.INDUSTRY.BAKERY | ACTIVITY.INDUSTRY.SLAUGHTERHOUSE | ACTIVITY.INDUSTRY.FARM | ACTIVITY.SERVICE | ACTIVITY.SERVICE.ACCOUNTANT | ACTIVITY.SERVICE.ARCHITECT | ACTIVITY.SERVICE.ADVERTISING | ACTIVITY.SERVICE.CHAMBER | ACTIVITY.SERVICE.COMPANY | ACTIVITY.SERVICE.ENGINEER | ACTIVITY.SERVICE.LAWYER | ACTIVITY.SERVICE.LOGISTICS | ACTIVITY.SERVICE.NEWSPAPER | ACTIVITY.SERVICE.NOTARY | ACTIVITY.SERVICE.PUBLISHER | ACTIVITY.SERVICE.RESEARCH | ACTIVITY.SERVICE.STUDIO | ACTIVITY.SERVICE.SURVEYOR | ACTIVITY.SERVICE.TAX_ADVISOR;
+        subtypes?: Stadtkreis | Landkreis | GROCERY | GROCERY.MIXED | GROCERY.MIXED.LOCAL_STORE | GROCERY.MIXED.SUPERMARKET | GROCERY.MIXED.GENERAL_STORE | GROCERY.MIXED.WHOLESALE | GROCERY.MIXED.MARKETPLACE | GROCERY.SPECIALIZED | GROCERY.SPECIALIZED.BAKERY | GROCERY.SPECIALIZED.BUTCHER | GROCERY.SPECIALIZED.CHEESE | GROCERY.SPECIALIZED.CHOCOLATE | GROCERY.SPECIALIZED.COFFEE | GROCERY.SPECIALIZED.CONFECTIONERY | GROCERY.SPECIALIZED.DAIRY | GROCERY.SPECIALIZED.DELICATESSEN | GROCERY.SPECIALIZED.SHOP_FARM | GROCERY.SPECIALIZED.FROZEN_FOOD | GROCERY.SPECIALIZED.GREENGROCER | GROCERY.SPECIALIZED.HEALTH_FOOD | GROCERY.SPECIALIZED.ICECREAM | GROCERY.SPECIALIZED.PASTA | GROCERY.SPECIALIZED.PASTRY | GROCERY.SPECIALIZED.SEAFOOD | GROCERY.SPECIALIZED.SPICES | GROCERY.SPECIALIZED.TEA | GROCERY.DRINKS | GROCERY.DRINKS.ALCOHOL | GROCERY.DRINKS.BEVERAGES | GROCERY.DRINKS.WINE | GROCERY.DRINKS.WATER | HEALTH | HEALTH.ESTABLISHMENT | HEALTH.ESTABLISHMENT.CLINIC | HEALTH.ESTABLISHMENT.HOSPITAL | HEALTH.ESTABLISHMENT.LABORATORY | HEALTH.ESTABLISHMENT.SOCIAL_FACILITY | HEALTH.ESTABLISHMENT.NURSING_HOME | HEALTH.PRODUCT | HEALTH.PRODUCT.PHARMACY | HEALTH.PRODUCT.MEDICAL_SUPPLY | HEALTH.PRODUCT.OPTICIAN | HEALTH.PRODUCT.AUDIOLOGIST | HEALTH.SPECIALIST | HEALTH.SPECIALIST.DOCTOR | HEALTH.SPECIALIST.DENTIST | HEALTH.SPECIALIST.OPTOMETRIST | HEALTH.SPECIALIST.AUDIOLOGIST | HEALTH.SPECIALIST.MIDWIFE | HEALTH.SPECIALIST.NURSE | HEALTH.SPECIALIST.OCCUPATIONAL_THERAPIST | HEALTH.SPECIALIST.PHYSIOTHERAPIST | HEALTH.SPECIALIST.REHABILITATION | HEALTH.SPECIALIST.SPEECH_THERAPIST | HEALTH.SPECIALIST.ALTERNATIVE_MEDICINE | EDUCATION | EDUCATION.CORE | EDUCATION.CORE.KINDERGARTEN | EDUCATION.CORE.SCHOOL | EDUCATION.CORE.UNIVERSITY | EDUCATION.CORE.COLLEGE | EDUCATION.SKILLS_LEARNING | EDUCATION.SKILLS_LEARNING.DRIVING_SCHOOL | EDUCATION.SKILLS_LEARNING.MUSIC_SCHOOL | EDUCATION.SKILLS_LEARNING.LANGUAGE_SCHOOL | EDUCATION.SKILLS_LEARNING.SKILLS_TRAINING | EDUCATION.MATERIAL | EDUCATION.MATERIAL.LIBRARY | EDUCATION.MATERIAL.BOOK_SHOP | TRANSPORT | TRANSPORT.TRAIN | TRANSPORT.TRAIN.STATION | TRANSPORT.TRAIN.INTERCITY_LINE | TRANSPORT.TRAIN.HIGHSPEED_LINE | TRANSPORT.URBAN_TRAIN | TRANSPORT.URBAN_TRAIN.STATION | TRANSPORT.URBAN_TRAIN.LINE | TRANSPORT.SUBWAY | TRANSPORT.SUBWAY.STATION | TRANSPORT.SUBWAY.LINE | TRANSPORT.TRAM | TRANSPORT.TRAM.STATION | TRANSPORT.TRAM.LINE | TRANSPORT.BUS_STOP | TRANSPORT.AIRPORT | TRANSPORT.AIRSTRIP | TRANSPORT.HELIPORT | TRANSPORT.FERRY | TRANSPORT.SEAPORT | TRANSPORT.LIGHTHOUSE | TRANSPORT.BRIDGE | SHOPPING | SHOPPING.LUXURY | SHOPPING.LUXURY.JEWELRY | SHOPPING.LUXURY.PERFUMERY | SHOPPING.LUXURY.WATCHES | SHOPPING.LUXURY.FASHION | SHOPPING.LUXURY.ART | SHOPPING.CLOTHING | SHOPPING.CLOTHING.CLOTHES | SHOPPING.CLOTHING.LEATHER | SHOPPING.CLOTHING.SHOES | SHOPPING.CLOTHING.BAG | SHOPPING.CLOTHING.FABRIC | SHOPPING.CARE | SHOPPING.CARE.HAIR_SUPPLY | SHOPPING.CARE.BEAUTY | SHOPPING.CARE.BABY_GOODS | SHOPPING.CARE.TATTOO | SHOPPING.MIXED | SHOPPING.MIXED.DRUGSTORE | SHOPPING.MIXED.SHOPPING_CENTER | SHOPPING.MIXED.STATIONERY | SHOPPING.MIXED.VARIETY_STORE | SHOPPING.LEISURE | SHOPPING.LEISURE.GIFTS | SHOPPING.LEISURE.PARTY | SHOPPING.LEISURE.TOYS | SHOPPING.LEISURE.SPORTS | SHOPPING.LEISURE.KIOSK | SHOPPING.LEISURE.CRAFT | SHOPPING.LEISURE.MUSIC | SHOPPING.LEISURE.CAMERA | SHOPPING.LEISURE.MOBILE | SHOPPING.LEISURE.COMPUTE | SHOPPING.LEISURE.VIDEO_GAMES | SHOPPING.LEISURE.EROTIC | SHOPPING.HOME | SHOPPING.HOME.APPLIANCE | SHOPPING.HOME.FURNITURE | SHOPPING.HOME.DECORATION | SHOPPING.HOME.SECOND_HAND | SHOPPING.HOME.ELECTRICAL | SHOPPING.HOME.HARDWARE | SHOPPING.HOME.MATERIAL | SHOPPING.HOME.PAINT | SHOPPING.HOME.GARDEN | SHOPPING.HOME.ENERGY | SHOPPING.VEHICLE | SHOPPING.VEHICLE.CAR | SHOPPING.VEHICLE.BICYCLE | SHOPPING.VEHICLE.CAR_PARTS | FACILITY | FACILITY.DIVERSE | FACILITY.DIVERSE.LAUNDRY | FACILITY.DIVERSE.TAILOR | FACILITY.DIVERSE.FLORIST | FACILITY.DIVERSE.LOCKSMITH | FACILITY.DIVERSE.PHOTOGRAPHER | FACILITY.DIVERSE.INTERNET_CAFE | FACILITY.DIVERSE.PRINTING | FACILITY.DIVERSE.SHOE_REPAIR | FACILITY.DIVERSE.REPAIR_SHOP | FACILITY.DIVERSE.COURIER | FACILITY.DIVERSE.TRAVEL_AGENCY | FACILITY.DIVERSE.EMPLOYMENT_AGENCY | FACILITY.CARE | FACILITY.CARE.MASSAGE | FACILITY.CARE.HAIRDRESSER | FACILITY.CARE.BEAUTY_PARLOR | FACILITY.CARE.SAUNA | FACILITY.CARE.TANNING_SALON | FACILITY.ARTISAN | FACILITY.ARTISAN.CARPENTER | FACILITY.ARTISAN.FLOORER | FACILITY.ARTISAN.MASON | FACILITY.ARTISAN.PLUMBER | FACILITY.ARTISAN.PAINTER | FACILITY.ARTISAN.ELECTRICIAN | FACILITY.ARTISAN.GARDENER | FACILITY.ARTISAN.CATERER | FACILITY.ARTISAN.ROOFER | FACILITY.ARTISAN.METAL_WORKER | FACILITY.WASTE | FACILITY.WASTE.RECYCLING | FACILITY.WASTE.WASTE_DISPOSAL | FACILITY.WASTE.WASTE_BASKET | FACILITY.PETS | FACILITY.PETS.VETERINARY | FACILITY.PETS.PETSHOP | FACILITY.PETS.GROOMING | FACILITY.PUBLIC_SERVICE | FACILITY.PUBLIC_SERVICE.TOWNHALL | FACILITY.PUBLIC_SERVICE.COURTHOUSE | FACILITY.PUBLIC_SERVICE.POLICE | FACILITY.PUBLIC_SERVICE.FIRESTATION | FACILITY.PUBLIC_SERVICE.POST_OFFICE | FACILITY.PUBLIC_SERVICE.PUBLIC_BATH | FACILITY.PUBLIC_SERVICE.PRISON | FACILITY.RESTING_PLACE | FACILITY.RESTING_PLACE.CEMETERY | FACILITY.RESTING_PLACE.GRAVEYARD | FACILITY.RESTING_PLACE.CREMATORIUM | FACILITY.RESTING_PLACE.FUNERAL_HALL | FACILITY.RESTING_PLACE.GRAVE | FACILITY.URBAN_PROPS | FACILITY.URBAN_PROPS.POST_BOX | FACILITY.URBAN_PROPS.PARCEL_LOCKER | FACILITY.URBAN_PROPS.VENDING_MACHINE | FACILITY.URBAN_PROPS.TELEPHONE | FACILITY.URBAN_PROPS.PHOTOBOOTH | FACILITY.URBAN_PROPS.WATER | FACILITY.URBAN_PROPS.SHELTER | FACILITY.URBAN_PROPS.SHOWER | FACILITY.URBAN_PROPS.TOILETS | FACILITY.URBAN_PROPS.DOG_TOILET | FACILITY.URBAN_PROPS.SEAT | FACILITY.URBAN_PROPS.TABLE | FACILITY.FINANCIAL | FACILITY.FINANCIAL.ATM | FACILITY.FINANCIAL.BANK | FACILITY.FINANCIAL.BUREAU_DE_CHANGE | FACILITY.VEHICLE | FACILITY.VEHICLE.CAR_REPAIR | FACILITY.VEHICLE.GARAGES | FACILITY.VEHICLE.BICYCLE_PARKING | FACILITY.VEHICLE.BICYCLE_REPAIR_STATION | FACILITY.VEHICLE.BICYCLE_RENTAL | FACILITY.VEHICLE.BOAT_RENTAL | FACILITY.VEHICLE.BOAT_SHARING | FACILITY.VEHICLE.CAR_WASH | FACILITY.VEHICLE.VEHICLE_INSPECTION | FACILITY.VEHICLE.CHARGING_STATION | FACILITY.VEHICLE.FUEL | FACILITY.VEHICLE.PARKING | FACILITY.VEHICLE.MOTORCYCLE_PARKING | FACILITY.EATING | FACILITY.EATING.RESTAURANT | FACILITY.EATING.FAST_FOOD | FACILITY.EATING.ICECREAM | FACILITY.DRINKING | FACILITY.DRINKING.CAFE | FACILITY.DRINKING.BAR | FACILITY.DRINKING.PUB | FACILITY.DRINKING.BIERGARDEN | FACILITY.ACCOMODATION | FACILITY.ACCOMODATION.HOTEL | FACILITY.ACCOMODATION.HOSTEL | FACILITY.ACCOMODATION.MOTEL | FACILITY.ACCOMODATION.CAMP_SITE | FACILITY.ACCOMODATION.TOURISM_APPARTMENT | LEISURE | LEISURE.CULTURE | LEISURE.CULTURE.CINEMA | LEISURE.CULTURE.MUSIC | LEISURE.CULTURE.THEATRE | LEISURE.CULTURE.DANCE | LEISURE.CULTURE.ARTS | LEISURE.CULTURE.MUSEUM | LEISURE.CULTURE.PLANETARIUM | LEISURE.CULTURE.GALLERY | LEISURE.CULTURE.EVENTS_VENUE | LEISURE.CULTURE.THEME_PARK | LEISURE.CULTURE.STADIUM | LEISURE.NIGHTLIFE | LEISURE.NIGHTLIFE.CASINO | LEISURE.NIGHTLIFE.NIGHTCLUB | LEISURE.NIGHTLIFE.GAMBLING | LEISURE.NIGHTLIFE.SEX | LEISURE.OUTDOOR | LEISURE.OUTDOOR.PARK | LEISURE.OUTDOOR.ZOO | LEISURE.OUTDOOR.SQUARE | LEISURE.OUTDOOR.SWIMMING_AREA | LEISURE.OUTDOOR.PICNIC_SITE | LEISURE.OUTDOOR.FITNESS | LEISURE.OUTDOOR.PLAYGROUND | LEISURE.OUTDOOR.RESORT | LEISURE.OUTDOOR.NATURE_RESERVE | LEISURE.OUTDOOR.FOREST | LEISURE.SPORT | LEISURE.SPORT.SPORTS_CENTRE | LEISURE.SPORT.SWIMMING_POOL | LEISURE.SPORT.GYM | LEISURE.SPORT.BASKETBALL | LEISURE.SPORT.BILLIARDS | LEISURE.SPORT.BOWLING | LEISURE.SPORT.BOXING | LEISURE.SPORT.CHESS | LEISURE.SPORT.CLIMBING | LEISURE.SPORT.CROSSFIT | LEISURE.SPORT.EQUESTRIAN | LEISURE.SPORT.FISHING | LEISURE.SPORT.FOOTBALL | LEISURE.SPORT.GOLF | LEISURE.SPORT.HANDBALL | LEISURE.SPORT.MARTIAL_ARTS | LEISURE.SPORT.MOTOCROSS | LEISURE.SPORT.SHOOTING | LEISURE.SPORT.SKIING | LEISURE.SPORT.TABLE_TENNIS | LEISURE.SPORT.TENNIS | LEISURE.SPORT.YOGA | HIGHLIGHT | HIGHLIGHT.RELIGION | HIGHLIGHT.RELIGION.MONASTERY | HIGHLIGHT.RELIGION.CHAPEL | HIGHLIGHT.RELIGION.CHURCH | HIGHLIGHT.RELIGION.CATHEDRAL | HIGHLIGHT.RELIGION.CROSS | HIGHLIGHT.RELIGION.SHRINE | HIGHLIGHT.RELIGION.WAYSIDE_SHRINE | HIGHLIGHT.RELIGION.MOSQUE | HIGHLIGHT.RELIGION.SYNAGOGE | HIGHLIGHT.LANDMARK | HIGHLIGHT.LANDMARK.ARCHEOLOGICAL | HIGHLIGHT.LANDMARK.BUNKER | HIGHLIGHT.LANDMARK.CASTLE | HIGHLIGHT.LANDMARK.CHARCOAL_PILE | HIGHLIGHT.LANDMARK.CITY_GATE | HIGHLIGHT.LANDMARK.CITY_WALL | HIGHLIGHT.LANDMARK.FOUNTAIN | HIGHLIGHT.LANDMARK.MEMORIAL | HIGHLIGHT.LANDMARK.MONUMENT | HIGHLIGHT.LANDMARK.MILESTONE | HIGHLIGHT.LANDMARK.MINE | HIGHLIGHT.LANDMARK.RUINS | HIGHLIGHT.LANDMARK.STATUE | ACTIVITY | ACTIVITY.GOVERNMENT | ACTIVITY.GOVERNMENT.OFFICE | ACTIVITY.GOVERNMENT.LEGISLATIVE | ACTIVITY.GOVERNMENT.EMBASSY | ACTIVITY.GOVERNMENT.CONSULATE | ACTIVITY.GOVERNMENT.TAX | ACTIVITY.GOVERNMENT.ADMINISTRATIVE | ACTIVITY.GOVERNMENT.MINISTRY | ACTIVITY.GOVERNMENT.CADASTRE | ACTIVITY.GOVERNMENT.AUDIT | ACTIVITY.GOVERNMENT.EMERGENCY | ACTIVITY.MILITARY | ACTIVITY.MILITARY.AREA | ACTIVITY.MILITARY.BASE | ACTIVITY.MILITARY.OFFICE | ACTIVITY.MILITARY.ACADEMY | ACTIVITY.MILITARY.TRAINING_AREA | ACTIVITY.MILITARY.AIRFIELD | ACTIVITY.POWER | ACTIVITY.POWER.COAL_PLANT | ACTIVITY.POWER.OIL_PLANT | ACTIVITY.POWER.GAS_PLANT | ACTIVITY.POWER.HYDRO_PLANT | ACTIVITY.POWER.BIOMASS_PLANT | ACTIVITY.POWER.NUCLEAR_PLANT | ACTIVITY.POWER.WASTE_PLANT | ACTIVITY.POWER.SOLARFARM | ACTIVITY.POWER.WINDFARM | ACTIVITY.INDUSTRY | ACTIVITY.INDUSTRY.OIL | ACTIVITY.INDUSTRY.GAS | ACTIVITY.INDUSTRY.QUARRY | ACTIVITY.INDUSTRY.MINE | ACTIVITY.INDUSTRY.WATER | ACTIVITY.INDUSTRY.DAM | ACTIVITY.INDUSTRY.SALTPOND | ACTIVITY.INDUSTRY.WASTE_WATER | ACTIVITY.INDUSTRY.WATER_TOWER | ACTIVITY.INDUSTRY.HARBOR | ACTIVITY.INDUSTRY.LOGISTICS | ACTIVITY.INDUSTRY.POST_DEPOT | ACTIVITY.INDUSTRY.BRICKYARD | ACTIVITY.INDUSTRY.DEPOT | ACTIVITY.INDUSTRY.SCRAP_YARD | ACTIVITY.INDUSTRY.SHIPYARD | ACTIVITY.INDUSTRY.MILL | ACTIVITY.INDUSTRY.BAKERY | ACTIVITY.INDUSTRY.SLAUGHTERHOUSE | ACTIVITY.INDUSTRY.FARM | ACTIVITY.SERVICE | ACTIVITY.SERVICE.ACCOUNTANT | ACTIVITY.SERVICE.ARCHITECT | ACTIVITY.SERVICE.ADVERTISING | ACTIVITY.SERVICE.CHAMBER | ACTIVITY.SERVICE.COMPANY | ACTIVITY.SERVICE.ENGINEER | ACTIVITY.SERVICE.LAWYER | ACTIVITY.SERVICE.LOGISTICS | ACTIVITY.SERVICE.NEWSPAPER | ACTIVITY.SERVICE.NOTARY | ACTIVITY.SERVICE.PUBLISHER | ACTIVITY.SERVICE.RESEARCH | ACTIVITY.SERVICE.STUDIO | ACTIVITY.SERVICE.SURVEYOR | ACTIVITY.SERVICE.TAX_ADVISOR | HIGH_SCHOOL | SECONDARY_SCHOOL | PRIMARY_SCHOOL;
         /**
          * @description The key from which you want your result set to start from.<details><summary>Click here to get details on how this works.</summary>
          *
@@ -1459,6 +2213,415 @@ export interface operations {
       200: {
         content: {
           "application/json": components["schemas"]["PlaceAPIMultiResponse"];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        content: never;
+      };
+      /**
+       * @description
+       * Can happen if :
+       * - you use an invalid ApiKey ([here to have the apikey](https://avivgroup.atlassian.net/wiki/spaces/AGRS/pages/248876591/Request+your+AVIV+Geo+Services+or+Mapbox+API+key+here))
+       * - your access is not allowed by the [WAF](https://avivgroup.atlassian.net/wiki/spaces/AEP/pages/205758886/AWS+WAF) (ex: not from the VPN)
+       * - your request is not allowed by a [WAF](https://avivgroup.atlassian.net/wiki/spaces/AEP/pages/205758886/AWS+WAF) security rule (ex: SQL injection protection)
+       */
+      403: {
+        content: {
+          "text/html": string;
+        };
+      };
+      /** @description Requested Range Not Satisfiable */
+      416: {
+        content: never;
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+      /** @description Raised in case of network issue with AWS API Gateway, must be ephemeral. */
+      502: {
+        content: {
+          "application/json": {
+            /**
+             * Format: string
+             * @example Bad gateway
+             */
+            message?: string;
+          };
+        };
+      };
+      /** @description Raised in case of network issue with AWS API Gateway, must be ephemeral. */
+      504: {
+        content: {
+          "application/json": {
+            /**
+             * Format: string
+             * @example Network error communicating with endpoint
+             */
+            message?: string;
+          };
+        };
+      };
+    };
+  };
+  /** Get Lineage Entries */
+  get_lineage_entries_lineage_get: {
+    parameters: {
+      query: {
+        /** @description Country from which you want to find the changes, BE, DE, FR, AT or CH */
+        country: "FR" | "DE" | "BE" | "AT" | "CH";
+        /** @description Date since the changes are active (format YYYY-MM-DD). */
+        since_date: string;
+        /**
+         * @description The key from which you want your result set to start from.<details><summary>Click here to get details on how this works.</summary>
+         *
+         * Your result set will only contain keys greater than the one passed in argument if your sort is ascending, or lower if your sort is descending. It is a bit like a cursor that you have to manage yourself when calling the API. Please note that this keyset is not necessarily a sequence of following numbers. Furthermore, if you pass a keyset at 0 for a descending sort order, it will give you the n last results of the set. However, please keep in mind that the following keysets will be in descending order, starting from the highest one.
+         *
+         * If you are on the last page of your result set, you will receive a null keyset. If you want to go to the previous page, you have two possibilities:
+         * - Store your keysets one by one when iterating through pages and pop the last keyset when you want to access the previous page
+         * - Use the next keyset with an opposite order then sort the results in a reverse order as you receive them.
+         *
+         * Example: you ask for all cities in a country in ascending order of names and your first page contains 10 results, your next keyset is 13 (it is not 11 because the keyset sequence is not composed on followingnumbers, as 2 results in our example have been filtered). In order to retrieve the following page, you will have to pass the keyset parameter to 13. You will then receive the 10 following results and, for the sake of this example, a next keyset at 27. You now want to retrieve the previous page. You can either:
+         * - Send the same call with keyset 13 (that means you stored it in an array and popped the last value)
+         * - Send a call with keyset 27 in descending order of names (that means you need to re-sort in ascending order once you get the results).
+         *
+         * ![keyset](https://lh6.googleusercontent.com/bp-09JYlh8K8Q9rVHG-8RTMAqo7UG6XGnD6CTbApERLNvsMkoLcYIVfLUl6DcTFVfF4=w2400)</details>
+         */
+        keyset?: number;
+        limit?: number;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PlaceAPILineageResponse"];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        content: never;
+      };
+      /**
+       * @description
+       * Can happen if :
+       * - you use an invalid ApiKey ([here to have the apikey](https://avivgroup.atlassian.net/wiki/spaces/AGRS/pages/248876591/Request+your+AVIV+Geo+Services+or+Mapbox+API+key+here))
+       * - your access is not allowed by the [WAF](https://avivgroup.atlassian.net/wiki/spaces/AEP/pages/205758886/AWS+WAF) (ex: not from the VPN)
+       * - your request is not allowed by a [WAF](https://avivgroup.atlassian.net/wiki/spaces/AEP/pages/205758886/AWS+WAF) security rule (ex: SQL injection protection)
+       */
+      403: {
+        content: {
+          "text/html": string;
+        };
+      };
+      /** @description Requested Range Not Satisfiable */
+      416: {
+        content: never;
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+      /** @description Raised in case of network issue with AWS API Gateway, must be ephemeral. */
+      502: {
+        content: {
+          "application/json": {
+            /**
+             * Format: string
+             * @example Bad gateway
+             */
+            message?: string;
+          };
+        };
+      };
+      /** @description Raised in case of network issue with AWS API Gateway, must be ephemeral. */
+      504: {
+        content: {
+          "application/json": {
+            /**
+             * Format: string
+             * @example Network error communicating with endpoint
+             */
+            message?: string;
+          };
+        };
+      };
+    };
+  };
+  /** Get Random Address */
+  get_random_address_business_random_address_get: {
+    parameters: {
+      query: {
+        /** @description Longitude */
+        longitude?: number | null;
+        /** @description Latitude */
+        latitude?: number | null;
+        /** @description Radius in meters where the address cannot be located */
+        exclusion_radius: number;
+        /** @description A seed to control pseudo-random algorithm */
+        seed?: string | null;
+        /** @description The id of the address */
+        honu_id?: string | null;
+        /** @description The AVIV Geo ID of the place */
+        place_id: string;
+        /** @description List of parent types to include */
+        parent_types?: string[];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PlaceAPISingleResponse"];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        content: never;
+      };
+      /**
+       * @description
+       * Can happen if :
+       * - you use an invalid ApiKey ([here to have the apikey](https://avivgroup.atlassian.net/wiki/spaces/AGRS/pages/248876591/Request+your+AVIV+Geo+Services+or+Mapbox+API+key+here))
+       * - your access is not allowed by the [WAF](https://avivgroup.atlassian.net/wiki/spaces/AEP/pages/205758886/AWS+WAF) (ex: not from the VPN)
+       * - your request is not allowed by a [WAF](https://avivgroup.atlassian.net/wiki/spaces/AEP/pages/205758886/AWS+WAF) security rule (ex: SQL injection protection)
+       */
+      403: {
+        content: {
+          "text/html": string;
+        };
+      };
+      /** @description Not Found */
+      404: {
+        content: never;
+      };
+      /** @description Requested Range Not Satisfiable */
+      416: {
+        content: never;
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+      /** @description Raised in case of network issue with AWS API Gateway, must be ephemeral. */
+      502: {
+        content: {
+          "application/json": {
+            /**
+             * Format: string
+             * @example Bad gateway
+             */
+            message?: string;
+          };
+        };
+      };
+      /** @description Raised in case of network issue with AWS API Gateway, must be ephemeral. */
+      504: {
+        content: {
+          "application/json": {
+            /**
+             * Format: string
+             * @example Network error communicating with endpoint
+             */
+            message?: string;
+          };
+        };
+      };
+    };
+  };
+  /** Get Enrichment */
+  get_enrichment_business_enrichment_get: {
+    parameters: {
+      query?: {
+        /** @description The seed to use for address randomization */
+        randomization_seed?: string | null;
+        /** @description Longitude */
+        longitude?: number | null;
+        /** @description Latitude */
+        latitude?: number | null;
+        /** @description Whether to show the neighborhood or not */
+        hide_neighborhood?: boolean;
+        /** @description Whether we can display the address or not */
+        show_address?: boolean;
+        /** @description The AVIV Geo ID of the place */
+        place_id?: string | null;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["EnrichmentResponse"];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        content: never;
+      };
+      /**
+       * @description
+       * Can happen if :
+       * - you use an invalid ApiKey ([here to have the apikey](https://avivgroup.atlassian.net/wiki/spaces/AGRS/pages/248876591/Request+your+AVIV+Geo+Services+or+Mapbox+API+key+here))
+       * - your access is not allowed by the [WAF](https://avivgroup.atlassian.net/wiki/spaces/AEP/pages/205758886/AWS+WAF) (ex: not from the VPN)
+       * - your request is not allowed by a [WAF](https://avivgroup.atlassian.net/wiki/spaces/AEP/pages/205758886/AWS+WAF) security rule (ex: SQL injection protection)
+       */
+      403: {
+        content: {
+          "text/html": string;
+        };
+      };
+      /** @description Not Found */
+      404: {
+        content: never;
+      };
+      /** @description Precondition Failed */
+      412: {
+        content: never;
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+      /** @description Raised in case of network issue with AWS API Gateway, must be ephemeral. */
+      502: {
+        content: {
+          "application/json": {
+            /**
+             * Format: string
+             * @example Bad gateway
+             */
+            message?: string;
+          };
+        };
+      };
+      /** @description Raised in case of network issue with AWS API Gateway, must be ephemeral. */
+      504: {
+        content: {
+          "application/json": {
+            /**
+             * Format: string
+             * @example Network error communicating with endpoint
+             */
+            message?: string;
+          };
+        };
+      };
+    };
+  };
+  /** Get History By Id */
+  get_history_by_id_history__place_id__get: {
+    parameters: {
+      path: {
+        /** @description The id of the place, in format <type><country><index>, see available types on /relation/describe */
+        place_id: string;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["HistoryAPIResponse"];
+        };
+      };
+      /**
+       * @description
+       * Can happen if :
+       * - you use an invalid ApiKey ([here to have the apikey](https://avivgroup.atlassian.net/wiki/spaces/AGRS/pages/248876591/Request+your+AVIV+Geo+Services+or+Mapbox+API+key+here))
+       * - your access is not allowed by the [WAF](https://avivgroup.atlassian.net/wiki/spaces/AEP/pages/205758886/AWS+WAF) (ex: not from the VPN)
+       * - your request is not allowed by a [WAF](https://avivgroup.atlassian.net/wiki/spaces/AEP/pages/205758886/AWS+WAF) security rule (ex: SQL injection protection)
+       */
+      403: {
+        content: {
+          "text/html": string;
+        };
+      };
+      /** @description Not Found */
+      404: {
+        content: never;
+      };
+      /** @description Validation Error */
+      422: {
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+      /** @description Raised in case of network issue with AWS API Gateway, must be ephemeral. */
+      502: {
+        content: {
+          "application/json": {
+            /**
+             * Format: string
+             * @example Bad gateway
+             */
+            message?: string;
+          };
+        };
+      };
+      /** @description Raised in case of network issue with AWS API Gateway, must be ephemeral. */
+      504: {
+        content: {
+          "application/json": {
+            /**
+             * Format: string
+             * @example Network error communicating with endpoint
+             */
+            message?: string;
+          };
+        };
+      };
+    };
+  };
+  /** Get History */
+  get_history_history_get: {
+    parameters: {
+      query: {
+        /** @description Filter history starting from this date */
+        since?: string;
+        /**
+         * @description Choose types
+         * @example [
+         *   "CREATED"
+         * ]
+         */
+        types: components["schemas"]["HistoryType"][];
+        /**
+         * @description Country from which you want to find the changes, BE, DE, FR, AT, CH or MUNDO
+         * @example []
+         */
+        countries?: components["schemas"]["HistoryCountry"][];
+        /**
+         * @description The key from which you want your result set to start from.<details><summary>Click here to get details on how this works.</summary>
+         *
+         * Your result set will only contain keys greater than the one passed in argument if your sort is ascending, or lower if your sort is descending. It is a bit like a cursor that you have to manage yourself when calling the API. Please note that this keyset is not necessarily a sequence of following numbers. Furthermore, if you pass a keyset at 0 for a descending sort order, it will give you the n last results of the set. However, please keep in mind that the following keysets will be in descending order, starting from the highest one.
+         *
+         * If you are on the last page of your result set, you will receive a null keyset. If you want to go to the previous page, you have two possibilities:
+         * - Store your keysets one by one when iterating through pages and pop the last keyset when you want to access the previous page
+         * - Use the next keyset with an opposite order then sort the results in a reverse order as you receive them.
+         *
+         * Example: you ask for all cities in a country in ascending order of names and your first page contains 10 results, your next keyset is 13 (it is not 11 because the keyset sequence is not composed on followingnumbers, as 2 results in our example have been filtered). In order to retrieve the following page, you will have to pass the keyset parameter to 13. You will then receive the 10 following results and, for the sake of this example, a next keyset at 27. You now want to retrieve the previous page. You can either:
+         * - Send the same call with keyset 13 (that means you stored it in an array and popped the last value)
+         * - Send a call with keyset 27 in descending order of names (that means you need to re-sort in ascending order once you get the results).
+         *
+         * ![keyset](https://lh6.googleusercontent.com/bp-09JYlh8K8Q9rVHG-8RTMAqo7UG6XGnD6CTbApERLNvsMkoLcYIVfLUl6DcTFVfF4=w2400)</details>
+         */
+        keyset?: number;
+        limit?: number;
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        content: {
+          "application/json": components["schemas"]["HistoryAPIResponse"];
         };
       };
       /** @description Bad Request */
