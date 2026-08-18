@@ -123,15 +123,18 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
     geoId: geoData.AvivGeoId
   });
 
+  const avivGeoId = geo.id;
   try {
 
-    const avivGeoId = geo.id;
 
+    logger.info("step 1 : getClassifiedApiSecret");
 
     const apisecrets = await getClassifiedApiSecret();
     const cliApi = createClient<paths>({
       baseUrl: apisecrets.GeoPlaceApiUrl,
     })
+
+    logger.info("step 2 : set Middleware for api key", { apisecrets: apisecrets.GeoPlaceApiKey, baseUrl: apisecrets.GeoPlaceApiUrl });
 
     const myMiddleware: Middleware = {
       async onRequest(req, options) {
@@ -140,7 +143,15 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
         return req;
       }
     };
+
+
+
+    logger.info("step 3: use midddleware for api key", { apisecrets: apisecrets.GeoPlaceApiKey, baseUrl: apisecrets.GeoPlaceApiUrl });
+
+
     cliApi.use(myMiddleware);
+
+    logger.info("step 4 : use midddleware for api key", { apisecrets: apisecrets.GeoPlaceApiKey, baseUrl: apisecrets.GeoPlaceApiUrl });
     const {
       data, // only present if 2XX response
       error, // only present if 4XX or 5XX response
@@ -149,6 +160,10 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
         path: { place_id: avivGeoId },
       }
     });
+
+    logger.info("step 5 : use midddleware for api key", { geoFromApi: data, apisecrets: apisecrets.GeoPlaceApiKey, baseUrl: apisecrets.GeoPlaceApiUrl });
+
+
     if (error != null && error != undefined) {
 
       throw new Error("API response error: " + JSON.stringify(error));
