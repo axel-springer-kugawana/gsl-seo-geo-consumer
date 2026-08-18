@@ -155,7 +155,7 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
     const {
       data, // only present if 2XX response
       error, // only present if 4XX or 5XX response
-    } = await cliApi.GET("/places/{place_id}", {
+    } = await cliApi.GET("v1/places/{place_id}", {
       params: {
         path: { place_id: avivGeoId },
       }
