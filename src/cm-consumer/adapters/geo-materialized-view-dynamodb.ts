@@ -186,6 +186,7 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
       id: geo.id,
       error: JSON.stringify(error)
     });
+    throw error;
 
   }
 
@@ -207,7 +208,6 @@ const markDataAsDeleted = async (deleteCommand: { id: string, updateDate: any, g
     AvivGeoId: deleteCommand.geo?.id,
     Version: deleteCommand.updateDate?.toString(),
     Fallbacks: deleteCommand.geo.deleted?.fallback,
-    //  release_date: deleteCommand.geo.deleted?.release_date,
     Type: deleteCommand.geo?.type,
   };
 
