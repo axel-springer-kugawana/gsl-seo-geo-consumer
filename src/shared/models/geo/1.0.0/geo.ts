@@ -21,14 +21,6 @@ export interface GeoEntityBase {
   Names: GeoName[];
 }
 
-export interface Country extends GeoEntityBase {}
-
-export interface Municipality extends GeoEntityBase {}
-
-export interface Province extends GeoEntityBase {}
-
-export interface Region extends GeoEntityBase {}
-
 export interface ImmoweltLegacyMapping {
   Id: string;
 }
@@ -49,22 +41,23 @@ export interface SelogerLegacyMapping {
 }
 
 export interface Geo {
+  Macroregion: GeoEntityBase;
   AvivGeoId: string;
   Version: string;
   AvailableNeighborhoods: string[];
   Code: string;
-  Country: Country;
+  Country: GeoEntityBase;
   CountryCode: string;
   ImmoweltLegacyMappings: ImmoweltLegacyMapping[];
   IsFictive: boolean;
-  Level: number;
+  Level?: number;
   LogicImmoLegacyMapping: LogicImmoLegacyMapping;
-  Municipality: Municipality;
+  Municipality: GeoEntityBase;
   Names: GeoName[];
   NeighbouringGeoLevels: string[];
   PostalCodes: string[];
-  Province: Province;
-  Region: Region;
+  Province: GeoEntityBase;
+  Region: GeoEntityBase;
   SelogerLegacyMapping: SelogerLegacyMapping;
   SurroundingMunicipalitiesIds: string[];
   ttl: number;

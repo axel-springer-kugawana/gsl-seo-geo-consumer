@@ -3,15 +3,12 @@ import { marshall } from "@aws-sdk/util-dynamodb";
 import { fromSSO } from "@aws-sdk/credential-provider-sso";
 import { logger } from "@shared/cross-cutting/logger";
 import { getClassifiedApiSecret } from "../adapters/classified-api-secrets";
-// import axios from 'axios';
 import { GeoManagementStructure } from "@models";
 import { transformGeoManagementToGeo } from "./geoMapper";
 import { paths, components } from '../../shared/models/geo-api';
 import createClient from 'openapi-fetch';
 import { GeoEntityBase, GeoName } from '../../shared/models/geo/1.0.0/geo';
-
 import { Middleware } from 'openapi-fetch';
-
 
 // Configuration du client DynamoDB avec SSO pour le développement local
 const isLocal = process.env.AWS_EXECUTION_ENV === undefined;
@@ -32,20 +29,11 @@ const mapParentToGeoEntity = (parent: components["schemas"]["ParentFeature"]): G
     return null;
   }
 
-  const names: GeoName[] = Object.entries(parent.names ?? {}).flatMap(([language, localizedNames]) =>
-    (localizedNames ?? []).map(name => ({
-      DisplayName: name.display_name ?? name.name ?? "",
-      Language: language,
-      Name: name.name ?? name.display_name ?? "",
-      Slug: name.slug ?? "",
-    }))
-  );
-
   return {
     AvivGeoId: parent.id,
-    Code: parent.administrative_code ?? undefined,
+    Code: parent.main_postal_code ?? undefined,
     IsFictive: parent.fictive ?? false,
-    Names: names,
+    Names: mapDtoNames(parent.names ?? {}),
   };
 };
 
@@ -113,64 +101,31 @@ const updateDataInDynamoDB = async (id: string, marshalledData: Record<string, a
 }
 
 const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStructure): Promise<void> => {
-  const geoData = transformGeoManagementToGeo(geo);
+  let geoData = transformGeoManagementToGeo(geo);
 
-  // Marshall the geodata to DynamoDB format
-  let marshalledData = marshall(geoData, { removeUndefinedValues: true });
-
-  logger.info("Fetching geo hierarchy enrichment for classified", {
-    classifiedId: geo.id,
-    geoId: geoData.AvivGeoId
-  });
 
   const avivGeoId = geo.id;
   try {
 
-
-    logger.info("step 1 : getClassifiedApiSecret");
-
-    const apisecrets = await getClassifiedApiSecret();
-    const cliApi = createClient<paths>({
-      baseUrl: `${apisecrets.GeoPlaceApiUrl}/v1`,
-    })
-
-    logger.info("step 2 : set Middleware for api key", { apisecrets: apisecrets.GeoPlaceApiKey, baseUrl: apisecrets.GeoPlaceApiUrl });
-
-    const myMiddleware: Middleware = {
-      async onRequest(req, options) {
-        req.headers.set("accept", "application/json");
-        req.headers.set("X-Api-Key", apisecrets.GeoPlaceApiKey);
-        return req;
-      }
-    };
-
-
-
-    logger.info("step 3: use midddleware for api key", { apisecrets: apisecrets.GeoPlaceApiKey, baseUrl: apisecrets.GeoPlaceApiUrl });
-
-
-    cliApi.use(myMiddleware);
-
-    logger.info("step 4 : use midddleware for api key", { apisecrets: apisecrets.GeoPlaceApiKey, baseUrl: apisecrets.GeoPlaceApiUrl });
-    const {
-      data, // only present if 2XX response
-      error, // only present if 4XX or 5XX response
-    } = await cliApi.GET("/places/{place_id}", {
+    const geoApiClientPromise = await createGeoApiClient();
+    const response = await geoApiClientPromise.GET("/places/{place_id}", {
       params: {
         path: { place_id: avivGeoId },
       }
     });
 
-    logger.info("step 5 : use midddleware for api key", { geoFromApi: data, apisecrets: apisecrets.GeoPlaceApiKey, baseUrl: apisecrets.GeoPlaceApiUrl });
-
-
-    if (error != null && error != undefined) {
-
-      throw new Error("API response error: " + JSON.stringify(error));
-      //logger.error("error while calling api geo for getGeoHierarchyEnrichmentById <<id " + avivGeoId + '>>  trace<<' + JSON.stringify(error) + '>>');
+    if (response.error) {
+      throw new Error(`Geo API enrichment failed for ${geo.id}`);
     }
-    if (data != null) {
-      for (const parent of data.item.parents ?? []) {
+
+    if (response.data != null) {
+
+      geoData.AvivGeoId = geo.id;
+      geoData.Level = response.data.item.level ?? 0;
+      geoData.IsFictive = response.data.item.fictive ?? false;
+      geoData.Names = mapDtoNames(response.data.item.names ?? {});
+
+      for (const parent of response.data.item.parents ?? []) {
         const mappedParent = mapParentToGeoEntity(parent);
 
         if (!mappedParent) {
@@ -180,6 +135,9 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
         switch (parent.type?.toLowerCase()) {
           case "country":
             geoData.Country = mappedParent;
+            break;
+          case "macroregion":
+            geoData.Macroregion = mappedParent;
             break;
           case "region":
             geoData.Region = mappedParent;
@@ -197,15 +155,15 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
 
 
   } catch (error) {
-    logger.error("error while calling api geo ", {
+    logger.error("Error enriching geo from Geo API", {
       id: geo.id,
-      error: JSON.stringify(error)
+      error: error instanceof Error ? error.message : String(error),
     });
     throw error;
 
   }
 
-  marshalledData = marshall(geoData, { removeUndefinedValues: true });
+  const marshalledData = marshall(geoData, { removeUndefinedValues: true });
 
 
   const tableName = isLocal ? "seo-ssot-classified-fifo" : process.env.MV_UPDATED_TABLE_NAME;
@@ -215,9 +173,26 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
   }
 
   await updateDataInDynamoDB(id, marshalledData, tableName, data?.metadata?.updateDate?.toString() ?? Date.now().toString());
+
+  async function createGeoApiClient() {
+    const apisecrets = await getClassifiedApiSecret();
+    const cliApi = createClient<paths>({
+      baseUrl: `${apisecrets.GeoPlaceApiUrl}/v1`,
+    });
+
+    const myMiddleware: Middleware = {
+      async onRequest(req, options) {
+        req.headers.set("accept", "application/json");
+        req.headers.set("X-Api-Key", apisecrets.GeoPlaceApiKey);
+        return req;
+      }
+    };
+    cliApi.use(myMiddleware);
+    return cliApi;
+  }
 }
 
-const markDataAsDeleted = async (deleteCommand: { id: string, updateDate: any, geo: GeoManagementStructure }): Promise<void> => {
+const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, geo: GeoManagementStructure }): Promise<void> => {
 
   var deletedGeo = {
     AvivGeoId: deleteCommand.geo?.id,
@@ -280,5 +255,15 @@ const markDataAsDeleted = async (deleteCommand: { id: string, updateDate: any, g
 
 export {
   createOrUpdateGeo,
-  markDataAsDeleted as markGeoAsDeleted
+  markGeoAsDeleted
+}
+
+function mapDtoNames(tmp: { [key: string]: { name?: string | null; display_name?: string | null; slug?: string | null; name_rank?: number | null; name_root?: string | null; name_prefix?: string | null; name_prepositions?: { [key: string]: string; } | null; }[]; }) {
+  return Object.entries(tmp).flatMap(([language, localizedNames]) => (localizedNames ?? []).map(name => ({
+    DisplayName: name.display_name ?? name.name ?? "",
+    Language: language,
+    Name: name.name ?? name.display_name ?? "",
+    Slug: name.slug ?? "",
+  }))
+  );
 }
