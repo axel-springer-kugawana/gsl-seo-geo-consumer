@@ -48,19 +48,35 @@ async function* listKeys(prefix: string, nextContinuationToken: string) {
 
     try {
         do {
+            logger.info("Listing keys from bucket 1", {
+                prefix,
+                continuationToken,
+            });
+
             const listCommand = new ListObjectsV2Command({
                 Bucket: config.get("ssotBucketName"),
                 Prefix: prefix,
                 ContinuationToken: continuationToken ? continuationToken : undefined,
             });
 
+            logger.info("Listing keys from bucket 2", {
+                listCommand:listCommand
+            });
+
             const { Contents, IsTruncated, NextContinuationToken } = await s3Client.send(listCommand);
 
+
+            logger.info("Listing keys from bucket 3 ", {
+                IsTruncated,
+                NextContinuationToken,
+                Contents: Contents?.map((c) => c.Key),
+            });
+            
             isTruncated = IsTruncated == true;
             continuationToken = NextContinuationToken!;
 
             yield {
-                keys: Contents!.filter((c) => c.Key!.endsWith("/") === false).map((c) => c.Key!),
+                keys: (Contents ?? []).filter((c) => c.Key!.endsWith("/") === false).map((c) => c.Key!),
                 nextContinuationToken: NextContinuationToken!,
             };
         } while (isTruncated);
