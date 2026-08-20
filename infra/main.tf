@@ -1,6 +1,10 @@
 module "cm_connector" {
   source = "./modules/cm-connector"
 
+  bucket = {
+    id = var.classified_management_sync_bucket
+  }
+  
   events_fifo_topic = {
     arn = var.geo_management_events_fifo_topic
   }

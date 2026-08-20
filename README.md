@@ -55,13 +55,11 @@ module "cm_connector" {
 ```
 ## FAQ
 ### Before deploying
-First, you will need to get your AWS account(s) allowed to consume classified management. You will need to create a JIRA ticket as mentioned on this page: https://avivgroup.atlassian.net/wiki/spaces/APE/pages/375620475/Subscribe+to+SSOT+events
+First, you will need to get your AWS account(s) allowed to geo classified management. You will need to create a JIRA ticket as mentioned on this page: https://avivgroup.atlassian.net/wiki/spaces/DATA/pages/2152267777/Consuming+geo+referential+data+updates
 
-### Classified Management API secrets
-[The connector creates a secret](./infra/modules/cm-connector/cm-events-handling/cm-api-secret.tf) that must contain the API ClientId & Authorization in order to be able to call Classified Management API.
 
 > [!IMPORTANT]  
-> **An important step**: Once your account is authorized > to consume classifieds, you will need to set these > values into the secret :
+> **An important step**: Once your account is authorized > to consume geo, you will need to set these > values into the secret :
 > ```
 > {
 >   "ClientId":"<Client Id provided by CM>",
@@ -82,8 +80,7 @@ by specifying this input parameters to the state machine:
 more precisely, if you want to start reading all IWT active classified you will need to provide this input
 ```
 {
-   "prefix": "ACTIVE/0/IWT/"
-}
+   "prefix": "geo-export-delivery-backbone-witty-puma/miracle/snowflake/20260731205419-live/feature/"
 ```
 
 ![Run get state of the world](./assets/run-state-machine.gif "Run state of the world").
@@ -98,15 +95,6 @@ Along with the connector, you will find [an example of a lambda function](./src/
 
 ![Alt text](./assets/mat-view-ddb-table.png)
 
-
-if you want to start reading all GSL Deleted classified you will need to provide this input
-`
-{
-  "prefix": "DELETE/0/GSL/",
-  "operation": "delete"
-}
-
-`
 
 
 
@@ -132,163 +120,5 @@ You will find more about classified management APIs here:
 * [S3 Bucket objects layout](https://classdisp.kind-camel-dev.aws.aviv-internal.eu/docs/staging/external/0.1/streams.html#:~:text=The%20files%20in%20the%20s3%20are%20created%20in%20real%20time%20during%20the%20creation%20in%20the%20SSOT%20database%2C%20so%20to%20avoid%20the%20double%20consumption%20of%20the%20events%20(s3%20and%20SNS)%2C%20we%20advise%20you%20to%20stop%20the%20consumption%20of%20our%20SNS%20during%20the%20initialization%20phase.)
 
 
-
-### Update SQL Part
-execute sqs event :
-{
-    "type": "classified.init.v1"
-}
-
-
-### Update patch
-execute sqs event :
-{
-    "type": "classified.patch"
-}
-
-### clean patch
-execute sqs event :
-{
-    "type": "classified.clean.v1"
-}
-
-
-* event format :
-
-{
-    "id": "83cfbb07-9544-46a3-a62b-33651a708922",
-    "source": "geo-management-dispatch",
-    "datacontenttype": "application/json",
-    "specversion": "1.0",
-    "time": "2026-08-12T15:20:30.172Z",
-    "type": "UPDATED",
-    "eventdataversion": "0.13.7",
-    "data": {
-        "id": "NBH1FR1",
-        "type": "CREATED",
-        "current_feature": {
-            "id": "NBH1FR1",
-            "type": "Macro neighborhood",
-            "type_key": "NBH1",
-            "level": 900,
-            "active": true,
-            "fictive": false,
-            "language": "fr",
-            "names": {
-                "fr": [
-                    {
-                        "name": "Les Arcs – Peisey-Vallandry",
-                        "display_name": "Les Arcs – Peisey-Vallandry (tous codes postaux)",
-                        "slug": "les-arcs-peisey-vallandry-73210",
-                        "name_rank": 1,
-                        "name_root": "Les Arcs – Peisey-Vallandry",
-                        "name_prefix": null,
-                        "name_prepositions": {
-                            "de": "de ",
-                            "à": "à "
-                        }
-                    }
-                ]
-            },
-            "administrative_code": null,
-            "main_postal_code": "73210",
-            "postal_codes": [
-                "73210",
-                "73700"
-            ],
-            "area": 39614659,
-            "coordinates": {
-                "lat": 45.570340942364837,
-                "lng": 6.8123840658261194,
-                "centroid": {
-                    "lat": 45.570340942364837,
-                    "lng": 6.8123840658261194
-                },
-                "point_on_surface": {
-                    "lat": 45.5722965,
-                    "lng": 6.8117477594776856
-                },
-                "max_inscribed_circle": {
-                    "lat": 45.571506532519521,
-                    "lng": 6.8067098694335924
-                }
-            },
-            "viewport": {
-                "ne": {
-                    "lat": 45.60618019999999,
-                    "lng": 6.8771755999999993
-                },
-                "sw": {
-                    "lat": 45.539519599999991,
-                    "lng": 6.7521203
-                }
-            },
-            "bounding_box": {
-                "ne": {
-                    "lat": 45.60618019999999,
-                    "lng": 6.8771755999999993
-                },
-                "sw": {
-                    "lat": 45.539519599999991,
-                    "lng": 6.7521203
-                }
-            },
-            "weight": 777.0,
-            "mapping": {
-                "atlas": [
-                    {
-                        "metric": {
-                            "confidence": 1.0,
-                            "testname": "manual_mapping"
-                        },
-                        "id": "32248",
-                        "type": "7",
-                        "metadata": {
-                            "version": "1",
-                            "source_id": "4",
-                            "source_name": "BcGeo.Villes_Prim"
-                        }
-                    }
-                ],
-                "places": null,
-                "immoweb": null,
-                "immowelt": null,
-                "logicimmo": [
-                    {
-                        "metric": {
-                            "confidence": 1.0,
-                            "testname": "manual"
-                        },
-                        "id": "38020",
-                        "type": "2"
-                    }
-                ],
-                "meilleursagents": [
-                    {
-                        "metric": {
-                            "confidence": 1.0,
-                            "testname": "Trivial"
-                        },
-                        "id": 2080788954,
-                        "type": "macro_neighborhoods",
-                        "platform": "fr"
-                    }
-                ],
-                "iso3166": null,
-                "immowelt_geoids": null
-            },
-            "lineage": null,
-            "duplicates": null,
-            "extra_properties": null,
-            "subtype": null,
-            "active_since": "2025-03-06T22:25:52.353401",
-            "deprecated_since": null,
-            "parents": null
-        },
-        "platform": "FR",
-        "release_date": "2025-03-06",
-        "created": null,
-        "updated": null,
-        "deleted": null
-    }
-}
+todo : 
+list eventing for update / created and deleted events 

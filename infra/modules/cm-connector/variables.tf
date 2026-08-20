@@ -19,3 +19,9 @@ variable events_fifo_topic {
     arn = string
   })
 }
+
+variable bucket {
+  type = object({
+      id = string
+    })
+}
