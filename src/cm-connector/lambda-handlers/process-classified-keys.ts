@@ -7,6 +7,7 @@ import { ClassifiedKeysSync } from "@cm-connector/models/key-replay-model";
 import { logger } from "@shared/cross-cutting/logger";
 import * as fs from 'fs';
 
+const itemsHandler = async (event: ClassifiedKeysSync): Promise<void> => {
     for (let i = 0; i < event.keys.length; i++) {
         const key = event.keys[i];
         try {
