@@ -130,3 +130,8 @@ variable "suffix" {
   type    = string
   default = ""
 }
+
+variable "classified_management_sync_bucket" {
+  description = "classified management sync bucket"
+  type        = string
+}
