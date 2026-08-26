@@ -107,8 +107,8 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
   const avivGeoId = geo.id;
   try {
 
-    const geoApiClientPromise = await createGeoApiClient();
-    const response = await geoApiClientPromise.GET("/places/{place_id}", {
+    const geoApiClient = await getGeoApiClient();
+    const response = await geoApiClient.GET("/places/{place_id}", {
       params: {
         path: { place_id: avivGeoId },
       }
@@ -173,23 +173,29 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
   }
 
   await updateDataInDynamoDB(id, marshalledData, tableName, data?.metadata?.updateDate?.toString() ?? Date.now().toString());
+}
 
-  async function createGeoApiClient() {
-    const apisecrets = await getClassifiedApiSecret();
-    const cliApi = createClient<paths>({
-      baseUrl: `${apisecrets.GeoPlaceApiUrl}/v1`,
-    });
+let cachedGeoApiClient: ReturnType<typeof createClient<paths>> | null = null;
 
-    const myMiddleware: Middleware = {
-      async onRequest(req, options) {
-        req.headers.set("accept", "application/json");
-        req.headers.set("X-Api-Key", apisecrets.GeoPlaceApiKey);
-        return req;
-      }
-    };
-    cliApi.use(myMiddleware);
-    return cliApi;
+async function getGeoApiClient() {
+  if (cachedGeoApiClient) {
+    return cachedGeoApiClient;
   }
+  const apisecrets = await getClassifiedApiSecret();
+  const cliApi = createClient<paths>({
+    baseUrl: `${apisecrets.GeoPlaceApiUrl}/v1`,
+  });
+
+  const myMiddleware: Middleware = {
+    async onRequest(req, options) {
+      req.headers.set("accept", "application/json");
+      req.headers.set("X-Api-Key", apisecrets.GeoPlaceApiKey);
+      return req;
+    }
+  };
+  cliApi.use(myMiddleware);
+  cachedGeoApiClient = cliApi;
+  return cliApi;
 }
 
 const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, geo: GeoManagementStructure }): Promise<void> => {
