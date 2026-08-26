@@ -1,11 +1,11 @@
 resource "aws_ecr_repository" "geo_bulk_load" {
   name                 = local.name
-  image_tag_mutability = "MUTABLE"
-  force_delete         = true
+  # image_tag_mutability = "MUTABLE"
+  # force_delete         = true
 
-  image_scanning_configuration {
-    scan_on_push = true
-  }
+  # image_scanning_configuration {
+  #   scan_on_push = true
+  # }
 }
 
 resource "aws_ecr_lifecycle_policy" "geo_bulk_load" {
