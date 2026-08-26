@@ -1,5 +1,5 @@
 import { DuckDBInstance } from '@duckdb/node-api';
-import { getClassifiedApiSecret } from "./adapters/classified-api-secrets";
+import { getClassifiedApiSecret } from "../classified-api-secrets";
 export async function processMassiveParquetToPostgres() {
   const apisecrets = await getClassifiedApiSecret();
   const AWS_REGION = process.env.AWS_REGION || 'eu-west-1';

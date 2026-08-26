@@ -50,11 +50,6 @@ variable "ephemeral_storage_gib" {
   default     = 40
 }
 
-variable "duckdb_threads" {
-  type    = string
-  default = "2"
-}
-
 variable "snapshot_prefix" {
   description = "Prefix under which the export drops one folder per snapshot"
   type        = string

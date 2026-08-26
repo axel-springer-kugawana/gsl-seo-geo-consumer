@@ -128,8 +128,6 @@ resource "aws_ecs_task_definition" "geo_bulk_load" {
         { name = "GEO_DB_PORT", value = tostring(data.aws_rds_cluster.ssot.port) },
         { name = "GEO_DB_NAME", value = var.rds.database_name != "" ? var.rds.database_name : data.aws_rds_cluster.ssot.database_name },
         { name = "GEO_DB_SCHEMA", value = var.rds.schema },
-        { name = "GEO_BATCH_SIZE", value = tostring(var.batch_size) },
-        { name = "DUCKDB_THREADS", value = var.duckdb_threads },
         { name = "GEO_MANAGEMENT_SYNC_BUCKET", value = var.geo_management_sync_bucket },
         { name = "GEO_MANAGEMENT_BUCKET_KEY", value = var.geo_management_bucket_key },
       ]

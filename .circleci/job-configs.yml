@@ -24,10 +24,17 @@ aliases:
       branches:
         only: main
         ignore: /.*/
+  - &devkey
+    context: sl_central-shared-services
+  - &previewkey
+    context: sl_central-shared-services
+  - &livekey
+    context: sl_central-shared-services
 orbs:
   aws-cli: circleci/aws-cli@4.1.2
   aws-s3: circleci/aws-s3@3.1.1
   terraform: circleci/terraform@3.2.1
+  infra: axel-springer-kugawana/aviv_orb-devops-tools@3
 
 jobs:
   build-geo-management-connector:
@@ -70,45 +77,6 @@ jobs:
             - "."
           root: "~/project"
             
-  push-geo-bulk-load-image:
-    docker:
-      - image: cimg/base:2024.02
-    parameters:
-      ENV:
-        type: string
-      ENV_SECRETS:
-        type: string
-      APPLICATION:
-        type: string
-        default: "gm-consumer"
-    working_directory: ~/project
-    steps:
-      - attach_workspace:
-          at: ./
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - aws-cli/setup:
-          aws_access_key_id: AWS_ACCESS_KEY_ID_<<parameters.ENV_SECRETS>>
-          aws_secret_access_key: AWS_SECRET_ACCESS_KEY_<<parameters.ENV_SECRETS>>
-      - run:
-          name: Build and push the geo bulk load image
-          command: |
-            set -eu
-            ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-            REGISTRY="${ACCOUNT_ID}.dkr.ecr.eu-west-1.amazonaws.com"
-            # Repository created by the geo-bulk-load terraform module, hence the
-            # push running after the deploy job.
-            REPOSITORY="<<parameters.APPLICATION>>-<<parameters.ENV>>-geo-bulk-load"
-            aws ecr get-login-password --region eu-west-1 \
-              | docker login --username AWS --password-stdin "${REGISTRY}"
-            docker build \
-              -f src/geo-bulk-load/Dockerfile \
-              -t "${REGISTRY}/${REPOSITORY}:${CIRCLE_SHA1}" \
-              -t "${REGISTRY}/${REPOSITORY}:latest" \
-              src
-            docker push "${REGISTRY}/${REPOSITORY}:${CIRCLE_SHA1}"
-            docker push "${REGISTRY}/${REPOSITORY}:latest"
-
   deploy-geo-management-connector:
     executor:
       name: terraform/default
@@ -151,10 +119,13 @@ workflows:
           ENV_PATH_FILE: "./dev.tfvars"
           requires:
             - build-geo-management-connector
-      - push-geo-bulk-load-image:
+      - infra/ecr-build-and-push-image:
           <<: *devfilter
-          ENV: "dev"
-          ENV_SECRETS: "DEV"
+          <<: *devkey
+          name: Docker build and push
+          aws-account-id: '135557783010'
+          repository-name: 'gm-consumer-dev-geo-bulk-load'
+          dockerfile: ./DockerfileBatchCopyDatalake
           requires:
             - deploy-geo-management-connector
   geo-management-connector-preview:
@@ -170,12 +141,15 @@ workflows:
             ENV_PATH_FILE: "./preview.tfvars"
             requires:
               - build-geo-management-connector
-      - push-geo-bulk-load-image:
-            <<: *previewfilter
-            ENV: "preview"
-            ENV_SECRETS: "PREVIEW"
-            requires:
-              - deploy-geo-management-connector
+      - infra/ecr-build-and-push-image:
+          <<: *previewfilter
+          <<: *previewkey
+          name: Docker build and push
+          aws-account-id: '638670099833'
+          repository-name: 'gm-consumer-preview-geo-bulk-load'
+          dockerfile: ./DockerfileBatchCopyDatalake
+          requires:
+            - deploy-geo-management-connector
   geo-management-connector-live:
     when: << pipeline.parameters.run-geo-management-connector-job >>
     jobs:
@@ -196,9 +170,12 @@ workflows:
           requires:
             - build-geo-management-connector
             - Approve deploy to prod
-      - push-geo-bulk-load-image:
+      - infra/ecr-build-and-push-image:
           <<: *livefilter
-          ENV: "live"
-          ENV_SECRETS: "LIVE"
+          <<: *livekey
+          name: Docker build and push
+          aws-account-id: '944405982502'
+          repository-name: 'gm-consumer-live-geo-bulk-load'
+          dockerfile: ./DockerfileBatchCopyDatalake
           requires:
             - deploy-geo-management-connector

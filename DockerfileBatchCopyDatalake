@@ -1,5 +1,5 @@
-# Build context is ./src
-#   docker build -f geo-bulk-load/Dockerfile -t geo-bulk-load .
+# Build context is the repository root
+#   docker build -f DockerfileBatchCopyDatalake -t geo-bulk-load .
 #
 # Fargate runs this on X86_64, so the image has to be amd64: duckdb ships
 # per-platform native bindings and there is no fallback.
@@ -7,13 +7,13 @@ FROM --platform=linux/amd64 node:22-bookworm-slim AS builder
 
 WORKDIR /build
 
-COPY package.json package-lock.json ./
+COPY src/package.json src/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 
-COPY tsconfig.json esbuild.tasks.config.js ./
-COPY shared ./shared
-COPY models ./models
-COPY geo-bulk-load ./geo-bulk-load
+COPY src/tsconfig.json src/esbuild.tasks.config.js ./
+COPY src/shared ./shared
+COPY src/models ./models
+COPY src/geo-bulk-load ./geo-bulk-load
 
 RUN npm run build:tasks
 
