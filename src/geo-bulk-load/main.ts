@@ -93,7 +93,7 @@ export async function processMassiveParquetToPostgres() {
     // ÉTAPE 1 : Table temporaire UNLOGGED
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
     await conn.run(`
-      CREATE UNLOGGED TABLE ${PG_SCHEMA}."geoName_staging" (
+      CREATE UNLOGGED TABLE postgres_db.${PG_SCHEMA}."geoName_staging" (
         "avivGeoId" character varying NOT NULL,
         language character varying NOT NULL,
         "displayName" character varying NOT NULL,
@@ -107,7 +107,7 @@ export async function processMassiveParquetToPostgres() {
 
 
     await conn.run(`
-      INSERT INTO ${PG_SCHEMA}."geoName_staging" ("avivGeoId", language, "displayName", name, slug)
+      INSERT INTO postgres_db.${PG_SCHEMA}."geoName_staging" ("avivGeoId", language, "displayName", name, slug)
       SELECT 
         FEATURE_ID AS "avivGeoId",
         LANGUAGE AS language,
@@ -120,35 +120,35 @@ export async function processMassiveParquetToPostgres() {
     // ÉTAPE 3 : Update des enregistrements existants
     logger.info('[ECS Task] Étape 3/5 : UPDATE des lignes existantes...');
     await conn.run(`
-      UPDATE ${PG_SCHEMA}."geoName" target
+      UPDATE postgres_db.${PG_SCHEMA}."geoName" target
       SET 
         "displayName" = s."displayName",
         name = s.name,
         slug = s.slug
-      FROM ${PG_SCHEMA}."geoName_staging" s
+      FROM postgres_db.${PG_SCHEMA}."geoName_staging" s
       WHERE target."avivGeoId" = s."avivGeoId" AND target.language = s.language;
     `);
 
     // ÉTAPE 4 : Insertion des nouvelles lignes
     logger.info('[ECS Task] Étape 4/5 : INSERT des nouvelles lignes...');
     await conn.run(`
-      INSERT INTO ${PG_SCHEMA}."geoName" ("avivGeoId", language, "displayName", name, slug)
+      INSERT INTO postgres_db.${PG_SCHEMA}."geoName" ("avivGeoId", language, "displayName", name, slug)
       SELECT s."avivGeoId", s.language, s."displayName", s.name, s.slug
-      FROM ${PG_SCHEMA}."geoName_staging" s
-      LEFT JOIN ${PG_SCHEMA}."geoName" target 
+      FROM postgres_db.${PG_SCHEMA}."geoName_staging" s
+      LEFT JOIN postgres_db.${PG_SCHEMA}."geoName" target 
         ON target."avivGeoId" = s."avivGeoId" AND target.language = s.language
       WHERE target."avivGeoId" IS NULL;
     `);
 
     // ÉTAPE 5 : Nettoyage
     logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
-    await conn.run(`DROP TABLE ${PG_SCHEMA}."geoName_staging";`);
+    await conn.run(`DROP TABLE postgres_db.${PG_SCHEMA}."geoName_staging";`);
 
     logger.info('[ECS Task] TRAITEMENT TERMINÉ AVEC SUCCÈS !');
   } catch (error) {
     logger.error('[ECS Task] ERREUR CRITIQUE :' + error);
     try {
-      await conn.run(`DROP TABLE IF EXISTS ${PG_SCHEMA}."geoName_staging";`);
+      await conn.run(`DROP TABLE IF EXISTS postgres_db.${PG_SCHEMA}."geoName_staging";`);
     } catch (_) { }
     throw error;
   } finally {
