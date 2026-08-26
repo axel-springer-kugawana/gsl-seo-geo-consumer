@@ -52,6 +52,7 @@ export async function processMassiveParquetToPostgres() {
     await conn.run('LOAD aws; LOAD httpfs; LOAD postgres;');
 
     // Configuration S3
+    await conn.run(`SET ca_cert_file='${process.env.SSL_CERT_FILE || '/etc/ssl/certs/ca-certificates.crt'}';`);
     await conn.run(`SET s3_region='${AWS_REGION}';`);
 
     if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {

@@ -21,9 +21,17 @@ RUN npm run build:tasks
 FROM --platform=linux/amd64 node:22-bookworm-slim AS runtime
 
 ENV NODE_ENV=production \
-    DUCKDB_EXTENSION_DIRECTORY=/opt/duckdb/extensions
+    DUCKDB_EXTENSION_DIRECTORY=/opt/duckdb/extensions \
+    SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
+    CURL_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt \
+    NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
 
 WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && update-ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 # Only duckdb stays out of the bundle, everything else is inlined by esbuild.
 # Copied rather than reinstalled: the builder already resolved the linux-x64
