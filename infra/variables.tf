@@ -162,7 +162,7 @@ variable "geo_bulk_load_schedule_expression" {
 }
 
 variable "geo_bulk_load_image_tag" {
-  description = "ECR image tag used by the geo bulk load ECS task definition"
+  description = "Optional explicit ECR image tag for the geo bulk load ECS task. Leave empty to auto-select the most recent tag from ECR"
   type        = string
-  default     = "latest"
+  default     = ""
 }

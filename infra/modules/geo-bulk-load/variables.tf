@@ -27,9 +27,9 @@ variable "rds" {
 }
 
 variable "image_tag" {
-  description = "Tag of the image in the ecr repository, set by the ci to the commit sha"
+  description = "Explicit ECR image tag. If empty, Terraform selects the most recently pushed tagged image from the repository"
   type        = string
-  default     = "latest"
+  default     = ""
 }
 
 variable "task_cpu" {

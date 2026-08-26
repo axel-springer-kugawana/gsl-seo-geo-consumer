@@ -27,6 +27,16 @@ resource "aws_ecr_lifecycle_policy" "geo_bulk_load" {
   })
 }
 
+data "aws_ecr_image" "geo_bulk_load_most_recent" {
+  count           = var.image_tag == "" ? 1 : 0
+  repository_name = aws_ecr_repository.geo_bulk_load.name
+  most_recent     = true
+}
+
+locals {
+  selected_image_tag = var.image_tag != "" ? var.image_tag : data.aws_ecr_image.geo_bulk_load_most_recent[0].image_tags[0]
+}
+
 resource "aws_ecs_cluster" "geo_bulk_load" {
   name = local.name
 
@@ -119,7 +129,7 @@ resource "aws_ecs_task_definition" "geo_bulk_load" {
   container_definitions = jsonencode([
     {
       name      = "geo-bulk-load"
-      image     = "${aws_ecr_repository.geo_bulk_load.repository_url}:${var.image_tag}"
+      image     = "${aws_ecr_repository.geo_bulk_load.repository_url}:${local.selected_image_tag}"
       essential = true
       environment = [
         { name = "GEO_DB_SECRET_ID", value = aws_secretsmanager_secret.geo_bulk_load.arn },
