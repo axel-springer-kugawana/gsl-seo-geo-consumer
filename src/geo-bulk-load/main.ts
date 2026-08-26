@@ -31,7 +31,7 @@ export async function processMassiveParquetToPostgres() {
   const bucket = process.env.GEO_MANAGEMENT_SYNC_BUCKET;
   const bucketKey = process.env.GEO_MANAGEMENT_BUCKET_KEY;
   const S3_PARQUET_PATH = bucket && bucketKey
-    ? `s3://${bucket}/${bucketKey}/name/**/*.parquet`
+    ? `s3://${bucket}/${bucketKey}/name/*.parquet`
     : undefined;
 
    // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
@@ -91,7 +91,19 @@ export async function processMassiveParquetToPostgres() {
     await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
 
     // ÉTAPE 1 : Table temporaire UNLOGGED
-    logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
+     var query =`
+      CREATE UNLOGGED TABLE postgres_db.${PG_SCHEMA}."geoName_staging" (
+        "avivGeoId" character varying NOT NULL,
+        language character varying NOT NULL,
+        "displayName" character varying NOT NULL,
+        name character varying NOT NULL,
+        slug character varying NOT NULL
+      );
+    `;
+
+    
+    logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...', { query: query } );
+   
     await conn.run(`
       CREATE UNLOGGED TABLE postgres_db.${PG_SCHEMA}."geoName_staging" (
         "avivGeoId" character varying NOT NULL,
