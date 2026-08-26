@@ -2,11 +2,13 @@
   "name": "ssot-consumer",
   "scripts": {
     "build:lambdas": "node esbuild.config.js",
+    "build:tasks": "node esbuild.tasks.config.js",
+    "smoke:geo-bulk-load": "npm run build:tasks && node -e \"const task = require('./dist/geo-bulk-load/main.js'); if (typeof task.processMassiveParquetToPostgres !== 'function') process.exit(2); console.log('geo-bulk-load bundle smoke test passed')\"",
     "watch": "tsc --noEmit --watch",
     "local": "tsx ./local/local-lambda-invoke.ts",
+    "local:geo-bulk-load": "tsx ./geo-bulk-load/main.ts",
     "test": "jest",
     "test:debug": "jest --runInBand",
-
     "generate:models": "openapi-typescript https://place-api.cosmic-bullfrog-preview.aws.aviv.eu/v1/openapi.json -o ./shared/models/geo-api.ts --exclude-deprecated"
   },
   "devDependencies": {
@@ -39,10 +41,12 @@
     "@aws-lambda-powertools/metrics": "^1.14.0",
     "@aws-sdk/client-dynamodb": "^3.454.0",
     "@aws-sdk/client-s3": "^3.428.0",
+    "@aws-sdk/client-secrets-manager": "^3.1117.0",
     "@aws-sdk/client-sns": "^3.382.0",
     "@aws-sdk/client-sqs": "^3.379.1",
     "@aws-sdk/credential-provider-sso": "^3.848.0",
     "@aws-sdk/util-dynamodb": "^3.454.0",
+    "@duckdb/node-api": "1.5.5-r.4",
     "@middy/core": "^4.6.0",
     "axios": "^1.7.7",
     "convict": "^6.2.4",

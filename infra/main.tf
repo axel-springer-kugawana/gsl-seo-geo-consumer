@@ -2,7 +2,7 @@ module "cm_connector" {
   source = "./modules/cm-connector"
 
   bucket = {
-    id = var.classified_management_sync_bucket
+    id = var.geo_management_sync_bucket
   }
   
   events_fifo_topic = {
@@ -49,4 +49,26 @@ module "cm_consumer_fifo" {
   updated_dynamodb_table_name = module.dynamodb-ssot-geo-updated.properties.dynamodb_table_name
   deleted_dynamodb_arn        = module.dynamodb-ssot-geo-deleted.properties.dynamodb_arn
   deleted_dynamodb_table_name = module.dynamodb-ssot-geo-deleted.properties.dynamodb_table_name
+}
+
+module "geo_bulk_load" {
+  source = "./modules/geo-bulk-load"
+
+  geo_bucket = {
+    id  = var.geo_management_sync_bucket
+    arn = "arn:aws:s3:::${var.geo_management_sync_bucket}"
+  }
+
+  rds = {
+    cluster_identifier = var.rds_aurora_name
+    database_name      = var.rds_aurora_database
+    schema             = var.geo_bulk_load_db_schema
+    security_group_id  = var.rds_security_group_id
+  }
+
+  schedule_expression = var.geo_bulk_load_schedule_expression
+  application = var.application
+  environment = var.environment
+  geo_management_sync_bucket = var.geo_management_sync_bucket
+  geo_management_bucket_key = var.geo_management_bucket_key
 }

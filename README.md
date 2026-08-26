@@ -53,6 +53,84 @@ module "cm_connector" {
 
 
 ```
+## Bulk loading the geo parquet export into postgres
+
+Along with the event driven connector, the solution ships a container task that
+loads the geo parquet export into the aurora postgres cluster of the account.
+It is a Fargate task rather than a lambda function because a full snapshot does
+not fit in the 15 minutes lambda budget.
+
+* [src/geo-bulk-load](./src/geo-bulk-load/) contains the task, its [Dockerfile](./src/geo-bulk-load/Dockerfile) and the PostgreSQL load logic.
+* [infra/modules/geo-bulk-load](./infra/modules/geo-bulk-load/) contains the ECR repository, ECS cluster, task definition and dedicated database secret.
+
+### How it works
+
+DuckDB reads the configured Parquet snapshot directly from S3 and writes the
+mapped columns to PostgreSQL through the `postgres` extension. The task first
+loads a staging table, updates existing `geoName` rows, inserts new rows, and
+then drops the staging table.
+
+```
+s3 parquet snapshot ──duckdb──> PostgreSQL staging table ──> geoName table
+```
+
+### Configuring the snapshot
+
+Set these Terraform variables in the environment tfvars file:
+
+```hcl
+geo_management_sync_bucket = "geo-export-delivery-backbone-witty-puma"
+geo_management_bucket_key = "miracle/snowflake/20260731205419-live"
+```
+
+The task reads the Parquet files below the `name` directory using the
+`/**/*.parquet` glob. `geo_management_bucket_key` should therefore identify
+the snapshot root, not the `name` directory itself.
+
+The task reads database credentials from the dedicated Secrets Manager secret
+created by the `geo-bulk-load` Terraform module. After the first `terraform
+apply`, populate that secret with at least:
+
+```json
+{
+  "DbUsername": "...",
+  "DbPassword": "..."
+}
+```
+
+The database host, port, name and schema are supplied separately as ECS
+environment variables.
+
+### Running a load
+
+The image is built and pushed by the `push-geo-bulk-load-image` ci job, right
+after the terraform apply that creates the ecr repository. Then:
+
+```
+aws ecs run-task \
+  --cluster gm-consumer-dev-geo-bulk-load \
+  --task-definition gm-consumer-dev-geo-bulk-load \
+  --launch-type FARGATE \
+  --network-configuration 'awsvpcConfiguration={subnets=[SUBNET_IDS],securityGroups=[SG_ID],assignPublicIp=DISABLED}'
+```
+
+`terraform output` prints the command with the subnets and the security group
+already filled in. Set `geo_bulk_load_schedule_expression` in the tfvars to run
+it on a schedule instead.
+
+Useful overrides, as container environment variables:
+
+| variable | default | effect |
+| --- | --- | --- |
+| `GEO_MANAGEMENT_SYNC_BUCKET` | Terraform value | S3 bucket containing the export |
+| `GEO_MANAGEMENT_BUCKET_KEY` | Terraform value | Snapshot root containing the `name` directory |
+| `GEO_DB_SCHEMA` | `public` | PostgreSQL schema containing `geoName` |
+
+### On upserts
+
+The load upserts on the primary key, so a row that disappeared from the export
+survives in the table: nothing is deleted.
+
 ## FAQ
 ### Before deploying
 First, you will need to get your AWS account(s) allowed to geo classified management. You will need to create a JIRA ticket as mentioned on this page: https://avivgroup.atlassian.net/wiki/spaces/DATA/pages/2152267777/Consuming+geo+referential+data+updates

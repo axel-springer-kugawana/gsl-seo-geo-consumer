@@ -131,7 +131,32 @@ variable "suffix" {
   default = ""
 }
 
-variable "classified_management_sync_bucket" {
-  description = "classified management sync bucket"
+variable "geo_management_sync_bucket" {
+  description = "geo management sync bucket"
   type        = string
+}
+
+variable "geo_management_bucket_key" {
+  description = "geo management bucket key"
+  type        = string
+}
+
+
+variable "rds_security_group_id" {
+  description = "Security group of the aurora cluster. Set it to let the bulk load task reach the database, empty to manage the inbound rule elsewhere"
+  type        = string
+  default     = ""
+}
+
+variable "geo_bulk_load_db_schema" {
+  description = "Schema holding the geo tables loaded from the parquet export"
+  type        = string
+  default     = "public"
+}
+
+
+variable "geo_bulk_load_schedule_expression" {
+  description = "EventBridge Scheduler expression, e.g. cron(0 3 * * ? *). Empty means: run the bulk load on demand only"
+  type        = string
+  default     = ""
 }
