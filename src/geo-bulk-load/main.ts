@@ -34,6 +34,13 @@ export async function processMassiveParquetToPostgres() {
     ? `s3://${bucket}/${bucketKey}/name/**/*.parquet`
     : undefined;
 
+   // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
+    logger.info('[ECS Task] Étape 0/5 : variables',{
+      bucket:  bucket,
+      bucketKey: bucketKey,
+      bucketPath: S3_PARQUET_PATH
+    });
+
 
   if (!PG_HOST || !PG_DATABASE || !PG_USER || !PG_PASSWORD || !S3_PARQUET_PATH) {
     throw new Error('[ECS Task] ERREUR: Variables PostgreSQL ou chemin S3 manquants.');
@@ -96,11 +103,7 @@ export async function processMassiveParquetToPostgres() {
     `);
  
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
-    logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...',{
-      bucket:  process.env.GEO_MANAGEMENT_SYNC_BUCKET,
-      bucketKey: process.env.GEO_MANAGEMENT_BUCKET_KEY,
-      S3_PARQUET_PATH: process.env.GEO_MANAGEMENT_BUCKET_KEY
-    });
+    logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
 
 
     await conn.run(`
