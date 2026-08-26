@@ -5,43 +5,6 @@ import { logger } from "@shared/cross-cutting/logger";
 
 const s3Client = new S3Client({});
 
-// const getClassifiedByKey = async (key: string): Promise<Classified | undefined> => {
-//     try{
-//     const data = await s3Client.send(
-//         new GetObjectCommand({
-//             Key: key,
-//             Bucket: config.get("ssotBucketName"),
-//         })
-//     );
-
-//     if (data.$metadata.httpStatusCode !== 200) {
-//         // log error
-//         return;
-//     }
-
-//     const content = await data.Body!.transformToString("utf-8");
-
-//     const { classifiedId, updateAt, classified, externalId } = JSON.parse(content) as {
-//         classifiedId: string;
-//         updateAt: number;
-//         classified: Classified;
-//         externalId : string
-//     };
-
-//     return {
-//         ...classified,
-//         updateAt,
-//         classifiedId,
-//         externalId
-//     };
-//     }
-//     catch(error)
-//     {
-//         logger.error('get classified by key failed :'+ {error,key});
-//         throw error;
-//     }
-// };
-
 async function* listKeys(prefix: string, nextContinuationToken: string) {
     let isTruncated = false;
     let continuationToken = nextContinuationToken;

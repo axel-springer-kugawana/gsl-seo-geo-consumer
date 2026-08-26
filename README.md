@@ -124,7 +124,6 @@ Useful overrides, as container environment variables:
 | --- | --- | --- |
 | `GEO_MANAGEMENT_SYNC_BUCKET` | Terraform value | S3 bucket containing the export |
 | `GEO_MANAGEMENT_BUCKET_KEY` | Terraform value | Snapshot root containing the `name` directory |
-| `GEO_DB_SCHEMA` | `public` | PostgreSQL schema containing `geoName` |
 
 ### Local Docker run (quick test)
 
@@ -138,10 +137,6 @@ environment variables. At minimum, this task requires:
 Optional overrides:
 
 * `AWS_REGION` (default: `eu-west-1`)
-* `GEO_DB_SCHEMA` (default: `public`)
-* `GEO_DB_HOST`
-* `GEO_DB_PORT`
-* `GEO_DB_NAME`
 
 Example local run:
 
