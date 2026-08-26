@@ -1,4 +1,5 @@
 import { DuckDBInstance } from '@duckdb/node-api';
+import { accessSync, constants } from 'fs';
 import { getClassifiedApiSecret } from "./classified-api-secrets";
 import { logger } from "@shared/cross-cutting/logger";
 
@@ -52,7 +53,10 @@ export async function processMassiveParquetToPostgres() {
     await conn.run('LOAD aws; LOAD httpfs; LOAD postgres;');
 
     // Configuration S3
-    await conn.run(`SET ca_cert_file='${process.env.SSL_CERT_FILE || '/etc/ssl/certs/ca-certificates.crt'}';`);
+    const caCertFile = process.env.SSL_CERT_FILE || '/etc/ssl/certs/ca-certificates.crt';
+    accessSync(caCertFile, constants.R_OK);
+    logger.info('[ECS Task] CA certificate file: ' + caCertFile);
+    await conn.run(`SET ca_cert_file='${caCertFile}';`);
     await conn.run(`SET s3_region='${AWS_REGION}';`);
 
     if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
@@ -93,10 +97,16 @@ export async function processMassiveParquetToPostgres() {
  
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...',{
-      query: '${S3_PARQUET_PATH}'
+      bucket:  process.env.GEO_MANAGEMENT_SYNC_BUCKET,
+      bucketKey: process.env.GEO_MANAGEMENT_BUCKET_KEY,
+      S3_PARQUET_PATH: process.env.GEO_MANAGEMENT_BUCKET_KEY
     });
 
-
+  // const bucket = process.env.GEO_MANAGEMENT_SYNC_BUCKET;
+  // const bucketKey = process.env.GEO_MANAGEMENT_BUCKET_KEY;
+  // const S3_PARQUET_PATH = process.env.GEO_MANAGEMENT_BUCKET_KEY
+  //   ? `s3://${bucket}/${bucketKey}/name/**/*.parquet`
+  //   : undefined;
 
     await conn.run(`
       INSERT INTO ${PG_SCHEMA}."geoName_staging" ("avivGeoId", language, "displayName", name, slug)
