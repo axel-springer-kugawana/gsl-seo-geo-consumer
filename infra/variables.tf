@@ -160,3 +160,9 @@ variable "geo_bulk_load_schedule_expression" {
   type        = string
   default     = ""
 }
+
+variable "geo_bulk_load_image_tag" {
+  description = "ECR image tag used by the geo bulk load ECS task definition"
+  type        = string
+  default     = "latest"
+}

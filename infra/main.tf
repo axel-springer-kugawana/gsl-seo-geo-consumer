@@ -67,6 +67,7 @@ module "geo_bulk_load" {
   }
 
   schedule_expression = var.geo_bulk_load_schedule_expression
+  image_tag = var.geo_bulk_load_image_tag
   application = var.application
   environment = var.environment
   geo_management_sync_bucket = var.geo_management_sync_bucket
