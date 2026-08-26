@@ -3,6 +3,7 @@ import type { SecretsGetOptions } from "@aws-lambda-powertools/parameters/secret
 import { logger } from "@shared/cross-cutting/logger";
 
 const getSecretValue = async (secretName: string) => {  
+  const options: SecretsGetOptions = { maxAge: 120 }
 
   const secret = await getSecret(secretName, options)
 
