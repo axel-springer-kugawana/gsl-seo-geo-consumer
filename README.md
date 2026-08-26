@@ -126,6 +126,39 @@ Useful overrides, as container environment variables:
 | `GEO_MANAGEMENT_BUCKET_KEY` | Terraform value | Snapshot root containing the `name` directory |
 | `GEO_DB_SCHEMA` | `public` | PostgreSQL schema containing `geoName` |
 
+### Local Docker run (quick test)
+
+If the image builds but exits immediately, it is usually missing runtime
+environment variables. At minimum, this task requires:
+
+* `GEO_DB_SECRET_ID`
+* `GEO_MANAGEMENT_SYNC_BUCKET`
+* `GEO_MANAGEMENT_BUCKET_KEY`
+
+Optional overrides:
+
+* `AWS_REGION` (default: `eu-west-1`)
+* `GEO_DB_SCHEMA` (default: `public`)
+* `GEO_DB_HOST`
+* `GEO_DB_PORT`
+* `GEO_DB_NAME`
+
+Example local run:
+
+```bash
+docker run --rm \
+  -e AWS_REGION=eu-west-1 \
+  -e GEO_DB_SECRET_ID=<your-secret-id> \
+  -e GEO_MANAGEMENT_SYNC_BUCKET=<your-bucket> \
+  -e GEO_MANAGEMENT_BUCKET_KEY=<snapshot-root> \
+  geo-bulk-load:test
+```
+
+If the command fails with `GEO_DB_SECRET_ID is required`, add the missing
+`-e GEO_DB_SECRET_ID=...` variable. If it fails with AWS auth errors, ensure
+your container has credentials (for example through task role in ECS, or local
+AWS credentials when testing outside ECS).
+
 ### On upserts
 
 The load upserts on the primary key, so a row that disappeared from the export

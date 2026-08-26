@@ -11,6 +11,7 @@ COPY src/package.json src/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 
 COPY src/tsconfig.json src/esbuild.tasks.config.js ./
+COPY src/classified-api-secrets.ts ./
 COPY src/shared ./shared
 COPY src/models ./models
 COPY src/geo-bulk-load ./geo-bulk-load
