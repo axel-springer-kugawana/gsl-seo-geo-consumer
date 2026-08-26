@@ -102,11 +102,6 @@ export async function processMassiveParquetToPostgres() {
       S3_PARQUET_PATH: process.env.GEO_MANAGEMENT_BUCKET_KEY
     });
 
-  // const bucket = process.env.GEO_MANAGEMENT_SYNC_BUCKET;
-  // const bucketKey = process.env.GEO_MANAGEMENT_BUCKET_KEY;
-  // const S3_PARQUET_PATH = process.env.GEO_MANAGEMENT_BUCKET_KEY
-  //   ? `s3://${bucket}/${bucketKey}/name/**/*.parquet`
-  //   : undefined;
 
     await conn.run(`
       INSERT INTO ${PG_SCHEMA}."geoName_staging" ("avivGeoId", language, "displayName", name, slug)

@@ -105,6 +105,9 @@ jobs:
           aws_secret_access_key: AWS_SECRET_ACCESS_KEY_<<parameters.ENV_SECRETS>>
       - attach_workspace:
           at: ./
+      - run:
+          name: Select geo bulk load image tag
+          command: echo 'export TF_VAR_geo_bulk_load_image_tag="sha1-${CIRCLE_SHA1}"' >> "$BASH_ENV"
       - terraform/init:
           path: ./infra
           backend_config: "backend.<<parameters.ENV>>.tfvars"
@@ -128,7 +131,7 @@ workflows:
           ENV_SECRETS: "DEV"
           ENV_PATH_FILE: "./dev.tfvars"
           requires:
-            - build-geo-management-connector
+            - Docker build and push
       - infra/ecr-build-and-push-image:
           <<: *devfilter
           <<: *devkey
@@ -137,7 +140,7 @@ workflows:
           repository-name: 'gm-consumer-dev-geo-bulk-load'
           dockerfile: ./DockerfileBatchCopyDatalake
           requires:
-            - deploy-geo-management-connector
+            - build-geo-management-connector
   geo-management-connector-preview:
     when: << pipeline.parameters.run-geo-management-connector-job >>
     jobs:
@@ -150,7 +153,7 @@ workflows:
             ENV_SECRETS: "PREVIEW"
             ENV_PATH_FILE: "./preview.tfvars"
             requires:
-              - build-geo-management-connector
+              - Docker build and push
       - infra/ecr-build-and-push-image:
           <<: *previewfilter
           <<: *previewkey
@@ -159,7 +162,7 @@ workflows:
           repository-name: 'gm-consumer-preview-geo-bulk-load'
           dockerfile: ./DockerfileBatchCopyDatalake
           requires:
-            - deploy-geo-management-connector
+            - build-geo-management-connector
   geo-management-connector-live:
     when: << pipeline.parameters.run-geo-management-connector-job >>
     jobs:
@@ -178,8 +181,7 @@ workflows:
           ENV_SECRETS: "LIVE"
           ENV_PATH_FILE: "./live.tfvars"
           requires:
-            - build-geo-management-connector
-            - Approve deploy to prod
+            - Docker build and push
       - infra/ecr-build-and-push-image:
           <<: *livefilter
           <<: *livekey
@@ -188,4 +190,5 @@ workflows:
           repository-name: 'gm-consumer-live-geo-bulk-load'
           dockerfile: ./DockerfileBatchCopyDatalake
           requires:
-            - deploy-geo-management-connector
+            - build-geo-management-connector
+            - Approve deploy to prod
