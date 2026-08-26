@@ -133,6 +133,7 @@ resource "aws_ecs_task_definition" "geo_bulk_load" {
       essential = true
       environment = [
         { name = "GEO_DB_SECRET_ID", value = aws_secretsmanager_secret.geo_bulk_load.name },
+        { name = "DUCKDB_EXTENSION_DIRECTORY", value = "/opt/duckdb/extensions" },
         { name = "GEO_MANAGEMENT_SYNC_BUCKET", value = var.geo_management_sync_bucket },
         { name = "GEO_MANAGEMENT_BUCKET_KEY", value = var.geo_management_bucket_key },
       ]
