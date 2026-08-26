@@ -41,7 +41,10 @@ export async function processMassiveParquetToPostgres() {
   logger.info('[ECS Task] Initialisation de DuckDB via @duckdb/node-api...');
 
   // Création de l'instance et de la connexion asynchrone native
-  const instance = await DuckDBInstance.create(':memory:');
+  const duckDbOptions = process.env.DUCKDB_EXTENSION_DIRECTORY
+    ? { extension_directory: process.env.DUCKDB_EXTENSION_DIRECTORY }
+    : undefined;
+  const instance = await DuckDBInstance.create(':memory:', duckDbOptions);
   const conn = await instance.connect();
 
   try {
