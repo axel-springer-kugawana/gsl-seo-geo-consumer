@@ -14,6 +14,7 @@ export async function processMassiveParquetToPostgres() {
   const S3_PARQUET_PATH = bucket && bucketKey
     ? `s3://${bucket}/${bucketKey}/name/**/*.parquet`
     : undefined;
+    
 
   if (!PG_HOST || !PG_DATABASE || !PG_USER || !PG_PASSWORD || !S3_PARQUET_PATH) {
     throw new Error('[ECS Task] ERREUR: Variables PostgreSQL ou chemin S3 manquants.');

@@ -121,7 +121,6 @@ resource "aws_ecs_task_definition" "geo_bulk_load" {
       name      = "geo-bulk-load"
       image     = "${aws_ecr_repository.geo_bulk_load.repository_url}:${var.image_tag}"
       essential = true
-
       environment = [
         { name = "GEO_DB_SECRET_ID", value = aws_secretsmanager_secret.geo_bulk_load.arn },
         { name = "GEO_DB_HOST", value = data.aws_rds_cluster.ssot.endpoint },
