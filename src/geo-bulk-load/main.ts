@@ -228,6 +228,14 @@ export async function processMassiveParquetToPostgres() {
 
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
+    const FEATURE_ID_PREFIXES = [
+      'AD02', 'AD03', 'AD04', 'AD05', 'AD06', 'AD07', 'AD08', 'AD09',
+      'NBH1', 'STU1', 'NBH2', 'STU2', 'NBH3', 'STU3', 'STRT', 'HONU'
+    ];
+    // AD02, AD03, AD04, AD05, AD06, AD07, AD08, POCO, AD09, NBH1, STU1, NBH2, STU2, NBH3, STU3, STRT, BLOC, PARC, BILD, HONU, POFI, SKOL
+    const featureIdPrefixFilter = FEATURE_ID_PREFIXES
+      .map((prefix) => `FEATURE_ID LIKE '${prefix}%'`)
+      .join(' OR ');
     await conn.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}."geoName_staging" ("avivGeoId", language, "displayName", name, slug, key)
       SELECT 
@@ -237,7 +245,8 @@ export async function processMassiveParquetToPostgres() {
         NAME AS name,
         SLUG AS slug,
         KEY AS key
-      FROM read_parquet('${S3_PARQUET_PATH}');
+      FROM read_parquet('${S3_PARQUET_PATH}')
+      WHERE ${featureIdPrefixFilter};
     `);
 
     // ÉTAPE 3 : Insertion de toutes les lignes (la table cible vient d'être vidée)
