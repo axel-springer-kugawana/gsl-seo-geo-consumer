@@ -71,25 +71,27 @@ export async function processMassiveParquetToPostgres() {
       AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY ? '********' : undefined,
     });
 
-    if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
-      logger.info('conn with access key', {
-        AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID ? '********' : undefined,
-        AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY ? '********' : undefined,
-      });
+    //   if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+    //   logger.info('conn with access key', {
+    //     AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID ? '********' : undefined,
+    //     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY ? '********' : undefined,
+    //   });
 
-      await conn.run(`
-        SET s3_access_key_id='${process.env.AWS_ACCESS_KEY_ID}';
-        SET s3_secret_access_key='${process.env.AWS_SECRET_ACCESS_KEY}';
-      `);
-      if (process.env.AWS_SESSION_TOKEN) {
-        logger.info('  load AWS_SESSION_TOKEN');
-        await conn.run(`SET s3_session_token='${process.env.AWS_SESSION_TOKEN}';`);
-      }
-    }
-    else {
-      logger.info('CALL load_aws_credentials(); provider credential_chain');
-      await conn.run(`CALL load_aws_credentials(provider = 'credential_chain');`);
-    }
+    //   await conn.run(`
+    //     SET s3_access_key_id='${process.env.AWS_ACCESS_KEY_ID}';
+    //     SET s3_secret_access_key='${process.env.AWS_SECRET_ACCESS_KEY}';
+    //   `);
+    //   if (process.env.AWS_SESSION_TOKEN) {
+    //     logger.info('  load AWS_SESSION_TOKEN');
+    //     await conn.run(`SET s3_session_token='${process.env.AWS_SESSION_TOKEN}';`);
+    //   }
+    // }
+    // else {
+    //   logger.info('CALL load_aws_credentials(); provider credential_chain');
+    //   await conn.run(`CALL load_aws_credentials(provider = 'credential_chain');`);
+    // }
+    logger.info('CALL load_aws_credentials(); provider credential_chain (so DuckDB fetches ECS Task credentials natively)');
+    await conn.run(`CALL load_aws_credentials(provider = 'credential_chain');`);
 
     // Connexion à PostgreSQL
     logger.info(`[ECS Task] Connexion à PostgreSQL (${PG_HOST}:${PG_PORT}/${PG_DATABASE})...`);
