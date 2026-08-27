@@ -223,7 +223,7 @@ export async function processMassiveParquetToPostgres() {
 `);
 
     // Retire la PK et vide la table sans la supprimer, pour accélérer le bulk insert qui suit.
-    // await pgClient.query(`ALTER TABLE ${PG_SCHEMA}."geoName" DROP CONSTRAINT IF EXISTS "GeoName_pkey";`);
+    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}."geoName" DROP CONSTRAINT IF EXISTS "GeoName_pkey";`);
     await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}."geoName";`);
 
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
@@ -236,6 +236,12 @@ export async function processMassiveParquetToPostgres() {
     const featureIdPrefixFilter = FEATURE_ID_PREFIXES
       .map((prefix) => `FEATURE_ID LIKE '${prefix}%'`)
       .join(' OR ');
+    const FEATURE_ID_EXCLUDED_PREFIXES = [
+      'HONUBE', 'HONUDE', 'STRTBE', 'STRTDE', 'AD08MUNDO', 'AD06MUNDO',
+    ];
+    const featureIdExclusionFilter = FEATURE_ID_EXCLUDED_PREFIXES
+      .map((prefix) => `FEATURE_ID NOT LIKE '${prefix}%'`)
+      .join(' AND ');
     await conn.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}."geoName_staging" ("avivGeoId", language, "displayName", name, slug, key)
       SELECT 
@@ -246,7 +252,10 @@ export async function processMassiveParquetToPostgres() {
         SLUG AS slug,
         KEY AS key
       FROM read_parquet('${S3_PARQUET_PATH}')
-      WHERE ${featureIdPrefixFilter};
+      WHERE (${featureIdPrefixFilter})
+        AND (${featureIdExclusionFilter})
+        AND LANGUAGE IS NOT NULL
+        AND TRIM(LANGUAGE) != '';
     `);
 
     // ÉTAPE 3 : Insertion de toutes les lignes (la table cible vient d'être vidée)
@@ -258,7 +267,7 @@ export async function processMassiveParquetToPostgres() {
     `);
 
     // ÉTAPE 4 : on remet la contrainte de clé primaire sur la table finale
-    // await pgClient.query(`ALTER TABLE ${PG_SCHEMA}."geoName" ADD CONSTRAINT "GeoName_pkey" PRIMARY KEY ("avivGeoId", language);`);
+     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}."geoName" ADD CONSTRAINT "GeoName_pkey" PRIMARY KEY ("avivGeoId", language);`);
     // ÉTAPE 5 : Nettoyage
     //logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
     //await conn.run(`DROP TABLE postgres_db.${PG_SCHEMA}."geoName_staging";`);
