@@ -32,6 +32,14 @@ export async function processMassiveParquetToPostgres() {
   const bucket = process.env.GEO_MANAGEMENT_SYNC_BUCKET;
   const bucketKey = process.env.GEO_MANAGEMENT_BUCKET_KEY;
 
+  const FEATURE_ID_PREFIXES = [
+      'AD02', 'AD03', 'AD04', 'AD05', 'AD06', 'AD07', 'AD08', 'AD09',
+      'NBH1', 'STU1', 'NBH2', 'STU2', 'NBH3', 'STU3', 'STRT', 'HONU'
+    ];
+    const FEATURE_ID_EXCLUDED_PREFIXES = [
+      'HONUBE', 'HONUDE', 'STRTBE', 'STRTDE', 'AD08MUNDO', 'AD06MUNDO', 'STU3AT', 'AD08MUNDO', 'AD06MUNDO', 'AD04MUNDO', 'AD02MUNDO'
+    ];
+
   if (!PG_HOST || !PG_DATABASE || !PG_USER || !PG_PASSWORD || !bucket || !bucketKey) {
     throw new Error('[ECS Task] ERREUR: Variables PostgreSQL ou chemin S3 manquants.');
   }
@@ -142,7 +150,7 @@ export async function processMassiveParquetToPostgres() {
       CREATE TABLE IF NOT EXISTS ${PG_SCHEMA}.geoLineage
 (
     newId character varying NOT NULL,
-    oldId character varying NOT NULL
+    oldId character varying NOT NULL,
     key character varying,
     coefficient integer
 );
@@ -154,15 +162,27 @@ export async function processMassiveParquetToPostgres() {
 
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
-    await conn.run(`
+  
+      const featureIdPrefixFilter = FEATURE_ID_PREFIXES
+      .map((prefix) => `NEW_ID LIKE '${prefix}%'`)
+      .join(' OR ');
+    
+    const featureIdExclusionFilter = FEATURE_ID_EXCLUDED_PREFIXES
+      .map((prefix) => `NEW_ID NOT LIKE '${prefix}%'`)
+      .join(' AND ');
+      
+      await conn.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoLineage_staging (newId, oldId,  key, coefficient)
       SELECT 
         NEW_ID AS newId,
         OLD_ID AS oldId,
         KEY AS key,
         COEFFICIENT AS coefficient
-      FROM read_parquet('${S3_PARQUET_PATH}');
+      FROM read_parquet('${S3_PARQUET_PATH}')
+      WHERE (${featureIdPrefixFilter})
+      AND (${featureIdExclusionFilter});
     `);
+
 
     // ÉTAPE 3 : Insertion de toutes les lignes (la table cible vient d'être vidée)
     logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
@@ -217,17 +237,12 @@ export async function processMassiveParquetToPostgres() {
 
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
-    const FEATURE_ID_PREFIXES = [
-      'AD02', 'AD03', 'AD04', 'AD05', 'AD06', 'AD07', 'AD08', 'AD09',
-      'NBH1', 'STU1', 'NBH2', 'STU2', 'NBH3', 'STU3', 'STRT', 'HONU'
-    ];
+    
     // AD02, AD03, AD04, AD05, AD06, AD07, AD08, POCO, AD09, NBH1, STU1, NBH2, STU2, NBH3, STU3, STRT, BLOC, PARC, BILD, HONU, POFI, SKOL
     const featureIdPrefixFilter = FEATURE_ID_PREFIXES
       .map((prefix) => `FEATURE_ID LIKE '${prefix}%'`)
       .join(' OR ');
-    const FEATURE_ID_EXCLUDED_PREFIXES = [
-      'HONUBE', 'HONUDE', 'STRTBE', 'STRTDE', 'AD08MUNDO', 'AD06MUNDO', 'STU3AT', 'AD08MUNDO', 'AD06MUNDO', 'AD04MUNDO', 'AD02MUNDO'
-    ];
+    
     const featureIdExclusionFilter = FEATURE_ID_EXCLUDED_PREFIXES
       .map((prefix) => `FEATURE_ID NOT LIKE '${prefix}%'`)
       .join(' AND ');
