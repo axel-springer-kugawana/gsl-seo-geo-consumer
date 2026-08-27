@@ -65,8 +65,8 @@ export async function processMassiveParquetToPostgres() {
   await pgClient.connect();
 
   try {
-    logger.info('[ECS Task] Chargement des extensions (httpfs, postgres)...');
-    await conn.run('LOAD aws; LOAD httpfs; LOAD postgres;');
+    logger.info('[ECS Task] Chargement des extensions (httpfs, postgres, json)...');
+    await conn.run('LOAD aws; LOAD httpfs; LOAD postgres; LOAD json;');
 
     // Caps DuckDB's own footprint below the Fargate task memory limit and lets it
     // spill to the ephemeral storage disk instead of getting OOM-killed by the container.
@@ -103,18 +103,18 @@ export async function processMassiveParquetToPostgres() {
     const escapedPgConnString = pgConnString.replace(/'/g, "''");
     await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
 
-    console.log('store geo names start ...');
-    await storeGeoNames();
-    console.log('store geo names done...');
-
-    console.log('store geo lineage start ...');
-    await storeGeoLineage();
-    console.log('store geo lineage done...');
-
+    // console.log('store geo names start ...');
+    // await storeGeoNames();
+    // console.log('store geo names done...');
 
     // console.log('store geo lineage start ...');
-    // await storeGeoFeature();
+    // await storeGeoLineage();
     // console.log('store geo lineage done...');
+
+
+    console.log('store geo feature start ...');
+    await storeGeoFeature();
+    console.log('store geo feature done...');
 
 
     logger.info('[ECS Task] TRAITEMENT TERMINÉ AVEC SUCCÈS !');
@@ -292,80 +292,92 @@ export async function processMassiveParquetToPostgres() {
   async function storeGeoFeature() {
     // Implementation for storing geo lineage
     const S3_PARQUET_PATH = bucket && bucketKey
-      ? `s3://${bucket}/${bucketKey}/name/*.parquet`
+      ? `s3://${bucket}/${bucketKey}/feature/*.parquet`
       : undefined;
 
     // ÉTAPE 1 : Table temporaire UNLOGGED
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
-    await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}."geoFeature_staging";`);
+    await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoFeature_staging;`);
 
     await pgClient.query(`
-      CREATE UNLOGGED TABLE ${PG_SCHEMA}."geoFeature_staging"
+      CREATE UNLOGGED TABLE ${PG_SCHEMA}.geoFeature_staging
 (
-    "avivGeoId" character varying NOT NULL,
+    avivGeoId character varying NOT NULL,
     type character varying,
-    "mainPostalcode" character varying,
-    "countryCode" character varying,
-    fictive bit(1),
+    mainPostalcode character varying,
+    countryCode character varying,
+    fictive boolean,
     level integer,
-    "PostalCodes" text[],
-    "Parents" text[],
-    "Population" integer
+    postalCodes text[],
+    parents text[],
+    population integer
 );
     `);
 
     await pgClient.query(`
-      CREATE TABLE IF NOT EXISTS ${PG_SCHEMA}."geoFeature"
+      CREATE TABLE IF NOT EXISTS ${PG_SCHEMA}.geoFeature
 (
-    "avivGeoId" character varying NOT NULL,
+    avivGeoId character varying NOT NULL,
     type character varying,
-    "mainPostalcode" character varying,
-    "countryCode" character varying,
-    fictive bit(1),
+    mainPostalcode character varying,
+    countryCode character varying,
+    fictive boolean,
     level integer,
-    "PostalCodes" text[],
-    "Parents" text[],
-    "Population" integer
+    postalCodes text[],
+    parents text[],
+    population integer
 )
 ;
 `);
 
     // Retire la PK et vide la table sans la supprimer, pour accélérer le bulk insert qui suit.
-    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}."geoFeature" DROP CONSTRAINT IF EXISTS "GeoFeature_pkey";`);
-    await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}."geoFeature";`);
+    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoFeature DROP CONSTRAINT IF EXISTS GeoFeature_pkey;`);
+    await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}.geoFeature;`);
 
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
+    
+    
+      const featureIdPrefixFilter = FEATURE_ID_PREFIXES
+      .map((prefix) => `ID LIKE '${prefix}%'`)
+      .join(' OR ');
+
+    const featureIdExclusionFilter = FEATURE_ID_EXCLUDED_PREFIXES
+      .map((prefix) => `ID NOT LIKE '${prefix}%'`)
+      .join(' AND ');
+
     await conn.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}."geoFeature_staging" ("avivGeoId", type, "mainPostalcode", "countryCode", fictive, level, "PostalCodes", "Parents", "Population")
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature_staging (avivGeoId, type, mainPostalcode, countryCode, fictive, level, postalCodes, parents, population)
       SELECT 
-        ID AS "avivGeoId",
+        ID AS avivGeoId,
         TYPE_LABEL AS type,
-        MAIN_POSTALCODE AS "mainPostalcode",
-        COUNTRY_CODE AS "countryCode",
+        MAIN_POSTALCODE AS mainPostalcode,
+        COUNTRY_CODE AS countryCode,
         FICTIVE AS fictive,
         TYPE_LEVEL AS level,
-        POSTAL_CODES AS "PostalCodes",
-        PARENTS AS "Parents",
-        POPULATION AS "Population"
-      FROM read_parquet('${S3_PARQUET_PATH}');
+        CAST(POSTAL_CODES AS JSON)::VARCHAR[] AS postalCodes,
+        CAST(PARENTS AS JSON)::VARCHAR[] AS parents,
+        POPULATION AS population
+      FROM read_parquet('${S3_PARQUET_PATH}')
+      WHERE (${featureIdPrefixFilter})
+      AND (${featureIdExclusionFilter});
     `);
 
     // ÉTAPE 3 : Insertion de toutes les lignes (la table cible vient d'être vidée)
     logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
     await conn.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}."geoFeature" ("avivGeoId", type, "mainPostalcode", "countryCode", fictive, level, "PostalCodes", "Parents", "Population")
-      SELECT "avivGeoId", type, "mainPostalcode", "countryCode", fictive, level, "PostalCodes", "Parents", "Population"
-      FROM postgres_db.${PG_SCHEMA}."geoFeature_staging";
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature (avivGeoId, type, mainPostalcode, countryCode, fictive, level, postalCodes, parents, population)
+      SELECT avivGeoId, type, mainPostalcode, countryCode, fictive, level, postalCodes, parents, population
+      FROM postgres_db.${PG_SCHEMA}.geoFeature_staging;
     `);
 
     // ÉTAPE 4 : on remet la contrainte de clé primaire sur la table finale
     await pgClient.query(`
-     ALTER TABLE ${PG_SCHEMA}."geoFeature" ADD CONSTRAINT "GeoFeature_pkey" PRIMARY KEY ("avivGeoId");
+     ALTER TABLE ${PG_SCHEMA}.geoFeature ADD CONSTRAINT GeoFeature_pkey PRIMARY KEY (avivGeoId);
 `);
     // ÉTAPE 5 : Nettoyage
-    //logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
-    //await conn.run(`DROP TABLE postgres_db.${PG_SCHEMA}."geoName_staging";`);
+    logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
+    await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoFeature_staging;`);
 
   }
 }
