@@ -197,13 +197,13 @@ export async function processMassiveParquetToPostgres() {
 
     // ÉTAPE 1 : Table temporaire UNLOGGED
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
-    await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}."geoName_staging";`);
+    await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoName_staging;`);
 
     await pgClient.query(`
-      CREATE UNLOGGED TABLE ${PG_SCHEMA}."geoName_staging" (
-        "avivGeoId" character varying NOT NULL,
+      CREATE UNLOGGED TABLE ${PG_SCHEMA}.geoName_staging (
+        avivGeoId character varying NOT NULL,
         language character varying,
-        "displayName" character varying ,
+        displayName character varying ,
         name character varying ,
         slug character varying ,
         key character varying 
@@ -211,11 +211,11 @@ export async function processMassiveParquetToPostgres() {
     `);
 
     await pgClient.query(`
-      CREATE TABLE IF NOT EXISTS ${PG_SCHEMA}."geoName"
+      CREATE TABLE IF NOT EXISTS ${PG_SCHEMA}.geoName
 (
-    "avivGeoId" character varying NOT NULL,
+    avivGeoId character varying NOT NULL,
     language character varying ,
-    "displayName" character varying  ,
+    displayName character varying  ,
     name character varying ,
     slug character varying ,
     key character varying
@@ -223,8 +223,8 @@ export async function processMassiveParquetToPostgres() {
 `);
 
     // Retire la PK et vide la table sans la supprimer, pour accélérer le bulk insert qui suit.
-    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}."geoName" DROP CONSTRAINT IF EXISTS "GeoName_pkey";`);
-    await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}."geoName";`);
+    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName DROP CONSTRAINT IF EXISTS "GeoName_pkey";`);
+    await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}.geoName;`);
 
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
@@ -237,17 +237,17 @@ export async function processMassiveParquetToPostgres() {
       .map((prefix) => `FEATURE_ID LIKE '${prefix}%'`)
       .join(' OR ');
     const FEATURE_ID_EXCLUDED_PREFIXES = [
-      'HONUBE', 'HONUDE', 'STRTBE', 'STRTDE', 'AD08MUNDO', 'AD06MUNDO',
+      'HONUBE', 'HONUDE', 'STRTBE', 'STRTDE', 'AD08MUNDO', 'AD06MUNDO','STU3AT','AD08MUNDO','AD06MUNDO','AD04MUNDO','AD02MUNDO'
     ];
     const featureIdExclusionFilter = FEATURE_ID_EXCLUDED_PREFIXES
       .map((prefix) => `FEATURE_ID NOT LIKE '${prefix}%'`)
       .join(' AND ');
     await conn.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}."geoName_staging" ("avivGeoId", language, "displayName", name, slug, key)
-      SELECT 
-        FEATURE_ID AS "avivGeoId",
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoName_staging (avivGeoId, language, displayName, name, slug, key)
+      SELECT DISTINCT
+        FEATURE_ID AS avivGeoId,
         LANGUAGE AS language,
-        DISPLAY_NAME AS "displayName",
+        DISPLAY_NAME AS displayName,
         NAME AS name,
         SLUG AS slug,
         KEY AS key
@@ -261,13 +261,15 @@ export async function processMassiveParquetToPostgres() {
     // ÉTAPE 3 : Insertion de toutes les lignes (la table cible vient d'être vidée)
     logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
     await conn.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}."geoName" ("avivGeoId", language, "displayName", name, slug, key)
-      SELECT "avivGeoId", language, "displayName", name, slug, key
-      FROM postgres_db.${PG_SCHEMA}."geoName_staging";
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoName (avivGeoId, language, displayName, name, slug, key)
+      SELECT avivGeoId, language, displayName, name, slug, key
+      FROM postgres_db.${PG_SCHEMA}.geoName_staging;
     `);
 
     // ÉTAPE 4 : on remet la contrainte de clé primaire sur la table finale
-     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}."geoName" ADD CONSTRAINT "GeoName_pkey" PRIMARY KEY ("avivGeoId", language);`);
+    logger.info('[ECS Task] Étape 4/5 : Remise de la contrainte de clé primaire...');
+   
+    //  await pgClient.query(`ALTER TABLE ${PG_SCHEMA}."geoName" ADD CONSTRAINT "GeoName_pkey" PRIMARY KEY ("avivGeoId", language);`);
     // ÉTAPE 5 : Nettoyage
     //logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
     //await conn.run(`DROP TABLE postgres_db.${PG_SCHEMA}."geoName_staging";`);
