@@ -256,6 +256,8 @@ export async function processMassiveParquetToPostgres() {
         AND (${featureIdExclusionFilter})
         AND LANGUAGE IS NOT NULL
         AND TRIM(LANGUAGE) != ''
+        AND DISPLAY_NAME IS NOT NULL
+        AND TRIM(DISPLAY_NAME) != ''
         AND RANK = 0;
     `);
 
