@@ -77,6 +77,7 @@ export async function processMassiveParquetToPostgres() {
     await storeGeoNames();
     console.log('store geo names done...');
 
+    logger.info('[ECS Task] TRAITEMENT TERMINÉ AVEC SUCCÈS !');
   } catch (error) {
     logger.error('[ECS Task] ERREUR CRITIQUE :' + error);
     // try {
