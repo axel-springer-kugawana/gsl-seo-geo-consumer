@@ -72,7 +72,7 @@ export async function processMassiveParquetToPostgres() {
     });
 
     if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
-      logger.info('conn with access key', {
+      logger.info('conn with access key 1', {
         AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID ? '********' : undefined,
         AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY ? '********' : undefined,
       });
@@ -82,15 +82,15 @@ export async function processMassiveParquetToPostgres() {
         SET s3_secret_access_key='${process.env.AWS_SECRET_ACCESS_KEY}';
       `);
       if (process.env.AWS_SESSION_TOKEN) {
-        logger.info('  load AWS_SESSION_TOKEN');
+        logger.info('  load AWS_SESSION_TOKEN 2');
         await conn.run(`SET s3_session_token='${process.env.AWS_SESSION_TOKEN}';`);
       } else {
-        logger.info(' AWS_SESSION_TOKEN not found, trying to load from load_aws_credentials()');
+        logger.info(' AWS_SESSION_TOKEN not found, trying to load from load_aws_credentials() 3');
 
       }
     }
     else {
-      logger.info('CALL load_aws_credentials();');
+      logger.info('CALL load_aws_credentials(); 4');
       await conn.run(`CALL load_aws_credentials();`);
     }
 
