@@ -85,14 +85,10 @@ export async function processMassiveParquetToPostgres() {
         logger.info('  load AWS_SESSION_TOKEN');
         await conn.run(`SET s3_session_token='${process.env.AWS_SESSION_TOKEN}';`);
       }
-      else {
-        logger.info('CALL load_aws_credentials();');
-        await conn.run(`CALL load_aws_credentials();`);
-      }
     }
     else {
-      logger.info('CALL load_aws_credentials();');
-      await conn.run(`CALL load_aws_credentials();`);
+      logger.info('CALL load_aws_credentials(); provider credential_chain');
+      await conn.run(`CALL load_aws_credentials(provider = 'credential_chain');`);
     }
 
     // Connexion à PostgreSQL
