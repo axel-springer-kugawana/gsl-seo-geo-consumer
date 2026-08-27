@@ -66,7 +66,17 @@ export async function processMassiveParquetToPostgres() {
     await conn.run(`SET ca_cert_file='${caCertFile}';`);
     await conn.run(`SET s3_region='${AWS_REGION}';`);
 
+    logger.info('get access key', {
+      AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID ? '********' : undefined,
+      AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY ? '********' : undefined,
+    });
+
     if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+      logger.info('conn with access key', {
+        AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID ? '********' : undefined,
+        AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY ? '********' : undefined,
+      });
+
       await conn.run(`
         SET s3_access_key_id='${process.env.AWS_ACCESS_KEY_ID}';
         SET s3_secret_access_key='${process.env.AWS_SECRET_ACCESS_KEY}';
@@ -75,7 +85,12 @@ export async function processMassiveParquetToPostgres() {
         logger.info('  load AWS_SESSION_TOKEN');
         await conn.run(`SET s3_session_token='${process.env.AWS_SESSION_TOKEN}';`);
       }
-    } else {
+      else {
+        logger.info('CALL load_aws_credentials();');
+        await conn.run(`CALL load_aws_credentials();`);
+      }
+    }
+    else {
       logger.info('CALL load_aws_credentials();');
       await conn.run(`CALL load_aws_credentials();`);
     }
