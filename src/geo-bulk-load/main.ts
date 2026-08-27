@@ -33,12 +33,12 @@ export async function processMassiveParquetToPostgres() {
   const bucketKey = process.env.GEO_MANAGEMENT_BUCKET_KEY;
 
   const FEATURE_ID_PREFIXES = [
-      'AD02', 'AD03', 'AD04', 'AD05', 'AD06', 'AD07', 'AD08', 'AD09',
-      'NBH1', 'STU1', 'NBH2', 'STU2', 'NBH3', 'STU3', 'STRT', 'HONU'
-    ];
-    const FEATURE_ID_EXCLUDED_PREFIXES = [
-      'HONUBE', 'HONUDE', 'STRTBE', 'STRTDE', 'AD08MUNDO', 'AD06MUNDO', 'STU3AT', 'AD08MUNDO', 'AD06MUNDO', 'AD04MUNDO', 'AD02MUNDO'
-    ];
+    'AD02', 'AD03', 'AD04', 'AD05', 'AD06', 'AD07', 'AD08', 'AD09',
+    'NBH1', 'STU1', 'NBH2', 'STU2', 'NBH3', 'STU3', 'STRT', 'HONU'
+  ];
+  const FEATURE_ID_EXCLUDED_PREFIXES = [
+    'HONUBE', 'HONUDE', 'STRTBE', 'STRTDE', 'AD08MUNDO', 'AD06MUNDO', 'STU3AT', 'AD08MUNDO', 'AD06MUNDO', 'AD04MUNDO', 'AD02MUNDO'
+  ];
 
   if (!PG_HOST || !PG_DATABASE || !PG_USER || !PG_PASSWORD || !bucket || !bucketKey) {
     throw new Error('[ECS Task] ERREUR: Variables PostgreSQL ou chemin S3 manquants.');
@@ -162,16 +162,16 @@ export async function processMassiveParquetToPostgres() {
 
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
-  
-      const featureIdPrefixFilter = FEATURE_ID_PREFIXES
+
+    const featureIdPrefixFilter = FEATURE_ID_PREFIXES
       .map((prefix) => `NEW_ID LIKE '${prefix}%'`)
       .join(' OR ');
-    
+
     const featureIdExclusionFilter = FEATURE_ID_EXCLUDED_PREFIXES
       .map((prefix) => `NEW_ID NOT LIKE '${prefix}%'`)
       .join(' AND ');
-      
-      await conn.run(`
+
+    await conn.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoLineage_staging (newId, oldId,  key, coefficient)
       SELECT 
         NEW_ID AS newId,
@@ -193,9 +193,15 @@ export async function processMassiveParquetToPostgres() {
     `);
 
     // ÉTAPE 4 : on remet la contrainte de clé primaire sur la table finale
+    logger.info('[ECS Task] Étape 4/5 : Remise de la contrainte de clé primaire...');
+
     await pgClient.query(`
      ALTER TABLE ${PG_SCHEMA}.geoLineage ADD CONSTRAINT geoLineage_pkey PRIMARY KEY (newId, oldId);
 `);
+
+    // ÉTAPE 5 : Nettoyage
+    logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
+    await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoLineage_staging;`);
   }
 
 
@@ -237,12 +243,12 @@ export async function processMassiveParquetToPostgres() {
 
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
-    
+
     // AD02, AD03, AD04, AD05, AD06, AD07, AD08, POCO, AD09, NBH1, STU1, NBH2, STU2, NBH3, STU3, STRT, BLOC, PARC, BILD, HONU, POFI, SKOL
     const featureIdPrefixFilter = FEATURE_ID_PREFIXES
       .map((prefix) => `FEATURE_ID LIKE '${prefix}%'`)
       .join(' OR ');
-    
+
     const featureIdExclusionFilter = FEATURE_ID_EXCLUDED_PREFIXES
       .map((prefix) => `FEATURE_ID NOT LIKE '${prefix}%'`)
       .join(' AND ');
@@ -277,9 +283,10 @@ export async function processMassiveParquetToPostgres() {
     logger.info('[ECS Task] Étape 4/5 : Remise de la contrainte de clé primaire...');
 
     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName ADD CONSTRAINT GeoName_pkey PRIMARY KEY (avivGeoId, language);`);
+
     // ÉTAPE 5 : Nettoyage
-    //logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
-    //await conn.run(`DROP TABLE postgres_db.${PG_SCHEMA}."geoName_staging";`);
+    logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
+    await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoName_staging;`);
   }
 
   async function storeGeoFeature() {
