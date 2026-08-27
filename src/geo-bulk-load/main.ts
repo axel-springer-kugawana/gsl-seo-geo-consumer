@@ -351,7 +351,7 @@ export async function processMassiveParquetToPostgres() {
       SELECT 
         ID AS avivGeoId,
         TYPE_LABEL AS type,
-        MAIN_POSTALCODE AS mainPostalcode,
+        MAIN_POSTAL_CODE AS mainPostalcode,
         COUNTRY_CODE AS countryCode,
         FICTIVE AS fictive,
         TYPE_LEVEL AS level,
