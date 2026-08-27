@@ -255,7 +255,8 @@ export async function processMassiveParquetToPostgres() {
       WHERE (${featureIdPrefixFilter})
         AND (${featureIdExclusionFilter})
         AND LANGUAGE IS NOT NULL
-        AND TRIM(LANGUAGE) != '';
+        AND TRIM(LANGUAGE) != ''
+        AND RANK = 0;
     `);
 
     // ÉTAPE 3 : Insertion de toutes les lignes (la table cible vient d'être vidée)
