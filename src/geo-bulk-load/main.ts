@@ -103,9 +103,9 @@ export async function processMassiveParquetToPostgres() {
     const escapedPgConnString = pgConnString.replace(/'/g, "''");
     await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
 
-    // console.log('store geo names start ...');
-    // await storeGeoNames();
-    // console.log('store geo names done...');
+    console.log('store geo names start ...');
+    await storeGeoNames();
+    console.log('store geo names done...');
 
     console.log('store geo lineage start ...');
     await storeGeoLineage();
