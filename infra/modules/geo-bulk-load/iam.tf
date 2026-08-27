@@ -79,6 +79,22 @@ data "aws_iam_policy_document" "task" {
       "${aws_cloudwatch_log_group.geo_bulk_load.arn}:*"
     ]
   }
+
+  # Needed to decrypt the parquet export when the source bucket uses SSE-KMS.
+  # The key's resource policy (owned by the producing account) must also grant this role kms:Decrypt.
+  dynamic "statement" {
+    for_each = var.geo_bucket_kms_key_arn != "" ? [1] : []
+    content {
+      effect = "Allow"
+      actions = [
+        "kms:Decrypt",
+        "kms:DescribeKey",
+      ]
+      resources = [
+        var.geo_bucket_kms_key_arn
+      ]
+    }
+  }
 }
 
 resource "aws_iam_policy" "task" {

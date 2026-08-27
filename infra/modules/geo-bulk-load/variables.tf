@@ -14,6 +14,12 @@ variable "geo_bucket" {
   })
 }
 
+variable "geo_bucket_kms_key_arn" {
+  description = "KMS key ARN used to encrypt the geo parquet export objects. Empty means the bucket is not KMS-encrypted"
+  type        = string
+  default     = ""
+}
+
 variable "rds" {
   description = "Existing aurora postgres cluster this task loads into"
   type = object({

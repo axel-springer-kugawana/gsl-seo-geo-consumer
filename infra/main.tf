@@ -59,6 +59,8 @@ module "geo_bulk_load" {
     arn = "arn:aws:s3:::${var.geo_management_sync_bucket}"
   }
 
+  geo_bucket_kms_key_arn = var.geo_bucket_kms_key_arn
+
   rds = {
     cluster_identifier = var.rds_aurora_name
     database_name      = var.rds_aurora_database

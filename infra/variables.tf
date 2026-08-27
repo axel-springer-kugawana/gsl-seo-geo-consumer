@@ -141,6 +141,12 @@ variable "geo_management_bucket_key" {
   type        = string
 }
 
+variable "geo_bucket_kms_key_arn" {
+  description = "KMS key ARN used to encrypt objects in the geo management sync bucket (cross-account, owned by the export team). Empty means the bucket is not KMS-encrypted"
+  type        = string
+  default     = ""
+}
+
 
 variable "rds_security_group_id" {
   description = "Security group of the aurora cluster. Set it to let the bulk load task reach the database, empty to manage the inbound rule elsewhere"
