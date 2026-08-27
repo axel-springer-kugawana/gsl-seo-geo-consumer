@@ -39,15 +39,21 @@ variable "image_tag" {
 }
 
 variable "task_cpu" {
-  description = "Fargate cpu units. 2048 allows 4096 to 16384 MiB of memory"
+  description = "Fargate cpu units. 8192 allows 16384 to 61440 MiB of memory"
   type        = number
-  default     = 2048
+  default     = 8192
 }
 
 variable "task_memory" {
   description = "Fargate memory in MiB"
   type        = number
-  default     = 8192
+  default     = 61440
+}
+
+variable "duckdb_memory_limit" {
+  description = "DuckDB memory_limit setting. Keep well below task_memory to leave room for node/pg and avoid OOM kills"
+  type        = string
+  default     = "45GB"
 }
 
 variable "ephemeral_storage_gib" {

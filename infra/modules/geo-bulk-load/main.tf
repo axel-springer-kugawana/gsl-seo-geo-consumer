@@ -136,6 +136,8 @@ resource "aws_ecs_task_definition" "geo_bulk_load" {
         { name = "DUCKDB_EXTENSION_DIRECTORY", value = "/opt/duckdb/extensions" },
         { name = "GEO_MANAGEMENT_SYNC_BUCKET", value = var.geo_management_sync_bucket },
         { name = "GEO_MANAGEMENT_BUCKET_KEY", value = var.geo_management_bucket_key },
+        { name = "DUCKDB_MEMORY_LIMIT", value = var.duckdb_memory_limit },
+        { name = "DUCKDB_TEMP_DIRECTORY", value = "/tmp/duckdb_spill" },
       ]
 
       logConfiguration = {

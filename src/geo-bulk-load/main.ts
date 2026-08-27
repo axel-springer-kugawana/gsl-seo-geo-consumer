@@ -60,6 +60,16 @@ export async function processMassiveParquetToPostgres() {
     logger.info('[ECS Task] Chargement des extensions (httpfs, postgres)...');
     await conn.run('LOAD aws; LOAD httpfs; LOAD postgres;');
 
+    // Caps DuckDB's own footprint below the Fargate task memory limit and lets it
+    // spill to the ephemeral storage disk instead of getting OOM-killed by the container.
+    const duckDbMemoryLimit = process.env.DUCKDB_MEMORY_LIMIT || '4GB';
+    const duckDbTempDirectory = process.env.DUCKDB_TEMP_DIRECTORY || '/tmp/duckdb_spill';
+    logger.info(`[ECS Task] DuckDB memory_limit=${duckDbMemoryLimit}, temp_directory=${duckDbTempDirectory}`);
+    await conn.run(`SET memory_limit='${duckDbMemoryLimit}';`);
+    await conn.run(`SET temp_directory='${duckDbTempDirectory}';`);
+    // Avoids buffering the whole result set to preserve row order, which isn't needed for bulk inserts.
+    await conn.run(`SET preserve_insertion_order=false;`);
+
     // Configuration S3
     const caCertFile = process.env.SSL_CERT_FILE || '/etc/ssl/certs/ca-certificates.crt';
     accessSync(caCertFile, constants.R_OK);
@@ -195,7 +205,8 @@ export async function processMassiveParquetToPostgres() {
         language character varying,
         "displayName" character varying ,
         name character varying ,
-        slug character varying 
+        slug character varying ,
+        key character varying 
       );
     `);
 
@@ -206,7 +217,8 @@ export async function processMassiveParquetToPostgres() {
     language character varying ,
     "displayName" character varying  ,
     name character varying ,
-    slug character varying 
+    slug character varying ,
+    key character varying
 );
 `);
 
@@ -217,21 +229,22 @@ export async function processMassiveParquetToPostgres() {
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
     await conn.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}."geoName_staging" ("avivGeoId", language, "displayName", name, slug)
+      INSERT INTO postgres_db.${PG_SCHEMA}."geoName_staging" ("avivGeoId", language, "displayName", name, slug, key)
       SELECT 
         FEATURE_ID AS "avivGeoId",
         LANGUAGE AS language,
         DISPLAY_NAME AS "displayName",
         NAME AS name,
-        SLUG AS slug
+        SLUG AS slug,
+        KEY AS key
       FROM read_parquet('${S3_PARQUET_PATH}');
     `);
 
     // ÉTAPE 3 : Insertion de toutes les lignes (la table cible vient d'être vidée)
     logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
     await conn.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}."geoName" ("avivGeoId", language, "displayName", name, slug)
-      SELECT "avivGeoId", language, "displayName", name, slug
+      INSERT INTO postgres_db.${PG_SCHEMA}."geoName" ("avivGeoId", language, "displayName", name, slug, key)
+      SELECT "avivGeoId", language, "displayName", name, slug, key
       FROM postgres_db.${PG_SCHEMA}."geoName_staging";
     `);
 
