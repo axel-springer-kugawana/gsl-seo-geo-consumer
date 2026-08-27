@@ -34,12 +34,12 @@ export async function processMassiveParquetToPostgres() {
     ? `s3://${bucket}/${bucketKey}/name/*.parquet`
     : undefined;
 
-   // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
-    logger.info('[ECS Task] Étape 0/5 : variables',{
-      bucket:  bucket,
-      bucketKey: bucketKey,
-      bucketPath: S3_PARQUET_PATH
-    });
+  //  // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
+  //   logger.info('[ECS Task] Étape 0/5 : variables',{
+  //     bucket:  bucket,
+  //     bucketKey: bucketKey,
+  //     bucketPath: S3_PARQUET_PATH
+  //   });
 
 
   if (!PG_HOST || !PG_DATABASE || !PG_USER || !PG_PASSWORD || !S3_PARQUET_PATH) {
@@ -104,6 +104,8 @@ export async function processMassiveParquetToPostgres() {
     
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...', { query: query } );
    
+    await conn.run(`DROP TABLE IF EXISTS postgres_db.${PG_SCHEMA}."geoName_staging";`);
+
     await conn.run(`
       CREATE UNLOGGED TABLE postgres_db.${PG_SCHEMA}."geoName_staging" (
         "avivGeoId" character varying NOT NULL,
@@ -159,9 +161,9 @@ export async function processMassiveParquetToPostgres() {
     logger.info('[ECS Task] TRAITEMENT TERMINÉ AVEC SUCCÈS !');
   } catch (error) {
     logger.error('[ECS Task] ERREUR CRITIQUE :' + error);
-    try {
-      await conn.run(`DROP TABLE IF EXISTS postgres_db.${PG_SCHEMA}."geoName_staging";`);
-    } catch (_) { }
+    // try {
+    //   await conn.run(`DROP TABLE IF EXISTS postgres_db.${PG_SCHEMA}."geoName_staging";`);
+    // } catch (_) { }
     throw error;
   } finally {
     conn.closeSync();
