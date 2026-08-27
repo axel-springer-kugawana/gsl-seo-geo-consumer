@@ -223,7 +223,7 @@ export async function processMassiveParquetToPostgres() {
 `);
 
     // Retire la PK et vide la table sans la supprimer, pour accélérer le bulk insert qui suit.
-    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName DROP CONSTRAINT IF EXISTS "GeoName_pkey";`);
+    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName DROP CONSTRAINT IF EXISTS GeoName_pkey;`);
     await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}.geoName;`);
 
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
@@ -270,7 +270,7 @@ export async function processMassiveParquetToPostgres() {
     // ÉTAPE 4 : on remet la contrainte de clé primaire sur la table finale
     logger.info('[ECS Task] Étape 4/5 : Remise de la contrainte de clé primaire...');
    
-    //  await pgClient.query(`ALTER TABLE ${PG_SCHEMA}."geoName" ADD CONSTRAINT "GeoName_pkey" PRIMARY KEY ("avivGeoId", language);`);
+    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName ADD CONSTRAINT GeoName_pkey PRIMARY KEY (avivGeoId, language);`);
     // ÉTAPE 5 : Nettoyage
     //logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
     //await conn.run(`DROP TABLE postgres_db.${PG_SCHEMA}."geoName_staging";`);
