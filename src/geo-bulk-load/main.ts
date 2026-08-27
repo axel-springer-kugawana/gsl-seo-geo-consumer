@@ -13,7 +13,7 @@ export async function processMassiveParquetToPostgres() {
 
   const apisecrets = await getClassifiedApiSecret(process.env.GEO_DB_SECRET_ID || '');
 
-   logger.info('secrets recupérés', {
+  logger.info('secrets recupérés', {
     DbHostWriter: apisecrets.DbHostWriter,
     DbPort: apisecrets.DbPort,
     DbMainDatabase: apisecrets.DbMainDatabase,
@@ -72,8 +72,12 @@ export async function processMassiveParquetToPostgres() {
         SET s3_secret_access_key='${process.env.AWS_SECRET_ACCESS_KEY}';
       `);
       if (process.env.AWS_SESSION_TOKEN) {
+        logger.info('  load AWS_SESSION_TOKEN');
         await conn.run(`SET s3_session_token='${process.env.AWS_SESSION_TOKEN}';`);
       }
+    } else {
+      logger.info('CALL load_aws_credentials();');
+      await conn.run(`CALL load_aws_credentials();`);
     }
 
     // Connexion à PostgreSQL
@@ -91,7 +95,7 @@ export async function processMassiveParquetToPostgres() {
     await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
 
     // ÉTAPE 1 : Table temporaire UNLOGGED
-     var query =`
+    var query = `
       CREATE UNLOGGED TABLE postgres_db.${PG_SCHEMA}."geoName_staging" (
         "avivGeoId" character varying NOT NULL,
         language character varying NOT NULL,
@@ -101,9 +105,9 @@ export async function processMassiveParquetToPostgres() {
       );
     `;
 
-    
-    logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...', { query: query } );
-   
+
+    logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...', { query: query });
+
     await conn.run(`DROP TABLE IF EXISTS postgres_db.${PG_SCHEMA}."geoName_staging";`);
 
     await conn.run(`
@@ -115,7 +119,7 @@ export async function processMassiveParquetToPostgres() {
         slug character varying NOT NULL
       );
     `);
- 
+
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
 
