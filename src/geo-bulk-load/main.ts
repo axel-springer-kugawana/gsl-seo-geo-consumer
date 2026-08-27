@@ -1,5 +1,6 @@
 import { DuckDBInstance } from '@duckdb/node-api';
 import { accessSync, constants } from 'fs';
+import { Client as PgClient } from 'pg';
 import { getClassifiedApiSecret } from "./classified-api-secrets";
 import { logger } from "@shared/cross-cutting/logger";
 
@@ -43,6 +44,17 @@ export async function processMassiveParquetToPostgres() {
   logger.info('[ECS Task] DuckDB extension directory: ' + duckDbExtensionDirectory);
   const instance = await DuckDBInstance.create(':memory:', duckDbOptions);
   const conn = await instance.connect();
+
+  // DuckDB's postgres extension only supports ALTER TABLE ADD COLUMN and has no TRUNCATE support,
+  // so DDL statements (CREATE/TRUNCATE/constraints) go through a real Postgres client instead.
+  const pgClient = new PgClient({
+    host: PG_HOST,
+    port: Number(PG_PORT),
+    database: PG_DATABASE,
+    user: PG_USER,
+    password: PG_PASSWORD,
+  });
+  await pgClient.connect();
 
   try {
     logger.info('[ECS Task] Chargement des extensions (httpfs, postgres)...');
@@ -98,6 +110,7 @@ export async function processMassiveParquetToPostgres() {
   } finally {
     conn.closeSync();
     instance.closeSync();
+    await pgClient.end();
   }
 
   async function storeGeoLineage() {
@@ -108,10 +121,10 @@ export async function processMassiveParquetToPostgres() {
 
     // ÉTAPE 1 : Table temporaire UNLOGGED
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
-    await conn.run(`DROP TABLE IF EXISTS postgres_db.${PG_SCHEMA}."geoLieage_staging";`);
+    await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}."geoLineage_staging";`);
 
-    await conn.run(`
-      CREATE UNLOGGED TABLE postgres_db.${PG_SCHEMA}."geoLineage_staging"(
+    await pgClient.query(`
+      CREATE UNLOGGED TABLE ${PG_SCHEMA}."geoLineage_staging"(
     "newId" character varying   NOT NULL,
     "oldId" character varying NOT NULL,
     since date,
@@ -120,8 +133,8 @@ export async function processMassiveParquetToPostgres() {
 );
     `);
 
-    await conn.run(`
-      CREATE TABLE IF NOT EXISTS postgres_db.${PG_SCHEMA}."geoLineage"
+    await pgClient.query(`
+      CREATE TABLE IF NOT EXISTS ${PG_SCHEMA}."geoLineage"
 (
     "newId" character varying NOT NULL,
     "oldId" character varying NOT NULL,
@@ -132,8 +145,8 @@ export async function processMassiveParquetToPostgres() {
 `);
 
     // Retire la PK et vide la table sans la supprimer, pour accélérer le bulk insert qui suit.
-    // await conn.run(`ALTER TABLE postgres_db.${PG_SCHEMA}."geoLineage" DROP CONSTRAINT IF EXISTS "geoLineage_pkey";`);
-    await conn.run(`TRUNCATE TABLE postgres_db.${PG_SCHEMA}."geoLineage";`);
+    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}."geoLineage" DROP CONSTRAINT IF EXISTS "geoLineage_pkey";`);
+    await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}."geoLineage";`);
 
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
@@ -157,9 +170,9 @@ export async function processMassiveParquetToPostgres() {
     `);
 
     // ÉTAPE 4 : on remet la contrainte de clé primaire sur la table finale
-//     await conn.run(`
-//      ALTER TABLE postgres_db.${PG_SCHEMA}."geoLineage" ADD CONSTRAINT "geoLineage_pkey" PRIMARY KEY ("newId", "oldId");
-// `);
+    await pgClient.query(`
+     ALTER TABLE ${PG_SCHEMA}."geoLineage" ADD CONSTRAINT "geoLineage_pkey" PRIMARY KEY ("newId", "oldId");
+`);
     // ÉTAPE 5 : Nettoyage
     //logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
     //await conn.run(`DROP TABLE postgres_db.${PG_SCHEMA}."geoName_staging";`);
@@ -174,10 +187,10 @@ export async function processMassiveParquetToPostgres() {
 
     // ÉTAPE 1 : Table temporaire UNLOGGED
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
-    await conn.run(`DROP TABLE IF EXISTS postgres_db.${PG_SCHEMA}."geoName_staging";`);
+    await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}."geoName_staging";`);
 
-    await conn.run(`
-      CREATE UNLOGGED TABLE postgres_db.${PG_SCHEMA}."geoName_staging" (
+    await pgClient.query(`
+      CREATE UNLOGGED TABLE ${PG_SCHEMA}."geoName_staging" (
         "avivGeoId" character varying NOT NULL,
         language character varying NOT NULL,
         "displayName" character varying NOT NULL,
@@ -186,8 +199,8 @@ export async function processMassiveParquetToPostgres() {
       );
     `);
 
-    await conn.run(`
-      CREATE TABLE IF NOT EXISTS postgres_db.${PG_SCHEMA}."geoName"
+    await pgClient.query(`
+      CREATE TABLE IF NOT EXISTS ${PG_SCHEMA}."geoName"
 (
     "avivGeoId" character varying NOT NULL,
     language character varying  NOT NULL,
@@ -198,8 +211,8 @@ export async function processMassiveParquetToPostgres() {
 `);
 
     // Retire la PK et vide la table sans la supprimer, pour accélérer le bulk insert qui suit.
-    // await conn.run(`ALTER TABLE postgres_db.${PG_SCHEMA}."geoName" DROP CONSTRAINT IF EXISTS "GeoName_pkey";`);
-    await conn.run(`TRUNCATE TABLE postgres_db.${PG_SCHEMA}."geoName";`);
+    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}."geoName" DROP CONSTRAINT IF EXISTS "GeoName_pkey";`);
+    await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}."geoName";`);
 
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
@@ -223,9 +236,9 @@ export async function processMassiveParquetToPostgres() {
     `);
 
     // ÉTAPE 4 : on remet la contrainte de clé primaire sur la table finale
-    // await conn.run(`
-    //  ALTER TABLE postgres_db.${PG_SCHEMA}."geoName" ADD CONSTRAINT "GeoName_pkey" PRIMARY KEY ("avivGeoId", language);
-    //`);
+    await pgClient.query(`
+     ALTER TABLE ${PG_SCHEMA}."geoName" ADD CONSTRAINT "GeoName_pkey" PRIMARY KEY ("avivGeoId", language);
+`);
     // ÉTAPE 5 : Nettoyage
     //logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
     //await conn.run(`DROP TABLE postgres_db.${PG_SCHEMA}."geoName_staging";`);
@@ -239,10 +252,10 @@ export async function processMassiveParquetToPostgres() {
 
     // ÉTAPE 1 : Table temporaire UNLOGGED
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
-    await conn.run(`DROP TABLE IF EXISTS postgres_db.${PG_SCHEMA}."geoFeature_staging";`);
+    await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}."geoFeature_staging";`);
 
-    await conn.run(`
-      CREATE UNLOGGED TABLE postgres_db.${PG_SCHEMA}."geoFeature_staging"
+    await pgClient.query(`
+      CREATE UNLOGGED TABLE ${PG_SCHEMA}."geoFeature_staging"
 (
     "avivGeoId" character varying NOT NULL,
     type character varying,
@@ -256,8 +269,8 @@ export async function processMassiveParquetToPostgres() {
 );
     `);
 
-    await conn.run(`
-      CREATE TABLE IF NOT EXISTS postgres_db.${PG_SCHEMA}."geoFeature"
+    await pgClient.query(`
+      CREATE TABLE IF NOT EXISTS ${PG_SCHEMA}."geoFeature"
 (
     "avivGeoId" character varying NOT NULL,
     type character varying,
@@ -273,8 +286,8 @@ export async function processMassiveParquetToPostgres() {
 `);
 
     // Retire la PK et vide la table sans la supprimer, pour accélérer le bulk insert qui suit.
-    await conn.run(`ALTER TABLE postgres_db.${PG_SCHEMA}."geoFeature" DROP CONSTRAINT IF EXISTS "GeoFeature_pkey";`);
-    await conn.run(`TRUNCATE TABLE postgres_db.${PG_SCHEMA}."geoFeature";`);
+    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}."geoFeature" DROP CONSTRAINT IF EXISTS "GeoFeature_pkey";`);
+    await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}."geoFeature";`);
 
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
@@ -302,8 +315,8 @@ export async function processMassiveParquetToPostgres() {
     `);
 
     // ÉTAPE 4 : on remet la contrainte de clé primaire sur la table finale
-    await conn.run(`
-     ALTER TABLE postgres_db.${PG_SCHEMA}."geoFeature" ADD CONSTRAINT "GeoFeature_pkey" PRIMARY KEY ("avivGeoId");
+    await pgClient.query(`
+     ALTER TABLE ${PG_SCHEMA}."geoFeature" ADD CONSTRAINT "GeoFeature_pkey" PRIMARY KEY ("avivGeoId");
 `);
     // ÉTAPE 5 : Nettoyage
     //logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
