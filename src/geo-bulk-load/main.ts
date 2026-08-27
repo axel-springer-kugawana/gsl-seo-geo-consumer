@@ -95,13 +95,13 @@ export async function processMassiveParquetToPostgres() {
     const escapedPgConnString = pgConnString.replace(/'/g, "''");
     await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
 
-    console.log('store geo names start ...');
-    await storeGeoNames();
-    console.log('store geo names done...');
+    // console.log('store geo names start ...');
+    // await storeGeoNames();
+    // console.log('store geo names done...');
 
-    // console.log('store geo lineage start ...');
-    // await storeGeoLineage();
-    // console.log('store geo lineage done...');
+    console.log('store geo lineage start ...');
+    await storeGeoLineage();
+    console.log('store geo lineage done...');
 
 
     // console.log('store geo lineage start ...');
@@ -109,13 +109,9 @@ export async function processMassiveParquetToPostgres() {
     // console.log('store geo lineage done...');
 
 
-
     logger.info('[ECS Task] TRAITEMENT TERMINÉ AVEC SUCCÈS !');
   } catch (error) {
     logger.error('[ECS Task] ERREUR CRITIQUE :' + error);
-    // try {
-    //   await conn.run(`DROP TABLE IF EXISTS postgres_db.${PG_SCHEMA}."geoName_staging";`);
-    // } catch (_) { }
     throw error;
   } finally {
     conn.closeSync();
@@ -131,41 +127,38 @@ export async function processMassiveParquetToPostgres() {
 
     // ÉTAPE 1 : Table temporaire UNLOGGED
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
-    await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}."geoLineage_staging";`);
+    await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoLineage_staging;`);
 
     await pgClient.query(`
-      CREATE UNLOGGED TABLE ${PG_SCHEMA}."geoLineage_staging"(
-    "newId" character varying   NOT NULL,
-    "oldId" character varying NOT NULL,
-    since date,
+      CREATE UNLOGGED TABLE ${PG_SCHEMA}.geoLineage_staging(
+    newId character varying   NOT NULL,
+    oldId character varying NOT NULL,
     key character varying  ,
     coefficient integer
 );
     `);
 
     await pgClient.query(`
-      CREATE TABLE IF NOT EXISTS ${PG_SCHEMA}."geoLineage"
+      CREATE TABLE IF NOT EXISTS ${PG_SCHEMA}.geoLineage
 (
-    "newId" character varying NOT NULL,
-    "oldId" character varying NOT NULL,
-    since date,
+    newId character varying NOT NULL,
+    oldId character varying NOT NULL
     key character varying,
     coefficient integer
 );
 `);
 
     // Retire la PK et vide la table sans la supprimer, pour accélérer le bulk insert qui suit.
-    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}."geoLineage" DROP CONSTRAINT IF EXISTS "geoLineage_pkey";`);
-    await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}."geoLineage";`);
+    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoLineage DROP CONSTRAINT IF EXISTS geoLineage_pkey;`);
+    await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}.geoLineage;`);
 
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
     await conn.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}."geoLineage_staging" ("newId", "oldId", since, key, coefficient)
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoLineage_staging (newId, oldId,  key, coefficient)
       SELECT 
-        NEW_ID AS "newId",
-        OLD_ID AS "oldId",
-        SINCE AS since,
+        NEW_ID AS newId,
+        OLD_ID AS oldId,
         KEY AS key,
         COEFFICIENT AS coefficient
       FROM read_parquet('${S3_PARQUET_PATH}');
@@ -174,18 +167,15 @@ export async function processMassiveParquetToPostgres() {
     // ÉTAPE 3 : Insertion de toutes les lignes (la table cible vient d'être vidée)
     logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
     await conn.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}."geoLineage" ("newId", "oldId", since, key, coefficient)
-      SELECT "newId", "oldId", since, key, coefficient
-      FROM postgres_db.${PG_SCHEMA}."geoLineage_staging";
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoLineage (newId, oldId,  key, coefficient)
+      SELECT newId, oldId, key, coefficient
+      FROM postgres_db.${PG_SCHEMA}.geoLineage_staging;
     `);
 
     // ÉTAPE 4 : on remet la contrainte de clé primaire sur la table finale
     await pgClient.query(`
-     ALTER TABLE ${PG_SCHEMA}."geoLineage" ADD CONSTRAINT "geoLineage_pkey" PRIMARY KEY ("newId", "oldId");
+     ALTER TABLE ${PG_SCHEMA}.geoLineage ADD CONSTRAINT geoLineage_pkey PRIMARY KEY (newId, oldId);
 `);
-    // ÉTAPE 5 : Nettoyage
-    //logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
-    //await conn.run(`DROP TABLE postgres_db.${PG_SCHEMA}."geoName_staging";`);
   }
 
 
@@ -210,8 +200,7 @@ export async function processMassiveParquetToPostgres() {
       );
     `);
 
-    await pgClient.query(`
-      CREATE TABLE IF NOT EXISTS ${PG_SCHEMA}.geoName
+    await pgClient.query(`CREATE TABLE IF NOT EXISTS ${PG_SCHEMA}.geoName
 (
     avivGeoId character varying NOT NULL,
     language character varying ,
@@ -237,7 +226,7 @@ export async function processMassiveParquetToPostgres() {
       .map((prefix) => `FEATURE_ID LIKE '${prefix}%'`)
       .join(' OR ');
     const FEATURE_ID_EXCLUDED_PREFIXES = [
-      'HONUBE', 'HONUDE', 'STRTBE', 'STRTDE', 'AD08MUNDO', 'AD06MUNDO','STU3AT','AD08MUNDO','AD06MUNDO','AD04MUNDO','AD02MUNDO'
+      'HONUBE', 'HONUDE', 'STRTBE', 'STRTDE', 'AD08MUNDO', 'AD06MUNDO', 'STU3AT', 'AD08MUNDO', 'AD06MUNDO', 'AD04MUNDO', 'AD02MUNDO'
     ];
     const featureIdExclusionFilter = FEATURE_ID_EXCLUDED_PREFIXES
       .map((prefix) => `FEATURE_ID NOT LIKE '${prefix}%'`)
@@ -271,7 +260,7 @@ export async function processMassiveParquetToPostgres() {
 
     // ÉTAPE 4 : on remet la contrainte de clé primaire sur la table finale
     logger.info('[ECS Task] Étape 4/5 : Remise de la contrainte de clé primaire...');
-   
+
     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName ADD CONSTRAINT GeoName_pkey PRIMARY KEY (avivGeoId, language);`);
     // ÉTAPE 5 : Nettoyage
     //logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
