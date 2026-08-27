@@ -30,19 +30,8 @@ export async function processMassiveParquetToPostgres() {
   const PG_SCHEMA = 'public';
   const bucket = process.env.GEO_MANAGEMENT_SYNC_BUCKET;
   const bucketKey = process.env.GEO_MANAGEMENT_BUCKET_KEY;
-  const S3_PARQUET_PATH = bucket && bucketKey
-    ? `s3://${bucket}/${bucketKey}/name/*.parquet`
-    : undefined;
 
-  //  // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
-  //   logger.info('[ECS Task] Étape 0/5 : variables',{
-  //     bucket:  bucket,
-  //     bucketKey: bucketKey,
-  //     bucketPath: S3_PARQUET_PATH
-  //   });
-
-
-  if (!PG_HOST || !PG_DATABASE || !PG_USER || !PG_PASSWORD || !S3_PARQUET_PATH) {
+  if (!PG_HOST || !PG_DATABASE || !PG_USER || !PG_PASSWORD || !bucket || !bucketKey) {
     throw new Error('[ECS Task] ERREUR: Variables PostgreSQL ou chemin S3 manquants.');
   }
 
@@ -66,33 +55,9 @@ export async function processMassiveParquetToPostgres() {
     await conn.run(`SET ca_cert_file='${caCertFile}';`);
     await conn.run(`SET s3_region='${AWS_REGION}';`);
 
-    logger.info('get access key', {
-      AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID ? '********' : undefined,
-      AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY ? '********' : undefined,
-    });
-
-    if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
-      logger.info('conn with access key 1', {
-        AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID ? '********' : undefined,
-        AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY ? '********' : undefined,
-      });
-
-      await conn.run(`
-        SET s3_access_key_id='${process.env.AWS_ACCESS_KEY_ID}';
-        SET s3_secret_access_key='${process.env.AWS_SECRET_ACCESS_KEY}';
-      `);
-      if (process.env.AWS_SESSION_TOKEN) {
-        logger.info('  load AWS_SESSION_TOKEN 2');
-        await conn.run(`SET s3_session_token='${process.env.AWS_SESSION_TOKEN}';`);
-      } else {
-        logger.info(' AWS_SESSION_TOKEN not found, trying to load from load_aws_credentials() 3');
-
-      }
-    }
-    else {
-      logger.info('CALL load_aws_credentials(); 4');
-      await conn.run(`CALL load_aws_credentials();`);
-    }
+    // Resolves credentials from env vars, ~/.aws/credentials or the ECS task role, in that order.
+    logger.info('[ECS Task] Chargement des credentials AWS via load_aws_credentials()...');
+    await conn.run(`CALL load_aws_credentials();`);
 
     // Connexion à PostgreSQL
     logger.info(`[ECS Task] Connexion à PostgreSQL (${PG_HOST}:${PG_PORT}/${PG_DATABASE})...`);
@@ -107,6 +72,26 @@ export async function processMassiveParquetToPostgres() {
     ].join(' ');
     const escapedPgConnString = pgConnString.replace(/'/g, "''");
     await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
+
+    console.log('store geo names start ...');
+    await storeGeoNames();
+    console.log('store geo names done...');
+
+  } catch (error) {
+    logger.error('[ECS Task] ERREUR CRITIQUE :' + error);
+    // try {
+    //   await conn.run(`DROP TABLE IF EXISTS postgres_db.${PG_SCHEMA}."geoName_staging";`);
+    // } catch (_) { }
+    throw error;
+  } finally {
+    conn.closeSync();
+    instance.closeSync();
+  }
+
+  async function storeGeoNames() {
+    const S3_PARQUET_PATH = bucket && bucketKey
+      ? `s3://${bucket}/${bucketKey}/name/*.parquet`
+      : undefined;
 
     // ÉTAPE 1 : Table temporaire UNLOGGED
     var query = `
@@ -172,20 +157,12 @@ export async function processMassiveParquetToPostgres() {
       WHERE target."avivGeoId" IS NULL;
     `);
 
-    // ÉTAPE 5 : Nettoyage
-    logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
-    await conn.run(`DROP TABLE postgres_db.${PG_SCHEMA}."geoName_staging";`);
 
-    logger.info('[ECS Task] TRAITEMENT TERMINÉ AVEC SUCCÈS !');
-  } catch (error) {
-    logger.error('[ECS Task] ERREUR CRITIQUE :' + error);
-    // try {
-    //   await conn.run(`DROP TABLE IF EXISTS postgres_db.${PG_SCHEMA}."geoName_staging";`);
-    // } catch (_) { }
-    throw error;
-  } finally {
-    conn.closeSync();
-    instance.closeSync();
+
+    // ÉTAPE 5 : Nettoyage
+    //logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
+    //await conn.run(`DROP TABLE postgres_db.${PG_SCHEMA}."geoName_staging";`);
+
   }
 }
 
