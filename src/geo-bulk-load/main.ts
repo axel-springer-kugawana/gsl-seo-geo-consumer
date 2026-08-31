@@ -107,17 +107,17 @@ export async function processMassiveParquetToPostgres() {
     escapedPgConnString = pgConnString.replace(/'/g, "''");
     await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
 
-    console.log('store geo names start ...');
-    await storeGeoNames();
-    console.log('store geo names done...');
+    // console.log('store geo names start ...');
+    // await storeGeoNames();
+    // console.log('store geo names done...');
 
     // console.log('store geo lineage start ...');
     // await storeGeoLineage();
     // console.log('store geo lineage done...');
 
-    // console.log('store geo feature start ...');
-    // await storeGeoFeature();
-    // console.log('store geo feature done...');
+     console.log('store geo feature start ...');
+     await storeGeoFeature();
+     console.log('store geo feature done...');
 
 
     logger.info('[ECS Task] TRAITEMENT TERMINÉ AVEC SUCCÈS !');
@@ -186,10 +186,7 @@ export async function processMassiveParquetToPostgres() {
         KEY AS key,
         COEFFICIENT AS coefficient
       FROM read_parquet('${S3_PARQUET_PATH}')
-      WHERE (${featureIdPrefixFilter})
-     
-    `);
-
+      WHERE (${featureIdPrefixFilter})`);
 
     // ÉTAPE 3 : Insertion de toutes les lignes (la table cible vient d'être vidée)
     logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
@@ -202,8 +199,7 @@ export async function processMassiveParquetToPostgres() {
     // ÉTAPE 4 : on remet la contrainte de clé primaire sur la table finale
     logger.info('[ECS Task] Étape 4/5 : Remise de la contrainte de clé primaire...');
 
-    await pgClient.query(`
-     ALTER TABLE ${PG_SCHEMA}.geoLineage ADD CONSTRAINT geoLineage_pkey PRIMARY KEY (newId, oldId);
+    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoLineage ADD CONSTRAINT geoLineage_pkey PRIMARY KEY (newId, oldId);
 `);
 
     // ÉTAPE 5 : Nettoyage
@@ -211,12 +207,8 @@ export async function processMassiveParquetToPostgres() {
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoLineage_staging;`);
   }
 
-
   async function storeGeoNames() {
-    // Implementation for storing geo lineage
-    const S3_PARQUET_PATH = bucket && bucketKey
-      ? `s3://${bucket}/${bucketKey}/name/*.parquet`
-      : undefined;
+    const S3_PARQUET_PATH =  `s3://${bucket}/${bucketKey}/name/*.parquet`;
 
     // ÉTAPE 1 : Table temporaire UNLOGGED
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
@@ -263,7 +255,7 @@ export async function processMassiveParquetToPostgres() {
     await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
     await conn.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoName_staging (avivGeoId, language, displayName, name, slug, key, rank)
-      SELECT DISTINCT
+      SELECT 
         FEATURE_ID AS avivGeoId,
         LANGUAGE AS language,
         DISPLAY_NAME AS displayName,
@@ -324,9 +316,7 @@ export async function processMassiveParquetToPostgres() {
 
   async function storeGeoFeature() {
     // Implementation for storing geo lineage
-    const S3_PARQUET_PATH = bucket && bucketKey
-      ? `s3://${bucket}/${bucketKey}/feature/*.parquet`
-      : undefined;
+    const S3_PARQUET_PATH = `s3://${bucket}/${bucketKey}/feature/*.parquet` ;
 
     // ÉTAPE 1 : Table temporaire UNLOGGED
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
@@ -358,8 +348,11 @@ export async function processMassiveParquetToPostgres() {
     level integer,
     postalCodes text[],
     parents text[],
-    population integer
-)
+    population integer, 
+    countryId character varying,
+    regionId character varying,
+    provinceId character varying,
+    municipalityId character varying  
 ;
 `);
 
@@ -369,20 +362,21 @@ export async function processMassiveParquetToPostgres() {
 
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
-
-
     const featureIdPrefixFilter = FEATURE_ID_PREFIXES
       .map((prefix) => `ID LIKE '${prefix}%'`)
       .join(' OR ');
-
-
 
     // postgres_clear_cache() n'existe pas dans cette version de l'extension : on force le
     // rafraîchissement du catalogue en détachant/rattachant la base pour voir la table de staging.
     await conn.run('DETACH postgres_db;');
     await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
     await conn.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature_staging (avivGeoId, type, mainPostalcode, countryCode, fictive, level, postalCodes, parents, population)
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature_staging (avivGeoId, type, mainPostalcode, countryCode, fictive, level, postalCodes, parents
+      , population
+      , countryId
+      , regionId
+      , provinceId
+      , municipalityId)
       SELECT 
         ID AS avivGeoId,
         TYPE_LABEL AS type,
@@ -392,7 +386,27 @@ export async function processMassiveParquetToPostgres() {
         TYPE_LEVEL AS level,
         CAST(POSTAL_CODES AS JSON)::VARCHAR[] AS postalCodes,
         CAST(PARENTS AS JSON)::VARCHAR[] AS parents,
-        POPULATION AS population
+        POPULATION AS population,
+       CASE 
+          WHEN json_array_length(AD02) > 0 
+          THEN (CAST(AD02 AS JSON)::VARCHAR[])[1]
+          ELSE NULL
+        END AS countryId,
+        CASE 
+          WHEN json_array_length(AD04) > 0 
+          THEN (CAST(AD04 AS JSON)::VARCHAR[])[1]
+          ELSE NULL
+        END AS regionId,
+        CASE 
+          WHEN json_array_length(AD06) > 0 
+          THEN (CAST(AD06 AS JSON)::VARCHAR[])[1]
+          ELSE NULL
+        END AS provinceId,
+        CASE 
+          WHEN json_array_length(AD08) > 0 
+          THEN (CAST(AD08 AS JSON)::VARCHAR[])[1]
+          ELSE NULL
+        END AS municipalityId
       FROM read_parquet('${S3_PARQUET_PATH}')
       WHERE (${featureIdPrefixFilter})
      `);
@@ -400,8 +414,11 @@ export async function processMassiveParquetToPostgres() {
     // ÉTAPE 3 : Insertion de toutes les lignes (la table cible vient d'être vidée)
     logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
     await conn.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature (avivGeoId, type, mainPostalcode, countryCode, fictive, level, postalCodes, parents, population)
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature (avivGeoId, type, mainPostalcode, countryCode, fictive, level
+      , postalCodes, parents, population, countryId,
+      regionId, provinceId, municipalityId)
       SELECT avivGeoId, type, mainPostalcode, countryCode, fictive, level, postalCodes, parents, population
+      , countryId, regionId, provinceId, municipalityId
       FROM postgres_db.${PG_SCHEMA}.geoFeature_staging;
     `);
 
