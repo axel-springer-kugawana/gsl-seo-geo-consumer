@@ -119,6 +119,9 @@ export async function processMassiveParquetToPostgres() {
      await storeGeoFeature();
      console.log('store geo feature done...');
 
+     console.log('create or refresh materialized view start ...');
+     await createOrRefreshMaterializedView();
+     console.log('create or refresh materialized view done...');
 
     logger.info('[ECS Task] TRAITEMENT TERMINÉ AVEC SUCCÈS !');
   } catch (error) {
@@ -391,10 +394,10 @@ export async function processMassiveParquetToPostgres() {
         CAST(POSTAL_CODES AS JSON)::VARCHAR[] AS postalCodes,
         CAST(PARENTS AS JSON)::VARCHAR[] AS parents,
         POPULATION AS population,
-        json_extract(AD02, '$[0]')::VARCHAR AS countryId,
-        json_extract(AD04, '$[0]')::VARCHAR AS regionId,
-        json_extract(AD06, '$[0]')::VARCHAR AS provinceId,
-        json_extract(AD08, '$[0]')::VARCHAR AS municipalityId
+        (AD02->>0)::VARCHAR AS countryId,
+        (AD04->>0)::VARCHAR AS regionId,
+        (AD06->>0)::VARCHAR AS provinceId,
+        (AD08->>0)::VARCHAR AS municipalityId
       FROM read_parquet('${S3_PARQUET_PATH}')
       WHERE (${featureIdPrefixFilter})
      `);
@@ -417,6 +420,68 @@ export async function processMassiveParquetToPostgres() {
     // ÉTAPE 5 : Nettoyage
     logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoFeature_staging;`);
+  }
+
+  async function createOrRefreshMaterializedView() {
+    logger.info('[ECS Task] Création ou rafraîchissement de la vue matérialisée...');
+
+    try {
+      // Vérifier si la MV existe
+      const mvExists = await pgClient.query(
+        `SELECT 1 FROM information_schema.views WHERE table_schema = $1 AND table_name = $2`,
+        [PG_SCHEMA, 'mv_geofeature_names']
+      );
+
+      if (mvExists.rows.length > 0) {
+        // MV existe : rafraîchir avec CONCURRENTLY (nécessite un index unique)
+        logger.info('[ECS Task] Vue matérialisée existe, rafraîchissement en cours...');
+        try {
+          await pgClient.query(`REFRESH MATERIALIZED VIEW CONCURRENTLY ${PG_SCHEMA}.mv_geofeature_names;`);
+        } catch (error) {
+          // Si CONCURRENTLY échoue (pas d'index unique), utiliser sans
+          logger.warn('[ECS Task] Rafraîchissement CONCURRENTLY échoué, utilisation du mode standard');
+          await pgClient.query(`REFRESH MATERIALIZED VIEW ${PG_SCHEMA}.mv_geofeature_names;`);
+        }
+      } else {
+        // MV n'existe pas : créer
+        logger.info('[ECS Task] Création de la vue matérialisée...');
+        await pgClient.query(`
+          CREATE MATERIALIZED VIEW IF NOT EXISTS ${PG_SCHEMA}.mv_geofeature_names
+          TABLESPACE pg_default
+          AS
+           SELECT f.avivgeoid,
+              f.type,
+              f.mainpostalcode AS code,
+              f.countrycode,
+              f.fictive,
+              f.level,
+              json_agg(jsonb_build_object('displayname', g.displayname, 'name', g.name, 'slug', g.slug, 'language', g.language)) AS names
+             FROM ${PG_SCHEMA}.geofeature f
+               LEFT JOIN ${PG_SCHEMA}.geoname g ON f.avivgeoid::text = g.avivgeoid::text
+            WHERE f.type::text = ANY (ARRAY['Country'::character varying::text, 'Region'::character varying::text, 'Province'::character varying::text, 'Municipality'::character varying::text])
+            GROUP BY f.avivgeoid, f.type, f.mainpostalcode, f.countrycode, f.fictive, f.level
+          WITH DATA;
+        `);
+      }
+
+      // Définir le propriétaire
+      logger.info('[ECS Task] Définition du propriétaire de la MV...');
+      await pgClient.query(`ALTER TABLE IF EXISTS ${PG_SCHEMA}.mv_geofeature_names OWNER TO ${PG_USER};`);
+
+      // Créer l'index unique s'il n'existe pas
+      logger.info('[ECS Task] Création de l\'index unique...');
+      await pgClient.query(`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_mv_geofeature_avivgeoid
+          ON ${PG_SCHEMA}.mv_geofeature_names USING btree
+          (avivgeoid COLLATE pg_catalog."default")
+          TABLESPACE pg_default;
+      `);
+
+      logger.info('[ECS Task] Vue matérialisée créée/rafraîchie avec succès !');
+    } catch (error) {
+      logger.error('[ECS Task] ERREUR lors de la gestion de la vue matérialisée :' + error);
+      throw error;
+    }
   }
 }
 
