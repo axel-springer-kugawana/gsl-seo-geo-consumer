@@ -111,13 +111,13 @@ export async function processMassiveParquetToPostgres() {
     await storeGeoNames();
     console.log('store geo names done...');
 
-    console.log('store geo lineage start ...');
-    await storeGeoLineage();
-    console.log('store geo lineage done...');
+    // console.log('store geo lineage start ...');
+    // await storeGeoLineage();
+    // console.log('store geo lineage done...');
 
-    console.log('store geo feature start ...');
-    await storeGeoFeature();
-    console.log('store geo feature done...');
+    // console.log('store geo feature start ...');
+    // await storeGeoFeature();
+    // console.log('store geo feature done...');
 
 
     logger.info('[ECS Task] TRAITEMENT TERMINÉ AVEC SUCCÈS !');
@@ -229,7 +229,8 @@ export async function processMassiveParquetToPostgres() {
         displayName character varying ,
         name character varying ,
         slug character varying ,
-        key character varying 
+        key character varying ,
+        rank integer
       );
     `);
 
@@ -240,7 +241,8 @@ export async function processMassiveParquetToPostgres() {
     displayName character varying  ,
     name character varying ,
     slug character varying ,
-    key character varying
+    key character varying,
+        rank integer
 );
 `);
 
@@ -264,14 +266,15 @@ export async function processMassiveParquetToPostgres() {
     await conn.run('DETACH postgres_db;');
     await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
     await conn.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}.geoName_staging (avivGeoId, language, displayName, name, slug, key)
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoName_staging (avivGeoId, language, displayName, name, slug, key, rank)
       SELECT DISTINCT
         FEATURE_ID AS avivGeoId,
         LANGUAGE AS language,
         DISPLAY_NAME AS displayName,
         NAME AS name,
         SLUG AS slug,
-        KEY AS key
+        KEY AS key,
+        RANK AS rank  
       FROM read_parquet('${S3_PARQUET_PATH}')
       WHERE (${featureIdPrefixFilter})
         AND (${featureIdExclusionFilter})
@@ -279,21 +282,21 @@ export async function processMassiveParquetToPostgres() {
         AND TRIM(LANGUAGE) != ''
         AND DISPLAY_NAME IS NOT NULL
         AND TRIM(DISPLAY_NAME) != ''
-        AND RANK = 0;
+        ;
     `);
 
     // ÉTAPE 3 : Insertion de toutes les lignes (la table cible vient d'être vidée)
     logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
     await conn.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}.geoName (avivGeoId, language, displayName, name, slug, key)
-      SELECT avivGeoId, language, displayName, name, slug, key
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoName (avivGeoId, language, displayName, name, slug, key, rank)
+      SELECT avivGeoId, language, displayName, name, slug, key, rank
       FROM postgres_db.${PG_SCHEMA}.geoName_staging;
     `);
 
     // ÉTAPE 4 : on remet la contrainte de clé primaire sur la table finale
     logger.info('[ECS Task] Étape 4/5 : Remise de la contrainte de clé primaire...');
 
-    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName ADD CONSTRAINT GeoName_pkey PRIMARY KEY (avivGeoId, language);`);
+ //  await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName ADD CONSTRAINT GeoName_pkey PRIMARY KEY (avivGeoId, language);`);
 
     // ÉTAPE 5 : Nettoyage
     logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
