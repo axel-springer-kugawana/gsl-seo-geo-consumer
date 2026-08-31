@@ -107,21 +107,21 @@ export async function processMassiveParquetToPostgres() {
     escapedPgConnString = pgConnString.replace(/'/g, "''");
     await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
 
-    // console.log('store geo names start ...');
-    // await storeGeoNames();
-    // console.log('store geo names done...');
+    console.log('store geo names start ...');
+    await storeGeoNames();
+    console.log('store geo names done...');
 
-    // console.log('store geo lineage start ...');
-    // await storeGeoLineage();
-    // console.log('store geo lineage done...');
+    console.log('store geo lineage start ...');
+    await storeGeoLineage();
+    console.log('store geo lineage done...');
 
-     console.log('store geo feature start ...');
-     await storeGeoFeature();
-     console.log('store geo feature done...');
+    console.log('store geo feature start ...');
+    await storeGeoFeature();
+    console.log('store geo feature done...');
 
-     console.log('create or refresh materialized view start ...');
-     await createOrRefreshMaterializedView();
-     console.log('create or refresh materialized view done...');
+    console.log('create or refresh materialized view start ...');
+    await createOrRefreshMaterializedView();
+    console.log('create or refresh materialized view done...');
 
     logger.info('[ECS Task] TRAITEMENT TERMINÉ AVEC SUCCÈS !');
   } catch (error) {
@@ -211,7 +211,7 @@ export async function processMassiveParquetToPostgres() {
   }
 
   async function storeGeoNames() {
-    const S3_PARQUET_PATH =  `s3://${bucket}/${bucketKey}/name/*.parquet`;
+    const S3_PARQUET_PATH = `s3://${bucket}/${bucketKey}/name/*.parquet`;
 
     // ÉTAPE 1 : Table temporaire UNLOGGED
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
@@ -319,7 +319,7 @@ export async function processMassiveParquetToPostgres() {
 
   async function storeGeoFeature() {
     // Implementation for storing geo lineage
-    const S3_PARQUET_PATH = `s3://${bucket}/${bucketKey}/feature/*.parquet` ;
+    const S3_PARQUET_PATH = `s3://${bucket}/${bucketKey}/feature/*.parquet`;
 
     // ÉTAPE 1 : Table temporaire UNLOGGED
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
@@ -485,8 +485,20 @@ export async function processMassiveParquetToPostgres() {
   }
 }
 
+
+export async function processMassiveToDynamoDB() {
+  // Je veux parser une vue sql contenant 35 millions d’enregistrements, les backup sur une dynamoDb par x batch write items
+  // Il faudra recréer les objets dans dynamodb via un fonction de transformation
+
+
+}
 if (require.main === module) {
   processMassiveParquetToPostgres().catch((error) => {
+    logger.error('[ECS Task] ERREUR CRITIQUE :', error);
+    process.exitCode = 1;
+  });
+
+  processMassiveToDynamoDB().catch((error) => {
     logger.error('[ECS Task] ERREUR CRITIQUE :', error);
     process.exitCode = 1;
   });
