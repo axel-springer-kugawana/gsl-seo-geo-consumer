@@ -40,8 +40,8 @@ export async function processMassiveParquetToPostgres() {
     'AD02', 'AD03', 'AD04', 'AD05', 'AD06', 'AD07', 'AD08', 'AD09',
     'NBH1', 'NBH2', 'NBH3', 'STRTFR', 'HONUFR'
   ];
-  const FEATURE_ID_EXCLUDED_PREFIXES = [
-    'AD08MUNDO', 'AD06MUNDO', 'AD08MUNDO', 'AD06MUNDO', 'AD04MUNDO', 'AD02MUNDO'
+  const FEATURE_ID_EXCLUDED_PREFIXES: any[] = [
+  //  'AD08MUNDO', 'AD06MUNDO', 'AD08MUNDO', 'AD06MUNDO', 'AD04MUNDO', 'AD02MUNDO'
   ];
 
   if (!PG_HOST || !PG_DATABASE || !PG_USER || !PG_PASSWORD || !bucket || !bucketKey) {
@@ -294,9 +294,33 @@ export async function processMassiveParquetToPostgres() {
     `);
 
     // ÉTAPE 4 : on remet la contrainte de clé primaire sur la table finale
-    logger.info('[ECS Task] Étape 4/5 : Remise de la contrainte de clé primaire...');
+    logger.info('[ECS Task] Étape 4/5 : Suppression des doublons et remise de la contrainte de clé primaire...');
+    await pgClient.query(`
+      WITH a_supprimer AS (
+        SELECT *
+        FROM (
+          SELECT v.avivGeoId, v.language, v.rank,
+                 ROW_NUMBER() OVER (PARTITION BY v.avivGeoId, v.language ORDER BY v.rank) AS pos
+          FROM (
+            SELECT avivGeoId, language
+            FROM ${PG_SCHEMA}.geoName
+            GROUP BY avivGeoId, language
+            HAVING COUNT(*) > 1
+          ) tmp
+          INNER JOIN ${PG_SCHEMA}.geoName v
+            ON tmp.avivGeoId = v.avivGeoId
+            AND tmp.language = v.language
+        ) tmp2
+        WHERE pos > 1
+      )
+      DELETE FROM ${PG_SCHEMA}.geoName g
+      USING a_supprimer s
+      WHERE g.avivGeoId = s.avivGeoId
+        AND g.language = s.language
+        AND g.rank = s.rank;
+    `);
 
- //  await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName ADD CONSTRAINT GeoName_pkey PRIMARY KEY (avivGeoId, language);`);
+    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName ADD CONSTRAINT GeoName_pkey PRIMARY KEY (avivGeoId, language);`);
 
     // ÉTAPE 5 : Nettoyage
     logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
