@@ -32,6 +32,10 @@ export async function processMassiveParquetToPostgres() {
   const bucket = process.env.GEO_MANAGEMENT_SYNC_BUCKET;
   const bucketKey = process.env.GEO_MANAGEMENT_BUCKET_KEY;
 
+  // Set inside the try block once the Postgres ATTACH connection string is built, reused to
+  // DETACH/re-ATTACH and force DuckDB to refresh its cached list of Postgres tables.
+  let escapedPgConnString = '';
+
   const FEATURE_ID_PREFIXES = [
     'AD02', 'AD03', 'AD04', 'AD05', 'AD06', 'AD07', 'AD08', 'AD09',
     'NBH1', 'NBH2', 'NBH3', 'STRTFR', 'HONUFR'
@@ -100,7 +104,7 @@ export async function processMassiveParquetToPostgres() {
       `host=${quoteConninfoValue(PG_HOST)}`,
       `port=${quoteConninfoValue(PG_PORT)}`,
     ].join(' ');
-    const escapedPgConnString = pgConnString.replace(/'/g, "''");
+    escapedPgConnString = pgConnString.replace(/'/g, "''");
     await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
 
     console.log('store geo names start ...');
@@ -170,9 +174,10 @@ export async function processMassiveParquetToPostgres() {
       .map((prefix) => `NEW_ID NOT LIKE '${prefix}%'`)
       .join(' AND ');
 
-    // Le catalogue postgres attaché à DuckDB reste figé sur la liste de tables vue au dernier ATTACH/scan,
-    // il faut l'invalider pour voir la table de staging qu'on vient de créer via pgClient.
-    await conn.run('CALL postgres_clear_cache();');
+    // postgres_clear_cache() n'existe pas dans cette version de l'extension : on force le
+    // rafraîchissement du catalogue en détachant/rattachant la base pour voir la table de staging.
+    await conn.run('DETACH postgres_db;');
+    await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
     await conn.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoLineage_staging (newId, oldId,  key, coefficient)
       SELECT 
@@ -254,9 +259,10 @@ export async function processMassiveParquetToPostgres() {
       .map((prefix) => `FEATURE_ID NOT LIKE '${prefix}%'`)
       .join(' AND ');
 
-    // Le catalogue postgres attaché à DuckDB reste figé sur la liste de tables vue au dernier ATTACH/scan,
-    // il faut l'invalider pour voir la table de staging qu'on vient de créer via pgClient.
-    await conn.run('CALL postgres_clear_cache();');
+    // postgres_clear_cache() n'existe pas dans cette version de l'extension : on force le
+    // rafraîchissement du catalogue en détachant/rattachant la base pour voir la table de staging.
+    await conn.run('DETACH postgres_db;');
+    await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
     await conn.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoName_staging (avivGeoId, language, displayName, name, slug, key)
       SELECT DISTINCT
@@ -351,9 +357,10 @@ export async function processMassiveParquetToPostgres() {
       .map((prefix) => `ID NOT LIKE '${prefix}%'`)
       .join(' AND ');
 
-    // Le catalogue postgres attaché à DuckDB reste figé sur la liste de tables vue au dernier ATTACH/scan,
-    // il faut l'invalider pour voir la table de staging qu'on vient de créer via pgClient.
-    await conn.run('CALL postgres_clear_cache();');
+    // postgres_clear_cache() n'existe pas dans cette version de l'extension : on force le
+    // rafraîchissement du catalogue en détachant/rattachant la base pour voir la table de staging.
+    await conn.run('DETACH postgres_db;');
+    await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
     await conn.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature_staging (avivGeoId, type, mainPostalcode, countryCode, fictive, level, postalCodes, parents, population)
       SELECT 
