@@ -40,9 +40,9 @@ export async function processMassiveParquetToPostgres() {
     'AD02', 'AD03', 'AD04', 'AD05', 'AD06', 'AD07', 'AD08', 'AD09',
     'NBH1', 'NBH2', 'NBH3', 'STRTFR', 'HONUFR'
   ];
-  const FEATURE_ID_EXCLUDED_PREFIXES: any[] = [
-  //  'AD08MUNDO', 'AD06MUNDO', 'AD08MUNDO', 'AD06MUNDO', 'AD04MUNDO', 'AD02MUNDO'
-  ];
+  // const FEATURE_ID_EXCLUDED_PREFIXES: any[] = [
+  // //  'AD08MUNDO', 'AD06MUNDO', 'AD08MUNDO', 'AD06MUNDO', 'AD04MUNDO', 'AD02MUNDO'
+  // ];
 
   if (!PG_HOST || !PG_DATABASE || !PG_USER || !PG_PASSWORD || !bucket || !bucketKey) {
     throw new Error('[ECS Task] ERREUR: Variables PostgreSQL ou chemin S3 manquants.');
@@ -170,9 +170,9 @@ export async function processMassiveParquetToPostgres() {
       .map((prefix) => `NEW_ID LIKE '${prefix}%'`)
       .join(' OR ');
 
-    const featureIdExclusionFilter = FEATURE_ID_EXCLUDED_PREFIXES
-      .map((prefix) => `NEW_ID NOT LIKE '${prefix}%'`)
-      .join(' AND ');
+    // const featureIdExclusionFilter = FEATURE_ID_EXCLUDED_PREFIXES
+    //   .map((prefix) => `NEW_ID NOT LIKE '${prefix}%'`)
+    //   .join(' AND ');
 
     // postgres_clear_cache() n'existe pas dans cette version de l'extension : on force le
     // rafraîchissement du catalogue en détachant/rattachant la base pour voir la table de staging.
@@ -187,7 +187,7 @@ export async function processMassiveParquetToPostgres() {
         COEFFICIENT AS coefficient
       FROM read_parquet('${S3_PARQUET_PATH}')
       WHERE (${featureIdPrefixFilter})
-      AND (${featureIdExclusionFilter});
+     
     `);
 
 
@@ -253,13 +253,9 @@ export async function processMassiveParquetToPostgres() {
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
 
-      const featureIdPrefixFilter = FEATURE_ID_PREFIXES
+    const featureIdPrefixFilter = FEATURE_ID_PREFIXES
       .map((prefix) => `FEATURE_ID LIKE '${prefix}%'`)
       .join(' OR ');
-
-    const featureIdExclusionFilter = FEATURE_ID_EXCLUDED_PREFIXES
-      .map((prefix) => `FEATURE_ID NOT LIKE '${prefix}%'`)
-      .join(' AND ');
 
     // postgres_clear_cache() n'existe pas dans cette version de l'extension : on force le
     // rafraîchissement du catalogue en détachant/rattachant la base pour voir la table de staging.
@@ -277,7 +273,6 @@ export async function processMassiveParquetToPostgres() {
         RANK AS rank  
       FROM read_parquet('${S3_PARQUET_PATH}')
       WHERE (${featureIdPrefixFilter})
-        AND (${featureIdExclusionFilter})
         AND LANGUAGE IS NOT NULL
         AND TRIM(LANGUAGE) != ''
         AND DISPLAY_NAME IS NOT NULL
@@ -380,9 +375,7 @@ export async function processMassiveParquetToPostgres() {
       .map((prefix) => `ID LIKE '${prefix}%'`)
       .join(' OR ');
 
-    const featureIdExclusionFilter = FEATURE_ID_EXCLUDED_PREFIXES
-      .map((prefix) => `ID NOT LIKE '${prefix}%'`)
-      .join(' AND ');
+
 
     // postgres_clear_cache() n'existe pas dans cette version de l'extension : on force le
     // rafraîchissement du catalogue en détachant/rattachant la base pour voir la table de staging.
@@ -402,8 +395,7 @@ export async function processMassiveParquetToPostgres() {
         POPULATION AS population
       FROM read_parquet('${S3_PARQUET_PATH}')
       WHERE (${featureIdPrefixFilter})
-      AND (${featureIdExclusionFilter});
-    `);
+     `);
 
     // ÉTAPE 3 : Insertion de toutes les lignes (la table cible vient d'être vidée)
     logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
