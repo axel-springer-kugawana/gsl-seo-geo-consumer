@@ -34,10 +34,10 @@ export async function processMassiveParquetToPostgres() {
 
   const FEATURE_ID_PREFIXES = [
     'AD02', 'AD03', 'AD04', 'AD05', 'AD06', 'AD07', 'AD08', 'AD09',
-    'NBH1', 'STU1', 'NBH2', 'STU2', 'NBH3', 'STU3', 'STRT', 'HONU'
+    'NBH1', 'NBH2', 'NBH3', 'STRTFR', 'HONUFR'
   ];
   const FEATURE_ID_EXCLUDED_PREFIXES = [
-    'HONUBE', 'HONUDE', 'STRTBE', 'STRTDE', 'AD08MUNDO', 'AD06MUNDO', 'STU3AT', 'AD08MUNDO', 'AD06MUNDO', 'AD04MUNDO', 'AD02MUNDO'
+    'AD08MUNDO', 'AD06MUNDO', 'AD08MUNDO', 'AD06MUNDO', 'AD04MUNDO', 'AD02MUNDO'
   ];
 
   if (!PG_HOST || !PG_DATABASE || !PG_USER || !PG_PASSWORD || !bucket || !bucketKey) {
@@ -103,14 +103,13 @@ export async function processMassiveParquetToPostgres() {
     const escapedPgConnString = pgConnString.replace(/'/g, "''");
     await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
 
-    // console.log('store geo names start ...');
-    // await storeGeoNames();
-    // console.log('store geo names done...');
+    console.log('store geo names start ...');
+    0 await storeGeoNames();
+    console.log('store geo names done...');
 
-    // console.log('store geo lineage start ...');
-    // await storeGeoLineage();
-    // console.log('store geo lineage done...');
-
+    console.log('store geo lineage start ...');
+    await storeGeoLineage();
+    console.log('store geo lineage done...');
 
     console.log('store geo feature start ...');
     await storeGeoFeature();
@@ -336,9 +335,9 @@ export async function processMassiveParquetToPostgres() {
 
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
-    
-    
-      const featureIdPrefixFilter = FEATURE_ID_PREFIXES
+
+
+    const featureIdPrefixFilter = FEATURE_ID_PREFIXES
       .map((prefix) => `ID LIKE '${prefix}%'`)
       .join(' OR ');
 
