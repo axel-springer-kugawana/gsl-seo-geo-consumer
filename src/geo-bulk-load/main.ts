@@ -333,7 +333,11 @@ export async function processMassiveParquetToPostgres() {
     level integer,
     postalCodes text[],
     parents text[],
-    population integer
+    population integer,
+    countryId character varying,
+    regionId character varying,
+    provinceId character varying,
+    municipalityId character varying
 );
     `);
 
@@ -352,8 +356,8 @@ export async function processMassiveParquetToPostgres() {
     countryId character varying,
     regionId character varying,
     provinceId character varying,
-    municipalityId character varying  
-;
+    municipalityId character varying
+);
 `);
 
     // Retire la PK et vide la table sans la supprimer, pour accélérer le bulk insert qui suit.
@@ -387,26 +391,10 @@ export async function processMassiveParquetToPostgres() {
         CAST(POSTAL_CODES AS JSON)::VARCHAR[] AS postalCodes,
         CAST(PARENTS AS JSON)::VARCHAR[] AS parents,
         POPULATION AS population,
-       CASE 
-          WHEN json_array_length(AD02) > 0 
-          THEN (CAST(AD02 AS JSON)::VARCHAR[])[1]
-          ELSE NULL
-        END AS countryId,
-        CASE 
-          WHEN json_array_length(AD04) > 0 
-          THEN (CAST(AD04 AS JSON)::VARCHAR[])[1]
-          ELSE NULL
-        END AS regionId,
-        CASE 
-          WHEN json_array_length(AD06) > 0 
-          THEN (CAST(AD06 AS JSON)::VARCHAR[])[1]
-          ELSE NULL
-        END AS provinceId,
-        CASE 
-          WHEN json_array_length(AD08) > 0 
-          THEN (CAST(AD08 AS JSON)::VARCHAR[])[1]
-          ELSE NULL
-        END AS municipalityId
+        json_extract(AD02, '$[0]')::VARCHAR AS countryId,
+        json_extract(AD04, '$[0]')::VARCHAR AS regionId,
+        json_extract(AD06, '$[0]')::VARCHAR AS provinceId,
+        json_extract(AD08, '$[0]')::VARCHAR AS municipalityId
       FROM read_parquet('${S3_PARQUET_PATH}')
       WHERE (${featureIdPrefixFilter})
      `);
@@ -429,7 +417,6 @@ export async function processMassiveParquetToPostgres() {
     // ÉTAPE 5 : Nettoyage
     logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoFeature_staging;`);
-
   }
 }
 
