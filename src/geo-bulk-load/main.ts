@@ -170,6 +170,9 @@ export async function processMassiveParquetToPostgres() {
       .map((prefix) => `NEW_ID NOT LIKE '${prefix}%'`)
       .join(' AND ');
 
+    // Le catalogue postgres attaché à DuckDB reste figé sur la liste de tables vue au dernier ATTACH/scan,
+    // il faut l'invalider pour voir la table de staging qu'on vient de créer via pgClient.
+    await conn.run('CALL postgres_clear_cache();');
     await conn.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoLineage_staging (newId, oldId,  key, coefficient)
       SELECT 
@@ -243,14 +246,17 @@ export async function processMassiveParquetToPostgres() {
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
 
-    // AD02, AD03, AD04, AD05, AD06, AD07, AD08, POCO, AD09, NBH1, STU1, NBH2, STU2, NBH3, STU3, STRT, BLOC, PARC, BILD, HONU, POFI, SKOL
-    const featureIdPrefixFilter = FEATURE_ID_PREFIXES
+      const featureIdPrefixFilter = FEATURE_ID_PREFIXES
       .map((prefix) => `FEATURE_ID LIKE '${prefix}%'`)
       .join(' OR ');
 
     const featureIdExclusionFilter = FEATURE_ID_EXCLUDED_PREFIXES
       .map((prefix) => `FEATURE_ID NOT LIKE '${prefix}%'`)
       .join(' AND ');
+
+    // Le catalogue postgres attaché à DuckDB reste figé sur la liste de tables vue au dernier ATTACH/scan,
+    // il faut l'invalider pour voir la table de staging qu'on vient de créer via pgClient.
+    await conn.run('CALL postgres_clear_cache();');
     await conn.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoName_staging (avivGeoId, language, displayName, name, slug, key)
       SELECT DISTINCT
@@ -345,6 +351,9 @@ export async function processMassiveParquetToPostgres() {
       .map((prefix) => `ID NOT LIKE '${prefix}%'`)
       .join(' AND ');
 
+    // Le catalogue postgres attaché à DuckDB reste figé sur la liste de tables vue au dernier ATTACH/scan,
+    // il faut l'invalider pour voir la table de staging qu'on vient de créer via pgClient.
+    await conn.run('CALL postgres_clear_cache();');
     await conn.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature_staging (avivGeoId, type, mainPostalcode, countryCode, fictive, level, postalCodes, parents, population)
       SELECT 
