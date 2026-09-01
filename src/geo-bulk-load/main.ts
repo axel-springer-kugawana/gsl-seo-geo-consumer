@@ -36,13 +36,29 @@ export async function processMassiveParquetToPostgres() {
   // DETACH/re-ATTACH and force DuckDB to refresh its cached list of Postgres tables.
   let escapedPgConnString = '';
 
-  const FEATURE_ID_PREFIXES = [
+  const MANAGED_PREFIX_IDS = [
     'AD02', 'AD03', 'AD04', 'AD05', 'AD06', 'AD07', 'AD08', 'AD09',
     'NBH1', 'NBH2', 'NBH3', 'STRTFR', 'HONUFR'
   ];
-  // const FEATURE_ID_EXCLUDED_PREFIXES: any[] = [
-  // //  'AD08MUNDO', 'AD06MUNDO', 'AD08MUNDO', 'AD06MUNDO', 'AD04MUNDO', 'AD02MUNDO'
-  // ];
+  // Municipalités forcées à fictive=true (fusions/scissions non reflétées dans FICTIVE côté source)
+  const FAKE_PROVINCES_IDS = [
+    'AD06DE144', 'AD06DE307', 'AD06DE155', 'AD06DE160', 'AD06DE161', 'AD06DE162', 'AD06DE163',
+    'AD06DE164', 'AD06DE165', 'AD06DE166', 'AD06DE167', 'AD06DE168', 'AD06DE169', 'AD06DE180',
+    'AD06DE186', 'AD06DE193', 'AD06DE194', 'AD06DE197', 'AD06DE198', 'AD06DE201', 'AD06DE205',
+    'AD06DE218', 'AD06DE224', 'AD06DE225', 'AD06DE226', 'AD06DE247', 'AD06DE248', 'AD06DE249',
+    'AD06DE259', 'AD06DE260', 'AD06DE261', 'AD06DE269', 'AD06DE270', 'AD06DE271', 'AD06DE272',
+    'AD06DE282', 'AD06DE283', 'AD06DE284', 'AD06DE285', 'AD06DE286', 'AD06DE294', 'AD06DE295',
+    'AD06DE296', 'AD06DE306', 'AD06DE308', 'AD06DE309', 'AD06DE326', 'AD06DE327', 'AD06DE328',
+    'AD06DE329', 'AD06DE330', 'AD06DE345', 'AD06DE346', 'AD06DE353', 'AD06DE358', 'AD06DE363',
+    'AD06DE366', 'AD06DE367', 'AD06DE368', 'AD06DE380', 'AD06DE381', 'AD06DE382', 'AD06DE383',
+    'AD06DE384', 'AD06DE385', 'AD06DE16', 'AD06DE17', 'AD06DE18', 'AD06DE19', 'AD06DE46',
+    'AD06DE47', 'AD06DE48', 'AD06DE49', 'AD06DE50', 'AD06DE63', 'AD06DE64', 'AD06DE65',
+    'AD06DE72', 'AD06DE66', 'AD06DE67', 'AD06DE68', 'AD06DE69', 'AD06DE70', 'AD06DE71',
+    'AD06DE73', 'AD06DE74', 'AD06DE80', 'AD06DE81', 'AD06DE82', 'AD06DE91', 'AD06DE92',
+    'AD06DE93', 'AD06DE1', 'AD06DE2', 'AD06DE3', 'AD06DE4', 'AD06DE99', 'AD06DE106',
+    'AD06DE107', 'AD06DE108', 'AD06DE109', 'AD06DE110', 'AD06DE118', 'AD06DE119', 'AD06DE120',
+    'AD06DE121', 'AD06DE137'
+  ];
 
   if (!PG_HOST || !PG_DATABASE || !PG_USER || !PG_PASSWORD || !bucket || !bucketKey) {
     throw new Error('[ECS Task] ERREUR: Variables PostgreSQL ou chemin S3 manquants.');
@@ -169,13 +185,9 @@ export async function processMassiveParquetToPostgres() {
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
 
-    const featureIdPrefixFilter = FEATURE_ID_PREFIXES
+    const featureIdPrefixFilter = MANAGED_PREFIX_IDS
       .map((prefix) => `NEW_ID LIKE '${prefix}%'`)
       .join(' OR ');
-
-    // const featureIdExclusionFilter = FEATURE_ID_EXCLUDED_PREFIXES
-    //   .map((prefix) => `NEW_ID NOT LIKE '${prefix}%'`)
-    //   .join(' AND ');
 
     // postgres_clear_cache() n'existe pas dans cette version de l'extension : on force le
     // rafraîchissement du catalogue en détachant/rattachant la base pour voir la table de staging.
@@ -248,7 +260,7 @@ export async function processMassiveParquetToPostgres() {
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
 
-    const featureIdPrefixFilter = FEATURE_ID_PREFIXES
+    const featureIdPrefixFilter = MANAGED_PREFIX_IDS
       .map((prefix) => `FEATURE_ID LIKE '${prefix}%'`)
       .join(' OR ');
 
@@ -317,7 +329,7 @@ export async function processMassiveParquetToPostgres() {
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoName_staging;`);
   }
 
-  async function storeGeoFeature() {
+  async function storeGeoFeature(): Promise<void> {
     // Implementation for storing geo lineage
     const S3_PARQUET_PATH = `s3://${bucket}/${bucketKey}/feature/*.parquet`;
 
@@ -369,9 +381,12 @@ export async function processMassiveParquetToPostgres() {
 
     // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
-    const featureIdPrefixFilter = FEATURE_ID_PREFIXES
+    const featureIdPrefixFilter = MANAGED_PREFIX_IDS
       .map((prefix) => `ID LIKE '${prefix}%'`)
       .join(' OR ');
+    const fictiveMunicipalityIdsList = FAKE_PROVINCES_IDS
+      .map((id) => `'${id}'`)
+      .join(', ');
 
     // postgres_clear_cache() n'existe pas dans cette version de l'extension : on force le
     // rafraîchissement du catalogue en détachant/rattachant la base pour voir la table de staging.
@@ -389,7 +404,7 @@ export async function processMassiveParquetToPostgres() {
         TYPE_LABEL AS type,
         MAIN_POSTAL_CODE AS mainPostalcode,
         COUNTRY_CODE AS countryCode,
-        FICTIVE AS fictive,
+        CASE WHEN ID IN (${fictiveMunicipalityIdsList}) THEN true ELSE FICTIVE END AS fictive,
         TYPE_LEVEL AS level,
         CAST(POSTAL_CODES AS JSON)::VARCHAR[] AS postalCodes,
         CAST(PARENTS AS JSON)::VARCHAR[] AS parents,
@@ -478,6 +493,65 @@ export async function processMassiveParquetToPostgres() {
       `);
 
       logger.info('[ECS Task] Vue matérialisée créée/rafraîchie avec succès !');
+
+      // Création / mise à jour de la vue v_geo_full
+      logger.info('[ECS Task] Création ou remplacement de la vue v_geo_full...');
+      await pgClient.query(`
+        CREATE OR REPLACE VIEW ${PG_SCHEMA}.v_geo_full
+         AS
+         SELECT geo.avivgeoid,
+            geo.type,
+            geo.mainpostalcode,
+            geo.countrycode,
+            geo.fictive,
+            geo.level,
+            geo.postalcodes,
+            geo.parents,
+            geo.population,
+            geo.countryid,
+            geo.regionid,
+            geo.provinceid,
+            geo.municipalityid,
+            country.code,
+            country.fictive AS countryfictive,
+            country.level AS countrylevel,
+            country.names AS countrynames,
+            region.code AS regioncode,
+            region.fictive AS regionfictive,
+            region.level AS regionlevel,
+            region.names AS regionnames,
+            province.code AS provincecode,
+            province.fictive AS provincefictive,
+            province.level AS provincelevel,
+            province.names AS provincenames,
+            municipality.code AS municipalitycode,
+            municipality.fictive AS municipalityfictive,
+            municipality.level AS municipalitylevel,
+            municipality.names AS municipalitynames,
+            geo.names
+           FROM ( SELECT geo_1.avivgeoid,
+                    geo_1.type,
+                    geo_1.mainpostalcode,
+                    geo_1.countrycode,
+                    geo_1.fictive,
+                    geo_1.level,
+                    geo_1.postalcodes,
+                    geo_1.parents,
+                    geo_1.population,
+                    geo_1.countryid,
+                    geo_1.regionid,
+                    geo_1.provinceid,
+                    geo_1.municipalityid,
+                    json_agg(jsonb_build_object('displayname', g.displayname, 'name', g.name, 'slug', g.slug, 'language', g.language)) AS names
+                   FROM ${PG_SCHEMA}.geofeature geo_1
+                     LEFT JOIN ${PG_SCHEMA}.geoname g ON g.avivgeoid::text = geo_1.avivgeoid::text
+                  GROUP BY geo_1.avivgeoid, geo_1.type, geo_1.mainpostalcode, geo_1.countrycode, geo_1.fictive, geo_1.level, geo_1.postalcodes, geo_1.parents, geo_1.population, geo_1.countryid, geo_1.regionid, geo_1.provinceid, geo_1.municipalityid) geo
+             LEFT JOIN ${PG_SCHEMA}.mv_geofeature_names country ON country.avivgeoid::text = geo.countryid::text OR country.avivgeoid::text = geo.avivgeoid::text AND geo.level = 200
+             LEFT JOIN ${PG_SCHEMA}.mv_geofeature_names region ON region.avivgeoid::text = geo.regionid::text OR region.avivgeoid::text = geo.avivgeoid::text AND geo.level = 400
+             LEFT JOIN ${PG_SCHEMA}.mv_geofeature_names province ON province.avivgeoid::text = geo.provinceid::text OR province.avivgeoid::text = geo.avivgeoid::text AND geo.level = 600
+             LEFT JOIN ${PG_SCHEMA}.mv_geofeature_names municipality ON municipality.avivgeoid::text = geo.municipalityid::text OR municipality.avivgeoid::text = geo.avivgeoid::text AND geo.level = 800;
+      `);
+      logger.info('[ECS Task] Vue v_geo_full créée/remplacée avec succès !');
     } catch (error) {
       logger.error('[ECS Task] ERREUR lors de la gestion de la vue matérialisée :' + error);
       throw error;
@@ -486,7 +560,7 @@ export async function processMassiveParquetToPostgres() {
 }
 
 
-export async function processMassiveToDynamoDB() {
+export async function processMassiveSqlToDynamoDB() {
   // Je veux parser une vue sql contenant 35 millions d’enregistrements, les backup sur une dynamoDb par x batch write items
   // Il faudra recréer les objets dans dynamodb via un fonction de transformation
 
@@ -498,7 +572,7 @@ if (require.main === module) {
     process.exitCode = 1;
   });
 
-  processMassiveToDynamoDB().catch((error) => {
+  processMassiveSqlToDynamoDB().catch((error) => {
     logger.error('[ECS Task] ERREUR CRITIQUE :', error);
     process.exitCode = 1;
   });
