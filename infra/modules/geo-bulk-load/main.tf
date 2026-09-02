@@ -140,6 +140,7 @@ resource "aws_ecs_task_definition" "geo_bulk_load" {
         { name = "DUCKDB_TEMP_DIRECTORY", value = "/tmp/duckdb_spill" },
         { name = "GEO_DYNAMODB_TABLE_NAME", value = var.geo_dynamodb_table.name },
         { name = "GEO_LINEAGE_DYNAMODB_TABLE_NAME", value = var.geo_lineage_dynamodb_table.name },
+        { name = "GEO_DYNAMODB_SCHEMA_VERSION", value = var.geo_dynamodb_schema_version },
       ]
 
       logConfiguration = {

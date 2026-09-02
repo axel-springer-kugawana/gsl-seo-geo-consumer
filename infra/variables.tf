@@ -141,6 +141,12 @@ variable "geo_management_bucket_key" {
   type        = string
 }
 
+variable "geo_dynamodb_schema_version" {
+  description = "Static sort key value (\"V1\", \"V2\"...) written to the geo-updated and geo-lineage DynamoDB tables"
+  type        = string
+  default     = "V1"
+}
+
 variable "geo_bucket_kms_key_arn" {
   description = "KMS key ARN used to encrypt objects in the geo management sync bucket (cross-account, owned by the export team). Empty means the bucket is not KMS-encrypted"
   type        = string

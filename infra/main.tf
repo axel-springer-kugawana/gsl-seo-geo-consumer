@@ -19,7 +19,6 @@ module "dynamodb-ssot-geo-updated" {
   source      = "./modules/dynamodb"
   application = "gsl-seo-geo-updated-${var.environment}"
   environment = var.environment
-  range_key    = "V1"
 }
 
 module "dynamodb-ssot-geo-lineage" {
@@ -27,7 +26,6 @@ module "dynamodb-ssot-geo-lineage" {
   source      = "./modules/dynamodb"
   application = "gsl-seo-geo-lineage-${var.environment}"
   environment = var.environment
-  range_key    = "V1"
 }
 
 module "cm_consumer_fifo" {
@@ -49,6 +47,7 @@ module "cm_consumer_fifo" {
   updated_dynamodb_table_name = module.dynamodb-ssot-geo-updated.properties.dynamodb_table_name
   deleted_dynamodb_arn        = module.dynamodb-ssot-geo-lineage.properties.dynamodb_arn
   deleted_dynamodb_table_name = module.dynamodb-ssot-geo-lineage.properties.dynamodb_table_name
+  geo_dynamodb_schema_version = var.geo_dynamodb_schema_version
 }
 
 module "geo_bulk_load" {
@@ -84,4 +83,6 @@ module "geo_bulk_load" {
     arn  = module.dynamodb-ssot-geo-lineage.properties.dynamodb_arn
     name = module.dynamodb-ssot-geo-lineage.properties.dynamodb_table_name
   }
+
+  geo_dynamodb_schema_version = var.geo_dynamodb_schema_version
 }

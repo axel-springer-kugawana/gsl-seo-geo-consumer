@@ -40,3 +40,7 @@ variable "deleted_dynamodb_arn" {
 variable "deleted_dynamodb_table_name" {
   type = string
 }
+
+variable "geo_dynamodb_schema_version" {
+  type = string
+}

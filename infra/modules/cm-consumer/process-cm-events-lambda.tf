@@ -43,9 +43,10 @@ module "process_cm_connector_events_lambda" {
   is_lambda_vpc                    = true
   enable_secrets_manager_extension = true
   env_variables = {
-    MV_UPDATED_TABLE_NAME = var.updated_dynamodb_table_name
-    MV_DELETED_TABLE_NAME = var.deleted_dynamodb_table_name
-    MV_APPLICATION_NAME   = var.application
+    MV_UPDATED_TABLE_NAME       = var.updated_dynamodb_table_name
+    MV_DELETED_TABLE_NAME       = var.deleted_dynamodb_table_name
+    MV_APPLICATION_NAME         = var.application
+    GEO_DYNAMODB_SCHEMA_VERSION = var.geo_dynamodb_schema_version
   }
 }
 

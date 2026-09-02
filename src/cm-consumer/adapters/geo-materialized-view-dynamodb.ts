@@ -37,19 +37,23 @@ const mapParentToGeoEntity = (parent: components["schemas"]["ParentFeature"]): G
   };
 };
 
-const updateDataInDynamoDB = async (id: string, marshalledData: Record<string, any>, tableName: string, versionValue: string): Promise<void> => {
-  // Build UpdateExpression dynamically, excluding the partition key (AvivGeoId)
+// 'version' is the table's static sort key ("V1" | "V2"), known ahead of time, unrelated to
+// the lastupdatedate attribute used below for optimistic concurrency.
+const DEFAULT_SCHEMA_VERSION = process.env.GEO_DYNAMODB_SCHEMA_VERSION || "V1";
+
+const updateDataInDynamoDB = async (id: string, marshalledData: Record<string, any>, tableName: string, lastUpdateDate: string): Promise<void> => {
+  // Build UpdateExpression dynamically, excluding the partition/sort keys (AvivGeoId, version)
   const updateExpressions: string[] = [];
   const expressionAttributeValues: Record<string, any> = {};
   const expressionAttributeNames: Record<string, string> = {
-    "#VERSIONATTN": "version",
+    "#LASTUPDATEDATE": "lastupdatedate",
     "#SOFTDELETE": "softdeleted",
     "#EXPIREAT": "expireat"
   };
 
-  // Add geodata attributes to update (excluding partition key)
+  // Add geodata attributes to update (excluding partition/sort keys)
   Object.entries(marshalledData).forEach(([key, value]) => {
-    if (key !== 'AvivGeoId') { // Skip the partition key
+    if (key !== 'AvivGeoId' && key !== 'Version') {
       const attributeName = `#${key}`;
       const attributeValue = `:${key}`;
       expressionAttributeNames[attributeName] = key;
@@ -58,10 +62,8 @@ const updateDataInDynamoDB = async (id: string, marshalledData: Record<string, a
     }
   });
 
-  // Add version attribute
-  // const versionValue = data?.metadata?.updateDate?.toString() ?? Date.now().toString();
-  expressionAttributeValues[":VERSIONATTCURRV"] = { "S": versionValue };
-  updateExpressions.push("#VERSIONATTN = :VERSIONATTCURRV");
+  expressionAttributeValues[":LASTUPDATEDATECURRV"] = { "S": lastUpdateDate };
+  updateExpressions.push("#LASTUPDATEDATE = :LASTUPDATEDATECURRV");
 
   try {
     await ddbClient.send(new UpdateItemCommand({
@@ -69,6 +71,9 @@ const updateDataInDynamoDB = async (id: string, marshalledData: Record<string, a
       Key: {
         "AvivGeoId": {
           "S": id
+        },
+        "version": {
+          "S": DEFAULT_SCHEMA_VERSION
         }
       },
       UpdateExpression: `
@@ -77,7 +82,7 @@ const updateDataInDynamoDB = async (id: string, marshalledData: Record<string, a
         REMOVE
           #SOFTDELETE, #EXPIREAT
          `,
-      ConditionExpression: "attribute_not_exists(#VERSIONATTN) OR #VERSIONATTN <= :VERSIONATTCURRV",
+      ConditionExpression: "attribute_not_exists(#LASTUPDATEDATE) OR #LASTUPDATEDATE <= :LASTUPDATEDATECURRV",
       ExpressionAttributeValues: expressionAttributeValues,
       ExpressionAttributeNames: expressionAttributeNames
     }));
@@ -218,24 +223,32 @@ const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, ge
   const onDayInSeconds = 60 * 60 * 24 * 1;
   const expiryTime = Math.floor(Date.now() / 1000) + onDayInSeconds;
 
+  const updatedTableName = process.env.MV_UPDATED_TABLE_NAME;
+  if (!updatedTableName) {
+    throw new Error("MV_UPDATED_TABLE_NAME environment variable is not set");
+  }
+
   const removeGeoFromReferentialResult = await ddbClient.send(new UpdateItemCommand({
-    TableName: process.env.MV_UPDATED_TABLE_NAME,
+    TableName: updatedTableName,
     Key: {
       "AvivGeoId": {
         "S": deleteCommand.id
+      },
+      "version": {
+        "S": DEFAULT_SCHEMA_VERSION
       }
     },
     UpdateExpression: `
     SET 
       #EXPIREAT = :EXPIREAT,
-      #VERSIONATTN = :VERSIONATTCURRV,
+      #LASTUPDATEDATE = :LASTUPDATEDATECURRV,
       #SOFTDELETE = :SOFTDELETE`,
-    ConditionExpression: "attribute_not_exists(#VERSIONATTN) OR #VERSIONATTN < :VERSIONATTCURRV",
+    ConditionExpression: "attribute_not_exists(#LASTUPDATEDATE) OR #LASTUPDATEDATE < :LASTUPDATEDATECURRV",
     ExpressionAttributeValues: {
       ":EXPIREAT": {
         "N": expiryTime.toString()
       },
-      ":VERSIONATTCURRV": {
+      ":LASTUPDATEDATECURRV": {
         "S": deleteCommand.updateDate?.toString()
       },
       ":SOFTDELETE": {
@@ -244,7 +257,7 @@ const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, ge
     },
     ExpressionAttributeNames: {
       "#EXPIREAT": "expireat",
-      "#VERSIONATTN": "version",
+      "#LASTUPDATEDATE": "lastupdatedate",
       "#SOFTDELETE": "softdeleted"
     }
   }));

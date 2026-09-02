@@ -221,9 +221,13 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
             batchIndex += 1;
             logger.info(`[ECS Task] Batch #${batchIndex}: ${result.rows.length} rows fetched from PostgreSQL in ${Date.now() - fetchStartedAt}ms.`);
 
-            const writeRequests: WriteRequest[] = result.rows.map((row) => ({
-                PutRequest: { Item: marshall(mapRow(row), { removeUndefinedValues: true }) },
-            }));
+            const writeRequests: WriteRequest[] = result.rows.map((row) => {
+                const item = mapRow(row);
+                // 'version' is the table's static sort key ("V1" | "V2"), sourced from the item's own Version field.
+                return {
+                    PutRequest: { Item: marshall({ ...item, version: (item as { Version?: string }).Version ?? process.env.GEO_DYNAMODB_SCHEMA_VERSION ?? 'V1' }, { removeUndefinedValues: true }) },
+                };
+            });
 
             const chunks = chunkArray(writeRequests, DYNAMODB_BATCH_WRITE_LIMIT);
             logger.info(`[ECS Task] Batch #${batchIndex}: writing ${chunks.length} DynamoDB chunk(s) with a concurrency of ${WRITE_CONCURRENCY}...`);

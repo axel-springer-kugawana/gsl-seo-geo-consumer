@@ -13,5 +13,5 @@ variable "partition_key" {
 
 variable "range_key" {
   type    = string
-  default = "Version"
+  default = "version"
 }

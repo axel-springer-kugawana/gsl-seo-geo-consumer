@@ -115,3 +115,8 @@ variable "geo_lineage_dynamodb_table" {
     name = string
   })
 }
+
+variable "geo_dynamodb_schema_version" {
+  description = "Static sort key value (\"V1\", \"V2\"...) written to the geo-updated and geo-lineage DynamoDB tables"
+  type        = string
+}
