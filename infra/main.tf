@@ -21,14 +21,12 @@ module "dynamodb-ssot-geo-updated" {
   environment = var.environment
 }
 
-
-module "dynamodb-ssot-geo-deleted" {
+module "dynamodb-ssot-geo-lineage" {
   partition_key = "AvivGeoId"
   source      = "./modules/dynamodb"
-  application = "gsl-seo-geo-deleted-${var.environment}"
+  application = "gsl-seo-geo-lineage-${var.environment}"
   environment = var.environment
-} 
-
+}
 
 module "cm_consumer_fifo" {
   # depends_on = [module.cm_connector, module.rds, module.dynamodb]
@@ -47,8 +45,8 @@ module "cm_consumer_fifo" {
   environment  = var.environment  
   updated_dynamodb_arn        = module.dynamodb-ssot-geo-updated.properties.dynamodb_arn
   updated_dynamodb_table_name = module.dynamodb-ssot-geo-updated.properties.dynamodb_table_name
-  deleted_dynamodb_arn        = module.dynamodb-ssot-geo-deleted.properties.dynamodb_arn
-  deleted_dynamodb_table_name = module.dynamodb-ssot-geo-deleted.properties.dynamodb_table_name
+  deleted_dynamodb_arn        = module.dynamodb-ssot-geo-lineage.properties.dynamodb_arn
+  deleted_dynamodb_table_name = module.dynamodb-ssot-geo-lineage.properties.dynamodb_table_name
 }
 
 module "geo_bulk_load" {
@@ -78,5 +76,10 @@ module "geo_bulk_load" {
   geo_dynamodb_table = {
     arn  = module.dynamodb-ssot-geo-updated.properties.dynamodb_arn
     name = module.dynamodb-ssot-geo-updated.properties.dynamodb_table_name
+  }
+
+  geo_lineage_dynamodb_table = {
+    arn  = module.dynamodb-ssot-geo-lineage.properties.dynamodb_arn
+    name = module.dynamodb-ssot-geo-lineage.properties.dynamodb_table_name
   }
 }

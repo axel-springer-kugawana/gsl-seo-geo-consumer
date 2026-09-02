@@ -1,8 +1,8 @@
 import { logger } from "@shared/cross-cutting/logger";
 import { processMassiveParquetToPostgres } from './process-massive-parquet-to-postgres';
-import { processMassiveSqlToDynamoDB } from './process-massive-sql-to-dynamodb';
+import { processMassiveSqlToDynamoDB as processGeoFullToDynamoDB, processGeoLineageFallbacksToDynamoDB as processGeoLineageToDynamoDB } from './process-massive-sql-to-dynamodb';
 
-export { processMassiveParquetToPostgres, processMassiveSqlToDynamoDB };
+export { processMassiveParquetToPostgres, processGeoFullToDynamoDB as processMassiveSqlToDynamoDB, processGeoLineageToDynamoDB as processGeoLineageFallbacksToDynamoDB };
 
 if (require.main === module) {
   // processMassiveParquetToPostgres().catch((error) => {
@@ -10,8 +10,16 @@ if (require.main === module) {
   //   process.exitCode = 1;
   // });
 
-  processMassiveSqlToDynamoDB().catch((error) => {
-    logger.error('[ECS Task] ERREUR CRITIQUE :', error);
-    process.exitCode = 1;
-  });
+
+   processGeoLineageToDynamoDB()
+    .catch((error) => {
+      logger.error('[ECS Task] ERREUR CRITIQUE :', error);
+      process.exitCode = 1;
+    });
+
+  // processGeoFullToDynamoDB()
+  //   .catch((error) => {
+  //     logger.error('[ECS Task] ERREUR CRITIQUE :', error);
+  //     process.exitCode = 1;
+  //   });
 }

@@ -99,7 +99,7 @@ export const currentFeatureStructure = z.object({
 })
 
 export const deletedFallbackStructure = z.object({
-  type: z.string(),
+  //type: z.string(),
   ancestor_id: z.string(),
   descendant_id: z.string(),
 })

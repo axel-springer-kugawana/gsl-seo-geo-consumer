@@ -102,7 +102,8 @@ data "aws_iam_policy_document" "task" {
       "dynamodb:BatchWriteItem",
     ]
     resources = [
-      var.geo_dynamodb_table.arn
+      var.geo_dynamodb_table.arn,
+      var.geo_lineage_dynamodb_table.arn,
     ]
   }
 }

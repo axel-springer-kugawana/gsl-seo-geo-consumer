@@ -19,7 +19,7 @@ export async function processMassiveParquetToPostgres() {
     DbPort: apisecrets.DbPort,
     DbMainDatabase: apisecrets.DbMainDatabase,
     DbUsername: apisecrets.DbUsername,
-    DbPassword: '********', // Masquer le mot de passe pour des raisons de sécurité
+    DbPassword: '********', // Mask the password for security reasons
   });
 
   const AWS_REGION = process.env.AWS_REGION || 'eu-west-1';
@@ -40,7 +40,7 @@ export async function processMassiveParquetToPostgres() {
     'AD02', 'AD03', 'AD04', 'AD05', 'AD06', 'AD07', 'AD08', 'AD09',
     'NBH1', 'NBH2', 'NBH3', 'STRTFR', 'HONUFR'
   ];
-  // Municipalités forcées à fictive=true (fusions/scissions non reflétées dans FICTIVE côté source)
+  // Municipalities forced to fictive=true (mergers/splits not reflected in FICTIVE on the source side)
   const FAKE_PROVINCES_IDS = [
     'AD06DE144', 'AD06DE307', 'AD06DE155', 'AD06DE160', 'AD06DE161', 'AD06DE162', 'AD06DE163',
     'AD06DE164', 'AD06DE165', 'AD06DE166', 'AD06DE167', 'AD06DE168', 'AD06DE169', 'AD06DE180',
@@ -155,7 +155,7 @@ export async function processMassiveParquetToPostgres() {
       ? `s3://${bucket}/${bucketKey}/lineage/*.parquet`
       : undefined;
 
-    // ÉTAPE 1 : Table temporaire UNLOGGED
+    // STEP 1: Temporary UNLOGGED table
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoLineage_staging;`);
 
@@ -178,19 +178,19 @@ export async function processMassiveParquetToPostgres() {
 );
 `);
 
-    // Retire la PK et vide la table sans la supprimer, pour accélérer le bulk insert qui suit.
+    // Drop the PK and empty the table without dropping it, to speed up the bulk insert that follows.
     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoLineage DROP CONSTRAINT IF EXISTS geoLineage_pkey;`);
     await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}.geoLineage;`);
 
-    // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
+    // STEP 2: Vectorized bulk copy from Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
 
     const featureIdPrefixFilter = MANAGED_PREFIX_IDS
       .map((prefix) => `NEW_ID LIKE '${prefix}%'`)
       .join(' OR ');
 
-    // postgres_clear_cache() n'existe pas dans cette version de l'extension : on force le
-    // rafraîchissement du catalogue en détachant/rattachant la base pour voir la table de staging.
+    // postgres_clear_cache() doesn't exist in this extension version: force the catalog
+    // refresh by detaching/re-attaching the database so the staging table becomes visible.
     await conn.run('DETACH postgres_db;');
     await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
     await conn.run(`
@@ -203,7 +203,7 @@ export async function processMassiveParquetToPostgres() {
       FROM read_parquet('${S3_PARQUET_PATH}')
       WHERE (${featureIdPrefixFilter})`);
 
-    // ÉTAPE 3 : Insertion de toutes les lignes (la table cible vient d'être vidée)
+    // STEP 3: Insert all rows (the target table has just been emptied)
     logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
     await conn.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoLineage (newId, oldId,  key, coefficient)
@@ -211,13 +211,13 @@ export async function processMassiveParquetToPostgres() {
       FROM postgres_db.${PG_SCHEMA}.geoLineage_staging;
     `);
 
-    // ÉTAPE 4 : on remet la contrainte de clé primaire sur la table finale
+    // STEP 4: Re-add the primary key constraint on the final table
     logger.info('[ECS Task] Étape 4/5 : Remise de la contrainte de clé primaire...');
 
     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoLineage ADD CONSTRAINT geoLineage_pkey PRIMARY KEY (newId, oldId);
 `);
 
-    // ÉTAPE 5 : Nettoyage
+    // STEP 5: Cleanup
     logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoLineage_staging;`);
   }
@@ -225,7 +225,7 @@ export async function processMassiveParquetToPostgres() {
   async function storeGeoNames() {
     const S3_PARQUET_PATH = `s3://${bucket}/${bucketKey}/name/*.parquet`;
 
-    // ÉTAPE 1 : Table temporaire UNLOGGED
+    // STEP 1: Temporary UNLOGGED table
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoName_staging;`);
 
@@ -253,19 +253,19 @@ export async function processMassiveParquetToPostgres() {
 );
 `);
 
-    // Retire la PK et vide la table sans la supprimer, pour accélérer le bulk insert qui suit.
+    // Drop the PK and empty the table without dropping it, to speed up the bulk insert that follows.
     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName DROP CONSTRAINT IF EXISTS GeoName_pkey;`);
     await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}.geoName;`);
 
-    // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
+    // STEP 2: Vectorized bulk copy from Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
 
     const featureIdPrefixFilter = MANAGED_PREFIX_IDS
       .map((prefix) => `FEATURE_ID LIKE '${prefix}%'`)
       .join(' OR ');
 
-    // postgres_clear_cache() n'existe pas dans cette version de l'extension : on force le
-    // rafraîchissement du catalogue en détachant/rattachant la base pour voir la table de staging.
+    // postgres_clear_cache() doesn't exist in this extension version: force the catalog
+    // refresh by detaching/re-attaching the database so the staging table becomes visible.
     await conn.run('DETACH postgres_db;');
     await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
     await conn.run(`
@@ -287,7 +287,7 @@ export async function processMassiveParquetToPostgres() {
         ;
     `);
 
-    // ÉTAPE 3 : Insertion de toutes les lignes (la table cible vient d'être vidée)
+    // STEP 3: Insert all rows (the target table has just been emptied)
     logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
     await conn.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoName (avivGeoId, language, displayName, name, slug, key, rank)
@@ -295,7 +295,7 @@ export async function processMassiveParquetToPostgres() {
       FROM postgres_db.${PG_SCHEMA}.geoName_staging;
     `);
 
-    // ÉTAPE 4 : on remet la contrainte de clé primaire sur la table finale
+    // STEP 4: Deduplicate rows and re-add the primary key constraint
     logger.info('[ECS Task] Étape 4/5 : Suppression des doublons et remise de la contrainte de clé primaire...');
     await pgClient.query(`
       WITH a_supprimer AS (
@@ -324,7 +324,7 @@ export async function processMassiveParquetToPostgres() {
 
     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName ADD CONSTRAINT GeoName_pkey PRIMARY KEY (avivGeoId, language);`);
 
-    // ÉTAPE 5 : Nettoyage
+    // STEP 5: Cleanup
     logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoName_staging;`);
   }
@@ -333,7 +333,7 @@ export async function processMassiveParquetToPostgres() {
     // Implementation for storing geo lineage
     const S3_PARQUET_PATH = `s3://${bucket}/${bucketKey}/feature/*.parquet`;
 
-    // ÉTAPE 1 : Table temporaire UNLOGGED
+    // STEP 1: Temporary UNLOGGED table
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoFeature_staging;`);
 
@@ -375,11 +375,11 @@ export async function processMassiveParquetToPostgres() {
 );
 `);
 
-    // Retire la PK et vide la table sans la supprimer, pour accélérer le bulk insert qui suit.
+    // Drop the PK and empty the table without dropping it, to speed up the bulk insert that follows.
     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoFeature DROP CONSTRAINT IF EXISTS GeoFeature_pkey;`);
     await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}.geoFeature;`);
 
-    // ÉTAPE 2 : Bulk Copy vectorisé depuis Parquet S3
+    // STEP 2: Vectorized bulk copy from Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
     const featureIdPrefixFilter = MANAGED_PREFIX_IDS
       .map((prefix) => `ID LIKE '${prefix}%'`)
@@ -388,8 +388,8 @@ export async function processMassiveParquetToPostgres() {
       .map((id) => `'${id}'`)
       .join(', ');
 
-    // postgres_clear_cache() n'existe pas dans cette version de l'extension : on force le
-    // rafraîchissement du catalogue en détachant/rattachant la base pour voir la table de staging.
+    // postgres_clear_cache() doesn't exist in this extension version: force the catalog
+    // refresh by detaching/re-attaching the database so the staging table becomes visible.
     await conn.run('DETACH postgres_db;');
     await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
     await conn.run(`
@@ -417,7 +417,7 @@ export async function processMassiveParquetToPostgres() {
       WHERE (${featureIdPrefixFilter})
      `);
 
-    // ÉTAPE 3 : Insertion de toutes les lignes (la table cible vient d'être vidée)
+    // STEP 3: Insert all rows (the target table has just been emptied)
     logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
     await conn.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature (avivGeoId, type, mainPostalcode, countryCode, fictive, level
@@ -428,11 +428,11 @@ export async function processMassiveParquetToPostgres() {
       FROM postgres_db.${PG_SCHEMA}.geoFeature_staging;
     `);
 
-    // ÉTAPE 4 : on remet la contrainte de clé primaire sur la table finale
+    // STEP 4: Re-add the primary key constraint on the final table
     await pgClient.query(`
      ALTER TABLE ${PG_SCHEMA}.geoFeature ADD CONSTRAINT GeoFeature_pkey PRIMARY KEY (avivGeoId);
 `);
-    // ÉTAPE 5 : Nettoyage
+    // STEP 5: Cleanup
     logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoFeature_staging;`);
   }
@@ -441,24 +441,24 @@ export async function processMassiveParquetToPostgres() {
     logger.info('[ECS Task] Création ou rafraîchissement de la vue matérialisée...');
 
     try {
-      // Vérifier si la MV existe
+      // Check whether the MV already exists
       const mvExists = await pgClient.query(
         `SELECT 1 FROM information_schema.views WHERE table_schema = $1 AND table_name = $2`,
         [PG_SCHEMA, 'mv_geofeature_names']
       );
 
       if (mvExists.rows.length > 0) {
-        // MV existe : rafraîchir avec CONCURRENTLY (nécessite un index unique)
+        // MV exists: refresh with CONCURRENTLY (requires a unique index)
         logger.info('[ECS Task] Vue matérialisée existe, rafraîchissement en cours...');
         try {
           await pgClient.query(`REFRESH MATERIALIZED VIEW CONCURRENTLY ${PG_SCHEMA}.mv_geofeature_names;`);
         } catch (error) {
-          // Si CONCURRENTLY échoue (pas d'index unique), utiliser sans
+          // If CONCURRENTLY fails (no unique index), fall back to a plain refresh
           logger.warn('[ECS Task] Rafraîchissement CONCURRENTLY échoué, utilisation du mode standard');
           await pgClient.query(`REFRESH MATERIALIZED VIEW ${PG_SCHEMA}.mv_geofeature_names;`);
         }
       } else {
-        // MV n'existe pas : créer
+        // MV doesn't exist: create it
         logger.info('[ECS Task] Création de la vue matérialisée...');
         await pgClient.query(`
           CREATE MATERIALIZED VIEW IF NOT EXISTS ${PG_SCHEMA}.mv_geofeature_names
@@ -479,11 +479,11 @@ export async function processMassiveParquetToPostgres() {
         `);
       }
 
-      // Définir le propriétaire
+      // Set the owner
       logger.info('[ECS Task] Définition du propriétaire de la MV...');
       await pgClient.query(`ALTER TABLE IF EXISTS ${PG_SCHEMA}.mv_geofeature_names OWNER TO ${PG_USER};`);
 
-      // Créer l'index unique s'il n'existe pas
+      // Create the unique index if it doesn't already exist
       logger.info('[ECS Task] Création de l\'index unique...');
       await pgClient.query(`
         CREATE UNIQUE INDEX IF NOT EXISTS idx_mv_geofeature_avivgeoid
@@ -494,7 +494,7 @@ export async function processMassiveParquetToPostgres() {
 
       logger.info('[ECS Task] Vue matérialisée créée/rafraîchie avec succès !');
 
-      // Création / mise à jour de la vue v_geo_full
+      // Create/update the v_geo_full view
       logger.info('[ECS Task] Création ou remplacement de la vue v_geo_full...');
       await pgClient.query(`
         CREATE OR REPLACE VIEW ${PG_SCHEMA}.v_geo_full

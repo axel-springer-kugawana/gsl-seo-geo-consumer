@@ -103,10 +103,8 @@ const updateDataInDynamoDB = async (id: string, marshalledData: Record<string, a
 const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStructure): Promise<void> => {
   let geoData = transformGeoManagementToGeo(geo);
 
-
   const avivGeoId = geo.id;
   try {
-
     const geoApiClient = await getGeoApiClient();
     const response = await geoApiClient.GET("/places/{place_id}", {
       params: {
@@ -203,8 +201,7 @@ const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, ge
   var deletedGeo = {
     AvivGeoId: deleteCommand.geo?.id,
     Version: deleteCommand.updateDate?.toString(),
-    Fallbacks: deleteCommand.geo.deleted?.fallback,
-    Type: deleteCommand.geo?.type,
+    Fallbacks: deleteCommand.geo.deleted?.fallback
   };
 
   // Marshall the geodata to DynamoDB format

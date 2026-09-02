@@ -107,3 +107,11 @@ variable "geo_dynamodb_table" {
     name = string
   })
 }
+
+variable "geo_lineage_dynamodb_table" {
+  description = "DynamoDB table backed up into by processGeoLineageFallbacksToDynamoDB (reuses the ssot-geo-lineage table)"
+  type = object({
+    arn  = string
+    name = string
+  })
+}
