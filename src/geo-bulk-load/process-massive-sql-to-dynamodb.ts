@@ -118,10 +118,10 @@ async function writeBatchToDynamoDB(
         } catch (error) {
             attempt += 1;
             if (!isRetryableDynamoDbError(error) || attempt > 5) {
-                logger.error(`[ECS Task] Échec DynamoDB non récupérable après ${attempt} tentative(s) (${(error as { name?: string })?.name ?? 'unknown'}) : ${error}`);
+                logger.error(`[ECS Task] Non-recoverable DynamoDB failure after ${attempt} attempt(s) (${(error as { name?: string })?.name ?? 'unknown'}) : ${error}`);
                 throw error;
             }
-            logger.warn(`[ECS Task] DynamoDB indisponible (${(error as { name?: string })?.name}), probable warmup/throttling, nouvelle tentative (${attempt}/5)...`);
+            logger.warn(`[ECS Task] DynamoDB unavailable (${(error as { name?: string })?.name}), likely warmup/throttling, retrying (${attempt}/5)...`);
             await new Promise((resolve) => setTimeout(resolve, 200 * 2 ** attempt));
             continue;
         }
@@ -129,17 +129,17 @@ async function writeBatchToDynamoDB(
         const unprocessed = response.UnprocessedItems?.[tableName];
 
         if (!unprocessed || unprocessed.length === 0) {
-            if (attempt > 0) {
-                logger.info(`[ECS Task] Lot DynamoDB écrit avec succès après ${attempt} tentative(s).`);
+            if (attempt > 1) {
+                logger.info(`[ECS Task] Batch successfully written to DynamoDB after ${attempt} attempt(s).`);
             }
             return;
         }
 
         attempt += 1;
         if (attempt > 5) {
-            throw new Error(`[ECS Task] Échec définitif de l'écriture DynamoDB après ${attempt} tentatives (${unprocessed.length} items restants).`);
+            throw new Error(`[ECS Task] Definitive DynamoDB write failure after ${attempt} attempts (${unprocessed.length} items remaining).`);
         }
-        logger.warn(`[ECS Task] ${unprocessed.length} items non traités par DynamoDB (throttling probable), nouvelle tentative (${attempt}/5)...`);
+        logger.warn(`[ECS Task] ${unprocessed.length} items not processed by DynamoDB (likely throttling), retrying (${attempt}/5)...`);
         remaining = unprocessed;
         await new Promise((resolve) => setTimeout(resolve, 200 * attempt));
     }
@@ -162,7 +162,7 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
     const { taskLabel, dynamoTableNameEnvVar, declareCursorSql, mapRow } = options;
     const cursorName = `${taskLabel}_cursor`;
 
-    logger.info(`[ECS Task] Démarrage du backup massif de ${taskLabel} vers DynamoDB...`);
+    logger.info(`[ECS Task] Starting bulk backup of ${taskLabel} to DynamoDB...`);
 
     const apisecrets = await getClassifiedApiSecret(process.env.GEO_DB_SECRET_ID || '');
 
@@ -178,10 +178,10 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
     const WRITE_CONCURRENCY = Number(process.env.GEO_DYNAMODB_WRITE_CONCURRENCY || '20');
 
     if (!PG_HOST || !PG_DATABASE || !PG_USER || !PG_PASSWORD || !DYNAMODB_TABLE_NAME) {
-        throw new Error('[ECS Task] ERREUR: Variables PostgreSQL ou DynamoDB manquantes.');
+        throw new Error('[ECS Task] ERROR: Missing PostgreSQL or DynamoDB variables.');
     }
 
-    logger.info(`[ECS Task] Configuration du backup DynamoDB (${taskLabel})`, {
+    logger.info(`[ECS Task] DynamoDB backup configuration (${taskLabel})`, {
         AWS_REGION,
         DYNAMODB_TABLE_NAME,
         FETCH_BATCH_SIZE,
@@ -197,7 +197,7 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
         password: PG_PASSWORD,
     });
     await pgClient.connect();
-    logger.info('[ECS Task] Connexion PostgreSQL établie.');
+    logger.info('[ECS Task] PostgreSQL connection established.');
 
     const ddbClient = new DynamoDBClient({ region: AWS_REGION });
 
@@ -209,25 +209,25 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
         // Server-side cursor: avoids loading the whole result set in memory or paying the cost of an OFFSET.
         await pgClient.query('BEGIN');
         await pgClient.query(`DECLARE ${cursorName} CURSOR FOR ${declareCursorSql(PG_SCHEMA)}`);
-        logger.info(`[ECS Task] Curseur ${cursorName} déclaré, début de la lecture par lots.`);
+        logger.info(`[ECS Task] Cursor ${cursorName} declared, starting batched reads.`);
 
         for (; ;) {
             const fetchStartedAt = Date.now();
             const result = await pgClient.query(`FETCH ${FETCH_BATCH_SIZE} FROM ${cursorName};`);
             if (result.rows.length === 0) {
-                logger.info('[ECS Task] Curseur épuisé, plus aucune ligne à traiter.');
+                logger.info('[ECS Task] Cursor exhausted, no more rows to process.');
                 break;
             }
 
             batchIndex += 1;
-            logger.info(`[ECS Task] Lot #${batchIndex} : ${result.rows.length} lignes récupérées de PostgreSQL en ${Date.now() - fetchStartedAt}ms.`);
+            logger.info(`[ECS Task] Batch #${batchIndex}: ${result.rows.length} rows fetched from PostgreSQL in ${Date.now() - fetchStartedAt}ms.`);
 
             const writeRequests: WriteRequest[] = result.rows.map((row) => ({
                 PutRequest: { Item: marshall(mapRow(row), { removeUndefinedValues: true }) },
             }));
 
             const chunks = chunkArray(writeRequests, DYNAMODB_BATCH_WRITE_LIMIT);
-            logger.info(`[ECS Task] Lot #${batchIndex} : écriture de ${chunks.length} chunk(s) DynamoDB avec une concurrence de ${WRITE_CONCURRENCY}...`);
+            logger.info(`[ECS Task] Batch #${batchIndex}: writing ${chunks.length} DynamoDB chunk(s) with a concurrency of ${WRITE_CONCURRENCY}...`);
 
             const writeStartedAt = Date.now();
             const writeTasks = chunks.map((chunk) => () => writeBatchToDynamoDB(ddbClient, DYNAMODB_TABLE_NAME, chunk));
@@ -236,19 +236,19 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
             totalRowsProcessed += result.rows.length;
             const elapsedSeconds = (Date.now() - startedAt) / 1000;
             const throughput = Math.round(totalRowsProcessed / elapsedSeconds);
-            logger.info(`[ECS Task] Lot #${batchIndex} : écrit en ${Date.now() - writeStartedAt}ms. Total : ${totalRowsProcessed} lignes sauvegardées (~${throughput} lignes/s).`);
+            logger.info(`[ECS Task] Batch #${batchIndex}: written in ${Date.now() - writeStartedAt}ms. Total: ${totalRowsProcessed} rows saved (~${throughput} rows/s).`);
         }
 
         await pgClient.query(`CLOSE ${cursorName};`);
         await pgClient.query('COMMIT');
-        logger.info(`[ECS Task] Backup DynamoDB (${taskLabel}) terminé avec succès : ${totalRowsProcessed} lignes traitées en ${batchIndex} lot(s), durée totale ${Math.round((Date.now() - startedAt) / 1000)}s.`);
+        logger.info(`[ECS Task] DynamoDB backup (${taskLabel}) completed successfully: ${totalRowsProcessed} rows processed in ${batchIndex} batch(es), total duration ${Math.round((Date.now() - startedAt) / 1000)}s.`);
     } catch (error) {
         await pgClient.query('ROLLBACK').catch(() => undefined);
-        logger.error(`[ECS Task] ERREUR CRITIQUE lors du backup vers DynamoDB (${taskLabel}, après ${totalRowsProcessed} lignes traitées, lot #${batchIndex}) : ${error}`);
+        logger.error(`[ECS Task] CRITICAL ERROR during backup to DynamoDB (${taskLabel}, after ${totalRowsProcessed} rows processed, batch #${batchIndex}) : ${error}`);
         throw error;
     } finally {
         await pgClient.end();
-        logger.info('[ECS Task] Connexion PostgreSQL fermée.');
+        logger.info('[ECS Task] PostgreSQL connection closed.');
     }
 }
 
