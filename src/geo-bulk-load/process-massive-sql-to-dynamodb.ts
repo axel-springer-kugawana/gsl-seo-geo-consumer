@@ -252,7 +252,7 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
     }
 }
 
-export async function processMassiveSqlToDynamoDB(): Promise<void> {
+export async function  processMassiveSqlToDynamoDB(): Promise<void> {
     return backupPostgresCursorToDynamoDB({
         taskLabel: 'geo_full',
         dynamoTableNameEnvVar: 'GEO_DYNAMODB_TABLE_NAME',

@@ -142,8 +142,8 @@ export async function processMassiveParquetToPostgres() {
 
   function getS3ParquetPath(path: string): string | undefined {
 
-    const bucket = process.env.S3_BUCKET;
-    const bucketKey = process.env.S3_BUCKET_KEY;
+    const bucket = process.env.GEO_MANAGEMENT_SYNC_BUCKET;
+    const bucketKey = process.env.GEO_MANAGEMENT_BUCKET_KEY;
 
 
     return bucket && bucketKey
@@ -277,7 +277,7 @@ export async function processMassiveParquetToPostgres() {
     regionId character varying,
     provinceId character varying,
     municipalityId character varying,
-    neighbors text[],
+    neighbors text[]
 );
     `);
 
@@ -348,9 +348,9 @@ export async function processMassiveParquetToPostgres() {
     await duckDBConnection.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature (avivGeoId, type, mainPostalcode, countryCode, fictive, level
       , postalCodes, parents, population, countryId,
-      regionId, provinceId, municipalityId)
+      regionId, provinceId, municipalityId, neighbors)
       SELECT avivGeoId, type, mainPostalcode, countryCode, fictive, level, postalCodes, parents, population
-      , countryId, regionId, provinceId, municipalityId
+      , countryId, regionId, provinceId, municipalityId, neighbors
       FROM postgres_db.${PG_SCHEMA}.geoFeature_staging;
     `);
 
