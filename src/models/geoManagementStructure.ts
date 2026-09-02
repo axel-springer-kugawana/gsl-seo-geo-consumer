@@ -132,3 +132,11 @@ export type CurrentFeatureStructure = z.infer<typeof currentFeatureStructure>
 export type DeletedFallbackStructure = z.infer<typeof deletedFallbackStructure>
 export type DeletedStructure = z.infer<typeof deletedStructure>
 export type GeoManagementStructure = z.infer<typeof geoManagementStructure>
+
+// Shape of the DynamoDB item storing a geo's replacement fallbacks, shared by the
+// cm-consumer soft-delete path and the geo-bulk-load geoLineage backup.
+export type GeoLineageFallbackItem = {
+  AvivGeoId?: string;
+  Version?: string;
+  Fallbacks?: DeletedFallbackStructure[];
+}

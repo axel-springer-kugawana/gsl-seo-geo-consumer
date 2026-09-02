@@ -3,7 +3,7 @@ import { marshall } from "@aws-sdk/util-dynamodb";
 import { fromSSO } from "@aws-sdk/credential-provider-sso";
 import { logger } from "@shared/cross-cutting/logger";
 import { getClassifiedApiSecret } from "../adapters/classified-api-secrets";
-import { GeoManagementStructure } from "@models";
+import { GeoManagementStructure, GeoLineageFallbackItem } from "@models";
 import { transformGeoManagementToGeo } from "./geoMapper";
 import { paths, components } from '../../shared/models/geo-api';
 import createClient from 'openapi-fetch';
@@ -198,9 +198,9 @@ async function getGeoApiClient() {
 
 const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, geo: GeoManagementStructure }): Promise<void> => {
 
-  var deletedGeo = {
+  const deletedGeo: GeoLineageFallbackItem = {
     AvivGeoId: deleteCommand.geo?.id,
-    Version: deleteCommand.updateDate?.toString(),
+    Version: "V1",
     Fallbacks: deleteCommand.geo.deleted?.fallback
   };
 
@@ -261,7 +261,17 @@ export {
   markGeoAsDeleted
 }
 
-function mapDtoNames(tmp: { [key: string]: { name?: string | null; display_name?: string | null; slug?: string | null; name_rank?: number | null; name_root?: string | null; name_prefix?: string | null; name_prepositions?: { [key: string]: string; } | null; }[]; }) {
+type RawGeoName = {
+  name?: string | null;
+  display_name?: string | null;
+  slug?: string | null;
+  name_rank?: number | null;
+  name_root?: string | null;
+  name_prefix?: string | null;
+  name_prepositions?: { [key: string]: string; } | null;
+};
+
+function mapDtoNames(tmp: { [language: string]: RawGeoName[]; }): GeoName[] {
   return Object.entries(tmp).flatMap(([language, localizedNames]) => (localizedNames ?? []).map(name => ({
     DisplayName: name.display_name ?? name.name ?? "",
     Language: language,

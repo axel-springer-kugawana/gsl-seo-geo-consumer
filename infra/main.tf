@@ -19,6 +19,7 @@ module "dynamodb-ssot-geo-updated" {
   source      = "./modules/dynamodb"
   application = "gsl-seo-geo-updated-${var.environment}"
   environment = var.environment
+  range_key    = "V1"
 }
 
 module "dynamodb-ssot-geo-lineage" {
@@ -26,6 +27,7 @@ module "dynamodb-ssot-geo-lineage" {
   source      = "./modules/dynamodb"
   application = "gsl-seo-geo-lineage-${var.environment}"
   environment = var.environment
+  range_key    = "V1"
 }
 
 module "cm_consumer_fifo" {

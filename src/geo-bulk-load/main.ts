@@ -5,21 +5,15 @@ import { processMassiveSqlToDynamoDB, processGeoLineageFallbacksToDynamoDB } fro
 export { processMassiveParquetToPostgres, processMassiveSqlToDynamoDB, processGeoLineageFallbacksToDynamoDB };
 
 if (require.main === module) {
-  processMassiveParquetToPostgres().catch((error) => {
+  // processMassiveParquetToPostgres()
+  
+  // .then
+  processGeoLineageFallbacksToDynamoDB()
+  .then(processMassiveSqlToDynamoDB)
+  .catch((error) => {
     logger.error('[ECS Task] ERREUR CRITIQUE :', error);
     process.exitCode = 1;
   });
 
 
-  processGeoLineageFallbacksToDynamoDB()
-    .catch((error) => {
-      logger.error('[ECS Task] ERREUR CRITIQUE :', error);
-      process.exitCode = 1;
-    });
-
-  processMassiveSqlToDynamoDB()
-    .catch((error) => {
-      logger.error('[ECS Task] ERREUR CRITIQUE :', error);
-      process.exitCode = 1;
-    });
 }

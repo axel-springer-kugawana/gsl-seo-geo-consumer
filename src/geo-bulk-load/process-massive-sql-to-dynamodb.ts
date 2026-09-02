@@ -4,10 +4,11 @@ import { marshall } from '@aws-sdk/util-dynamodb';
 import { getClassifiedApiSecret } from "./classified-api-secrets";
 import { logger } from "@shared/cross-cutting/logger";
 import { Geo, GeoEntityBase, GeoName } from '../shared/models/geo/1.0.0/geo';
-import { DeletedFallbackStructure } from '../models/geoManagementStructure';
+import { GeoLineageFallbackItem } from '../models/geoManagementStructure';
 
 // DynamoDB BatchWriteItem accepts a maximum of 25 items per request.
 const DYNAMODB_BATCH_WRITE_LIMIT = 25;
+const PG_SCHEMA = 'public';
 
 type RawGeoName = { displayname?: string | null; name?: string | null; slug?: string | null; language?: string | null };
 
@@ -38,7 +39,7 @@ function mapGeoEntity(id: string | null, code: string | null, fictive: boolean |
 // due to no equivalent in the view: Version, Macroregion, AvailableNeighborhoods,
 // ImmoweltLegacyMappings, LogicImmoLegacyMapping, NeighbouringGeoLevels, SelogerLegacyMapping,
 // SurroundingMunicipalitiesIds, ttl, UpdateDate.
-function mapRowToGeo(row: Record<string, any>): Partial<Geo> {
+function mapRowGeoFull(row: Record<string, any>): Partial<Geo> {
     return {
         AvivGeoId: row.avivgeoid,
         Code: row.mainpostalcode ?? undefined,
@@ -51,15 +52,18 @@ function mapRowToGeo(row: Record<string, any>): Partial<Geo> {
         Region: mapGeoEntity(row.regionid, row.regioncode, row.regionfictive, row.regionnames),
         Province: mapGeoEntity(row.provinceid, row.provincecode, row.provincefictive, row.provincenames),
         Municipality: mapGeoEntity(row.municipalityid, row.municipalitycode, row.municipalityfictive, row.municipalitynames),
+        AvailableNeighborhoods: row.neighbouringgeos,
+        Version: "V1",
     };
 }
 
 // geolineage -> DynamoDB fallback item consumed by the cm-consumer lambda (see markGeoAsDeleted
 // in cm-consumer/adapters/geo-materialized-view-dynamodb.ts) : AvivGeoId + list of fallbacks.
-function mapRowToGeoLineageFallback(row: Record<string, any>): { AvivGeoId: string; Fallbacks: DeletedFallbackStructure[] } {
+function mapRowGeoLineage(row: Record<string, any>): GeoLineageFallbackItem {
     return {
         AvivGeoId: row.oldid,
         Fallbacks: row.fallbacks ?? [],
+        Version: "V1", // Added to maintain consistency with the Geo model, even though it's not used in the cm-consumer.
     };
 }
 
@@ -148,7 +152,7 @@ async function writeBatchToDynamoDB(
 
 type BackupCursorToDynamoDbOptions<T> = {
     // Used in logs and to derive the SQL cursor name, to distinguish this backup from the others sharing this code path.
-    taskLabel: string;
+    tableName: string;
     dynamoTableNameEnvVar: string;
     declareCursorSql: (schema: string) => string;
     mapRow: (row: Record<string, any>) => T;
@@ -159,7 +163,7 @@ type BackupCursorToDynamoDbOptions<T> = {
 async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
     options: BackupCursorToDynamoDbOptions<T>
 ): Promise<void> {
-    const { taskLabel, dynamoTableNameEnvVar, declareCursorSql, mapRow } = options;
+    const { tableName: taskLabel, dynamoTableNameEnvVar, declareCursorSql, mapRow } = options;
     const cursorName = `${taskLabel}_cursor`;
 
     logger.info(`[ECS Task] Starting bulk backup of ${taskLabel} to DynamoDB...`);
@@ -167,18 +171,13 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
     const apisecrets = await getClassifiedApiSecret(process.env.GEO_DB_SECRET_ID || '');
 
     const AWS_REGION = process.env.AWS_REGION || 'eu-west-1';
-    const PG_HOST = apisecrets.DbHostWriter;
-    const PG_PORT = apisecrets.DbPort;
-    const PG_DATABASE = apisecrets.DbMainDatabase;
-    const PG_USER = apisecrets.DbUsername;
-    const PG_PASSWORD = apisecrets.DbPassword;
-    const PG_SCHEMA = 'public';
+
     const DYNAMODB_TABLE_NAME = process.env[dynamoTableNameEnvVar];
     const FETCH_BATCH_SIZE = Number(process.env.GEO_DYNAMODB_FETCH_BATCH_SIZE || '1000');
     const WRITE_CONCURRENCY = Number(process.env.GEO_DYNAMODB_WRITE_CONCURRENCY || '20');
 
-    if (!PG_HOST || !PG_DATABASE || !PG_USER || !PG_PASSWORD || !DYNAMODB_TABLE_NAME) {
-        throw new Error('[ECS Task] ERROR: Missing PostgreSQL or DynamoDB variables.');
+    if (!DYNAMODB_TABLE_NAME) {
+        throw new Error(`[ECS Task] ERROR: ${dynamoTableNameEnvVar} environment variable is not set.`);
     }
 
     logger.info(`[ECS Task] DynamoDB backup configuration (${taskLabel})`, {
@@ -190,11 +189,11 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
     });
 
     const pgClient = new PgClient({
-        host: PG_HOST,
-        port: Number(PG_PORT),
-        database: PG_DATABASE,
-        user: PG_USER,
-        password: PG_PASSWORD,
+        host: apisecrets.DbHostWriter,
+        port: Number(apisecrets.DbPort),
+        database: apisecrets.DbMainDatabase,
+        user: apisecrets.DbUsername,
+        password: apisecrets.DbPassword,
     });
     await pgClient.connect();
     logger.info('[ECS Task] PostgreSQL connection established.');
@@ -252,11 +251,11 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
     }
 }
 
-export async function  processMassiveSqlToDynamoDB(): Promise<void> {
+export async function processMassiveSqlToDynamoDB(): Promise<void> {
     return backupPostgresCursorToDynamoDB({
-        taskLabel: 'geo_full',
+        tableName: 'v_geo_full',
         dynamoTableNameEnvVar: 'GEO_DYNAMODB_TABLE_NAME',
-        mapRow: mapRowToGeo,
+        mapRow: mapRowGeoFull,
         declareCursorSql: (schema) => `
       SELECT
             avivgeoid, mainpostalcode, countrycode, fictive, level, postalcodes, names,
@@ -271,9 +270,9 @@ export async function  processMassiveSqlToDynamoDB(): Promise<void> {
 
 export async function processGeoLineageFallbacksToDynamoDB(): Promise<void> {
     return backupPostgresCursorToDynamoDB({
-        taskLabel: 'geo_lineage',
+        tableName: 'geolineage',
         dynamoTableNameEnvVar: 'GEO_LINEAGE_DYNAMODB_TABLE_NAME',
-        mapRow: mapRowToGeoLineageFallback,
+        mapRow: mapRowGeoLineage,
         declareCursorSql: (schema) => `
       SELECT oldid,
              json_agg(jsonb_build_object('ancestor_id', g.oldid, 'descendant_id', g.newid)) AS fallbacks
