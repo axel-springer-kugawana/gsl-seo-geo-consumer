@@ -194,7 +194,7 @@ export async function processMassiveSqlToDynamoDB() {
       DECLARE geo_full_cursor CURSOR FOR
       SELECT ${GEO_ROW_COLUMNS.join(', ')}
       FROM ${PG_SCHEMA}.v_geo_full
-      LIMIT 1000;
+      LIMIT 10000000;
     `);
     logger.info('[ECS Task] Curseur geo_full_cursor déclaré, début de la lecture par lots.');
 
