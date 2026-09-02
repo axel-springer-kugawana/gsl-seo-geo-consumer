@@ -24,19 +24,26 @@ export const getSecretsAsString = async (secretName: string): Promise<string> =>
   await getSecretValue(secretName)
 
 
-export const getClassifiedApiSecret = async (secretName: string) => {
-  const secretValue = await getSecretValue(secretName)
+export type GeoSSOTSecret = {
+  DbPort: number;
+  DbHostWriter: string;
+  DbUsername: string;
+  DbPassword: string;
+  DbMainDatabase: string;
+  GeoPlaceApiKey: string;
+  GeoPlaceApiUrl: string;
+};
 
-  
-  const secret =  JSON.parse(secretValue)  as {
-    DbPort: number;
-    DbHostWriter: string;
-    DbUsername: string;
-    DbPassword: string;
-    DbMainDatabase: string;
-    GeoPlaceApiKey: string;
-    GeoPlaceApiUrl: string;
-  };
+export const getClassifiedApiSecret = async (secretName: string): Promise<GeoSSOTSecret> => {
+  const secrets = await getSecretValue(secretName)
+  const secret = JSON.parse(secrets) as GeoSSOTSecret;
 
+  logger.info('secrets recupérés', {
+    DbHostWriter: secret.DbHostWriter,
+    DbPort: secret.DbPort,
+    DbMainDatabase: secret.DbMainDatabase,
+    DbUsername: secret.DbUsername,
+    DbPassword: '********', // Mask the password for security reasons
+  });
   return secret;
 }

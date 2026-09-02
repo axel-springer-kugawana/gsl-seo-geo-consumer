@@ -1,128 +1,48 @@
-import { DuckDBInstance } from '@duckdb/node-api';
+import { DuckDBInstance, DuckDBConnection } from '@duckdb/node-api';
 import { accessSync, constants } from 'fs';
 import { Client as PgClient } from 'pg';
-import { getClassifiedApiSecret } from "./classified-api-secrets";
+import { getClassifiedApiSecret, type GeoSSOTSecret } from "./classified-api-secrets";
 import { logger } from "@shared/cross-cutting/logger";
+
+
+const MANAGED_PREFIX_IDS = [
+  'AD02', 'AD03', 'AD04', 'AD05', 'AD06', 'AD07', 'AD08', 'AD09',
+  'NBH1', 'NBH2', 'NBH3', 'STRTFR', 'HONUFR'
+];
+// Municipalities forced to fictive=true (mergers/splits not reflected in FICTIVE on the source side)
+const FAKE_PROVINCES_IDS = [
+  'AD06DE144', 'AD06DE307', 'AD06DE155', 'AD06DE160', 'AD06DE161', 'AD06DE162', 'AD06DE163',
+  'AD06DE164', 'AD06DE165', 'AD06DE166', 'AD06DE167', 'AD06DE168', 'AD06DE169', 'AD06DE180',
+  'AD06DE186', 'AD06DE193', 'AD06DE194', 'AD06DE197', 'AD06DE198', 'AD06DE201', 'AD06DE205',
+  'AD06DE218', 'AD06DE224', 'AD06DE225', 'AD06DE226', 'AD06DE247', 'AD06DE248', 'AD06DE249',
+  'AD06DE259', 'AD06DE260', 'AD06DE261', 'AD06DE269', 'AD06DE270', 'AD06DE271', 'AD06DE272',
+  'AD06DE282', 'AD06DE283', 'AD06DE284', 'AD06DE285', 'AD06DE286', 'AD06DE294', 'AD06DE295',
+  'AD06DE296', 'AD06DE306', 'AD06DE308', 'AD06DE309', 'AD06DE326', 'AD06DE327', 'AD06DE328',
+  'AD06DE329', 'AD06DE330', 'AD06DE345', 'AD06DE346', 'AD06DE353', 'AD06DE358', 'AD06DE363',
+  'AD06DE366', 'AD06DE367', 'AD06DE368', 'AD06DE380', 'AD06DE381', 'AD06DE382', 'AD06DE383',
+  'AD06DE384', 'AD06DE385', 'AD06DE16', 'AD06DE17', 'AD06DE18', 'AD06DE19', 'AD06DE46',
+  'AD06DE47', 'AD06DE48', 'AD06DE49', 'AD06DE50', 'AD06DE63', 'AD06DE64', 'AD06DE65',
+  'AD06DE72', 'AD06DE66', 'AD06DE67', 'AD06DE68', 'AD06DE69', 'AD06DE70', 'AD06DE71',
+  'AD06DE73', 'AD06DE74', 'AD06DE80', 'AD06DE81', 'AD06DE82', 'AD06DE91', 'AD06DE92',
+  'AD06DE93', 'AD06DE1', 'AD06DE2', 'AD06DE3', 'AD06DE4', 'AD06DE99', 'AD06DE106',
+  'AD06DE107', 'AD06DE108', 'AD06DE109', 'AD06DE110', 'AD06DE118', 'AD06DE119', 'AD06DE120',
+  'AD06DE121', 'AD06DE137'
+];
+const PG_SCHEMA = 'public';
 
 export async function processMassiveParquetToPostgres() {
 
   logger.info('[ECS Task] Démarrage du traitement massif Parquet vers PostgreSQL...');
+  const secrets = await getClassifiedApiSecret(process.env.GEO_DB_SECRET_ID || '');
 
-  logger.info('DB secrets..', {
-    GEO_DB_SECRET_ID: process.env.GEO_DB_SECRET_ID,
-  });
-
-  const apisecrets = await getClassifiedApiSecret(process.env.GEO_DB_SECRET_ID || '');
-
-  logger.info('secrets recupérés', {
-    DbHostWriter: apisecrets.DbHostWriter,
-    DbPort: apisecrets.DbPort,
-    DbMainDatabase: apisecrets.DbMainDatabase,
-    DbUsername: apisecrets.DbUsername,
-    DbPassword: '********', // Mask the password for security reasons
-  });
-
-  const AWS_REGION = process.env.AWS_REGION || 'eu-west-1';
-  const PG_HOST = apisecrets.DbHostWriter;
-  const PG_PORT = apisecrets.DbPort;
-  const PG_DATABASE = apisecrets.DbMainDatabase;
-  const PG_USER = apisecrets.DbUsername;
-  const PG_PASSWORD = apisecrets.DbPassword;
-  const PG_SCHEMA = 'public';
-  const bucket = process.env.GEO_MANAGEMENT_SYNC_BUCKET;
-  const bucketKey = process.env.GEO_MANAGEMENT_BUCKET_KEY;
-
-  // Set inside the try block once the Postgres ATTACH connection string is built, reused to
-  // DETACH/re-ATTACH and force DuckDB to refresh its cached list of Postgres tables.
-  let escapedPgConnString = '';
-
-  const MANAGED_PREFIX_IDS = [
-    'AD02', 'AD03', 'AD04', 'AD05', 'AD06', 'AD07', 'AD08', 'AD09',
-    'NBH1', 'NBH2', 'NBH3', 'STRTFR', 'HONUFR'
-  ];
-  // Municipalities forced to fictive=true (mergers/splits not reflected in FICTIVE on the source side)
-  const FAKE_PROVINCES_IDS = [
-    'AD06DE144', 'AD06DE307', 'AD06DE155', 'AD06DE160', 'AD06DE161', 'AD06DE162', 'AD06DE163',
-    'AD06DE164', 'AD06DE165', 'AD06DE166', 'AD06DE167', 'AD06DE168', 'AD06DE169', 'AD06DE180',
-    'AD06DE186', 'AD06DE193', 'AD06DE194', 'AD06DE197', 'AD06DE198', 'AD06DE201', 'AD06DE205',
-    'AD06DE218', 'AD06DE224', 'AD06DE225', 'AD06DE226', 'AD06DE247', 'AD06DE248', 'AD06DE249',
-    'AD06DE259', 'AD06DE260', 'AD06DE261', 'AD06DE269', 'AD06DE270', 'AD06DE271', 'AD06DE272',
-    'AD06DE282', 'AD06DE283', 'AD06DE284', 'AD06DE285', 'AD06DE286', 'AD06DE294', 'AD06DE295',
-    'AD06DE296', 'AD06DE306', 'AD06DE308', 'AD06DE309', 'AD06DE326', 'AD06DE327', 'AD06DE328',
-    'AD06DE329', 'AD06DE330', 'AD06DE345', 'AD06DE346', 'AD06DE353', 'AD06DE358', 'AD06DE363',
-    'AD06DE366', 'AD06DE367', 'AD06DE368', 'AD06DE380', 'AD06DE381', 'AD06DE382', 'AD06DE383',
-    'AD06DE384', 'AD06DE385', 'AD06DE16', 'AD06DE17', 'AD06DE18', 'AD06DE19', 'AD06DE46',
-    'AD06DE47', 'AD06DE48', 'AD06DE49', 'AD06DE50', 'AD06DE63', 'AD06DE64', 'AD06DE65',
-    'AD06DE72', 'AD06DE66', 'AD06DE67', 'AD06DE68', 'AD06DE69', 'AD06DE70', 'AD06DE71',
-    'AD06DE73', 'AD06DE74', 'AD06DE80', 'AD06DE81', 'AD06DE82', 'AD06DE91', 'AD06DE92',
-    'AD06DE93', 'AD06DE1', 'AD06DE2', 'AD06DE3', 'AD06DE4', 'AD06DE99', 'AD06DE106',
-    'AD06DE107', 'AD06DE108', 'AD06DE109', 'AD06DE110', 'AD06DE118', 'AD06DE119', 'AD06DE120',
-    'AD06DE121', 'AD06DE137'
-  ];
-
-  if (!PG_HOST || !PG_DATABASE || !PG_USER || !PG_PASSWORD || !bucket || !bucketKey) {
-    throw new Error('[ECS Task] ERREUR: Variables PostgreSQL ou chemin S3 manquants.');
-  }
-
-  logger.info('[ECS Task] Initialisation de DuckDB via @duckdb/node-api...');
-
-  // Création de l'instance et de la connexion asynchrone native
-  const duckDbExtensionDirectory = process.env.DUCKDB_EXTENSION_DIRECTORY ?? '/opt/duckdb/extensions';
-  const duckDbOptions = { extension_directory: duckDbExtensionDirectory };
-  logger.info('[ECS Task] DuckDB extension directory: ' + duckDbExtensionDirectory);
-  const instance = await DuckDBInstance.create(':memory:', duckDbOptions);
-  const conn = await instance.connect();
+  const duckDBClient = await createDuckDBClient(secrets);
+  const duckDBConnection = await setupDuckDBConnection(duckDBClient, secrets);
 
   // DuckDB's postgres extension only supports ALTER TABLE ADD COLUMN and has no TRUNCATE support,
   // so DDL statements (CREATE/TRUNCATE/constraints) go through a real Postgres client instead.
-  const pgClient = new PgClient({
-    host: PG_HOST,
-    port: Number(PG_PORT),
-    database: PG_DATABASE,
-    user: PG_USER,
-    password: PG_PASSWORD,
-  });
+  const pgClient = await createPgClient(secrets);
   await pgClient.connect();
-
   try {
-    logger.info('[ECS Task] Chargement des extensions (httpfs, postgres, json)...');
-    await conn.run('LOAD aws; LOAD httpfs; LOAD postgres; LOAD json;');
-
-    // Caps DuckDB's own footprint below the Fargate task memory limit and lets it
-    // spill to the ephemeral storage disk instead of getting OOM-killed by the container.
-    const duckDbMemoryLimit = process.env.DUCKDB_MEMORY_LIMIT || '4GB';
-    const duckDbTempDirectory = process.env.DUCKDB_TEMP_DIRECTORY || '/tmp/duckdb_spill';
-    logger.info(`[ECS Task] DuckDB memory_limit=${duckDbMemoryLimit}, temp_directory=${duckDbTempDirectory}`);
-    await conn.run(`SET memory_limit='${duckDbMemoryLimit}';`);
-    await conn.run(`SET temp_directory='${duckDbTempDirectory}';`);
-    // Avoids buffering the whole result set to preserve row order, which isn't needed for bulk inserts.
-    await conn.run(`SET preserve_insertion_order=false;`);
-
-    // Configuration S3
-    const caCertFile = process.env.SSL_CERT_FILE || '/etc/ssl/certs/ca-certificates.crt';
-    accessSync(caCertFile, constants.R_OK);
-    logger.info('[ECS Task] CA certificate file: ' + caCertFile);
-    await conn.run(`SET ca_cert_file='${caCertFile}';`);
-    await conn.run(`SET s3_region='${AWS_REGION}';`);
-
-    // Resolves credentials from env vars, ~/.aws/credentials or the ECS task role, in that order.
-    logger.info('[ECS Task] Chargement des credentials AWS via load_aws_credentials()...');
-    await conn.run(`CALL load_aws_credentials();`);
-
-    // Connexion à PostgreSQL
-    logger.info(`[ECS Task] Connexion à PostgreSQL (${PG_HOST}:${PG_PORT}/${PG_DATABASE})...`);
-    const quoteConninfoValue = (value: string | number) =>
-      `'${String(value).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
-    const pgConnString = [
-      `dbname=${quoteConninfoValue(PG_DATABASE)}`,
-      `user=${quoteConninfoValue(PG_USER)}`,
-      `password=${quoteConninfoValue(PG_PASSWORD)}`,
-      `host=${quoteConninfoValue(PG_HOST)}`,
-      `port=${quoteConninfoValue(PG_PORT)}`,
-    ].join(' ');
-    escapedPgConnString = pgConnString.replace(/'/g, "''");
-    await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
-
     console.log('store geo names start ...');
     await storeGeoNames();
     console.log('store geo names done...');
@@ -144,16 +64,14 @@ export async function processMassiveParquetToPostgres() {
     logger.error('[ECS Task] ERREUR CRITIQUE :' + error);
     throw error;
   } finally {
-    conn.closeSync();
-    instance.closeSync();
+    duckDBConnection.closeSync();
+    duckDBClient.closeSync();
     await pgClient.end();
   }
 
   async function storeGeoLineage() {
     // Implementation for storing geo lineage
-    const S3_PARQUET_PATH = bucket && bucketKey
-      ? `s3://${bucket}/${bucketKey}/lineage/*.parquet`
-      : undefined;
+    const S3_PARQUET_PATH = getS3ParquetPath('lineage');
 
     // STEP 1: Temporary UNLOGGED table
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
@@ -191,9 +109,8 @@ export async function processMassiveParquetToPostgres() {
 
     // postgres_clear_cache() doesn't exist in this extension version: force the catalog
     // refresh by detaching/re-attaching the database so the staging table becomes visible.
-    await conn.run('DETACH postgres_db;');
-    await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
-    await conn.run(`
+    await postgresClearCache(duckDBConnection, secrets);
+    await duckDBConnection.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoLineage_staging (newId, oldId,  key, coefficient)
       SELECT 
         NEW_ID AS newId,
@@ -205,7 +122,7 @@ export async function processMassiveParquetToPostgres() {
 
     // STEP 3: Insert all rows (the target table has just been emptied)
     logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
-    await conn.run(`
+    await duckDBConnection.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoLineage (newId, oldId,  key, coefficient)
       SELECT newId, oldId, key, coefficient
       FROM postgres_db.${PG_SCHEMA}.geoLineage_staging;
@@ -222,8 +139,20 @@ export async function processMassiveParquetToPostgres() {
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoLineage_staging;`);
   }
 
+
+  function getS3ParquetPath(path: string): string | undefined {
+
+    const bucket = process.env.S3_BUCKET;
+    const bucketKey = process.env.S3_BUCKET_KEY;
+
+
+    return bucket && bucketKey
+      ? `s3://${bucket}/${bucketKey}/${path}/*.parquet`
+      : undefined;
+  }
+
   async function storeGeoNames() {
-    const S3_PARQUET_PATH = `s3://${bucket}/${bucketKey}/name/*.parquet`;
+    const S3_PARQUET_PATH = getS3ParquetPath('name');
 
     // STEP 1: Temporary UNLOGGED table
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
@@ -242,15 +171,13 @@ export async function processMassiveParquetToPostgres() {
     `);
 
     await pgClient.query(`CREATE TABLE IF NOT EXISTS ${PG_SCHEMA}.geoName
-(
-    avivGeoId character varying NOT NULL,
-    language character varying ,
-    displayName character varying  ,
-    name character varying ,
-    slug character varying ,
-    key character varying,
-        rank integer
-);
+              (avivGeoId character varying NOT NULL,
+              language character varying ,
+              displayName character varying  ,
+              name character varying ,
+              slug character varying ,
+              key character varying,
+              rank integer);
 `);
 
     // Drop the PK and empty the table without dropping it, to speed up the bulk insert that follows.
@@ -264,11 +191,8 @@ export async function processMassiveParquetToPostgres() {
       .map((prefix) => `FEATURE_ID LIKE '${prefix}%'`)
       .join(' OR ');
 
-    // postgres_clear_cache() doesn't exist in this extension version: force the catalog
-    // refresh by detaching/re-attaching the database so the staging table becomes visible.
-    await conn.run('DETACH postgres_db;');
-    await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
-    await conn.run(`
+    await postgresClearCache(duckDBConnection, secrets);
+    await duckDBConnection.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoName_staging (avivGeoId, language, displayName, name, slug, key, rank)
       SELECT 
         FEATURE_ID AS avivGeoId,
@@ -289,7 +213,7 @@ export async function processMassiveParquetToPostgres() {
 
     // STEP 3: Insert all rows (the target table has just been emptied)
     logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
-    await conn.run(`
+    await duckDBConnection.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoName (avivGeoId, language, displayName, name, slug, key, rank)
       SELECT avivGeoId, language, displayName, name, slug, key, rank
       FROM postgres_db.${PG_SCHEMA}.geoName_staging;
@@ -330,8 +254,8 @@ export async function processMassiveParquetToPostgres() {
   }
 
   async function storeGeoFeature(): Promise<void> {
-    // Implementation for storing geo lineage
-    const S3_PARQUET_PATH = `s3://${bucket}/${bucketKey}/feature/*.parquet`;
+    const S3_PARQUET_PATH = getS3ParquetPath('feature');
+
 
     // STEP 1: Temporary UNLOGGED table
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
@@ -352,7 +276,8 @@ export async function processMassiveParquetToPostgres() {
     countryId character varying,
     regionId character varying,
     provinceId character varying,
-    municipalityId character varying
+    municipalityId character varying,
+    neighbors text[],
 );
     `);
 
@@ -371,7 +296,8 @@ export async function processMassiveParquetToPostgres() {
     countryId character varying,
     regionId character varying,
     provinceId character varying,
-    municipalityId character varying
+    municipalityId character varying,
+    neighbors text[]
 );
 `);
 
@@ -388,17 +314,16 @@ export async function processMassiveParquetToPostgres() {
       .map((id) => `'${id}'`)
       .join(', ');
 
-    // postgres_clear_cache() doesn't exist in this extension version: force the catalog
-    // refresh by detaching/re-attaching the database so the staging table becomes visible.
-    await conn.run('DETACH postgres_db;');
-    await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
-    await conn.run(`
+    await postgresClearCache(duckDBConnection, secrets);
+
+    await duckDBConnection.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature_staging (avivGeoId, type, mainPostalcode, countryCode, fictive, level, postalCodes, parents
       , population
       , countryId
       , regionId
       , provinceId
-      , municipalityId)
+      , municipalityId,
+      neighbors)
       SELECT 
         ID AS avivGeoId,
         TYPE_LABEL AS type,
@@ -406,20 +331,21 @@ export async function processMassiveParquetToPostgres() {
         COUNTRY_CODE AS countryCode,
         CASE WHEN ID IN (${fictiveMunicipalityIdsList}) THEN true ELSE FICTIVE END AS fictive,
         TYPE_LEVEL AS level,
-        CAST(POSTAL_CODES AS JSON)::VARCHAR[] AS postalCodes,
-        CAST(PARENTS AS JSON)::VARCHAR[] AS parents,
+        POSTAL_CODES::JSON::VARCHAR[] AS postalCodes,
+        PARENTS::JSON::VARCHAR[] AS parents,
         POPULATION AS population,
         (AD02->>0)::VARCHAR AS countryId,
         (AD04->>0)::VARCHAR AS regionId,
         (AD06->>0)::VARCHAR AS provinceId,
-        (AD08->>0)::VARCHAR AS municipalityId
+        (AD08->>0)::VARCHAR AS municipalityId,
+        NEIGHBORS::JSON::VARCHAR[] AS neighbors
       FROM read_parquet('${S3_PARQUET_PATH}')
       WHERE (${featureIdPrefixFilter})
      `);
 
     // STEP 3: Insert all rows (the target table has just been emptied)
     logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
-    await conn.run(`
+    await duckDBConnection.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature (avivGeoId, type, mainPostalcode, countryCode, fictive, level
       , postalCodes, parents, population, countryId,
       regionId, provinceId, municipalityId)
@@ -478,10 +404,6 @@ export async function processMassiveParquetToPostgres() {
           WITH DATA;
         `);
       }
-
-      // Set the owner
-      logger.info('[ECS Task] Définition du propriétaire de la MV...');
-      await pgClient.query(`ALTER TABLE IF EXISTS ${PG_SCHEMA}.mv_geofeature_names OWNER TO ${PG_USER};`);
 
       // Create the unique index if it doesn't already exist
       logger.info('[ECS Task] Création de l\'index unique...');
@@ -557,4 +479,89 @@ export async function processMassiveParquetToPostgres() {
       throw error;
     }
   }
+}
+
+async function createDuckDBClient(secrets: GeoSSOTSecret): Promise<DuckDBInstance> {
+  const bucket = process.env.GEO_MANAGEMENT_SYNC_BUCKET;
+  const bucketKey = process.env.GEO_MANAGEMENT_BUCKET_KEY;
+
+  if (!secrets.DbHostWriter || !secrets.DbMainDatabase || !secrets.DbUsername || !secrets.DbPassword || !bucket || !bucketKey) {
+    throw new Error('[ECS Task] ERREUR: Variables PostgreSQL ou chemin S3 manquants.');
+  }
+
+  logger.info('[ECS Task] Initialisation de DuckDB via @duckdb/node-api...');
+
+  // Création de l'instance et de la connexion asynchrone native
+  const duckDbExtensionDirectory = process.env.DUCKDB_EXTENSION_DIRECTORY ?? '/opt/duckdb/extensions';
+  const duckDbOptions = { extension_directory: duckDbExtensionDirectory };
+  logger.info('[ECS Task] DuckDB extension directory: ' + duckDbExtensionDirectory);
+  const instance = await DuckDBInstance.create(':memory:', duckDbOptions);
+  return instance;
+}
+
+// Refreshes DuckDB's catalog of the attached Postgres database, so that newly created tables become visible to DuckDB.
+async function postgresClearCache(conn: DuckDBConnection, secrets: GeoSSOTSecret) {
+  const escapedPgConnString = createPgConnectionString(secrets);
+  await conn.run('DETACH postgres_db;');
+  await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
+}
+
+async function setupDuckDBConnection(instance: DuckDBInstance, secrets: GeoSSOTSecret): Promise<DuckDBConnection> {
+  const AWS_REGION = process.env.AWS_REGION || 'eu-west-1';
+
+  const conn = await instance.connect();
+
+  logger.info('[ECS Task] Chargement des extensions (httpfs, postgres, json)...');
+  await conn.run('LOAD aws; LOAD httpfs; LOAD postgres; LOAD json;');
+
+  // Caps DuckDB's own footprint below the Fargate task memory limit and lets it
+  // spill to the ephemeral storage disk instead of getting OOM-killed by the container.
+  const duckDbMemoryLimit = process.env.DUCKDB_MEMORY_LIMIT || '4GB';
+  const duckDbTempDirectory = process.env.DUCKDB_TEMP_DIRECTORY || '/tmp/duckdb_spill';
+  logger.info(`[ECS Task] DuckDB memory_limit=${duckDbMemoryLimit}, temp_directory=${duckDbTempDirectory}`);
+  await conn.run(`SET memory_limit='${duckDbMemoryLimit}';`);
+  await conn.run(`SET temp_directory='${duckDbTempDirectory}';`);
+  // Avoids buffering the whole result set to preserve row order, which isn't needed for bulk inserts.
+  await conn.run(`SET preserve_insertion_order=false;`);
+
+  // Configuration S3
+  const caCertFile = process.env.SSL_CERT_FILE || '/etc/ssl/certs/ca-certificates.crt';
+  accessSync(caCertFile, constants.R_OK);
+  logger.info('[ECS Task] CA certificate file: ' + caCertFile);
+  await conn.run(`SET ca_cert_file='${caCertFile}';`);
+  await conn.run(`SET s3_region='${AWS_REGION}';`);
+
+  // Resolves credentials from env vars, ~/.aws/credentials or the ECS task role, in that order.
+  logger.info('[ECS Task] Chargement des credentials AWS via load_aws_credentials()...');
+  await conn.run(`CALL load_aws_credentials();`);
+
+  // Connexion à PostgreSQL
+  logger.info(`[ECS Task] Connexion à PostgreSQL (${secrets.DbHostWriter}:${secrets.DbPort}/${secrets.DbMainDatabase})...`);
+  const escapedPgConnString = createPgConnectionString(secrets);
+  await conn.run(`ATTACH '${escapedPgConnString}' AS postgres_db (TYPE POSTGRES);`);
+
+  return conn;
+}
+
+function createPgConnectionString(secrets: GeoSSOTSecret) {
+  const quoteConninfoValue = (value: string | number) => `'${String(value).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+  const pgConnString = [
+    `dbname=${quoteConninfoValue(secrets.DbMainDatabase)}`,
+    `user=${quoteConninfoValue(secrets.DbUsername)}`,
+    `password=${quoteConninfoValue(secrets.DbPassword)}`,
+    `host=${quoteConninfoValue(secrets.DbHostWriter)}`,
+    `port=${quoteConninfoValue(secrets.DbPort)}`,
+  ].join(' ');
+  const escapedPgConnString = pgConnString.replace(/'/g, "''");
+  return escapedPgConnString;
+}
+function createPgClient(secrets: GeoSSOTSecret): Promise<PgClient> {
+  const pgClient = new PgClient({
+    host: secrets.DbHostWriter,
+    port: Number(secrets.DbPort),
+    database: secrets.DbMainDatabase,
+    user: secrets.DbUsername,
+    password: secrets.DbPassword,
+  });
+  return Promise.resolve(pgClient);
 }
