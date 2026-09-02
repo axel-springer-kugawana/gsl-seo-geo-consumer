@@ -99,3 +99,11 @@ variable "geo_management_bucket_key" {
   description = "geo management bucket path"
   type        = string
 }
+
+variable "geo_dynamodb_table" {
+  description = "DynamoDB table backed up into by processMassiveSqlToDynamoDB (reuses the ssot-geo-updated table)"
+  type = object({
+    arn  = string
+    name = string
+  })
+}

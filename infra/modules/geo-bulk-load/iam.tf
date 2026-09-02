@@ -95,6 +95,16 @@ data "aws_iam_policy_document" "task" {
       ]
     }
   }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "dynamodb:BatchWriteItem",
+    ]
+    resources = [
+      var.geo_dynamodb_table.arn
+    ]
+  }
 }
 
 resource "aws_iam_policy" "task" {

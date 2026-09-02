@@ -138,6 +138,7 @@ resource "aws_ecs_task_definition" "geo_bulk_load" {
         { name = "GEO_MANAGEMENT_BUCKET_KEY", value = var.geo_management_bucket_key },
         { name = "DUCKDB_MEMORY_LIMIT", value = var.duckdb_memory_limit },
         { name = "DUCKDB_TEMP_DIRECTORY", value = "/tmp/duckdb_spill" },
+        { name = "GEO_DYNAMODB_TABLE_NAME", value = var.geo_dynamodb_table.name },
       ]
 
       logConfiguration = {

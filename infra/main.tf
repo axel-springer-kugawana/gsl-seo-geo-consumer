@@ -74,4 +74,9 @@ module "geo_bulk_load" {
   environment = var.environment
   geo_management_sync_bucket = var.geo_management_sync_bucket
   geo_management_bucket_key = var.geo_management_bucket_key
+
+  geo_dynamodb_table = {
+    arn  = module.dynamodb-ssot-geo-updated.properties.dynamodb_arn
+    name = module.dynamodb-ssot-geo-updated.properties.dynamodb_table_name
+  }
 }
