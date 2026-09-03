@@ -9,9 +9,11 @@ const PG_SCHEMA = 'public';
 export type GeoFeatureExtra = {
   type?: string | null;
   parentIds?: string[];
+  streetIds?: string[];
 };
 
 let cachedPgClient: PgClient | null = null;
+let geoFeatureStreetColumnsEnsured = false;
 
 // Reused across warm lambda invocations; reconnects lazily if the previous connection dropped.
 async function getPgClient(): Promise<PgClient> {
@@ -33,9 +35,22 @@ async function getPgClient(): Promise<PgClient> {
   return client;
 }
 
+async function ensureGeoFeatureStreetColumns(client: PgClient): Promise<void> {
+  if (geoFeatureStreetColumnsEnsured) {
+    return;
+  }
+
+  await client.query(`
+    ALTER TABLE ${PG_SCHEMA}.geofeature
+      ADD COLUMN IF NOT EXISTS streetids text[];
+  `);
+  geoFeatureStreetColumnsEnsured = true;
+}
+
 // Mirrors the DynamoDB write with an upsert on the geoFeature table used by the geo-bulk-load pipeline.
 export async function persitsInSQL(geoData: Geo, extra?: GeoFeatureExtra): Promise<void> {
   const client = await getPgClient();
+  await ensureGeoFeatureStreetColumns(client);
 
   logger.info("Upserting geoFeature in PostgreSQL", { geoid: geoData.AvivGeoId });
 
@@ -43,8 +58,8 @@ export async function persitsInSQL(geoData: Geo, extra?: GeoFeatureExtra): Promi
     `
       INSERT INTO ${PG_SCHEMA}.geofeature (
         avivgeoid, type, mainpostalcode, countrycode, fictive, level,
-        postalcodes, parents, countryid, regionid, provinceid, municipalityid, neighbors
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+        postalcodes, parents, countryid, regionid, provinceid, municipalityid, streetids, neighbors
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
       ON CONFLICT (avivgeoid) DO UPDATE SET
         type = EXCLUDED.type,
         mainpostalcode = EXCLUDED.mainpostalcode,
@@ -57,6 +72,7 @@ export async function persitsInSQL(geoData: Geo, extra?: GeoFeatureExtra): Promi
         regionid = EXCLUDED.regionid,
         provinceid = EXCLUDED.provinceid,
         municipalityid = EXCLUDED.municipalityid,
+        streetids = EXCLUDED.streetids,
         neighbors = EXCLUDED.neighbors;
     `,
     [
@@ -72,6 +88,7 @@ export async function persitsInSQL(geoData: Geo, extra?: GeoFeatureExtra): Promi
       geoData.Region?.AvivGeoId ?? null,
       geoData.Province?.AvivGeoId ?? null,
       geoData.Municipality?.AvivGeoId ?? null,
+      extra?.streetIds ?? geoData.StreetIds ?? null,
       geoData.AvailableNeighborhoods ?? null,
     ]
   );

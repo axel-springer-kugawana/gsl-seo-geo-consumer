@@ -101,7 +101,7 @@ variable "geo_management_bucket_key" {
 }
 
 variable "geo_dynamodb_table" {
-  description = "DynamoDB table backed up into by processMassiveSqlToDynamoDB (reuses the ssot-geo-updated table)"
+  description = "DynamoDB table backed up into by processMassiveSqlToDynamoDB (reuses the ssot-geo-feature table)"
   type = object({
     arn  = string
     name = string
@@ -117,6 +117,6 @@ variable "geo_lineage_dynamodb_table" {
 }
 
 variable "geo_dynamodb_schema_version" {
-  description = "Static sort key value (\"V1\", \"V2\"...) written to the geo-updated and geo-lineage DynamoDB tables"
+  description = "Static sort key value (\"V1\", \"V2\"...) written to the geo-feature and geo-lineage DynamoDB tables"
   type        = string
 }

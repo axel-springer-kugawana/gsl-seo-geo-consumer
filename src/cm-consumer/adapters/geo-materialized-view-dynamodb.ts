@@ -129,7 +129,7 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
       geoData.Level = response.data.item.level ?? 0;
       geoData.IsFictive = response.data.item.fictive ?? false;
       geoData.Names = mapDtoNames(response.data.item.names ?? {});
-
+      geoData.StreetIds = [];
       geoFeatureExtra = {
         type: response.data.item.type,
         parentIds: (response.data.item.parents ?? []).map((parent) => parent.id).filter((id): id is string => !!id),
@@ -159,8 +159,14 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
           case "city":
             geoData.Municipality = mappedParent;
             break;
+          case "street":
+            geoData.Street = mappedParent;
+            geoData.StreetIds.push(mappedParent.AvivGeoId);
+            break;
         }
       }
+
+      geoFeatureExtra.streetIds = geoData.StreetIds;
     }
 
 
@@ -174,10 +180,10 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
   }
 
   const marshalledData = marshall(geoData, { removeUndefinedValues: true });
-  const tableName = isLocal ? "seo-ssot-classified-fifo" : process.env.MV_UPDATED_TABLE_NAME;
+  const tableName = isLocal ? "seo-ssot-classified-fifo" : process.env.MV_FEATURE_TABLE_NAME;
 
   if (!tableName) {
-    throw new Error("MV_UPDATED_TABLE_NAME environment variable is not set");
+    throw new Error("MV_FEATURE_TABLE_NAME environment variable is not set");
   }
 
   await persitsInDynamoDB(id, marshalledData, tableName, data?.metadata?.updateDate?.toString() ?? Date.now().toString());
@@ -225,10 +231,10 @@ const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, ge
   // Marshall the geodata to DynamoDB format
   const marshalledData = marshall(deletedGeo, { removeUndefinedValues: true });
 
-  const tableName = isLocal ? "seo-ssot-classified-fifo" : process.env.MV_DELETED_TABLE_NAME;
+  const tableName = isLocal ? "seo-ssot-classified-fifo" : process.env.MV_LINEAGE_TABLE_NAME;
 
   if (!tableName) {
-    throw new Error("MV_DELETED_TABLE_NAME environment variable is not set");
+    throw new Error("MV_LINEAGE_TABLE_NAME environment variable is not set");
   }
 
   await persitsInDynamoDB(deleteCommand.id, marshalledData, tableName, deleteCommand.updateDate?.toString() ?? Date.now().toString());
@@ -245,9 +251,9 @@ const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, ge
   const onDayInSeconds = 60 * 60 * 24 * 1;
   const expiryTime = Math.floor(Date.now() / 1000) + onDayInSeconds;
 
-  const updatedTableName = process.env.MV_UPDATED_TABLE_NAME;
+  const updatedTableName = process.env.MV_FEATURE_TABLE_NAME;
   if (!updatedTableName) {
-    throw new Error("MV_UPDATED_TABLE_NAME environment variable is not set");
+    throw new Error("MV_FEATURE_TABLE_NAME environment variable is not set");
   }
 
   const removeGeoFromReferentialResult = await ddbClient.send(new UpdateItemCommand({

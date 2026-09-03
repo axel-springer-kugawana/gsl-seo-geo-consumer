@@ -25,19 +25,19 @@ variable "ssot_name" {
 }
  
 
-variable "updated_dynamodb_arn" {
+variable "feature_dynamodb_arn" {
   type = string
 }
 
-variable "updated_dynamodb_table_name" {
+variable "feature_dynamodb_table_name" {
   type = string
 }
 
-variable "deleted_dynamodb_arn" {
+variable "lineage_dynamodb_arn" {
   type = string
 }
 
-variable "deleted_dynamodb_table_name" {
+variable "lineage_dynamodb_table_name" {
   type = string
 }
 

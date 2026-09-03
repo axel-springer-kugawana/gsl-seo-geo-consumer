@@ -54,6 +54,7 @@ export interface Geo {
   LogicImmoLegacyMapping: LogicImmoLegacyMapping;
   Municipality: GeoEntityBase;
   Street: GeoEntityBase;
+  StreetIds: string[];
   Names: GeoName[];
   NeighbouringGeoLevels: string[];
   PostalCodes: string[];

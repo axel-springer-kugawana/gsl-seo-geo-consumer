@@ -35,6 +35,10 @@ function mapGeoEntity(id: string | null, code: string | null, fictive: boolean |
     };
 }
 
+function firstString(items: string[] | null | undefined): string | null {
+    return items?.[0] ?? null;
+}
+
 // v_geo_full -> shared Geo model (shared/models/geo/1.0.0/geo.ts). Geo fields left unmapped
 // due to no equivalent in the view: Version, Macroregion, AvailableNeighborhoods,
 // ImmoweltLegacyMappings, LogicImmoLegacyMapping, NeighbouringGeoLevels, SelogerLegacyMapping,
@@ -52,7 +56,8 @@ function mapRowGeoFull(row: Record<string, any>): Partial<Geo> {
         Region: mapGeoEntity(row.regionid, row.regioncode, row.regionfictive, row.regionnames),
         Province: mapGeoEntity(row.provinceid, row.provincecode, row.provincefictive, row.provincenames),
         Municipality: mapGeoEntity(row.municipalityid, row.municipalitycode, row.municipalityfictive, row.municipalitynames),
-        Street: mapGeoEntity(row.streetid, row.streetcode, row.streetfictive, row.streetnames),
+        Street: mapGeoEntity(firstString(row.streetids), row.streetcode, row.streetfictive, row.streetnames),
+        StreetIds: row.streetids ?? undefined,
         AvailableNeighborhoods: row.neighbouringgeos,
         Version: "V1",
     };
@@ -269,7 +274,7 @@ export async function processMassiveSqlToDynamoDB(): Promise<void> {
             regionid, regioncode, regionfictive, regionnames,
             provinceid, provincecode, provincefictive, provincenames,
             municipalityid, municipalitycode, municipalityfictive, municipalitynames,
-            streetid, streetcode, streetfictive, streetlevel, streetnames
+            streetcode, streetfictive, streetlevel, streetnames, streetids
       FROM ${schema}.v_geo_full;
     `,
     });

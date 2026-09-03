@@ -15,7 +15,7 @@ Batch ECS Fargate task that rebuilds the geo "source of truth" in PostgreSQL fro
    - For each of `geoName`, `geoLineage`, `geoFeature`: creates an `UNLOGGED` staging table, bulk-copies rows filtered by `MANAGED_PREFIX_IDS`, inserts into the final table, re-adds the PK, drops the staging table.
    - Rebuilds `mv_geofeature_names` (materialized view joining geofeature+geoname) and the `v_geo_full` view (joins feature with country/region/province/municipality via the MV).
    - DuckDB talks to Postgres through its `postgres` extension (`ATTACH ... TYPE POSTGRES`); DDL (CREATE/TRUNCATE/constraints) goes through a native `pg` client instead, since DuckDB's postgres extension only supports `ALTER TABLE ADD COLUMN` and no `TRUNCATE`.
-2. **`processMassiveSqlToDynamoDB`** — backs up `v_geo_full` into the `gsl-seo-geo-updated-*` DynamoDB table.
+2. **`processMassiveSqlToDynamoDB`** — backs up `v_geo_full` into the `gsl-seo-geo-feature-*` DynamoDB table.
 3. **`processGeoLineageFallbacksToDynamoDB`** — backs up `geolineage` (grouped by `oldid` into fallback lists) into the `gsl-seo-geo-lineage-*` DynamoDB table.
 
 Steps 2 and 3 share `backupPostgresCursorToDynamoDB<T>()` in [process-massive-sql-to-dynamodb.ts](../../../src/geo-bulk-load/process-massive-sql-to-dynamodb.ts): declares a Postgres server-side cursor, `FETCH`es in pages (`GEO_DYNAMODB_FETCH_BATCH_SIZE`), maps rows via a `mapRow` callback, and writes to DynamoDB via `BatchWriteItemCommand` with bounded concurrency (`GEO_DYNAMODB_WRITE_CONCURRENCY`) and retry-with-backoff on throttling.
@@ -26,7 +26,7 @@ Steps 2 and 3 share `backupPostgresCursorToDynamoDB<T>()` in [process-massive-sq
 - `src/geo-bulk-load/process-massive-sql-to-dynamodb.ts` — Postgres -> DynamoDB (both tables)
 - `src/geo-bulk-load/classified-api-secrets.ts` — fetches DB/API secrets from Secrets Manager (`GEO_DB_SECRET_ID`)
 - `infra/modules/geo-bulk-load/*.tf` — ECS Fargate task def, ECR repo, IAM, security groups, EventBridge schedule
-- `infra/modules/dynamodb` — generic single-table module (hash key `AvivGeoId`, sort key `version`) reused for both geo-updated and geo-lineage tables
+- `infra/modules/dynamodb` — generic single-table module (hash key `AvivGeoId`, sort key `version`) reused for both geo-feature and geo-lineage tables
 
 ## Environment variables (ECS task)
 - `GEO_DB_SECRET_ID`, `GEO_MANAGEMENT_SYNC_BUCKET`, `GEO_MANAGEMENT_BUCKET_KEY`

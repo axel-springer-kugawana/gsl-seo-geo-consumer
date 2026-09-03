@@ -6,7 +6,7 @@ description: 'Explains the event-driven pipeline that syncs geo management ("cla
 # cm-connector / cm-consumer Architecture
 
 ## Purpose
-Real-time counterpart to [geo-bulk-load](../geo-bulk-load-architecture/SKILL.md): consumes individual geo "created/updated/deleted" events from the external SSOT (geo management system) and keeps the two DynamoDB tables (`gsl-seo-geo-updated-*`, `gsl-seo-geo-lineage-*`) up to date incrementally.
+Real-time counterpart to [geo-bulk-load](../geo-bulk-load-architecture/SKILL.md): consumes individual geo "created/updated/deleted" events from the external SSOT (geo management system) and keeps the two DynamoDB tables (`gsl-seo-geo-feature-*`, `gsl-seo-geo-lineage-*`) up to date incrementally.
 
 ## Pipeline
 
@@ -19,8 +19,8 @@ Real-time counterpart to [geo-bulk-load](../geo-bulk-load-architecture/SKILL.md)
      - `*.deleted.v1` -> `markGeoAsDeleted()`
      - `*.created.v1` / `*.updated.v1` -> `createOrUpdateGeo()`
    - Both live in [adapters/geo-materialized-view-dynamodb.ts](../../../src/cm-consumer/adapters/geo-materialized-view-dynamodb.ts):
-     - `createOrUpdateGeo`: enriches the geo via the Geo Place API (`getGeoApiClient`), maps parents (Country/Region/Province/Municipality) via `mapParentToGeoEntity`, then `updateDataInDynamoDB()` writes/updates the item in `MV_UPDATED_TABLE_NAME` at key `{ AvivGeoId, version: <schema version> }`, guarded by a `lastupdatedate` optimistic-concurrency condition.
-     - `markGeoAsDeleted`: writes the fallback list to `MV_DELETED_TABLE_NAME` (same `updateDataInDynamoDB`), then soft-deletes the item in `MV_UPDATED_TABLE_NAME` (sets `softdeleted` + `expireat` TTL) via a direct `UpdateItemCommand`.
+    - `createOrUpdateGeo`: enriches the geo via the Geo Place API (`getGeoApiClient`), maps parents (Country/Region/Province/Municipality) via `mapParentToGeoEntity`, then `updateDataInDynamoDB()` writes/updates the item in `MV_FEATURE_TABLE_NAME` at key `{ AvivGeoId, version: <schema version> }`, guarded by a `lastupdatedate` optimistic-concurrency condition.
+    - `markGeoAsDeleted`: writes the fallback list to `MV_LINEAGE_TABLE_NAME` (same `updateDataInDynamoDB`), then soft-deletes the item in `MV_FEATURE_TABLE_NAME` (sets `softdeleted` + `expireat` TTL) via a direct `UpdateItemCommand`.
 
 ## Key files
 - `src/cm-connector/lambda-handlers/handle-geo-events-fifo.ts` — SNS/SQS ingestion + republish
@@ -37,7 +37,7 @@ Real-time counterpart to [geo-bulk-load](../geo-bulk-load-architecture/SKILL.md)
 - Concurrency: a separate `lastupdatedate` attribute (distinct from the `version` sort key) guards against out-of-order writes via a DynamoDB `ConditionExpression`.
 
 ## Environment variables (lambdas)
-- `MV_UPDATED_TABLE_NAME`, `MV_DELETED_TABLE_NAME`, `MV_APPLICATION_NAME`, `GEO_DYNAMODB_SCHEMA_VERSION`
+- `MV_FEATURE_TABLE_NAME`, `MV_LINEAGE_TABLE_NAME`, `MV_APPLICATION_NAME`, `GEO_DYNAMODB_SCHEMA_VERSION`
 
 ## Debugging notes
 - `ValidationException: The provided key element does not match the schema` on a DynamoDB write means the `Key` is missing the `version` sort key attribute, or `GEO_DYNAMODB_SCHEMA_VERSION` doesn't match what was used when the item was created.
