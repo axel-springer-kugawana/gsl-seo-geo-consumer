@@ -52,6 +52,7 @@ function mapRowGeoFull(row: Record<string, any>): Partial<Geo> {
         Region: mapGeoEntity(row.regionid, row.regioncode, row.regionfictive, row.regionnames),
         Province: mapGeoEntity(row.provinceid, row.provincecode, row.provincefictive, row.provincenames),
         Municipality: mapGeoEntity(row.municipalityid, row.municipalitycode, row.municipalityfictive, row.municipalitynames),
+        Street: mapGeoEntity(row.streetid, row.streetcode, row.streetfictive, row.streetnames),
         AvailableNeighborhoods: row.neighbouringgeos,
         Version: "V1",
     };
@@ -152,7 +153,7 @@ async function writeBatchToDynamoDB(
 
 type BackupCursorToDynamoDbOptions<T> = {
     // Used in logs and to derive the SQL cursor name, to distinguish this backup from the others sharing this code path.
-    tableName: string;
+    key: string;
     dynamoTableNameEnvVar: string;
     declareCursorSql: (schema: string) => string;
     mapRow: (row: Record<string, any>) => T;
@@ -163,7 +164,7 @@ type BackupCursorToDynamoDbOptions<T> = {
 async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
     options: BackupCursorToDynamoDbOptions<T>
 ): Promise<void> {
-    const { tableName: taskLabel, dynamoTableNameEnvVar, declareCursorSql, mapRow } = options;
+    const { key: taskLabel, dynamoTableNameEnvVar, declareCursorSql, mapRow } = options;
     const cursorName = `${taskLabel}_cursor`;
 
     logger.info(`[ECS Task] Starting bulk backup of ${taskLabel} to DynamoDB...`);
@@ -222,10 +223,11 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
             logger.info(`[ECS Task] Batch #${batchIndex}: ${result.rows.length} rows fetched from PostgreSQL in ${Date.now() - fetchStartedAt}ms.`);
 
             const writeRequests: WriteRequest[] = result.rows.map((row) => {
-                const item = mapRow(row);
-                // 'version' is the table's static sort key ("V1" | "V2"), sourced from the item's own Version field.
+                const {  ...item } = mapRow(row) as { Version?: string } & Record<string, any>;
+                // 'version' is the table's static sort key ("V1" | "V2"); drop the capitalized
+                // "Version" data field so it isn't stored redundantly alongside the sort key.
                 return {
-                    PutRequest: { Item: marshall({ ...item, version: (item as { Version?: string }).Version ?? process.env.GEO_DYNAMODB_SCHEMA_VERSION ?? 'V1' }, { removeUndefinedValues: true }) },
+                    PutRequest: { Item: marshall({ ...item, version: process.env.GEO_DYNAMODB_SCHEMA_VERSION}, { removeUndefinedValues: true }) },
                 };
             });
 
@@ -257,7 +259,7 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
 
 export async function processMassiveSqlToDynamoDB(): Promise<void> {
     return backupPostgresCursorToDynamoDB({
-        tableName: 'v_geo_full',
+        key: 'v_geo_full',
         dynamoTableNameEnvVar: 'GEO_DYNAMODB_TABLE_NAME',
         mapRow: mapRowGeoFull,
         declareCursorSql: (schema) => `
@@ -266,7 +268,8 @@ export async function processMassiveSqlToDynamoDB(): Promise<void> {
             countryid, code, countryfictive, countrynames,
             regionid, regioncode, regionfictive, regionnames,
             provinceid, provincecode, provincefictive, provincenames,
-            municipalityid, municipalitycode, municipalityfictive, municipalitynames
+            municipalityid, municipalitycode, municipalityfictive, municipalitynames,
+            streetid, streetcode, streetfictive, streetlevel, streetnames
       FROM ${schema}.v_geo_full;
     `,
     });
@@ -274,7 +277,7 @@ export async function processMassiveSqlToDynamoDB(): Promise<void> {
 
 export async function processGeoLineageFallbacksToDynamoDB(): Promise<void> {
     return backupPostgresCursorToDynamoDB({
-        tableName: 'geolineage',
+        key: 'geolineage',
         dynamoTableNameEnvVar: 'GEO_LINEAGE_DYNAMODB_TABLE_NAME',
         mapRow: mapRowGeoLineage,
         declareCursorSql: (schema) => `

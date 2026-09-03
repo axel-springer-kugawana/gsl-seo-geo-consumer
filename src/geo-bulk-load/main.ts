@@ -1,19 +1,15 @@
 import { logger } from "@shared/cross-cutting/logger";
-import { processMassiveParquetToPostgres } from './process-massive-parquet-to-postgres';
-import { processMassiveSqlToDynamoDB, processGeoLineageFallbacksToDynamoDB } from './process-massive-sql-to-dynamodb';
+import { processMassiveParquetToPostgres as parquetToPG } from './process-massive-parquet-to-postgres';
+import { processMassiveSqlToDynamoDB as pgGeoFullToDynamoDB, processGeoLineageFallbacksToDynamoDB as pgGeoLineageToDynamoDB } from './process-massive-sql-to-dynamodb';
 
-export { processMassiveParquetToPostgres, processMassiveSqlToDynamoDB, processGeoLineageFallbacksToDynamoDB };
+export { parquetToPG as processMassiveParquetToPostgres, pgGeoFullToDynamoDB as processMassiveSqlToDynamoDB, pgGeoLineageToDynamoDB as processGeoLineageFallbacksToDynamoDB };
 
 if (require.main === module) {
-  // processMassiveParquetToPostgres()
-  
-  // .then
-  processGeoLineageFallbacksToDynamoDB()
-  .then(processMassiveSqlToDynamoDB)
+   parquetToPG()
+ // .then(pgGeoLineageToDynamoDB)
+  //.then(pgGeoFullToDynamoDB)
   .catch((error) => {
     logger.error('[ECS Task] ERREUR CRITIQUE :', error);
     process.exitCode = 1;
   });
-
-
 }

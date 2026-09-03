@@ -9,6 +9,7 @@ import { paths, components } from '../../shared/models/geo-api';
 import createClient from 'openapi-fetch';
 import { GeoEntityBase, GeoName } from '../../shared/models/geo/1.0.0/geo';
 import { Middleware } from 'openapi-fetch';
+import { upsertGeoFeature as persitsInSQL, deleteGeoFeature, GeoFeatureExtra } from "./geo-feature-postgres";
 
 // Configuration du client DynamoDB avec SSO pour le développement local
 const isLocal = process.env.AWS_EXECUTION_ENV === undefined;
@@ -41,7 +42,7 @@ const mapParentToGeoEntity = (parent: components["schemas"]["ParentFeature"]): G
 // the lastupdatedate attribute used below for optimistic concurrency.
 const DEFAULT_SCHEMA_VERSION = process.env.GEO_DYNAMODB_SCHEMA_VERSION || "V1";
 
-const updateDataInDynamoDB = async (id: string, marshalledData: Record<string, any>, tableName: string, lastUpdateDate: string): Promise<void> => {
+const persitsInDynamoDB = async (id: string, marshalledData: Record<string, any>, tableName: string, lastUpdateDate: string): Promise<void> => {
   // Build UpdateExpression dynamically, excluding the partition/sort keys (AvivGeoId, version)
   const updateExpressions: string[] = [];
   const expressionAttributeValues: Record<string, any> = {};
@@ -109,6 +110,7 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
   let geoData = transformGeoManagementToGeo(geo);
 
   const avivGeoId = geo.id;
+  let geoFeatureExtra: GeoFeatureExtra | undefined;
   try {
     const geoApiClient = await getGeoApiClient();
     const response = await geoApiClient.GET("/places/{place_id}", {
@@ -127,6 +129,11 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
       geoData.Level = response.data.item.level ?? 0;
       geoData.IsFictive = response.data.item.fictive ?? false;
       geoData.Names = mapDtoNames(response.data.item.names ?? {});
+
+      geoFeatureExtra = {
+        type: response.data.item.type,
+        parentIds: (response.data.item.parents ?? []).map((parent) => parent.id).filter((id): id is string => !!id),
+      };
 
       for (const parent of response.data.item.parents ?? []) {
         const mappedParent = mapParentToGeoEntity(parent);
@@ -167,15 +174,22 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
   }
 
   const marshalledData = marshall(geoData, { removeUndefinedValues: true });
-
-
   const tableName = isLocal ? "seo-ssot-classified-fifo" : process.env.MV_UPDATED_TABLE_NAME;
 
   if (!tableName) {
     throw new Error("MV_UPDATED_TABLE_NAME environment variable is not set");
   }
 
-  await updateDataInDynamoDB(id, marshalledData, tableName, data?.metadata?.updateDate?.toString() ?? Date.now().toString());
+  await persitsInDynamoDB(id, marshalledData, tableName, data?.metadata?.updateDate?.toString() ?? Date.now().toString());
+
+  try {
+    await persitsInSQL(geoData, geoFeatureExtra);
+  } catch (error) {
+    logger.error("Error upserting geoFeature in Postgres", {
+      geoid: id,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
 }
 
 let cachedGeoApiClient: ReturnType<typeof createClient<paths>> | null = null;
@@ -217,7 +231,16 @@ const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, ge
     throw new Error("MV_DELETED_TABLE_NAME environment variable is not set");
   }
 
-  await updateDataInDynamoDB(deleteCommand.id, marshalledData, tableName, deleteCommand.updateDate?.toString() ?? Date.now().toString());
+  await persitsInDynamoDB(deleteCommand.id, marshalledData, tableName, deleteCommand.updateDate?.toString() ?? Date.now().toString());
+
+  try {
+    await deleteGeoFeature(deleteCommand.id);
+  } catch (error) {
+    logger.error("Error deleting geoFeature in Postgres", {
+      geoid: deleteCommand.id,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
 
   const onDayInSeconds = 60 * 60 * 24 * 1;
   const expiryTime = Math.floor(Date.now() / 1000) + onDayInSeconds;

@@ -277,6 +277,7 @@ export async function processMassiveParquetToPostgres() {
     regionId character varying,
     provinceId character varying,
     municipalityId character varying,
+      streetId character varying,
     neighbors text[]
 );
     `);
@@ -297,6 +298,7 @@ export async function processMassiveParquetToPostgres() {
     regionId character varying,
     provinceId character varying,
     municipalityId character varying,
+    streetId character varying,
     neighbors text[]
 );
 `);
@@ -323,6 +325,7 @@ export async function processMassiveParquetToPostgres() {
       , regionId
       , provinceId
       , municipalityId,
+      streetId,
       neighbors)
       SELECT 
         ID AS avivGeoId,
@@ -338,6 +341,7 @@ export async function processMassiveParquetToPostgres() {
         (AD04->>0)::VARCHAR AS regionId,
         (AD06->>0)::VARCHAR AS provinceId,
         (AD08->>0)::VARCHAR AS municipalityId,
+        (STRT->>0)::VARCHAR AS streetId,
         NEIGHBORS::JSON::VARCHAR[] AS neighbors
       FROM read_parquet('${S3_PARQUET_PATH}')
       WHERE (${featureIdPrefixFilter})
@@ -348,9 +352,9 @@ export async function processMassiveParquetToPostgres() {
     await duckDBConnection.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature (avivGeoId, type, mainPostalcode, countryCode, fictive, level
       , postalCodes, parents, population, countryId,
-      regionId, provinceId, municipalityId, neighbors)
+      regionId, provinceId, municipalityId, streetId, neighbors)
       SELECT avivGeoId, type, mainPostalcode, countryCode, fictive, level, postalCodes, parents, population
-      , countryId, regionId, provinceId, municipalityId, neighbors
+      , countryId, regionId, provinceId, municipalityId, streetId, neighbors
       FROM postgres_db.${PG_SCHEMA}.geoFeature_staging;
     `);
 
@@ -399,7 +403,7 @@ export async function processMassiveParquetToPostgres() {
               json_agg(jsonb_build_object('displayname', g.displayname, 'name', g.name, 'slug', g.slug, 'language', g.language)) AS names
              FROM ${PG_SCHEMA}.geofeature f
                LEFT JOIN ${PG_SCHEMA}.geoname g ON f.avivgeoid::text = g.avivgeoid::text
-            WHERE f.type::text = ANY (ARRAY['Country'::character varying::text, 'Region'::character varying::text, 'Province'::character varying::text, 'Municipality'::character varying::text])
+            WHERE f.type::text = ANY (ARRAY['Country'::character varying::text, 'Region'::character varying::text, 'Province'::character varying::text, 'Municipality'::character varying::text, 'Street'::character varying::text])
             GROUP BY f.avivgeoid, f.type, f.mainpostalcode, f.countrycode, f.fictive, f.level
           WITH DATA;
         `);
@@ -450,7 +454,11 @@ export async function processMassiveParquetToPostgres() {
             municipality.fictive AS municipalityfictive,
             municipality.level AS municipalitylevel,
             municipality.names AS municipalitynames,
-            geo.names
+            geo.names,
+            street.code AS streetcode,
+            street.fictive AS streetfictive,
+            street.level AS streetevel,
+            street.names AS streetnames
            FROM ( SELECT geo_1.avivgeoid,
                     geo_1.type,
                     geo_1.mainpostalcode,
@@ -464,14 +472,16 @@ export async function processMassiveParquetToPostgres() {
                     geo_1.regionid,
                     geo_1.provinceid,
                     geo_1.municipalityid,
+                    geo_1.streetid,
                     json_agg(jsonb_build_object('displayname', g.displayname, 'name', g.name, 'slug', g.slug, 'language', g.language)) AS names
                    FROM ${PG_SCHEMA}.geofeature geo_1
                      LEFT JOIN ${PG_SCHEMA}.geoname g ON g.avivgeoid::text = geo_1.avivgeoid::text
-                  GROUP BY geo_1.avivgeoid, geo_1.type, geo_1.mainpostalcode, geo_1.countrycode, geo_1.fictive, geo_1.level, geo_1.postalcodes, geo_1.parents, geo_1.population, geo_1.countryid, geo_1.regionid, geo_1.provinceid, geo_1.municipalityid) geo
+                  GROUP BY geo_1.avivgeoid, geo_1.type, geo_1.mainpostalcode, geo_1.countrycode, geo_1.fictive, geo_1.level, geo_1.postalcodes, geo_1.parents, geo_1.population, geo_1.countryid, geo_1.regionid, geo_1.provinceid, geo_1.municipalityid, geo_1.streetid) geo
              LEFT JOIN ${PG_SCHEMA}.mv_geofeature_names country ON country.avivgeoid::text = geo.countryid::text OR country.avivgeoid::text = geo.avivgeoid::text AND geo.level = 200
              LEFT JOIN ${PG_SCHEMA}.mv_geofeature_names region ON region.avivgeoid::text = geo.regionid::text OR region.avivgeoid::text = geo.avivgeoid::text AND geo.level = 400
              LEFT JOIN ${PG_SCHEMA}.mv_geofeature_names province ON province.avivgeoid::text = geo.provinceid::text OR province.avivgeoid::text = geo.avivgeoid::text AND geo.level = 600
-             LEFT JOIN ${PG_SCHEMA}.mv_geofeature_names municipality ON municipality.avivgeoid::text = geo.municipalityid::text OR municipality.avivgeoid::text = geo.avivgeoid::text AND geo.level = 800;
+             LEFT JOIN ${PG_SCHEMA}.mv_geofeature_names municipality ON municipality.avivgeoid::text = geo.municipalityid::text OR municipality.avivgeoid::text = geo.avivgeoid::text AND geo.level = 800
+             LEFT JOIN ${PG_SCHEMA}.mv_geofeature_names street ON street.avivgeoid::text = geo.streetid::text OR street.avivgeoid::text = geo.avivgeoid::text AND geo.level = 1200;
       `);
       logger.info('[ECS Task] Vue v_geo_full créée/remplacée avec succès !');
     } catch (error) {

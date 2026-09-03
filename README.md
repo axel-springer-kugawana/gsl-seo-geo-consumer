@@ -17,6 +17,8 @@ Along with geo management connector, you will find an example on how to create a
      * [cm-consumer-example](./src/cm-consumer-example/) an example on how to consume events to build a materialized view
      * [shared/models](./src/shared/models) you will find the classified model your are consuming
 
+> For a detailed walkthrough of the cm-connector/cm-consumer event-driven pipeline, see the [cm-connector-consumer-architecture skill](./.github/skills/cm-connector-consumer-architecture/SKILL.md).
+
 * In the `infra` dir you will find the terraform code of this solution
      * [cm-connector](./infra/modules/cm-connector/) a generic ssot connector infra module
      * [cm-consumer-example](./infra/modules/cm-consumer-example/) terraform module containing a suppoting example on how to consume events to build a materialized view
@@ -62,6 +64,8 @@ not fit in the 15 minutes lambda budget.
 
 * [src/geo-bulk-load](./src/geo-bulk-load/) contains the task, its [Dockerfile](./src/geo-bulk-load/Dockerfile) and the PostgreSQL load logic.
 * [infra/modules/geo-bulk-load](./infra/modules/geo-bulk-load/) contains the ECR repository, ECS cluster, task definition and dedicated database secret.
+
+> For a detailed walkthrough of the full Parquet -> DuckDB -> PostgreSQL -> DynamoDB pipeline, see the [geo-bulk-load-architecture skill](./.github/skills/geo-bulk-load-architecture/SKILL.md).
 
 ### How it works
 
