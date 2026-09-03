@@ -55,6 +55,10 @@ export async function processMassiveParquetToPostgres() {
     await storeGeoFeature();
     console.log('store geo feature done...');
 
+    console.log('update municipality street ids start ...');
+    await updateMunicipalityStreetIds();
+    console.log('update municipality street ids done...');
+
     console.log('create or refresh materialized view start ...');
     await createOrRefreshMaterializedView();
     console.log('create or refresh materialized view done...');
@@ -310,6 +314,7 @@ export async function processMassiveParquetToPostgres() {
 
     // Drop the PK and empty the table without dropping it, to speed up the bulk insert that follows.
     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoFeature DROP CONSTRAINT IF EXISTS GeoFeature_pkey;`);
+  await pgClient.query(`DROP INDEX IF EXISTS ${PG_SCHEMA}.idx_geofeature_streets_by_municipality;`);
     await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}.geoFeature;`);
 
     // STEP 2: Vectorized bulk copy from Parquet S3
@@ -370,6 +375,32 @@ export async function processMassiveParquetToPostgres() {
     // STEP 5: Cleanup
     logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoFeature_staging;`);
+  }
+
+  async function updateMunicipalityStreetIds(): Promise<void> {
+    logger.info('[ECS Task] Mise à jour des streetIds des municipalités...');
+
+    await pgClient.query(`
+      CREATE INDEX IF NOT EXISTS idx_geofeature_streets_by_municipality
+        ON ${PG_SCHEMA}.geoFeature (municipalityId, avivGeoId)
+        WHERE level = 1200
+          AND municipalityId IS NOT NULL;
+    `);
+
+    await pgClient.query(`
+      UPDATE ${PG_SCHEMA}.geoFeature municipality
+      SET streetIds = streets.streetIds
+      FROM (
+        SELECT municipalityId, array_agg(avivGeoId ORDER BY avivGeoId) AS streetIds
+        FROM ${PG_SCHEMA}.geoFeature
+        WHERE level = 1200
+          AND municipalityId IS NOT NULL
+        GROUP BY municipalityId
+      ) streets
+      WHERE municipality.avivGeoId = streets.municipalityId;
+    `);
+
+    logger.info('[ECS Task] streetIds des municipalités mis à jour avec succès.');
   }
 
   async function createOrRefreshMaterializedView() {
