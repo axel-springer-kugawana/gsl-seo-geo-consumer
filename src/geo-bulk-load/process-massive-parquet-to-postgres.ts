@@ -143,7 +143,6 @@ export async function processMassiveParquetToPostgres() {
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoLineage_staging;`);
   }
 
-
   function getS3ParquetPath(path: string): string | undefined {
 
     const bucket = process.env.GEO_MANAGEMENT_SYNC_BUCKET;
