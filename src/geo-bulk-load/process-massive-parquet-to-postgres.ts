@@ -405,46 +405,44 @@ export async function processMassiveParquetToPostgres() {
   }
 
   async function createOrRefreshMaterializedView() {
-    logger.info('[ECS Task] Création ou rafraîchissement de la vue matérialisée...');
+    logger.info('[ECS Task] Reconstruction de la table mv_geofeature_names...');
 
     try {
-      // Check whether the MV already exists
-      const mvExists = await pgClient.query(
-        `SELECT 1 FROM information_schema.views WHERE table_schema = $1 AND table_name = $2`,
-        [PG_SCHEMA, 'mv_geofeature_names']
-      );
+      // Plain table instead of a materialized view: a full REFRESH MATERIALIZED VIEW is only
+      // affordable here (bulk load, run once), not on every single real-time cm-consumer write,
+      // which instead upserts a single row via geo-feature-postgres.upsertGeoFeatureNamesRow.
+      // Drop the old materialized view first: v_geo_full and CREATE TABLE both require
+      // mv_geofeature_names to no longer exist as a matview once this migration runs.
+      await pgClient.query(`DROP MATERIALIZED VIEW IF EXISTS ${PG_SCHEMA}.mv_geofeature_names;`);
+      await pgClient.query(`
+        CREATE TABLE IF NOT EXISTS ${PG_SCHEMA}.mv_geofeature_names
+        (
+          avivgeoid character varying NOT NULL,
+          type character varying,
+          code character varying,
+          countrycode character varying,
+          fictive boolean,
+          level integer,
+          names json
+        );
+      `);
 
-      if (mvExists.rows.length > 0) {
-        // MV exists: refresh with CONCURRENTLY (requires a unique index)
-        logger.info('[ECS Task] Vue matérialisée existe, rafraîchissement en cours...');
-        try {
-          await pgClient.query(`REFRESH MATERIALIZED VIEW CONCURRENTLY ${PG_SCHEMA}.mv_geofeature_names;`);
-        } catch (error) {
-          // If CONCURRENTLY fails (no unique index), fall back to a plain refresh
-          logger.warn('[ECS Task] Rafraîchissement CONCURRENTLY échoué, utilisation du mode standard');
-          await pgClient.query(`REFRESH MATERIALIZED VIEW ${PG_SCHEMA}.mv_geofeature_names;`);
-        }
-      } else {
-        // MV doesn't exist: create it
-        logger.info('[ECS Task] Création de la vue matérialisée...');
-        await pgClient.query(`
-          CREATE MATERIALIZED VIEW IF NOT EXISTS ${PG_SCHEMA}.mv_geofeature_names
-          TABLESPACE pg_default
-          AS
-           SELECT f.avivgeoid,
-              f.type,
-              f.mainpostalcode AS code,
-              f.countrycode,
-              f.fictive,
-              f.level,
-              json_agg(jsonb_build_object('displayname', g.displayname, 'name', g.name, 'slug', g.slug, 'language', g.language)) AS names
-             FROM ${PG_SCHEMA}.geofeature f
-               LEFT JOIN ${PG_SCHEMA}.geoname g ON f.avivgeoid::text = g.avivgeoid::text
-            WHERE f.type::text = ANY (ARRAY['Country'::character varying::text, 'Region'::character varying::text, 'Province'::character varying::text, 'Municipality'::character varying::text, 'Street'::character varying::text])
-            GROUP BY f.avivgeoid, f.type, f.mainpostalcode, f.countrycode, f.fictive, f.level
-          WITH DATA;
-        `);
-      }
+      logger.info('[ECS Task] Reconstruction complète de mv_geofeature_names...');
+      await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}.mv_geofeature_names;`);
+      await pgClient.query(`
+        INSERT INTO ${PG_SCHEMA}.mv_geofeature_names (avivgeoid, type, code, countrycode, fictive, level, names)
+        SELECT f.avivgeoid,
+               f.type,
+               f.mainpostalcode AS code,
+               f.countrycode,
+               f.fictive,
+               f.level,
+               json_agg(jsonb_build_object('displayname', g.displayname, 'name', g.name, 'slug', g.slug, 'language', g.language)) AS names
+        FROM ${PG_SCHEMA}.geofeature f
+          LEFT JOIN ${PG_SCHEMA}.geoname g ON f.avivgeoid::text = g.avivgeoid::text
+        WHERE f.type::text = ANY (ARRAY['Country'::character varying::text, 'Region'::character varying::text, 'Province'::character varying::text, 'Municipality'::character varying::text, 'Street'::character varying::text])
+        GROUP BY f.avivgeoid, f.type, f.mainpostalcode, f.countrycode, f.fictive, f.level;
+      `);
 
       // Create the unique index if it doesn't already exist
       logger.info('[ECS Task] Création de l\'index unique...');
@@ -455,7 +453,7 @@ export async function processMassiveParquetToPostgres() {
           TABLESPACE pg_default;
       `);
 
-      logger.info('[ECS Task] Vue matérialisée créée/rafraîchie avec succès !');
+      logger.info('[ECS Task] Table mv_geofeature_names reconstruite avec succès !');
 
       // Create/update the v_geo_full view
       logger.info('[ECS Task] Création ou remplacement de la vue v_geo_full...');

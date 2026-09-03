@@ -47,8 +47,6 @@ export async function processGeoLineageFallbacksToDynamoDB(): Promise<void> {
     });
 }
 
-
-
 function mapRawNames(rawNames: RawGeoName[] | null): GeoName[] {
     return (rawNames ?? [])
         .filter((rawName) => rawName?.language)

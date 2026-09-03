@@ -57,22 +57,35 @@ export async function persistGeoFeatureInSQL(geoData: Geo): Promise<void> {
   logger.info("geoFeature upserted successfully in PostgreSQL", { geoid: geoData.AvivGeoId });
 }
 
-// mv_geofeature_names backs v_geo_full (used by geo-bulk-load); refresh it after each write so it stays current.
-export async function refreshMaterializedView(): Promise<void> {
+// mv_geofeature_names is a plain table (not a materialized view): upsert only this geo's row instead
+// of paying for a full rebuild, which is only affordable in the geo-bulk-load batch job.
+export async function upsertGeoFeatureNamesRow(avivGeoId: string): Promise<void> {
   const client = await getPgClient();
 
-  logger.info("Refreshing mv_geofeature_names materialized view");
+  logger.info("Upserting mv_geofeature_names row", { geoid: avivGeoId });
 
-  try {
-    await client.query(`REFRESH MATERIALIZED VIEW CONCURRENTLY ${PG_SCHEMA}.mv_geofeature_names;`);
-  } catch (error) {
-    logger.warn("CONCURRENTLY refresh failed, falling back to standard refresh", {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    await client.query(`REFRESH MATERIALIZED VIEW ${PG_SCHEMA}.mv_geofeature_names;`);
-  }
+  await client.query(`DELETE FROM ${PG_SCHEMA}.mv_geofeature_names WHERE avivgeoid = $1;`, [avivGeoId]);
 
-  logger.info("mv_geofeature_names refreshed successfully");
+  await client.query(
+    `
+      INSERT INTO ${PG_SCHEMA}.mv_geofeature_names (avivgeoid, type, code, countrycode, fictive, level, names)
+      SELECT f.avivgeoid,
+             f.type,
+             f.mainpostalcode AS code,
+             f.countrycode,
+             f.fictive,
+             f.level,
+             json_agg(jsonb_build_object('displayname', g.displayname, 'name', g.name, 'slug', g.slug, 'language', g.language)) AS names
+      FROM ${PG_SCHEMA}.geofeature f
+        LEFT JOIN ${PG_SCHEMA}.geoname g ON f.avivgeoid::text = g.avivgeoid::text
+      WHERE f.avivgeoid = $1
+        AND f.type::text = ANY (ARRAY['Country'::character varying::text, 'Region'::character varying::text, 'Province'::character varying::text, 'Municipality'::character varying::text, 'Street'::character varying::text])
+      GROUP BY f.avivgeoid, f.type, f.mainpostalcode, f.countrycode, f.fictive, f.level;
+    `,
+    [avivGeoId]
+  );
+
+  logger.info("mv_geofeature_names row upserted successfully", { geoid: avivGeoId });
 }
 
 // Mirrors the DynamoDB Names with an upsert per language on the geoName table used by the geo-bulk-load pipeline.

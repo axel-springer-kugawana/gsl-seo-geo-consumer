@@ -9,7 +9,7 @@ import { paths, components } from '../../shared/models/geo-api';
 import createClient from 'openapi-fetch';
 import { Geo, GeoEntityBase, GeoName } from '../../shared/models/geo/1.0.0/geo';
 import { Middleware } from 'openapi-fetch';
-import { persistGeoFeatureInSQL, persistGeoNamesInSQL, deleteGeoFeature, refreshMaterializedView, persistGeoLineageInSQL } from "./geo-feature-postgres";
+import { persistGeoFeatureInSQL, persistGeoNamesInSQL, deleteGeoFeature, upsertGeoFeatureNamesRow, persistGeoLineageInSQL } from "./geo-feature-postgres";
 import { GEO_DYNAMODB_SCHEMA_VERSION } from "@shared/models/geo-dynamodb-schema-version";
 
 // Configuration du client DynamoDB avec SSO pour le développement local
@@ -116,8 +116,8 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
 
     await persistGeoFeatureInSQL(geoData);
     await persistGeoNamesInSQL(geoData);
-    //TODO : recalculate materized view for the geoFeature table, to keep it up to date with the new data. This is needed because the geoFeature table is used by the geo-bulk-load pipeline, and the materialized view is used by the geo-bulk-load pipeline to generate the parquet files.
-   // await refreshMaterializedView();
+    await upsertGeoFeatureNamesRow(geoData.AvivGeoId);
+ 
   } catch (error) {
     logger.error("Error upserting geoFeature in Postgres", {
       geoid: id,
