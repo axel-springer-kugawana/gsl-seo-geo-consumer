@@ -9,7 +9,7 @@ import { paths, components } from '../../shared/models/geo-api';
 import createClient from 'openapi-fetch';
 import { GeoEntityBase, GeoName } from '../../shared/models/geo/1.0.0/geo';
 import { Middleware } from 'openapi-fetch';
-import { upsertGeoFeature as persitsInSQL, deleteGeoFeature, GeoFeatureExtra } from "./geo-feature-postgres";
+import { persitsInSQL, deleteGeoFeature, GeoFeatureExtra } from "./geo-feature-postgres";
 
 // Configuration du client DynamoDB avec SSO pour le développement local
 const isLocal = process.env.AWS_EXECUTION_ENV === undefined;
