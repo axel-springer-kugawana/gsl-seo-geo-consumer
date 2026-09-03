@@ -408,12 +408,6 @@ export async function processMassiveParquetToPostgres() {
     logger.info('[ECS Task] Reconstruction de la table mv_geofeature_names...');
 
     try {
-      // Plain table instead of a materialized view: a full REFRESH MATERIALIZED VIEW is only
-      // affordable here (bulk load, run once), not on every single real-time cm-consumer write,
-      // which instead upserts a single row via geo-feature-postgres.upsertGeoFeatureNamesRow.
-      // Drop the old materialized view first: v_geo_full and CREATE TABLE both require
-      // mv_geofeature_names to no longer exist as a matview once this migration runs.
-      await pgClient.query(`DROP MATERIALIZED VIEW IF EXISTS ${PG_SCHEMA}.mv_geofeature_names;`);
       await pgClient.query(`
         CREATE TABLE IF NOT EXISTS ${PG_SCHEMA}.mv_geofeature_names
         (
