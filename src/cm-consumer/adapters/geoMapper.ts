@@ -22,7 +22,7 @@ export const transformGeoManagementToGeo = (geoMgmt: GeoManagementStructure): Ge
 
   return {
     AvivGeoId: feature.id,
-    Version: "3.2",
+   
     AvailableNeighborhoods: [],
     Code: feature.administrative_code || "",
     Country: {
@@ -31,6 +31,7 @@ export const transformGeoManagementToGeo = (geoMgmt: GeoManagementStructure): Ge
       IsFictive: false,
       Names: [],
     },
+    Type : feature.type,
     CountryCode: "",
     ImmoweltLegacyMappings: null, // Assuming you will fill this based on your data structure
     IsFictive: feature.fictive,

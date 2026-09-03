@@ -228,7 +228,3 @@ You will find more about classified management APIs here:
 * [REST API](https://classmgt.kind-camel-preview.aws.aviv-internal.eu/docs/stage/v0/index.html)
 * [Classified events docs](https://classdisp.kind-camel-dev.aws.aviv-internal.eu/docs/staging/external/0.1/streams.html)
 * [S3 Bucket objects layout](https://classdisp.kind-camel-dev.aws.aviv-internal.eu/docs/staging/external/0.1/streams.html#:~:text=The%20files%20in%20the%20s3%20are%20created%20in%20real%20time%20during%20the%20creation%20in%20the%20SSOT%20database%2C%20so%20to%20avoid%20the%20double%20consumption%20of%20the%20events%20(s3%20and%20SNS)%2C%20we%20advise%20you%20to%20stop%20the%20consumption%20of%20our%20SNS%20during%20the%20initialization%20phase.)
-
-
-todo : 
-list eventing for update / created and deleted events 

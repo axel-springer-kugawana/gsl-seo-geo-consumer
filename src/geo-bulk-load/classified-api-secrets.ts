@@ -1,6 +1,9 @@
 import { getSecret } from "@aws-lambda-powertools/parameters/secrets";
 import type { SecretsGetOptions } from "@aws-lambda-powertools/parameters/secrets/types";
 import { logger } from "@shared/cross-cutting/logger";
+import type { GeoSSOTSecret } from "@shared/models/geo-ssot-secret";
+
+export type { GeoSSOTSecret };
 
 const getSecretValue = async (secretName: string) => {  
   const options: SecretsGetOptions = { maxAge: 120 }
@@ -23,16 +26,6 @@ export const getSecrets = async <T>(secretName: string): Promise<T> => {
 export const getSecretsAsString = async (secretName: string): Promise<string> =>
   await getSecretValue(secretName)
 
-
-export type GeoSSOTSecret = {
-  DbPort: number;
-  DbHostWriter: string;
-  DbUsername: string;
-  DbPassword: string;
-  DbMainDatabase: string;
-  GeoPlaceApiKey: string;
-  GeoPlaceApiUrl: string;
-};
 
 export const getClassifiedApiSecret = async (secretName: string): Promise<GeoSSOTSecret> => {
   const secrets = await getSecretValue(secretName)

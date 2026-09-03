@@ -43,7 +43,7 @@ export interface SelogerLegacyMapping {
 export interface Geo {
   Macroregion: GeoEntityBase;
   AvivGeoId: string;
-  Version: string;
+  Type : string; 
   AvailableNeighborhoods: string[];
   Code: string;
   Country: GeoEntityBase;
@@ -58,6 +58,7 @@ export interface Geo {
   Names: GeoName[];
   NeighbouringGeoLevels: string[];
   PostalCodes: string[];
+  Parents: string[];
   Province: GeoEntityBase;
   Region: GeoEntityBase;
   SelogerLegacyMapping: SelogerLegacyMapping;

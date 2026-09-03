@@ -1,5 +1,6 @@
 import { logger } from "@shared/cross-cutting/logger";
- 
+import type { GeoSSOTSecret } from "@shared/models/geo-ssot-secret";
+
 const AWS_SECRETS_EXTENTION_SERVER_ENDPOINT = `http://localhost:2773/secretsmanager/get?secretId=`;
 
 const getSecretValue = async (secretName: string) => {
@@ -22,20 +23,12 @@ const getSecretValue = async (secretName: string) => {
   return secretContent.SecretString;
 };
 
-const getClassifiedApiSecret = async () => {
-  const secretName = process.env.MV_APPLICATION_NAME+"-lambda_consumer_credentials"
-  logger.info("Fetching Classified API secret", {secretName});
-  
+const getClassifiedApiSecret = async (): Promise<GeoSSOTSecret> => {
+  const secretName = process.env.MV_APPLICATION_NAME + "-lambda_consumer_credentials"
+  logger.info("Fetching Classified API secret", { secretName });
+
   const secretValue = await getSecretValue(secretName);
-  const secret = JSON.parse(secretValue) as {
-    DbPort: number;
-    DbHostWriter: string;
-    DbUsername: string;
-    DbPassword: string;
-    DbMainDatabase: string;
-    GeoPlaceApiKey: string;
-    GeoPlaceApiUrl: string;
-  };
+  const secret = JSON.parse(secretValue) as GeoSSOTSecret;
 
   return secret;
 }

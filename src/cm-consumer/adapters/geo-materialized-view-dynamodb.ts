@@ -1,29 +1,22 @@
-import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
+import { UpdateItemCommand } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
-import { fromSSO } from "@aws-sdk/credential-provider-sso";
 import { logger } from "@shared/cross-cutting/logger";
+import { createDynamoDBClient } from "@shared/adapters/dynamodb-client";
 import { getClassifiedApiSecret } from "../adapters/classified-api-secrets";
 import { GeoManagementStructure, GeoLineageFallbackItem } from "@models";
 import { transformGeoManagementToGeo } from "./geoMapper";
 import { paths, components } from '../../shared/models/geo-api';
 import createClient from 'openapi-fetch';
-import { GeoEntityBase, GeoName } from '../../shared/models/geo/1.0.0/geo';
+import { Geo, GeoEntityBase, GeoName } from '../../shared/models/geo/1.0.0/geo';
 import { Middleware } from 'openapi-fetch';
-import { persitsInSQL, deleteGeoFeature, GeoFeatureExtra } from "./geo-feature-postgres";
+import { persistGeoFeatureInSQL, persistGeoNamesInSQL, deleteGeoFeature, refreshMaterializedView, persistGeoLineageInSQL } from "./geo-feature-postgres";
+import { GEO_DYNAMODB_SCHEMA_VERSION } from "@shared/models/geo-dynamodb-schema-version";
 
 // Configuration du client DynamoDB avec SSO pour le développement local
 const isLocal = process.env.AWS_EXECUTION_ENV === undefined;
+const AWS_REGION = process.env.AWS_REGION || 'eu-west-1';
 
-const ddbClient = new DynamoDBClient(
-  isLocal
-    ? {
-      region: process.env.AWS_REGION || 'eu-central-1',
-      credentials: fromSSO({
-        profile: 'AvivPowerUserAccessReadWrite-135557783010',
-      }),
-    }
-    : {}
-);
+const ddbClient = createDynamoDBClient(AWS_REGION);
 
 const mapParentToGeoEntity = (parent: components["schemas"]["ParentFeature"]): GeoEntityBase | null => {
   if (!parent.id) {
@@ -38,11 +31,12 @@ const mapParentToGeoEntity = (parent: components["schemas"]["ParentFeature"]): G
   };
 };
 
-// 'version' is the table's static sort key ("V1" | "V2"), known ahead of time, unrelated to
-// the lastupdatedate attribute used below for optimistic concurrency.
-const DEFAULT_SCHEMA_VERSION = process.env.GEO_DYNAMODB_SCHEMA_VERSION || "V1";
+const RELATION_PAGE_LIMIT = 50;
+type RelationQuery = NonNullable<paths["/relation/{place_id}"]["get"]["parameters"]["query"]>;
+type RelationFeature = components["schemas"]["Feature"];
 
-const persitsInDynamoDB = async (id: string, marshalledData: Record<string, any>, tableName: string, lastUpdateDate: string): Promise<void> => {
+
+const persistGeoFeatureInDynamoDB = async (id: string, marshalledData: Record<string, any>, tableName: string, lastUpdateDate: string): Promise<void> => {
   // Build UpdateExpression dynamically, excluding the partition/sort keys (AvivGeoId, version)
   const updateExpressions: string[] = [];
   const expressionAttributeValues: Record<string, any> = {};
@@ -74,7 +68,7 @@ const persitsInDynamoDB = async (id: string, marshalledData: Record<string, any>
           "S": id
         },
         "version": {
-          "S": DEFAULT_SCHEMA_VERSION
+          "S": GEO_DYNAMODB_SCHEMA_VERSION
         }
       },
       UpdateExpression: `
@@ -108,76 +102,8 @@ const persitsInDynamoDB = async (id: string, marshalledData: Record<string, any>
 
 const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStructure): Promise<void> => {
   let geoData = transformGeoManagementToGeo(geo);
-
-  const avivGeoId = geo.id;
-  let geoFeatureExtra: GeoFeatureExtra | undefined;
-  try {
-    const geoApiClient = await getGeoApiClient();
-    const response = await geoApiClient.GET("/places/{place_id}", {
-      params: {
-        path: { place_id: avivGeoId },
-      }
-    });
-
-    if (response.error) {
-      throw new Error(`Geo API enrichment failed for ${geo.id}`);
-    }
-
-    if (response.data != null) {
-
-      geoData.AvivGeoId = geo.id;
-      geoData.Level = response.data.item.level ?? 0;
-      geoData.IsFictive = response.data.item.fictive ?? false;
-      geoData.Names = mapDtoNames(response.data.item.names ?? {});
-      geoData.StreetIds = [];
-      geoFeatureExtra = {
-        type: response.data.item.type,
-        parentIds: (response.data.item.parents ?? []).map((parent) => parent.id).filter((id): id is string => !!id),
-      };
-
-      for (const parent of response.data.item.parents ?? []) {
-        const mappedParent = mapParentToGeoEntity(parent);
-
-        if (!mappedParent) {
-          continue;
-        }
-
-        switch (parent.type?.toLowerCase()) {
-          case "country":
-            geoData.Country = mappedParent;
-            break;
-          case "macroregion":
-            geoData.Macroregion = mappedParent;
-            break;
-          case "region":
-            geoData.Region = mappedParent;
-            break;
-          case "province":
-            geoData.Province = mappedParent;
-            break;
-          case "municipality":
-          case "city":
-            geoData.Municipality = mappedParent;
-            break;
-          case "street":
-            geoData.Street = mappedParent;
-            geoData.StreetIds.push(mappedParent.AvivGeoId);
-            break;
-        }
-      }
-
-      geoFeatureExtra.streetIds = geoData.StreetIds;
-    }
-
-
-  } catch (error) {
-    logger.error("Error enriching geo from Geo API", {
-      id: geo.id,
-      error: error instanceof Error ? error.message : String(error),
-    });
-    throw error;
-
-  }
+  
+  await enrichGeoData(geoData);
 
   const marshalledData = marshall(geoData, { removeUndefinedValues: true });
   const tableName = isLocal ? "seo-ssot-classified-fifo" : process.env.MV_FEATURE_TABLE_NAME;
@@ -185,16 +111,93 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
   if (!tableName) {
     throw new Error("MV_FEATURE_TABLE_NAME environment variable is not set");
   }
-
-  await persitsInDynamoDB(id, marshalledData, tableName, data?.metadata?.updateDate?.toString() ?? Date.now().toString());
-
   try {
-    await persitsInSQL(geoData, geoFeatureExtra);
+    await persistGeoFeatureInDynamoDB(id, marshalledData, tableName, data?.metadata?.updateDate?.toString() ?? Date.now().toString());
+
+    await persistGeoFeatureInSQL(geoData);
+    await persistGeoNamesInSQL(geoData);
+    //TODO : recalculate materized view for the geoFeature table, to keep it up to date with the new data. This is needed because the geoFeature table is used by the geo-bulk-load pipeline, and the materialized view is used by the geo-bulk-load pipeline to generate the parquet files.
+   // await refreshMaterializedView();
   } catch (error) {
     logger.error("Error upserting geoFeature in Postgres", {
       geoid: id,
       error: error instanceof Error ? error.message : String(error),
     });
+  }
+
+  async function enrichGeoData(geoData: Geo) {
+    const avivGeoId = geo.id;
+    //  let geoFeatureExtra: GeoFeatureExtra | undefined;
+    try {
+      const geoApiClient = await getGeoApiClient();
+      const responsePlaceById = await geoApiClient.GET("/places/{place_id}", {
+        params: {
+          path: { place_id: avivGeoId },
+        }
+      });
+
+
+      let streetIds: string[] = [];
+
+      if (geoData.Type == "municipality") {
+        streetIds = await fetchAllRelationPlaceIds(avivGeoId);
+
+      }
+
+
+      if (responsePlaceById.error) {
+        throw new Error(`Geo API enrichment failed for ${geo.id}`);
+      }
+
+      if (responsePlaceById.data != null) {
+
+        geoData.AvivGeoId = geo.id;
+        geoData.Level = responsePlaceById.data.item.level ?? 0;
+        geoData.IsFictive = responsePlaceById.data.item.fictive ?? false;
+        geoData.Names = mapDtoNames(responsePlaceById.data.item.names ?? {});
+
+        geoData.StreetIds = streetIds;
+
+        for (const parent of responsePlaceById.data.item.parents ?? []) {
+          const mappedParent = mapParentToGeoEntity(parent);
+
+          if (!mappedParent) {
+            continue;
+          }
+
+          switch (parent.type?.toLowerCase()) {
+            case "country":
+              geoData.Country = mappedParent;
+              break;
+            case "macroregion":
+              geoData.Macroregion = mappedParent;
+              break;
+            case "region":
+              geoData.Region = mappedParent;
+              break;
+            case "province":
+              geoData.Province = mappedParent;
+              break;
+            case "municipality":
+            case "city":
+              geoData.Municipality = mappedParent;
+              break;
+            case "street":
+              geoData.Street = mappedParent;
+              break;
+          }
+        }
+      }
+
+
+    } catch (error) {
+      logger.error("Error enriching geo from Geo API", {
+        id: geo.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+
+    }
   }
 }
 
@@ -223,23 +226,22 @@ async function getGeoApiClient() {
 
 const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, geo: GeoManagementStructure }): Promise<void> => {
 
-  const deletedGeo: GeoLineageFallbackItem = {
+  const geoLineage: GeoLineageFallbackItem = {
     AvivGeoId: deleteCommand.geo?.id,
     Fallbacks: deleteCommand.geo.deleted?.fallback
   };
 
   // Marshall the geodata to DynamoDB format
-  const marshalledData = marshall(deletedGeo, { removeUndefinedValues: true });
+  const marshalledData = marshall(geoLineage, { removeUndefinedValues: true });
 
   const tableName = isLocal ? "seo-ssot-classified-fifo" : process.env.MV_LINEAGE_TABLE_NAME;
 
   if (!tableName) {
     throw new Error("MV_LINEAGE_TABLE_NAME environment variable is not set");
   }
-
-  await persitsInDynamoDB(deleteCommand.id, marshalledData, tableName, deleteCommand.updateDate?.toString() ?? Date.now().toString());
-
   try {
+    await persistGeoFeatureInDynamoDB(deleteCommand.id, marshalledData, tableName, deleteCommand.updateDate?.toString() ?? Date.now().toString());
+    await persistGeoLineageInSQL(geoLineage);
     await deleteGeoFeature(deleteCommand.id);
   } catch (error) {
     logger.error("Error deleting geoFeature in Postgres", {
@@ -256,14 +258,19 @@ const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, ge
     throw new Error("MV_FEATURE_TABLE_NAME environment variable is not set");
   }
 
+  await softDeleteGeoFromReferential(updatedTableName, deleteCommand.id, deleteCommand.updateDate, expiryTime);
+}
+
+// Marks a geo as soft-deleted in the feature table: sets softdeleted/expireat, guarded by the same optimistic-concurrency check as persistGeoFeatureInDynamoDB.
+async function softDeleteGeoFromReferential(tableName: string, id: string, updateDate: any, expiryTime: number): Promise<void> {
   const removeGeoFromReferentialResult = await ddbClient.send(new UpdateItemCommand({
-    TableName: updatedTableName,
+    TableName: tableName,
     Key: {
       "AvivGeoId": {
-        "S": deleteCommand.id
+        "S": id
       },
       "version": {
-        "S": DEFAULT_SCHEMA_VERSION
+        "S": GEO_DYNAMODB_SCHEMA_VERSION
       }
     },
     UpdateExpression: `
@@ -277,7 +284,7 @@ const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, ge
         "N": expiryTime.toString()
       },
       ":LASTUPDATEDATECURRV": {
-        "S": deleteCommand.updateDate?.toString()
+        "S": updateDate?.toString()
       },
       ":SOFTDELETE": {
         "BOOL": true
@@ -291,7 +298,7 @@ const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, ge
   }));
 
   if (removeGeoFromReferentialResult.$metadata.httpStatusCode !== 200) {
-    throw new Error(`Error deleting item of id: ${deleteCommand.id}`, {
+    throw new Error(`Error deleting item of id: ${id}`, {
       cause: removeGeoFromReferentialResult.$metadata
     });
   }
@@ -321,3 +328,42 @@ function mapDtoNames(tmp: { [language: string]: RawGeoName[]; }): GeoName[] {
   }))
   );
 }
+
+// Walks every /relation/{place_id} page via keyset pagination, collecting all street ids into a single array.
+const fetchAllRelationPlaceIds = async (
+  avivGeoId: string
+): Promise<string[]> => {
+  const placeIds: string[] = [];
+  let keyset: number | null | undefined = 0;
+
+  const geoApiClient = await getGeoApiClient();
+
+  while (keyset != null) {
+    const query: RelationQuery = {
+      keyset,
+      place_type: "STRT",
+      limit: RELATION_PAGE_LIMIT,
+      sort_type: "name",
+      sort_order: "ASC",
+    };
+
+    const response = await geoApiClient.GET("/relation/{place_id}", {
+      params: {
+        path: { place_id: avivGeoId },
+        query,
+      },
+    });
+
+    if (response.error) {
+      throw new Error(`Geo API relation enrichment failed for ${avivGeoId}`);
+    }
+
+    const items: RelationFeature[] = response.data?.items ?? [];
+    placeIds.push(...items.map((item) => item.id).filter((id): id is string => !!id));
+
+    keyset = response.data?.metadata.next_page_keyset;
+  }
+
+  return placeIds;
+};
+

@@ -7,7 +7,7 @@ export { parquetToPG as processMassiveParquetToPostgres, pgGeoFullToDynamoDB as 
 if (require.main === module) {
   parquetToPG()
     .then(pgGeoLineageToDynamoDB)
-    .then(pgGeoFullToDynamoDB)
+   // .then(pgGeoFullToDynamoDB)
     .catch((error) => {
       logger.error('[ECS Task] ERREUR CRITIQUE :', error);
       process.exitCode = 1;

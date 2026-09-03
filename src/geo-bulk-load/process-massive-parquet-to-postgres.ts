@@ -2,6 +2,7 @@ import { DuckDBInstance, DuckDBConnection } from '@duckdb/node-api';
 import { accessSync, constants } from 'fs';
 import { Client as PgClient } from 'pg';
 import { getClassifiedApiSecret, type GeoSSOTSecret } from "./classified-api-secrets";
+import { createPgClient } from "@shared/adapters/pg-client";
 import { logger } from "@shared/cross-cutting/logger";
 
 
@@ -603,13 +604,4 @@ function createPgConnectionString(secrets: GeoSSOTSecret) {
   const escapedPgConnString = pgConnString.replace(/'/g, "''");
   return escapedPgConnString;
 }
-function createPgClient(secrets: GeoSSOTSecret): Promise<PgClient> {
-  const pgClient = new PgClient({
-    host: secrets.DbHostWriter,
-    port: Number(secrets.DbPort),
-    database: secrets.DbMainDatabase,
-    user: secrets.DbUsername,
-    password: secrets.DbPassword,
-  });
-  return Promise.resolve(pgClient);
-}
+
