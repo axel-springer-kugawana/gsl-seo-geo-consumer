@@ -1,22 +1,16 @@
-import { UpdateItemCommand } from "@aws-sdk/client-dynamodb";
-import { marshall } from "@aws-sdk/util-dynamodb";
 import { logger } from "@shared/cross-cutting/logger";
-import { createDynamoDBClient } from "@shared/adapters/dynamodb-client";
+import { persistDataInDynamoDB, softDeleteGeoFromReferential } from "./geo-dynamodb";
 import { getClassifiedApiSecret } from "../adapters/classified-api-secrets";
 import { GeoManagementStructure, GeoLineageFallbackItem } from "@models";
 import { transformGeoManagementToGeo } from "./geoMapper";
-import { paths, components } from '../../shared/models/geo-api';
 import createClient from 'openapi-fetch';
+import { paths, components } from '../../shared/models/geo-api';
 import { Geo, GeoEntityBase, GeoName } from '../../shared/models/geo/1.0.0/geo';
 import { Middleware } from 'openapi-fetch';
 import { persistGeoFeatureInSQL, persistGeoNamesInSQL, deleteGeoFeature, upsertGeoFeatureNamesRow, persistGeoLineageInSQL } from "./geo-feature-postgres";
-import { GEO_DYNAMODB_SCHEMA_VERSION } from "@shared/models/geo-dynamodb-schema-version";
 
 // Configuration du client DynamoDB avec SSO pour le développement local
 const isLocal = process.env.AWS_EXECUTION_ENV === undefined;
-const AWS_REGION = process.env.AWS_REGION || 'eu-west-1';
-
-const ddbClient = createDynamoDBClient(AWS_REGION);
 
 const mapParentToGeoEntity = (parent: components["schemas"]["ParentFeature"]): GeoEntityBase | null => {
   if (!parent.id) {
@@ -36,93 +30,28 @@ type RelationQuery = NonNullable<paths["/relation/{place_id}"]["get"]["parameter
 type RelationFeature = components["schemas"]["Feature"];
 
 
-const persistGeoFeatureInDynamoDB = async (id: string, marshalledData: Record<string, any>, tableName: string, lastUpdateDate: string): Promise<void> => {
-  // Build UpdateExpression dynamically, excluding the partition/sort keys (AvivGeoId, version)
-  const updateExpressions: string[] = [];
-  const expressionAttributeValues: Record<string, any> = {};
-  const expressionAttributeNames: Record<string, string> = {
-    "#LASTUPDATEDATE": "lastupdatedate",
-    "#SOFTDELETE": "softdeleted",
-    "#EXPIREAT": "expireat"
-  };
-
-  // Add geodata attributes to update (excluding partition/sort keys)
-  Object.entries(marshalledData).forEach(([key, value]) => {
-    if (key !== 'AvivGeoId' && key !== 'Version') {
-      const attributeName = `#${key}`;
-      const attributeValue = `:${key}`;
-      expressionAttributeNames[attributeName] = key;
-      expressionAttributeValues[attributeValue] = value;
-      updateExpressions.push(`${attributeName} = ${attributeValue}`);
-    }
-  });
-
-  expressionAttributeValues[":LASTUPDATEDATECURRV"] = { "S": lastUpdateDate };
-  updateExpressions.push("#LASTUPDATEDATE = :LASTUPDATEDATECURRV");
-
-  try {
-    await ddbClient.send(new UpdateItemCommand({
-      TableName: tableName,
-      Key: {
-        "AvivGeoId": {
-          "S": id
-        },
-        "version": {
-          "S": GEO_DYNAMODB_SCHEMA_VERSION
-        }
-      },
-      UpdateExpression: `
-        SET 
-          ${updateExpressions.join(',\n          ')}
-        REMOVE
-          #SOFTDELETE, #EXPIREAT
-         `,
-      ConditionExpression: "attribute_not_exists(#LASTUPDATEDATE) OR #LASTUPDATEDATE <= :LASTUPDATEDATECURRV",
-      ExpressionAttributeValues: expressionAttributeValues,
-      ExpressionAttributeNames: expressionAttributeNames
-    }));
-
-  } catch (e: any) {
-
-    if (e.name === "ConditionalCheckFailedException") {
-      logger.warn("Conditional Check failed on lastUpdate date. Classified won't be updated", {
-        classified: marshalledData
-      })
-      logger.warn(e)
-    } else {
-      logger.warn("Error While update / creating DynamoDB Record", {
-        geoid: id,
-        Error: JSON.stringify(e)
-      });
-
-      throw e;
-    }
-  }
-}
-
 const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStructure): Promise<void> => {
   let geoData = transformGeoManagementToGeo(geo);
-  
+
   await enrichGeoData(geoData);
 
-  const marshalledData = marshall(geoData, { removeUndefinedValues: true });
   const tableName = isLocal ? "seo-ssot-classified-fifo" : process.env.MV_FEATURE_TABLE_NAME;
 
   if (!tableName) {
     throw new Error("MV_FEATURE_TABLE_NAME environment variable is not set");
   }
   try {
-    await persistGeoFeatureInDynamoDB(id, marshalledData, tableName, data?.metadata?.updateDate?.toString() ?? Date.now().toString());
-
+    await persistDataInDynamoDB(id, geoData, tableName, data?.metadata?.updateDate?.toString() ?? Date.now().toString());
     await persistGeoFeatureInSQL(geoData);
     await persistGeoNamesInSQL(geoData);
     await upsertGeoFeatureNamesRow(geoData.AvivGeoId);
- 
+
   } catch (error) {
     logger.error("Error upserting geoFeature in Postgres", {
       geoid: id,
       error: error instanceof Error ? error.message : String(error),
     });
+    throw error;
   }
 
   async function enrichGeoData(geoData: Geo) {
@@ -231,16 +160,14 @@ const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, ge
     Fallbacks: deleteCommand.geo.deleted?.fallback
   };
 
-  // Marshall the geodata to DynamoDB format
-  const marshalledData = marshall(geoLineage, { removeUndefinedValues: true });
-
+  // Marshalling happens inside persistDataInDynamoDB.
   const tableName = isLocal ? "seo-ssot-classified-fifo" : process.env.MV_LINEAGE_TABLE_NAME;
 
   if (!tableName) {
     throw new Error("MV_LINEAGE_TABLE_NAME environment variable is not set");
   }
   try {
-    await persistGeoFeatureInDynamoDB(deleteCommand.id, marshalledData, tableName, deleteCommand.updateDate?.toString() ?? Date.now().toString());
+    await persistDataInDynamoDB(deleteCommand.id, geoLineage, tableName, deleteCommand.updateDate?.toString() ?? Date.now().toString());
     await persistGeoLineageInSQL(geoLineage);
     await deleteGeoFeature(deleteCommand.id);
   } catch (error) {
@@ -248,6 +175,7 @@ const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, ge
       geoid: deleteCommand.id,
       error: error instanceof Error ? error.message : String(error),
     });
+    throw error;
   }
 
   const onDayInSeconds = 60 * 60 * 24 * 1;
@@ -259,49 +187,6 @@ const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, ge
   }
 
   await softDeleteGeoFromReferential(updatedTableName, deleteCommand.id, deleteCommand.updateDate, expiryTime);
-}
-
-// Marks a geo as soft-deleted in the feature table: sets softdeleted/expireat, guarded by the same optimistic-concurrency check as persistGeoFeatureInDynamoDB.
-async function softDeleteGeoFromReferential(tableName: string, id: string, updateDate: any, expiryTime: number): Promise<void> {
-  const removeGeoFromReferentialResult = await ddbClient.send(new UpdateItemCommand({
-    TableName: tableName,
-    Key: {
-      "AvivGeoId": {
-        "S": id
-      },
-      "version": {
-        "S": GEO_DYNAMODB_SCHEMA_VERSION
-      }
-    },
-    UpdateExpression: `
-    SET 
-      #EXPIREAT = :EXPIREAT,
-      #LASTUPDATEDATE = :LASTUPDATEDATECURRV,
-      #SOFTDELETE = :SOFTDELETE`,
-    ConditionExpression: "attribute_not_exists(#LASTUPDATEDATE) OR #LASTUPDATEDATE < :LASTUPDATEDATECURRV",
-    ExpressionAttributeValues: {
-      ":EXPIREAT": {
-        "N": expiryTime.toString()
-      },
-      ":LASTUPDATEDATECURRV": {
-        "S": updateDate?.toString()
-      },
-      ":SOFTDELETE": {
-        "BOOL": true
-      },
-    },
-    ExpressionAttributeNames: {
-      "#EXPIREAT": "expireat",
-      "#LASTUPDATEDATE": "lastupdatedate",
-      "#SOFTDELETE": "softdeleted"
-    }
-  }));
-
-  if (removeGeoFromReferentialResult.$metadata.httpStatusCode !== 200) {
-    throw new Error(`Error deleting item of id: ${id}`, {
-      cause: removeGeoFromReferentialResult.$metadata
-    });
-  }
 }
 
 export {
@@ -366,4 +251,3 @@ const fetchAllRelationPlaceIds = async (
 
   return placeIds;
 };
-

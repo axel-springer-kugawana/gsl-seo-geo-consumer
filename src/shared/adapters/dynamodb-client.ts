@@ -5,11 +5,11 @@ const isLocal = process.env.AWS_EXECUTION_ENV === undefined;
 
 // Local dev has no Lambda/ECS execution role, so credentials are pulled from the AWS SSO profile instead.
 export function createDynamoDBClient(region: string): DynamoDBClient {
-  const config: DynamoDBClientConfig = { region };
+    const config: DynamoDBClientConfig = { region };
 
-  if (isLocal) {
-    config.credentials = fromSSO({ profile: 'AvivPowerUserAccessReadWrite-135557783010' });
-  }
+    if (isLocal) {
+        config.credentials = fromSSO({ profile: 'AvivPowerUserAccessReadWrite-135557783010' });
+    }
 
-  return new DynamoDBClient(config);
+    return new DynamoDBClient(config);
 }

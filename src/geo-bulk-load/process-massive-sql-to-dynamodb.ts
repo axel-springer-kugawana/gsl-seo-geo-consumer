@@ -1,6 +1,7 @@
 import { DynamoDBClient, BatchWriteItemCommand, WriteRequest } from '@aws-sdk/client-dynamodb';
 import { marshall } from '@aws-sdk/util-dynamodb';
 import { createDynamoDBClient } from "@shared/adapters/dynamodb-client";
+import { isRetryableDynamoDbError } from "@shared/adapters/dynamodb-retry";
 import { getClassifiedApiSecret } from "./classified-api-secrets";
 import { createPgClient } from "@shared/adapters/pg-client";
 import { GEO_DYNAMODB_SCHEMA_VERSION } from "@shared/models/geo-dynamodb-schema-version";
@@ -19,7 +20,7 @@ export async function processMassiveSqlToDynamoDB(): Promise<void> {
     return backupPostgresCursorToDynamoDB({
         key: 'v_geo_feature',
         dynamoTableNameEnvVar: 'GEO_DYNAMODB_TABLE_NAME',
-        mapRow: mapRowGeoFull,
+        mapRow: mapRecordToGeo,
         declareCursorSql: (schema) => `
       SELECT
             avivgeoid, mainpostalcode, countrycode, fictive, level, postalcodes, names,
@@ -78,7 +79,7 @@ function firstString(items: string[] | null | undefined): string | null {
 // due to no equivalent in the view: Version, Macroregion, AvailableNeighborhoods,
 // ImmoweltLegacyMappings, LogicImmoLegacyMapping, NeighbouringGeoLevels, SelogerLegacyMapping,
 // SurroundingMunicipalitiesIds, ttl, UpdateDate.
-function mapRowGeoFull(row: Record<string, any>): Partial<Geo> {
+function mapRecordToGeo(row: Record<string, any>): Partial<Geo> {
     return {
         AvivGeoId: row.avivgeoid,
         Code: row.mainpostalcode ?? undefined,
@@ -86,8 +87,8 @@ function mapRowGeoFull(row: Record<string, any>): Partial<Geo> {
         IsFictive: row.fictive ?? false,
         Level: row.level ?? undefined,
         PostalCodes: row.postalcodes ?? undefined,
-        Parents : row.parents??undefined,
-        Type : row.type ?? undefined,
+        Parents: row.parents ?? undefined,
+        Type: row.type ?? undefined,
         Names: mapRawNames(row.names),
         Country: mapGeoEntity(row.countryid, row.code, row.countryfictive, row.countrynames),
         Region: mapGeoEntity(row.regionid, row.regioncode, row.regionfictive, row.regionnames),
@@ -129,21 +130,6 @@ async function runWithConcurrency<T>(tasks: (() => Promise<T>)[], concurrency: n
     }
 
     await Promise.all(Array.from({ length: Math.min(concurrency, tasks.length) }, worker));
-}
-
-// Transient DynamoDB errors (throttling, cold warmup of an on-demand table, request limits)
-// for which we should retry instead of aborting the whole backup.
-const RETRYABLE_DYNAMODB_ERROR_NAMES = new Set([
-    'ProvisionedThroughputExceededException',
-    'ThrottlingException',
-    'RequestLimitExceeded',
-    'InternalServerError',
-    'LimitExceededException',
-]);
-
-function isRetryableDynamoDbError(error: unknown): boolean {
-    const errorName = (error as { name?: string })?.name;
-    return typeof errorName === 'string' && RETRYABLE_DYNAMODB_ERROR_NAMES.has(errorName);
 }
 
 // Writes PutRequests to DynamoDB: an upsert per item (creates it if absent, fully replaces it if present).
@@ -211,8 +197,6 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
     logger.info(`[ECS Task] Starting bulk backup of ${taskLabel} to DynamoDB...`);
 
     const apisecrets = await getClassifiedApiSecret(process.env.GEO_DB_SECRET_ID || '');
-
-   
     const DYNAMODB_TABLE_NAME = process.env[dynamoTableNameEnvVar];
     const FETCH_BATCH_SIZE = Number(process.env.GEO_DYNAMODB_FETCH_BATCH_SIZE || '1000');
     const WRITE_CONCURRENCY = Number(process.env.GEO_DYNAMODB_WRITE_CONCURRENCY || '20');
@@ -261,7 +245,7 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
             logger.debug(`[ECS Task] Batch #${batchIndex}: ${result.rows.length} rows fetched from PostgreSQL in ${Date.now() - fetchStartedAt}ms.`);
 
             const writeRequests: WriteRequest[] = result.rows.map((row) => {
-                const {  ...item } = mapRow(row) as { Version?: string } & Record<string, any>;
+                const { ...item } = mapRow(row) as { Version?: string } & Record<string, any>;
                 // 'version' is the table's static sort key ("V1" | "V2"); drop the capitalized
                 // "Version" data field so it isn't stored redundantly alongside the sort key.
                 return {
@@ -272,7 +256,6 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
             const chunks = chunkArray(writeRequests, DYNAMODB_BATCH_WRITE_LIMIT);
             logger.debug(`[ECS Task] Batch #${batchIndex}: writing ${chunks.length} DynamoDB chunk(s) with a concurrency of ${WRITE_CONCURRENCY}...`);
 
-            const writeStartedAt = Date.now();
             const writeTasks = chunks.map((chunk) => async () => {
                 const retries = await writeBatchToDynamoDB(ddbClient, DYNAMODB_TABLE_NAME, chunk);
                 if (retries > 0) {
@@ -302,5 +285,3 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
         logger.info('[ECS Task] PostgreSQL connection closed.');
     }
 }
-
-

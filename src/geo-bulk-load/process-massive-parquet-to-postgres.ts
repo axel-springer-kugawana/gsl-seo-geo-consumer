@@ -1,6 +1,5 @@
 import { DuckDBInstance, DuckDBConnection } from '@duckdb/node-api';
 import { accessSync, constants } from 'fs';
-import { Client as PgClient } from 'pg';
 import { getClassifiedApiSecret, type GeoSSOTSecret } from "./classified-api-secrets";
 import { createPgClient } from "@shared/adapters/pg-client";
 import { logger } from "@shared/cross-cutting/logger";
