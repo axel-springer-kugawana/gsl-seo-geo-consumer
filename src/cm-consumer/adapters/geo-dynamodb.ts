@@ -67,36 +67,52 @@ export const persistDataInDynamoDB = async (id: string, data: Record<string, any
 
 // Marks a geo as soft-deleted in the feature table: sets softdeleted/expireat, guarded by the same optimistic-concurrency check as persistDataInDynamoDB.
 export async function softDeleteGeoFromReferential(tableName: string, id: string, updateDate: any, expiryTime: number): Promise<void> {
-  const removeGeoFromReferentialResult = await withDynamoDbRetry(() => ddbClient.send(new UpdateItemCommand({
-    TableName: tableName,
-    Key: buildGeoKey(id),
-    UpdateExpression: `
-    SET 
-      #EXPIREAT = :EXPIREAT,
-      #LASTUPDATEDATE = :LASTUPDATEDATECURRV,
-      #SOFTDELETE = :SOFTDELETE`,
-    ConditionExpression: "attribute_not_exists(#LASTUPDATEDATE) OR #LASTUPDATEDATE < :LASTUPDATEDATECURRV",
-    ExpressionAttributeValues: {
-      ":EXPIREAT": {
-        "N": expiryTime.toString()
+  try {
+    const removeGeoFromReferentialResult = await withDynamoDbRetry(() => ddbClient.send(new UpdateItemCommand({
+      TableName: tableName,
+      Key: buildGeoKey(id),
+      UpdateExpression: `
+      SET 
+        #EXPIREAT = :EXPIREAT,
+        #LASTUPDATEDATE = :LASTUPDATEDATECURRV,
+        #SOFTDELETE = :SOFTDELETE`,
+      ConditionExpression: "attribute_not_exists(#LASTUPDATEDATE) OR #LASTUPDATEDATE <= :LASTUPDATEDATECURRV",
+      ExpressionAttributeValues: {
+        ":EXPIREAT": {
+          "N": expiryTime.toString()
+        },
+        ":LASTUPDATEDATECURRV": {
+          "S": updateDate?.toString()
+        },
+        ":SOFTDELETE": {
+          "BOOL": true
+        },
       },
-      ":LASTUPDATEDATECURRV": {
-        "S": updateDate?.toString()
-      },
-      ":SOFTDELETE": {
-        "BOOL": true
-      },
-    },
-    ExpressionAttributeNames: {
-      "#EXPIREAT": "expireat",
-      "#LASTUPDATEDATE": "lastupdatedate",
-      "#SOFTDELETE": "softdeleted"
-    }
-  })));
+      ExpressionAttributeNames: {
+        "#EXPIREAT": "expireat",
+        "#LASTUPDATEDATE": "lastupdatedate",
+        "#SOFTDELETE": "softdeleted"
+      }
+    })));
 
-  if (removeGeoFromReferentialResult.$metadata.httpStatusCode !== 200) {
-    throw new Error(`Error deleting item of id: ${id}`, {
-      cause: removeGeoFromReferentialResult.$metadata
-    });
+    if (removeGeoFromReferentialResult.$metadata.httpStatusCode !== 200) {
+      throw new Error(`Error deleting item of id: ${id}`, {
+        cause: removeGeoFromReferentialResult.$metadata
+      });
+    }
+  } catch (e: any) {
+    if (e.name === "ConditionalCheckFailedException") {
+      logger.warn("Conditional Check failed on lastUpdate date. Geo won't be soft-deleted", {
+        geoid: id
+      });
+      logger.warn(e);
+    } else {
+      logger.warn("Error While soft-deleting DynamoDB Record", {
+        geoid: id,
+        Error: JSON.stringify(e)
+      });
+
+      throw e;
+    }
   }
 }
