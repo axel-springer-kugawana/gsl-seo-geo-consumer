@@ -36,24 +36,8 @@ const publishFullClassifiedEvent = async (fullEvent: GeoFullEvent) => {
     }));
 }
 
-const publishClassifiedDataAsReplayedEvent = async <TClassifiedData>(data: TClassifiedData) => {
-
-    await sqsClient.send(new SendMessageCommand({
-        QueueUrl: config.get("connectorEventsQueue"),
-        MessageBody: JSON.stringify({
-            id: uuidv4(),
-            idempotencykey: hash(JSON.stringify(data)),
-            specversion: "1.0",
-            source: SSoTConsumerName,
-            type: `${SSotEntityName}.replayed.v1`,
-            data
-        })
-    }));
-}
-
 export const hash = (contents: string) => createHash('md5').update(contents).digest("hex");
 
 export {
-    publishFullClassifiedEvent, 
-    publishClassifiedDataAsReplayedEvent
+    publishFullClassifiedEvent,
 }

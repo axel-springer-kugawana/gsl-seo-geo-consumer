@@ -10,7 +10,7 @@ module "cm_events_queue_subscription" {
   target_queue_arn     = module.cm_events_consumer_queue.queue_arn
   target_queue_id      = module.cm_events_consumer_queue.queue_id
   filter_policy = jsonencode({
-    type = ["classified.created", "classified.updated", "classified.deleted"]
+    type = ["geo.created", "geo.updated", "geo.deleted"]
     data = {
       isFraudPending = [false, { "exists" : false }]
       isGeoEnrichmentPending = [false, { "exists" : false }]
