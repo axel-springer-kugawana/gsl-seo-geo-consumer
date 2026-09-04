@@ -127,6 +127,10 @@ export async function deleteGeoFeature(avivGeoId: string): Promise<void> {
 
   await client.query(`DELETE FROM ${PG_SCHEMA}.geofeature WHERE avivgeoid = $1;`, [avivGeoId]);
 
+  await client.query(`DELETE FROM ${PG_SCHEMA}.geoname WHERE avivgeoid = $1;`, [avivGeoId]);
+ 
+  await client.query(`DELETE FROM ${PG_SCHEMA}.mv_geofeature_names WHERE avivgeoid = $1;`, [avivGeoId]);
+
   logger.info("geoFeature deleted successfully in PostgreSQL", { geoid: avivGeoId });
 
 //TODO : add in lineage table

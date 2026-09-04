@@ -10,6 +10,35 @@ Real-time counterpart to [geo-bulk-load](../geo-bulk-load-architecture/SKILL.md)
 
 ## Pipeline
 
+```mermaid
+flowchart LR
+   SSOT[External geo management SSOT]
+   Topic[geo_management_events_fifo_topic\nSNS FIFO]
+   IntakeQueue[connector_internal_queue_fifo\nSQS FIFO]
+   Connector[cm-connector\nhandle-geo-events-fifo Lambda]
+   EventQueue[connectorEventsQueue\nSQS FIFO]
+   Consumer[cm-consumer\nprocess-cm-connector-geo-events-fifo Lambda]
+   GeoAPI[Geo Place API]
+   FeatureTable[(MV_FEATURE_TABLE_NAME\nDynamoDB)]
+   LineageTable[(MV_LINEAGE_TABLE_NAME\nDynamoDB)]
+   Postgres[(PostgreSQL\ngeo materialized view)]
+   DLQ[Dead-letter queue]
+
+   SSOT -->|GeoManagementEvent| Topic
+   Topic --> IntakeQueue
+   IntakeQueue --> Connector
+   Connector -->|normalized CloudEvents envelope| EventQueue
+   EventQueue --> Consumer
+   IntakeQueue -. failed messages .-> DLQ
+   EventQueue -. failed messages .-> DLQ
+   Consumer -->|created or updated: enrich geo| GeoAPI
+   Consumer -->|created or updated: upsert| FeatureTable
+   Consumer -->|created or updated: upsert| Postgres
+   Consumer -->|deleted: fallback lineage| LineageTable
+   Consumer -->|deleted: soft-delete| FeatureTable
+   Consumer -->|deleted: delete feature / persist lineage| Postgres
+```
+
 1. **cm-connector** (`src/cm-connector`)
    - `geo_management_events_fifo_topic` (external SNS FIFO topic) -> the `cm-events-handling` infra module subscribes an internal FIFO SQS queue (`connector_internal_queue_fifo`).
    - [handle-geo-events-fifo.ts](../../../src/cm-connector/lambda-handlers/handle-geo-events-fifo.ts) (SQS-triggered lambda, `BatchProcessor`) parses each `GeoManagementEvent` and republishes a normalized CloudEvents-style envelope via `publishFullClassifiedEvent()` ([adapters/geo-event-publisher-fifo.ts](../../../src/cm-connector/adapters/geo-event-publisher-fifo.ts)) onto `connectorEventsQueue` — the same `connector_internal_queue_fifo`, read by cm-consumer.

@@ -12,6 +12,9 @@ import { persistGeoFeatureInSQL, persistGeoNamesInSQL, deleteGeoFeature, upsertG
 // Configuration du client DynamoDB avec SSO pour le développement local
 const isLocal = process.env.AWS_EXECUTION_ENV === undefined;
 
+const RELATION_PAGE_LIMIT = 50;
+
+
 const mapParentToGeoEntity = (parent: components["schemas"]["ParentFeature"]): GeoEntityBase | null => {
   if (!parent.id) {
     return null;
@@ -25,17 +28,15 @@ const mapParentToGeoEntity = (parent: components["schemas"]["ParentFeature"]): G
   };
 };
 
-const RELATION_PAGE_LIMIT = 50;
 type RelationQuery = NonNullable<paths["/relation/{place_id}"]["get"]["parameters"]["query"]>;
 type RelationFeature = components["schemas"]["Feature"];
 
-
-const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStructure): Promise<void> => {
+export async function createOrUpdateGeo(id: string, data: any, geo: GeoManagementStructure): Promise<void> {
   let geoData = transformGeoManagementToGeo(geo);
 
   await enrichGeoData(geoData);
 
-  const tableName = isLocal ? "seo-ssot-classified-fifo" : process.env.MV_FEATURE_TABLE_NAME;
+  const tableName = process.env.MV_FEATURE_TABLE_NAME;
 
   if (!tableName) {
     throw new Error("MV_FEATURE_TABLE_NAME environment variable is not set");
@@ -56,7 +57,6 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
 
   async function enrichGeoData(geoData: Geo) {
     const avivGeoId = geo.id;
-    //  let geoFeatureExtra: GeoFeatureExtra | undefined;
     try {
       const geoApiClient = await getGeoApiClient();
       const responsePlaceById = await geoApiClient.GET("/places/{place_id}", {
@@ -65,14 +65,11 @@ const createOrUpdateGeo = async (id: string, data: any, geo: GeoManagementStruct
         }
       });
 
-
       let streetIds: string[] = [];
 
       if (geoData.Type == "municipality") {
         streetIds = await fetchAllRelationPlaceIds(avivGeoId);
-
       }
-
 
       if (responsePlaceById.error) {
         throw new Error(`Geo API enrichment failed for ${geo.id}`);
@@ -153,7 +150,7 @@ async function getGeoApiClient() {
   return cliApi;
 }
 
-const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, geo: GeoManagementStructure }): Promise<void> => {
+export async function markGeoAsDeleted(deleteCommand: { id: string; updateDate: any; geo: GeoManagementStructure; }): Promise<void> {
 
   const geoLineage: GeoLineageFallbackItem = {
     AvivGeoId: deleteCommand.geo?.id,
@@ -189,10 +186,6 @@ const markGeoAsDeleted = async (deleteCommand: { id: string, updateDate: any, ge
   await softDeleteGeoFromReferential(updatedTableName, deleteCommand.id, deleteCommand.updateDate, expiryTime);
 }
 
-export {
-  createOrUpdateGeo,
-  markGeoAsDeleted
-}
 
 type RawGeoName = {
   name?: string | null;
