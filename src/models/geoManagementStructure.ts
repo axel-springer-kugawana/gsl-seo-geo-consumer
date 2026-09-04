@@ -114,9 +114,11 @@ export const geoManagementStructure = z.object({
   current_feature: z.optional(currentFeatureStructure.nullable()),
   platform: z.string(),
   release_date: z.string(),
-  created: z.optional(z.string().nullable()),
-  updated: z.optional(z.string().nullable()),
+  // created/updated/deleted carry lineage fallback info (not timestamps) from the SSOT event
+  created: z.optional(deletedStructure.nullable()),
+  updated: z.optional(deletedStructure.nullable()),
   deleted: z.optional(deletedStructure.nullable()),
+  updateDate: z.optional(z.string()),
 })
 
 export type CoordinatesStructure = z.infer<typeof coordinatesStructure>

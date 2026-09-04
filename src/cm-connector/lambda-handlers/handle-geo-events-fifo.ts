@@ -26,7 +26,8 @@ const handleClassifiedEvent = async (event: GeoManagementEvent): Promise<void> =
            await publishFullClassifiedEvent({
                 event: event.type === GeoEventType.CREATED ? "created" : "updated",
                 data: {
-                    ...geoData
+                    ...geoData,
+                    updateDate: new Date(event.time).toISOString()
                 }
             });
             break;

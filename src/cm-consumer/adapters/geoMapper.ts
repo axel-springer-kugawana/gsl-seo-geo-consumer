@@ -46,6 +46,6 @@ export const transformGeoManagementToGeo = (geoMgmt: GeoManagementStructure): Ge
     SelogerLegacyMapping:  null,
     SurroundingMunicipalitiesIds: [],
     ttl: 0,
-    UpdateDate: geoMgmt.updated || geoMgmt.created || new Date().toISOString(),
+    UpdateDate: geoMgmt.updateDate || new Date().toISOString(),
   } as unknown as Geo;
 };
