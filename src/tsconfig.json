@@ -17,6 +17,9 @@
             "@cm-connector/*": [
                 "cm-connector/*"
             ],
+            "@geo-bulk-load/*": [
+                "geo-bulk-load/*"
+            ],
             "@models": ["models/index"],
             "@utils": ["utils/index"]
         },

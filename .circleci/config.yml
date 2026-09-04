@@ -11,6 +11,6 @@ workflows:
       - path-filtering/filter:
           name: check-updated-files
           mapping: |
-            .* run-classified-management-connector-job true
+            .* run-geo-management-connector-job true
           base-revision: main
           config-path: .circleci/job-configs.yml

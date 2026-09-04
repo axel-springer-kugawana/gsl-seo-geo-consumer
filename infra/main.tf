@@ -2,19 +2,11 @@ module "cm_connector" {
   source = "./modules/cm-connector"
 
   bucket = {
-    id = var.classified_management_sync_bucket
-  }
-
-  events_topic = {
-    arn = var.classified_management_events_topic
-  }
-
-  events_fifo_topic = {
-    arn = var.classified_management_events_fifo_topic
+    id = var.geo_management_sync_bucket
   }
   
-  api = {
-    url = var.classified_management_api
+  events_fifo_topic = {
+    arn = var.geo_management_events_fifo_topic
   }
 
   application = var.application
@@ -22,60 +14,80 @@ module "cm_connector" {
   ssot_name   = var.ssot_name
 }
 
-module "dynamodb-ssot-classified" {
+module "dynamodb-ssot-geo-feature" {
+  partition_key = "AvivGeoId"
   source      = "./modules/dynamodb"
-  application = "gsl-seo-${var.environment}-classified-ssot"
+  application = "gsl-seo-geo-feature-${var.environment}"
   environment = var.environment
-
 }
 
-module "rds" {
-  source                      = "./modules/rds"
-  application                 = "seo-ssot-classified"
-  environment                 = var.environment
-  rds_aurora_name             = var.rds_aurora_name
-  rds_aurora_username         = var.rds_aurora_username
-  rds_aurora_database         = var.rds_aurora_database
-  rds_aurora_port             = var.rds_aurora_port
-  rds_engine_mode             = var.rds_engine_mode
-  rds_aurora_postgres_version = var.rds_aurora_postgres_version
-  rds_acu_min                 = var.rds_acu_min
-  rds_acu_max                 = var.rds_acu_max
-  vpc_id                      = data.aws_vpc.foundation_vpc.id
-  subnets                     = data.aws_subnets.foundation_data_subnets.ids
-  env_cidr                    = data.aws_ec2_managed_prefix_list.env_cidr.entries[*].cidr
-  suffix                      = var.suffix
-  ssot_name                   = var.ssot_name
-  aws_account_name            = var.aws_account_name
+moved {
+  from = module.dynamodb-ssot-geo-updated
+  to   = module.dynamodb-ssot-geo-feature
 }
 
-module "rds_athena_connector" {
-  count       = 1 #var.environment == "live" ? 0 : 1
-  source      = "./modules/rds-athena-connector"
-  application = var.application
+module "dynamodb-ssot-geo-lineage" {
+  partition_key = "AvivGeoId"
+  source      = "./modules/dynamodb"
+  application = "gsl-seo-geo-lineage-${var.environment}"
   environment = var.environment
-  db          = module.rds.properties
-  depends_on  = [module.rds]
-} 
+}
 
 module "cm_consumer_fifo" {
   # depends_on = [module.cm_connector, module.rds, module.dynamodb]
   source = "./modules/cm-consumer"
   process_cm_connector_events_lambda = {
-    dist_file                 = "../src/dist/cm-consumer/lambda-handlers/process-cm-connector-events-fifo.js"
-    handler                   = "process-cm-connector-events-fifo.handler"
+    dist_file                 = "../src/dist/cm-consumer/lambda-handlers/process-cm-connector-geo-events-fifo.js"
+    handler                   = "process-cm-connector-geo-events-fifo.handler"
     queue_esm_max_concurrency = var.queue_esm_max_concurrency
   }
   cm_connector_consumer_queue = {
     arn = module.cm_connector.queue_fifo_arn
     id  = module.cm_connector.queue_fifo_id
-  }
-  rds_arn      = module.rds.arn
+  } 
   ssot_name    = var.ssot_name
-  application  = "cm-consumer-fifo"
-  environment  = var.environment
-  secret_name  = module.rds.secret_name
-  rds_sg_id    = module.rds.sg_id
-  dynamodb_arn = module.dynamodb-ssot-classified.properties.dynamodb_arn
-  dynamodb_table_name = module.dynamodb-ssot-classified.properties.dynamodb_table_name
+  application  = "gm-consumer-fifo"
+  environment  = var.environment  
+  feature_dynamodb_arn        = module.dynamodb-ssot-geo-feature.properties.dynamodb_arn
+  feature_dynamodb_table_name = module.dynamodb-ssot-geo-feature.properties.dynamodb_table_name
+  lineage_dynamodb_arn        = module.dynamodb-ssot-geo-lineage.properties.dynamodb_arn
+  lineage_dynamodb_table_name = module.dynamodb-ssot-geo-lineage.properties.dynamodb_table_name
+  geo_dynamodb_schema_version = var.geo_dynamodb_schema_version
+}
+
+module "geo_bulk_load" {
+  source = "./modules/geo-bulk-load"
+
+  geo_bucket = {
+    id  = var.geo_management_sync_bucket
+    arn = "arn:aws:s3:::${var.geo_management_sync_bucket}"
+  }
+
+  geo_bucket_kms_key_arn = var.geo_bucket_kms_key_arn
+
+  rds = {
+    cluster_identifier = var.rds_aurora_name
+    database_name      = var.rds_aurora_database
+    schema             = var.geo_bulk_load_db_schema
+    security_group_id  = var.rds_security_group_id
+  }
+
+  schedule_expression = var.geo_bulk_load_schedule_expression
+  image_tag = var.geo_bulk_load_image_tag
+  application = var.application
+  environment = var.environment
+  geo_management_sync_bucket = var.geo_management_sync_bucket
+  geo_management_bucket_key = var.geo_management_bucket_key
+
+  geo_dynamodb_table = {
+    arn  = module.dynamodb-ssot-geo-feature.properties.dynamodb_arn
+    name = module.dynamodb-ssot-geo-feature.properties.dynamodb_table_name
+  }
+
+  geo_lineage_dynamodb_table = {
+    arn  = module.dynamodb-ssot-geo-lineage.properties.dynamodb_arn
+    name = module.dynamodb-ssot-geo-lineage.properties.dynamodb_table_name
+  }
+
+  geo_dynamodb_schema_version = var.geo_dynamodb_schema_version
 }

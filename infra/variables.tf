@@ -30,7 +30,7 @@ variable "capability" {
 variable "component" {
   description = "Application component"
   type        = string
-  default     = "seo-cm-connector"
+  default     = "seo-gm-connector"
 }
 
 variable "contact" {
@@ -63,30 +63,14 @@ variable "dataClassification" {
   default     = "internal"
 }
 
-
-variable "classified_management_sync_bucket" {
-  description = "classified management sync bucket name"
-  type        = string
-}
-
-variable "classified_management_events_topic" {
-  description = "classified management events topic arn"
-  type        = string
-}
-
-variable "classified_management_events_fifo_topic" {
-  description = "classified management events fifo topic arn"
+variable "geo_management_events_fifo_topic" {
+  description = "geos management events fifo topic arn"
   type        = string
 }
 
 variable "queue_esm_max_concurrency" {
   description = "queue_esm_max_concurrency"
   type        = number
-}
-
-variable "classified_management_api" {
-  description = "classified management api"
-  type        = string
 }
 
 variable "aws_account_name" {
@@ -145,4 +129,52 @@ variable "rds_aurora_postgres_version" {
 variable "suffix" {
   type    = string
   default = ""
+}
+
+variable "geo_management_sync_bucket" {
+  description = "geo management sync bucket"
+  type        = string
+}
+
+variable "geo_management_bucket_key" {
+  description = "geo management bucket key"
+  type        = string
+}
+
+variable "geo_dynamodb_schema_version" {
+  description = "Static sort key value (\"V1\", \"V2\"...) written to the geo-feature and geo-lineage DynamoDB tables"
+  type        = string
+  default     = "V1"
+}
+
+variable "geo_bucket_kms_key_arn" {
+  description = "KMS key ARN used to encrypt objects in the geo management sync bucket (cross-account, owned by the export team). Empty means the bucket is not KMS-encrypted"
+  type        = string
+  default     = ""
+}
+
+
+variable "rds_security_group_id" {
+  description = "Security group of the aurora cluster. Set it to let the bulk load task reach the database, empty to manage the inbound rule elsewhere"
+  type        = string
+  default     = ""
+}
+
+variable "geo_bulk_load_db_schema" {
+  description = "Schema holding the geo tables loaded from the parquet export"
+  type        = string
+  default     = "public"
+}
+
+
+variable "geo_bulk_load_schedule_expression" {
+  description = "EventBridge Scheduler expression, e.g. cron(0 3 * * ? *). Empty means: run the bulk load on demand only"
+  type        = string
+  default     = ""
+}
+
+variable "geo_bulk_load_image_tag" {
+  description = "Optional explicit ECR image tag for the geo bulk load ECS task. Leave empty to auto-select the most recent tag from ECR"
+  type        = string
+  default     = ""
 }

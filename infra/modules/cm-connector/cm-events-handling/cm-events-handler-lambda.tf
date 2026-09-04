@@ -94,8 +94,7 @@ module "handle_cm_events_lambda" {
   timeout                          = 25
   is_lambda_vpc                    = true
   enable_secrets_manager_extension = true
-  env_variables = {
-    CM_API_URL             = var.cm_api_url,
+  env_variables = { 
     CM_API_SECRET_NAME     = "${aws_secretsmanager_secret.cm-api-secret.name}"
     CONNECTOR_EVENTS_QUEUE = var.connector_events_queue.id
   }

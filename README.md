@@ -1,15 +1,47 @@
 # Getting started
 
-You will find here a concrete implemention of Classified Management consumer.
+You will find here a concrete implemention of Geo Management consumer.
 
 By deploying  this application into your account, you will be able:
-*  to consume events from Classified Management 
-* and  to request the current state of the world of classifieds. 
+*  to consume events from Geo  Management 
 
-Along with classified management connector, you will find an example on how to create a materialized view where you can store your own adapted/enriched models of classifieds.
+
+Along with geo management connector, you will find an example on how to create a materialized view where you can store your own adapted/enriched models of classifieds.
 
 ![CM Consumer](./assets/cm-connector-architecture.gif "CM connector").
 
+## Architecture
+
+```mermaid
+flowchart LR
+   SSOT[External geo management SSOT]
+   Topic[geo_management_events_fifo_topic\nSNS FIFO]
+   IntakeQueue[connector_internal_queue_fifo\nSQS FIFO]
+   Connector[cm-connector\nhandle-geo-events-fifo Lambda]
+   EventQueue[connectorEventsQueue\nSQS FIFO]
+   Consumer[cm-consumer\nprocess-cm-connector-geo-events-fifo Lambda]
+   GeoAPI[Geo Place API]
+   FeatureTable[(MV_FEATURE_TABLE_NAME\nDynamoDB)]
+   LineageTable[(MV_LINEAGE_TABLE_NAME\nDynamoDB)]
+   Postgres[(PostgreSQL\ngeo materialized view)]
+   DLQ[Dead-letter queue]
+
+   SSOT -->|GeoManagementEvent| Topic
+   Topic --> IntakeQueue
+   IntakeQueue --> Connector
+   Connector -->|normalized CloudEvents envelope| EventQueue
+   EventQueue --> Consumer
+   IntakeQueue -. failed messages .-> DLQ
+   EventQueue -. failed messages .-> DLQ
+   Consumer -->|created or updated: enrich geo| GeoAPI
+   Consumer -->|created or updated: upsert| FeatureTable
+   Consumer -->|created or updated: upsert| Postgres
+   Consumer -->|deleted: fallback lineage| LineageTable
+   Consumer -->|deleted: soft-delete| FeatureTable
+   Consumer -->|deleted: delete feature / persist lineage| Postgres
+```
+
+> See the [cm-connector-consumer-architecture skill](./.github/skills/cm-connector-consumer-architecture/SKILL.md) for the full breakdown of each step.
 
 ## code structure
 * In the `src` dir you will find the code of the lambda functions
@@ -37,8 +69,8 @@ module "cm_connector" {
   }
   
   events_topic = {
-    # classified events event topic
-    arn = "arn:aws:sns:eu-west-1:272575627684:classdisp-staging-dispatch-classified-event-topic"
+    # geo events event topic
+    arn = "arn:aws:sns:eu-west-1:090290096726:geodata_updates.fifo
   }
 
   api = {
@@ -53,15 +85,121 @@ module "cm_connector" {
 
 
 ```
+## Bulk loading the geo parquet export into postgres
+
+Along with the event driven connector, the solution ships a container task that
+loads the geo parquet export into the aurora postgres cluster of the account.
+It is a Fargate task rather than a lambda function because a full snapshot does
+not fit in the 15 minutes lambda budget.
+
+* [src/geo-bulk-load](./src/geo-bulk-load/) contains the task, its [Dockerfile](./src/geo-bulk-load/Dockerfile) and the PostgreSQL load logic.
+* [infra/modules/geo-bulk-load](./infra/modules/geo-bulk-load/) contains the ECR repository, ECS cluster, task definition and dedicated database secret.
+
+> For a detailed walkthrough of the full Parquet -> DuckDB -> PostgreSQL -> DynamoDB pipeline, see the [geo-bulk-load-architecture skill](./.github/skills/geo-bulk-load-architecture/SKILL.md).
+
+### How it works
+
+DuckDB reads the configured Parquet snapshot directly from S3 and writes the
+mapped columns to PostgreSQL through the `postgres` extension. The task first
+loads a staging table, updates existing `geoName` rows, inserts new rows, and
+then drops the staging table.
+
+```
+s3 parquet snapshot ──duckdb──> PostgreSQL staging table ──> geoName table
+```
+
+### Configuring the snapshot
+
+Set these Terraform variables in the environment tfvars file:
+
+```hcl
+geo_management_sync_bucket = "geo-export-delivery-backbone-witty-puma"
+geo_management_bucket_key = "miracle/snowflake/20260731205419-live"
+```
+
+The task reads the Parquet files below the `name` directory using the
+`/**/*.parquet` glob. `geo_management_bucket_key` should therefore identify
+the snapshot root, not the `name` directory itself.
+
+The task reads database credentials from the dedicated Secrets Manager secret
+created by the `geo-bulk-load` Terraform module. After the first `terraform
+apply`, populate that secret with at least:
+
+```json
+{
+  "DbUsername": "...",
+  "DbPassword": "..."
+}
+```
+
+The database host, port, name and schema are supplied separately as ECS
+environment variables.
+
+### Running a load
+
+The image is built and pushed by the `push-geo-bulk-load-image` ci job, right
+after the terraform apply that creates the ecr repository. Then:
+
+```
+aws ecs run-task \
+  --cluster gm-consumer-dev-geo-bulk-load \
+  --task-definition gm-consumer-dev-geo-bulk-load \
+  --launch-type FARGATE \
+  --network-configuration 'awsvpcConfiguration={subnets=[SUBNET_IDS],securityGroups=[SG_ID],assignPublicIp=DISABLED}'
+```
+
+`terraform output` prints the command with the subnets and the security group
+already filled in. Set `geo_bulk_load_schedule_expression` in the tfvars to run
+it on a schedule instead.
+
+Useful overrides, as container environment variables:
+
+| variable | default | effect |
+| --- | --- | --- |
+| `GEO_MANAGEMENT_SYNC_BUCKET` | Terraform value | S3 bucket containing the export |
+| `GEO_MANAGEMENT_BUCKET_KEY` | Terraform value | Snapshot root containing the `name` directory |
+
+### Local Docker run (quick test)
+
+If the image builds but exits immediately, it is usually missing runtime
+environment variables. At minimum, this task requires:
+
+* `GEO_DB_SECRET_ID`
+* `GEO_MANAGEMENT_SYNC_BUCKET`
+* `GEO_MANAGEMENT_BUCKET_KEY`
+
+Optional overrides:
+
+* `AWS_REGION` (default: `eu-west-1`)
+
+Example local run:
+
+```bash
+docker run --rm \
+  -e AWS_REGION=eu-west-1 \
+  -e GEO_DB_SECRET_ID=<your-secret-id> \
+  -e GEO_MANAGEMENT_SYNC_BUCKET=<your-bucket> \
+  -e GEO_MANAGEMENT_BUCKET_KEY=<snapshot-root> \
+  geo-bulk-load:test
+```
+
+If the command fails with `GEO_DB_SECRET_ID is required`, add the missing
+`-e GEO_DB_SECRET_ID=...` variable. If it fails with AWS auth errors, ensure
+your container has credentials (for example through task role in ECS, or local
+AWS credentials when testing outside ECS).
+
+### On upserts
+
+The load upserts on the primary key, so a row that disappeared from the export
+survives in the table: nothing is deleted.
+
 ## FAQ
 ### Before deploying
-First, you will need to get your AWS account(s) allowed to consume classified management. You will need to create a JIRA ticket as mentioned on this page: https://avivgroup.atlassian.net/wiki/spaces/APE/pages/375620475/Subscribe+to+SSOT+events
+First, you will need to get your AWS account(s) allowed to geo classified management. You will need to create a JIRA ticket as mentioned on this page: https://avivgroup.atlassian.net/wiki/spaces/DATA/pages/2152267777/Consuming+geo+referential+data+updates
 
-### Classified Management API secrets
-[The connector creates a secret](./infra/modules/cm-connector/cm-events-handling/cm-api-secret.tf) that must contain the API ClientId & Authorization in order to be able to call Classified Management API.
 
 > [!IMPORTANT]  
-> **An important step**: Once your account is authorized > to consume classifieds, you will need to set these > values into the secret :
+> **An important step**: Once your account is authorized > to consume geo, you will need to set these > values into the secret :
 > ```
 > {
 >   "ClientId":"<Client Id provided by CM>",
@@ -72,7 +210,7 @@ First, you will need to get your AWS account(s) allowed to consume classified ma
 
 
 ### Running an initialization job
-Once sucessfully deployed, you start getting events from classified management. If you want to run a "Get state of the world" operation in order to get the complete set of classifieds you will need to go to you aws console and execute the `get state of world` state machine (by default this state machine will have this name `cm-consumer-sample-dev-classifieds-get-stow`)
+Once sucessfully deployed, you start getting events from geo management. If you want to run a "Get state of the world" operation in order to get the complete set of classifieds you will need to go to you aws console and execute the `get state of world` state machine (by default this state machine will have this name `cm-consumer-sample-dev-classifieds-get-stow`)
 by specifying this input parameters to the state machine:
 ```
 {
@@ -82,8 +220,7 @@ by specifying this input parameters to the state machine:
 more precisely, if you want to start reading all IWT active classified you will need to provide this input
 ```
 {
-   "prefix": "ACTIVE/0/IWT/"
-}
+   "prefix": "geo-export-delivery-backbone-witty-puma/miracle/snowflake/20260731205419-live/feature/"
 ```
 
 ![Run get state of the world](./assets/run-state-machine.gif "Run state of the world").
@@ -98,15 +235,6 @@ Along with the connector, you will find [an example of a lambda function](./src/
 
 ![Alt text](./assets/mat-view-ddb-table.png)
 
-
-if you want to start reading all GSL Deleted classified you will need to provide this input
-`
-{
-  "prefix": "DELETE/0/GSL/",
-  "operation": "delete"
-}
-
-`
 
 
 
@@ -130,25 +258,3 @@ You will find more about classified management APIs here:
 * [REST API](https://classmgt.kind-camel-preview.aws.aviv-internal.eu/docs/stage/v0/index.html)
 * [Classified events docs](https://classdisp.kind-camel-dev.aws.aviv-internal.eu/docs/staging/external/0.1/streams.html)
 * [S3 Bucket objects layout](https://classdisp.kind-camel-dev.aws.aviv-internal.eu/docs/staging/external/0.1/streams.html#:~:text=The%20files%20in%20the%20s3%20are%20created%20in%20real%20time%20during%20the%20creation%20in%20the%20SSOT%20database%2C%20so%20to%20avoid%20the%20double%20consumption%20of%20the%20events%20(s3%20and%20SNS)%2C%20we%20advise%20you%20to%20stop%20the%20consumption%20of%20our%20SNS%20during%20the%20initialization%20phase.)
-
-
-
-
-### Update SQL Part
-execute sqs event :
-{
-    "type": "classified.init.v1"
-}
-
-
-### Update patch
-execute sqs event :
-{
-    "type": "classified.patch"
-}
-
-### clean patch
-execute sqs event :
-{
-    "type": "classified.clean.v1"
-}
