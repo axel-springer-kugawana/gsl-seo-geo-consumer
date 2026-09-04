@@ -10,14 +10,44 @@ Along with geo management connector, you will find an example on how to create a
 
 ![CM Consumer](./assets/cm-connector-architecture.gif "CM connector").
 
+## Architecture
+
+```mermaid
+flowchart LR
+   SSOT[External geo management SSOT]
+   Topic[geo_management_events_fifo_topic\nSNS FIFO]
+   IntakeQueue[connector_internal_queue_fifo\nSQS FIFO]
+   Connector[cm-connector\nhandle-geo-events-fifo Lambda]
+   EventQueue[connectorEventsQueue\nSQS FIFO]
+   Consumer[cm-consumer\nprocess-cm-connector-geo-events-fifo Lambda]
+   GeoAPI[Geo Place API]
+   FeatureTable[(MV_FEATURE_TABLE_NAME\nDynamoDB)]
+   LineageTable[(MV_LINEAGE_TABLE_NAME\nDynamoDB)]
+   Postgres[(PostgreSQL\ngeo materialized view)]
+   DLQ[Dead-letter queue]
+
+   SSOT -->|GeoManagementEvent| Topic
+   Topic --> IntakeQueue
+   IntakeQueue --> Connector
+   Connector -->|normalized CloudEvents envelope| EventQueue
+   EventQueue --> Consumer
+   IntakeQueue -. failed messages .-> DLQ
+   EventQueue -. failed messages .-> DLQ
+   Consumer -->|created or updated: enrich geo| GeoAPI
+   Consumer -->|created or updated: upsert| FeatureTable
+   Consumer -->|created or updated: upsert| Postgres
+   Consumer -->|deleted: fallback lineage| LineageTable
+   Consumer -->|deleted: soft-delete| FeatureTable
+   Consumer -->|deleted: delete feature / persist lineage| Postgres
+```
+
+> See the [cm-connector-consumer-architecture skill](./.github/skills/cm-connector-consumer-architecture/SKILL.md) for the full breakdown of each step.
 
 ## code structure
 * In the `src` dir you will find the code of the lambda functions
     *  [cm-connector](./src/cm-connector/) all lambda functions that implement classified management connector logic
      * [cm-consumer-example](./src/cm-consumer-example/) an example on how to consume events to build a materialized view
      * [shared/models](./src/shared/models) you will find the classified model your are consuming
-
-> For a detailed walkthrough of the cm-connector/cm-consumer event-driven pipeline, see the [cm-connector-consumer-architecture skill](./.github/skills/cm-connector-consumer-architecture/SKILL.md).
 
 * In the `infra` dir you will find the terraform code of this solution
      * [cm-connector](./infra/modules/cm-connector/) a generic ssot connector infra module
