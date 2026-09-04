@@ -19,7 +19,7 @@ const handleClassifiedEvent = async (event: GeoManagementEvent): Promise<void> =
                  //   id: geoData.id,
                     updateDate: new Date(event.time).toISOString()
                 }
-            });
+            }); 
             break;
         case GeoEventType.CREATED:
         case GeoEventType.UPDATED:
