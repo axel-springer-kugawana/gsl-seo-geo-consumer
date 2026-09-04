@@ -31,11 +31,11 @@ const handleClassifiedEvent = async (event: GeoManagementEvent): Promise<void> =
             });
             break;
         default:
-            throw new Error(`Unsupported event type: ${event.type}`);
+            throw new Error(`cnsumer Unsupported event type: ${event.type}`);
             break;
     }
 }
-
+    
 const processor = new BatchProcessor(EventType.SQS);
 
 export const queueSourceHandler = async (event: SQSEvent, context: Context): Promise<SQSBatchResponse> => {

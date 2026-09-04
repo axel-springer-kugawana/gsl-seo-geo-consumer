@@ -57,7 +57,7 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
 
     default: {
       // Unmapped event type: fail the record so it lands on the DLQ instead of being silently mis-processed
-      throw new Error(`Unsupported event type "${e.type}" for record ${record.messageId}`);
+      throw new Error(`connector Unsupported event type "${e.type}" for record ${record.messageId}`);
     }
   }
 }

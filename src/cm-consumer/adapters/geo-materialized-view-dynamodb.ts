@@ -9,11 +9,7 @@ import { Geo, GeoEntityBase, GeoName } from '../../shared/models/geo/1.0.0/geo';
 import { Middleware } from 'openapi-fetch';
 import { persistGeoFeatureInSQL, persistGeoNamesInSQL, deleteGeoFeature, upsertGeoFeatureNamesRow, persistGeoLineageInSQL } from "./geo-feature-postgres";
 
-// Configuration du client DynamoDB avec SSO pour le développement local
-const isLocal = process.env.AWS_EXECUTION_ENV === undefined;
-
 const RELATION_PAGE_LIMIT = 50;
-
 
 const mapParentToGeoEntity = (parent: components["schemas"]["ParentFeature"]): GeoEntityBase | null => {
   if (!parent.id) {
@@ -67,7 +63,10 @@ export async function createOrUpdateGeo(id: string, data: any, geo: GeoManagemen
 
       let streetIds: string[] = [];
 
-      if (geoData.Type == "municipality") {
+      if (geoData.Type.toLowerCase() == "municipality") {
+        logger.info("fetchAllRelationPlaceIds", {
+          avivGeoId: avivGeoId
+        });
         streetIds = await fetchAllRelationPlaceIds(avivGeoId);
       }
 
@@ -114,8 +113,6 @@ export async function createOrUpdateGeo(id: string, data: any, geo: GeoManagemen
           }
         }
       }
-
-
     } catch (error) {
       logger.error("Error enriching geo from Geo API", {
         id: geo.id,
@@ -158,7 +155,7 @@ export async function markGeoAsDeleted(deleteCommand: { id: string; updateDate: 
   };
 
   // Marshalling happens inside persistDataInDynamoDB.
-  const tableName = isLocal ? "seo-ssot-classified-fifo" : process.env.MV_LINEAGE_TABLE_NAME;
+  const tableName =  process.env.MV_LINEAGE_TABLE_NAME;
 
   if (!tableName) {
     throw new Error("MV_LINEAGE_TABLE_NAME environment variable is not set");
@@ -185,7 +182,6 @@ export async function markGeoAsDeleted(deleteCommand: { id: string; updateDate: 
 
   await softDeleteGeoFromReferential(updatedTableName, deleteCommand.id, deleteCommand.updateDate, expiryTime);
 }
-
 
 type RawGeoName = {
   name?: string | null;
