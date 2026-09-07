@@ -2,7 +2,7 @@
     "id": "bd287471-c2a3-4530-a73a-6f59fff17cce",
     "idempotencykey": "9b543a09cb73adbb742b7b6cb1ca530f",
     "specversion": "1.0",
-    "source": "classified-management-connector",
+    "source": "geo-management-connector",
     "type": "geo.updated.v1",
     "data": {
         "id": "NBH1FR1",

@@ -24,7 +24,7 @@ Steps 2 and 3 share `backupPostgresCursorToDynamoDB<T>()` in [process-massive-sq
 - `src/geo-bulk-load/main.ts` — entrypoint, chains the 3 steps when run directly (`node dist/geo-bulk-load/main.js`)
 - `src/geo-bulk-load/process-massive-parquet-to-postgres.ts` — Parquet -> Postgres
 - `src/geo-bulk-load/process-massive-sql-to-dynamodb.ts` — Postgres -> DynamoDB (both tables)
-- `src/geo-bulk-load/classified-api-secrets.ts` — fetches DB/API secrets from Secrets Manager (`GEO_DB_SECRET_ID`)
+- `src/geo-bulk-load/geo-api-secrets.ts` — fetches DB/API secrets from Secrets Manager (`GEO_DB_SECRET_ID`)
 - `infra/modules/geo-bulk-load/*.tf` — ECS Fargate task def, ECR repo, IAM, security groups, EventBridge schedule
 - `infra/modules/dynamodb` — generic single-table module (hash key `AvivGeoId`, sort key `version`) reused for both geo-feature and geo-lineage tables
 

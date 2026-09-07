@@ -1,5 +1,5 @@
 import { Client as PgClient } from 'pg';
-import { getClassifiedApiSecret } from "./classified-api-secrets";
+import { getGeoApiSecret } from "./geo-api-secrets";
 import { logger } from "@shared/cross-cutting/logger";
 import { createPgClient } from "@shared/adapters/pg-client";
 import { Geo } from '../../shared/models/geo/1.0.0/geo';
@@ -143,7 +143,7 @@ async function getPgClient(): Promise<PgClient> {
     return cachedPgClient;
   }
 
-  const secrets = await getClassifiedApiSecret();
+  const secrets = await getGeoApiSecret();
   const client = await createPgClient(secrets);
   await client.connect();
   logger.info("PostgreSQL connection established for geoFeature writes");

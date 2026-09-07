@@ -2,7 +2,7 @@ import { DynamoDBClient, BatchWriteItemCommand, WriteRequest } from '@aws-sdk/cl
 import { marshall } from '@aws-sdk/util-dynamodb';
 import { createDynamoDBClient } from "@shared/adapters/dynamodb-client";
 import { isRetryableDynamoDbError } from "@shared/adapters/dynamodb-retry";
-import { getClassifiedApiSecret } from "./classified-api-secrets";
+import { getGeoApiSecret } from "./geo-api-secrets";
 import { createPgClient } from "@shared/adapters/pg-client";
 import { GEO_DYNAMODB_SCHEMA_VERSION } from "@shared/models/geo-dynamodb-schema-version";
 import { logger } from "@shared/cross-cutting/logger";
@@ -196,7 +196,7 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
 
     logger.info(`[ECS Task] Starting bulk backup of ${taskLabel} to DynamoDB...`);
 
-    const apisecrets = await getClassifiedApiSecret(process.env.GEO_DB_SECRET_ID || '');
+    const apisecrets = await getGeoApiSecret(process.env.GEO_DB_SECRET_ID || '');
     const DYNAMODB_TABLE_NAME = process.env[dynamoTableNameEnvVar];
     const FETCH_BATCH_SIZE = Number(process.env.GEO_DYNAMODB_FETCH_BATCH_SIZE || '1000');
     const WRITE_CONCURRENCY = Number(process.env.GEO_DYNAMODB_WRITE_CONCURRENCY || '20');

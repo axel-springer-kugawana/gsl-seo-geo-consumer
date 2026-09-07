@@ -21,7 +21,7 @@ describe('handle geo event lambda', () => {
         jest.resetAllMocks();
     });
 
-    test('should emit classified updated event from cm connector when classified updated event is received from classified management', async () => {
+    test('should emit geo updated event from cm connector when geo updated event is received from geo management', async () => {
 
         // arrange
         const geoId = "NBH1FR1";
@@ -87,7 +87,7 @@ describe('handle geo event lambda', () => {
     });
 
 
-    test('should emit classified created event from cm connector when classified created event is received from classified management', async () => {
+    test('should emit geo created event from cm connector when geo  created event is received from geo management', async () => {
 
         // arrange
         const geoId = "NBH1FR1";
@@ -151,7 +151,7 @@ describe('handle geo event lambda', () => {
         expect(messageBodyInJson.data.geoId).toBe(geoId);
     });
     
-    test('should emit classified deleted event from cm connector when classified deleted event is received from classified management', async () => {
+    test('should emit geo deleted event from cm connector when geo deleted event is received from geo management', async () => {
 
         // arrange
         const geoId = "NBH1FR1";

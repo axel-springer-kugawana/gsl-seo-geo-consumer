@@ -1,18 +1,18 @@
 import { enableLambdaPowertoolsLoggingAndMetrics } from "@shared/cross-cutting/lambda-logging-middleware";
 import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
 import { BatchProcessor, EventType, processPartialResponse } from "@aws-lambda-powertools/batch";
-import { publishFullClassifiedEvent } from "@cm-connector/adapters/geo-event-publisher-fifo";
+import { publishFullGeoEvent } from "@cm-connector/adapters/geo-event-publisher-fifo";
 import { GeoManagementEvent, GeoEventType } from "@models";
 import { logger } from "@shared/cross-cutting/logger";
 
-const handleClassifiedEvent = async (event: GeoManagementEvent): Promise<void> => {
+const handleGeoEvent = async (event: GeoManagementEvent): Promise<void> => {
 
-    logger.info("Handling classified event", { eventType: event.type, eventData: event.data });
-     const geoData = event.data;//await getClassifiedById(event.link);
+    logger.info("Handling geo event", { eventType: event.type, eventData: event.data });
+     const geoData = event.data;
             
     switch (event.type) {
         case GeoEventType.DELETED:
-            await publishFullClassifiedEvent({
+            await publishFullGeoEvent({
                 event: "deleted",
                 data: {
                      ...geoData,
@@ -23,7 +23,7 @@ const handleClassifiedEvent = async (event: GeoManagementEvent): Promise<void> =
             break;
         case GeoEventType.CREATED:
         case GeoEventType.UPDATED:
-           await publishFullClassifiedEvent({
+           await publishFullGeoEvent({
                 event: event.type === GeoEventType.CREATED ? "created" : "updated",
                 data: {
                     ...geoData,
@@ -45,7 +45,7 @@ export const queueSourceHandler = async (event: SQSEvent, context: Context): Pro
     return processPartialResponse(event, async (record: SQSRecord) => {
         const geoEvent = JSON.parse(record.body) as GeoManagementEvent;
         //logger.info("Processing geo event", { geoEvent });
-        return await handleClassifiedEvent(geoEvent);
+        return await handleGeoEvent(geoEvent);
 
         //logger.info("end of processing geo event", { geoEvent });
     }, processor, {

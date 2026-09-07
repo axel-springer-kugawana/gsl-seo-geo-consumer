@@ -27,7 +27,7 @@ export const getSecretsAsString = async (secretName: string): Promise<string> =>
   await getSecretValue(secretName)
 
 
-export const getClassifiedApiSecret = async (secretName: string): Promise<GeoSSOTSecret> => {
+export const getGeoApiSecret = async (secretName: string): Promise<GeoSSOTSecret> => {
   const secrets = await getSecretValue(secretName)
   const secret = JSON.parse(secrets) as GeoSSOTSecret;
 

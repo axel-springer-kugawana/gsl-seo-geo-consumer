@@ -50,8 +50,8 @@ export const persistDataInDynamoDB = async (id: string, data: Record<string, any
   } catch (e: any) {
 
     if (e.name === "ConditionalCheckFailedException") {
-      logger.warn("Conditional Check failed on lastUpdate date. Classified won't be updated", {
-        classified: marshalledData
+      logger.warn("Conditional Check failed on lastUpdate date. Geo won't be updated", {
+        geo: marshalledData
       })
       logger.warn(e)
     } else {

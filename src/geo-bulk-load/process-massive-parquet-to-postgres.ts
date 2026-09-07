@@ -1,6 +1,6 @@
 import { DuckDBInstance, DuckDBConnection } from '@duckdb/node-api';
 import { accessSync, constants } from 'fs';
-import { getClassifiedApiSecret, type GeoSSOTSecret } from "./classified-api-secrets";
+import { getGeoApiSecret, type GeoSSOTSecret } from "./geo-api-secrets";
 import { createPgClient } from "@shared/adapters/pg-client";
 import { logger } from "@shared/cross-cutting/logger";
 
@@ -33,7 +33,7 @@ const PG_SCHEMA = 'public';
 export async function processMassiveParquetToPostgres() {
 
   logger.info('[ECS Task] Démarrage du traitement massif Parquet vers PostgreSQL...');
-  const secrets = await getClassifiedApiSecret(process.env.GEO_DB_SECRET_ID || '');
+  const secrets = await getGeoApiSecret(process.env.GEO_DB_SECRET_ID || '');
 
   const duckDBClient = await createDuckDBClient(secrets);
   const duckDBConnection = await setupDuckDBConnection(duckDBClient, secrets);

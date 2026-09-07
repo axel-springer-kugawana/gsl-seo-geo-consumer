@@ -1,6 +1,6 @@
 ---
 name: cm-connector-consumer-architecture
-description: 'Explains the event-driven pipeline that syncs geo management ("classified") events from the external SSOT into DynamoDB: cm-connector (SNS/SQS ingestion + FIFO republishing) and cm-consumer (materialized-view writer). Use when working on src/cm-connector, src/cm-consumer, their infra modules, or debugging geo event processing / DynamoDB writes.'
+description: 'Explains the event-driven pipeline that syncs geo management ("geo") events from the external SSOT into DynamoDB: cm-connector (SNS/SQS ingestion + FIFO republishing) and cm-consumer (materialized-view writer). Use when working on src/cm-connector, src/cm-consumer, their infra modules, or debugging geo event processing / DynamoDB writes.'
 ---
 
 # cm-connector / cm-consumer Architecture
@@ -41,7 +41,7 @@ flowchart LR
 
 1. **cm-connector** (`src/cm-connector`)
    - `geo_management_events_fifo_topic` (external SNS FIFO topic) -> the `cm-events-handling` infra module subscribes an internal FIFO SQS queue (`connector_internal_queue_fifo`).
-   - [handle-geo-events-fifo.ts](../../../src/cm-connector/lambda-handlers/handle-geo-events-fifo.ts) (SQS-triggered lambda, `BatchProcessor`) parses each `GeoManagementEvent` and republishes a normalized CloudEvents-style envelope via `publishFullClassifiedEvent()` ([adapters/geo-event-publisher-fifo.ts](../../../src/cm-connector/adapters/geo-event-publisher-fifo.ts)) onto `connectorEventsQueue` — the same `connector_internal_queue_fifo`, read by cm-consumer.
+   - [handle-geo-events-fifo.ts](../../../src/cm-connector/lambda-handlers/handle-geo-events-fifo.ts) (SQS-triggered lambda, `BatchProcessor`) parses each `GeoManagementEvent` and republishes a normalized CloudEvents-style envelope via `publishFullGeoEvent()` ([adapters/geo-event-publisher-fifo.ts](../../../src/cm-connector/adapters/geo-event-publisher-fifo.ts)) onto `connectorEventsQueue` — the same `connector_internal_queue_fifo`, read by cm-consumer.
    - Envelope shape: `{ id, idempotencykey, specversion, source, type: "<SSotEntityName>.<created|updated|deleted>.v1", data }`.
 2. **cm-consumer** (`src/cm-consumer`)
    - [process-cm-connector-geo-events-fifo.ts](../../../src/cm-consumer/lambda-handlers/process-cm-connector-geo-events-fifo.ts) (SQS-triggered lambda, `BatchProcessor`) reads the same FIFO queue and switches on `type`:
@@ -70,4 +70,4 @@ flowchart LR
 
 ## Debugging notes
 - `ValidationException: The provided key element does not match the schema` on a DynamoDB write means the `Key` is missing the `version` sort key attribute, or `GEO_DYNAMODB_SCHEMA_VERSION` doesn't match what was used when the item was created.
-- Local dev routes DynamoDB writes to a fixed local table name (`seo-ssot-classified-fifo`) and uses SSO credentials (`isLocal` check in `geo-materialized-view-dynamodb.ts`).
+- Local dev routes DynamoDB writes to a fixed local table name (`gsl-seo-geo-feature-dev`) and uses SSO credentials (`isLocal` check in `geo-materialized-view-dynamodb.ts`).

@@ -1,6 +1,6 @@
 import { logger } from "@shared/cross-cutting/logger";
 import { persistDataInDynamoDB, softDeleteGeoFromReferential } from "./geo-dynamodb";
-import { getClassifiedApiSecret } from "../adapters/classified-api-secrets";
+import { getGeoApiSecret } from "./geo-api-secrets";
 import { GeoManagementStructure, GeoLineageFallbackItem } from "@models";
 import { transformGeoManagementToGeo } from "./geoMapper";
 import createClient from 'openapi-fetch';
@@ -130,7 +130,7 @@ async function getGeoApiClient() {
   if (cachedGeoApiClient) {
     return cachedGeoApiClient;
   }
-  const apisecrets = await getClassifiedApiSecret();
+  const apisecrets = await getGeoApiSecret();
   const cliApi = createClient<paths>({
     baseUrl: `${apisecrets.GeoPlaceApiUrl}/v1`,
   });

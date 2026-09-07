@@ -30,7 +30,6 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
   switch (e.type) {
     case `${SSotEntityName}.deleted.v1`: { 
       await markGeoAsDeleted({ id: geoId, updateDate: e.data.updateDate, geo: e.data });
-      //  id: string, updateDate: any, classified: GeoManagementStructure 
       break;
     }
 
@@ -44,7 +43,7 @@ export const recordHandler = async (record: SQSRecord, context: Context): Promis
         await createOrUpdateGeo(geoId, e.data, geoObject);
          
       } catch (error) {
-        logger.error('Error processing classified', { 
+        logger.error('Error processing geo', { 
           geoId, 
           type: e.type,
           error: error instanceof Error ? error.message : error,

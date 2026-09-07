@@ -21,7 +21,7 @@ type GeoFullEvent= {
 }
  
 
-const publishFullClassifiedEvent = async (fullEvent: GeoFullEvent) => {
+const publishFullGeoEvent = async (fullEvent: GeoFullEvent) => {
 
     await sqsClient.send(new SendMessageCommand({
         QueueUrl: config.get("connectorEventsQueue"),
@@ -39,5 +39,5 @@ const publishFullClassifiedEvent = async (fullEvent: GeoFullEvent) => {
 export const hash = (contents: string) => createHash('md5').update(contents).digest("hex");
 
 export {
-    publishFullClassifiedEvent,
+    publishFullGeoEvent
 }

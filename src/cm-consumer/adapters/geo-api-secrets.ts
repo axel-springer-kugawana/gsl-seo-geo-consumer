@@ -23,7 +23,7 @@ const getSecretValue = async (secretName: string) => {
   return secretContent.SecretString;
 };
 
-const getClassifiedApiSecret = async (): Promise<GeoSSOTSecret> => {
+const getGeoApiSecret = async (): Promise<GeoSSOTSecret> => {
   const secretName = process.env.MV_APPLICATION_NAME + "-lambda_consumer_credentials"
  
   const secretValue = await getSecretValue(secretName);
@@ -33,4 +33,4 @@ const getClassifiedApiSecret = async (): Promise<GeoSSOTSecret> => {
   return secret;
 }
 
-export { getClassifiedApiSecret };
+export { getGeoApiSecret };
