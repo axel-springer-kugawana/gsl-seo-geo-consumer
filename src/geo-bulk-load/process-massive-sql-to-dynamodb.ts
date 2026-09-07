@@ -105,6 +105,7 @@ function mapRecordToGeo(row: Record<string, any>): Partial<Geo> {
 function mapRowGeoLineage(row: Record<string, any>): GeoLineageFallbackItem {
     return {
         AvivGeoId: row.oldid,
+        Type: "DELETED",
         Fallbacks: row.fallbacks ?? []
     };
 }
@@ -246,10 +247,10 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
 
             const writeRequests: WriteRequest[] = result.rows.map((row) => {
                 const { ...item } = mapRow(row) as { Version?: string } & Record<string, any>;
-                // 'version' is the table's static sort key ("V1" | "V2"); drop the capitalized
-                // "Version" data field so it isn't stored redundantly alongside the sort key.
+                // 'Version' is the table's static sort key ("3.1"); drop any extra field
+                // so it isn't stored redundantly alongside the sort key.
                 return {
-                    PutRequest: { Item: marshall({ ...item, version: GEO_DYNAMODB_SCHEMA_VERSION }, { removeUndefinedValues: true }) },
+                    PutRequest: { Item: marshall({ ...item, Version: GEO_DYNAMODB_SCHEMA_VERSION }, { removeUndefinedValues: true }) },
                 };
             });
 

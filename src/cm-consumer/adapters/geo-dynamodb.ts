@@ -10,11 +10,11 @@ const AWS_REGION = process.env.AWS_REGION || 'eu-west-1';
 const ddbClient = createDynamoDBClient(AWS_REGION);
 
 // Partition/sort key shared by every UpdateItemCommand against the feature or lineage table.
-const buildGeoKey = (id: string) => marshall({ AvivGeoId: id, version: GEO_DYNAMODB_SCHEMA_VERSION });
+const buildGeoKey = (id: string) => marshall({ AvivGeoId: id, Version: GEO_DYNAMODB_SCHEMA_VERSION });
 
-// Keys handled separately: AvivGeoId/version are the partition/sort key, softdeleted/expireat/lastupdatedate
+// Keys handled separately: AvivGeoId/Version are the partition/sort key, softdeleted/expireat/lastupdatedate
 // are managed below (removed on upsert, then re-set alongside the optimistic-concurrency check).
-const GEO_RESERVED_KEYS = new Set(['AvivGeoId', 'version']);
+const GEO_RESERVED_KEYS = new Set(['AvivGeoId', 'Version']);
 
 export const persistDataInDynamoDB = async (id: string, data: Record<string, any>, tableName: string, lastUpdateDate: string): Promise<void> => {
   const marshalledData = marshall(data, { removeUndefinedValues: true });

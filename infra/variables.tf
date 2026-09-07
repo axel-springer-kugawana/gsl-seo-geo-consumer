@@ -144,7 +144,7 @@ variable "geo_management_bucket_key" {
 variable "geo_dynamodb_schema_version" {
   description = "Static sort key value (\"V1\", \"V2\"...) written to the geo-feature and geo-lineage DynamoDB tables"
   type        = string
-  default     = "V1"
+  default     = "3.1"
 }
 
 variable "geo_bucket_kms_key_arn" {

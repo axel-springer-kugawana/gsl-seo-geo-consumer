@@ -139,6 +139,7 @@ export type GeoManagementStructure = z.infer<typeof geoManagementStructure>
 // cm-consumer soft-delete path and the geo-bulk-load geoLineage backup.
 export type GeoLineageFallbackItem = {
   AvivGeoId?: string;
-  //Version?: string;
+  Type?: string;
+  Version?: string;
   Fallbacks?: DeletedFallbackStructure[];
 }

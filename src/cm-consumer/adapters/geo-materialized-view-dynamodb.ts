@@ -151,6 +151,7 @@ export async function markGeoAsDeleted(deleteCommand: { id: string; updateDate: 
 
   const geoLineage: GeoLineageFallbackItem = {
     AvivGeoId: deleteCommand.geo?.id,
+    Type: "DELETED",
     Fallbacks: deleteCommand.geo.deleted?.fallback
   };
 
