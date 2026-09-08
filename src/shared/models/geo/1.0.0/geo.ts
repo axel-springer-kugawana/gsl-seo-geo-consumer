@@ -65,4 +65,5 @@ export interface Geo {
   SurroundingMunicipalitiesIds: string[];
   ttl: number;
   UpdateDate: string;
+  Population?: number;
 }

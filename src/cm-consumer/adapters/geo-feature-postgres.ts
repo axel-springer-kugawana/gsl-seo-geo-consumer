@@ -19,7 +19,7 @@ export async function persistGeoFeatureInSQL(geoData: Geo): Promise<void> {
     `
       INSERT INTO ${PG_SCHEMA}.geofeature (
         avivgeoid, type, mainpostalcode, countrycode, fictive, level,
-        postalcodes, parents, countryid, regionid, provinceid, municipalityid, streetids, neighbors
+        postalcodes, parents, countryid, regionid, provinceid, municipalityid, streetids, neighbors, population
       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
       ON CONFLICT (avivgeoid) DO UPDATE SET
         type = EXCLUDED.type,
@@ -34,7 +34,8 @@ export async function persistGeoFeatureInSQL(geoData: Geo): Promise<void> {
         provinceid = EXCLUDED.provinceid,
         municipalityid = EXCLUDED.municipalityid,
         streetids = EXCLUDED.streetids,
-        neighbors = EXCLUDED.neighbors;
+        neighbors = EXCLUDED.neighbors,
+        population = EXCLUDED.population;
     `,
     [
       geoData.AvivGeoId,
@@ -51,6 +52,7 @@ export async function persistGeoFeatureInSQL(geoData: Geo): Promise<void> {
       geoData.Municipality?.AvivGeoId ?? null,
       geoData.StreetIds,
       geoData.AvailableNeighborhoods ?? null,
+      geoData.Population ?? null,
     ]
   );
 

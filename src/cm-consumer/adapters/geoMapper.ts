@@ -47,5 +47,6 @@ export const transformGeoManagementToGeo = (geoMgmt: GeoManagementStructure): Ge
     SurroundingMunicipalitiesIds: [],
     ttl: 0,
     UpdateDate: geoMgmt.updateDate || new Date().toISOString(),
+    Population: feature.weight
   } as unknown as Geo;
 };

@@ -28,7 +28,7 @@ export async function processMassiveSqlToDynamoDB(): Promise<void> {
             regionid, regioncode, regionfictive, regionnames,
             provinceid, provincecode, provincefictive, provincenames,
             municipalityid, municipalitycode, municipalityfictive, municipalitynames,
-            streetcode, streetfictive, streetlevel, streetnames, streetids
+            streetcode, streetfictive, streetlevel, streetnames, streetids, population
       FROM ${schema}.v_geo_full;
     `,
     });
@@ -96,7 +96,8 @@ function mapRecordToGeo(row: Record<string, any>): Partial<Geo> {
         Municipality: mapGeoEntity(row.municipalityid, row.municipalitycode, row.municipalityfictive, row.municipalitynames),
         Street: mapGeoEntity(firstString(row.streetids), row.streetcode, row.streetfictive, row.streetnames),
         StreetIds: row.streetids ?? undefined,
-        AvailableNeighborhoods: row.neighbouringgeos
+        AvailableNeighborhoods: row.neighbouringgeos,
+        Population: row.population ?? undefined,
     };
 }
 
