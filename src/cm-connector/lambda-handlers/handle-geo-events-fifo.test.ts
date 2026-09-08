@@ -34,7 +34,7 @@ describe('handle geo event lambda', () => {
             link: `/IWT/${geoId}`,
             eventTime: 1676537758336,
             time: 1676537758336,
-            type: "geo.updated",
+            type: "georef.updated",
             data: exepctedResponse
         }];
 
