@@ -1,9 +1,9 @@
 import { GeoManagementStructure } from './geoManagementStructure'
 
 export enum GeoEventType {
-  CREATED = 'geo.created',
-  UPDATED = 'geo.updated',
-  DELETED = 'geo.deleted',
+  CREATED = 'georef.created',
+  UPDATED = 'georef.updated',
+  DELETED = 'georef.deleted',
 }
 
 export interface GeoManagementEvent {

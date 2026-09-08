@@ -98,7 +98,7 @@ describe('handle geo event lambda', () => {
             geoId,
             link: `/IWT/${geoId}`,
            
-              type: "geo.created",
+              type: "georef.created",
             eventTime: 1676537758336,
             time: 1676537758336,
             data: exepctedResponse
@@ -164,7 +164,7 @@ describe('handle geo event lambda', () => {
             link: `/IWT/${geoId}`,
             eventTime: 1676537758336,            
             time: 1676537758336,
-               type: "geo.deleted",
+               type: "georef.deleted",
             data: exepctedResponse
         }];
         // const events = [{
