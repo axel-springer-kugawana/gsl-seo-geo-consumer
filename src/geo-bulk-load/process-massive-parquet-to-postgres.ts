@@ -392,7 +392,13 @@ export async function processMassiveParquetToPostgres() {
         WHERE level = 1200
           AND municipalityId IS NOT NULL;
     `);
-
+ await pgClient.query(`
+     
+CREATE INDEX IF NOT EXISTS idx_geofeature_level
+    ON ${PG_SCHEMA}.geoFeature USING btree
+    (level ASC NULLS LAST)
+    TABLESPACE pg_default;
+    `);
     await pgClient.query(`
       UPDATE ${PG_SCHEMA}.geoFeature municipality
       SET streetIds = streets.streetIds
@@ -439,7 +445,16 @@ export async function processMassiveParquetToPostgres() {
                json_agg(jsonb_build_object('displayname', g.displayname, 'name', g.name, 'slug', g.slug, 'language', g.language)) AS names
         FROM ${PG_SCHEMA}.geofeature f
           LEFT JOIN ${PG_SCHEMA}.geoname g ON f.avivgeoid::text = g.avivgeoid::text
-        WHERE f.type::text = ANY (ARRAY['Country'::character varying::text, 'Region'::character varying::text, 'Province'::character varying::text, 'Municipality'::character varying::text, 'Street'::character varying::text])
+        WHERE f.type::text = ANY (ARRAY['Country'::character varying::text, 
+          'Region'::character varying::text,
+          'Province'::character varying::text,
+          'Municipality'::character varying::text, 
+          'Street'::character varying::text
+          'Borough'::character varying::text,
+          'Neighborhood'::character varying::text,
+          'Micro neighborhood'::character varying::text
+
+          ])
         GROUP BY f.avivgeoid, f.type, f.mainpostalcode, f.countrycode, f.fictive, f.level;
       `);
 
@@ -473,6 +488,9 @@ export async function processMassiveParquetToPostgres() {
             geo.regionid,
             geo.provinceid,
             geo.municipalityid,
+            geo.boroughid,
+            geo.neighborhoodid,
+            geo.microneighborhoodid,
             country.code,
             country.fictive AS countryfictive,
             country.level AS countrylevel,

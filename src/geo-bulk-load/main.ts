@@ -5,8 +5,8 @@ import { processMassiveSqlToDynamoDB as pgGeoFullToDynamoDB, processGeoLineageFa
 export { parquetToPG as processMassiveParquetToPostgres, pgGeoFullToDynamoDB as processMassiveSqlToDynamoDB, pgGeoLineageToDynamoDB as processGeoLineageFallbacksToDynamoDB };
 
 if (require.main === module) {
- //parquetToPG()    .then(pgGeoLineageToDynamoDB)
- pgGeoLineageToDynamoDB()
+ parquetToPG()    .then(pgGeoLineageToDynamoDB)
+//  pgGeoLineageToDynamoDB()
     .then(pgGeoFullToDynamoDB)
     .catch((error) => {
       logger.error('[ECS Task] ERREUR CRITIQUE :', error);
