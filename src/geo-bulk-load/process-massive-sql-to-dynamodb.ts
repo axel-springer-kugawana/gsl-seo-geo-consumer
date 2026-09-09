@@ -28,6 +28,9 @@ export async function processMassiveSqlToDynamoDB(): Promise<void> {
             regionid, regioncode, regionfictive, regionnames,
             provinceid, provincecode, provincefictive, provincenames,
             municipalityid, municipalitycode, municipalityfictive, municipalitynames,
+            boroughid, boroughcode, boroughfictive, boroughnames,
+            neighborhoodid, neighborhoodcode, neighborhoodfictive, neighborhoodnames,
+            microneighborhoodid, microneighborhoodcode, microneighborhoodfictive, microneighborhoodnames,
             streetcode, streetfictive, streetlevel, streetnames, streetids, population
       FROM ${schema}.v_geo_full;
     `,
@@ -94,6 +97,9 @@ function mapRecordToGeo(row: Record<string, any>): Partial<Geo> {
         Region: mapGeoEntity(row.regionid, row.regioncode, row.regionfictive, row.regionnames),
         Province: mapGeoEntity(row.provinceid, row.provincecode, row.provincefictive, row.provincenames),
         Municipality: mapGeoEntity(row.municipalityid, row.municipalitycode, row.municipalityfictive, row.municipalitynames),
+        Borough: mapGeoEntity(row.boroughid, row.boroughcode, row.boroughfictive, row.boroughnames),
+        Neighborhood: mapGeoEntity(row.neighborhoodid, row.neighborhoodcode, row.neighborhoodfictive, row.neighborhoodnames),
+        MicroNeighborhood: mapGeoEntity(row.microneighborhoodid, row.microneighborhoodcode, row.microneighborhoodfictive, row.microneighborhoodnames),
         Street: mapGeoEntity(firstString(row.streetids), row.streetcode, row.streetfictive, row.streetnames),
         StreetIds: row.streetids ?? undefined,
         AvailableNeighborhoods: row.neighbouringgeos,

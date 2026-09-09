@@ -107,6 +107,16 @@ export async function createOrUpdateGeo(id: string, data: any, geo: GeoManagemen
             case "city":
               geoData.Municipality = mappedParent;
               break;
+            case "borough":
+              geoData.Borough = mappedParent;
+              break;
+            case "neighborhood":
+              geoData.Neighborhood = mappedParent;
+              break;
+            case "micro neighborhood":
+            case "microneighborhood":
+              geoData.MicroNeighborhood = mappedParent;
+              break;
             case "street":
               geoData.Street = mappedParent;
               break;

@@ -53,6 +53,9 @@ export interface Geo {
   Level?: number;
   LogicImmoLegacyMapping: LogicImmoLegacyMapping;
   Municipality: GeoEntityBase;
+  Borough: GeoEntityBase;
+  Neighborhood: GeoEntityBase;
+  MicroNeighborhood: GeoEntityBase;
   Street: GeoEntityBase;
   StreetIds: string[];
   Names: GeoName[];
