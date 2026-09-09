@@ -312,7 +312,6 @@ export async function processMassiveParquetToPostgres() {
 );
 `);
 
-        ADD COLUMN IF NOT EXISTS streetIds text[];
     // Drop the PK and empty the table without dropping it, to speed up the bulk insert that follows.
     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoFeature DROP CONSTRAINT IF EXISTS GeoFeature_pkey;`);
   await pgClient.query(`DROP INDEX IF EXISTS ${PG_SCHEMA}.idx_geofeature_streets_by_municipality;`);
