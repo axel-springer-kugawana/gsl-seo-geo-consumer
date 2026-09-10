@@ -283,7 +283,8 @@ export async function processMassiveParquetToPostgres() {
     boroughId character varying,
     neighborhoodId character varying,
     microNeighborhoodId character varying,
-      streetIds text[],
+    streetId character varying,
+    streetIds text[],
     neighbors text[]
 );
     `);
@@ -307,6 +308,7 @@ export async function processMassiveParquetToPostgres() {
     boroughId character varying,
     neighborhoodId character varying,
     microNeighborhoodId character varying,
+    streetId character varying,
     streetIds text[],
     neighbors text[]
 );
@@ -338,6 +340,7 @@ export async function processMassiveParquetToPostgres() {
       , boroughId
       , neighborhoodId
       , microNeighborhoodId
+      , streetId
       , streetIds,
       neighbors)
       SELECT 
@@ -357,6 +360,7 @@ export async function processMassiveParquetToPostgres() {
         (CASE WHEN TYPE_LEVEL = 900 THEN ID ELSE (AD09->>0)::VARCHAR END) AS boroughId,
         (CASE WHEN TYPE_LEVEL = 1000 THEN ID ELSE (NBH2->>0)::VARCHAR END) AS neighborhoodId,
         (CASE WHEN TYPE_LEVEL = 1100 THEN ID ELSE (NBH3->>0)::VARCHAR END) AS microNeighborhoodId,
+        (CASE WHEN TYPE_LEVEL = 1200 THEN ID ELSE (STRT->>0)::VARCHAR END) AS streetId,
         STRT::JSON::VARCHAR[] AS streetIds,
         NEIGHBORS::JSON::VARCHAR[] AS neighbors
       FROM read_parquet('${S3_PARQUET_PATH}')
@@ -368,9 +372,9 @@ export async function processMassiveParquetToPostgres() {
     await duckDBConnection.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature (avivGeoId, type, mainPostalcode, countryCode, fictive, level
       , postalCodes, parents, population, countryId,
-      regionId, provinceId, municipalityId, boroughId, neighborhoodId, microNeighborhoodId, streetIds, neighbors)
+      regionId, provinceId, municipalityId, boroughId, neighborhoodId, microNeighborhoodId,streetId, streetIds, neighbors)
       SELECT avivGeoId, type, mainPostalcode, countryCode, fictive, level, postalCodes, parents, population
-      , countryId, regionId, provinceId, municipalityId, boroughId, neighborhoodId, microNeighborhoodId, streetIds, neighbors
+      , countryId, regionId, provinceId, municipalityId, boroughId, neighborhoodId, microNeighborhoodId, streetId, streetIds, neighbors
       FROM postgres_db.${PG_SCHEMA}.geoFeature_staging;
     `);
 
@@ -490,6 +494,7 @@ CREATE INDEX IF NOT EXISTS idx_geofeature_level
             geo.boroughid,
             geo.neighborhoodid,
             geo.microneighborhoodid,
+            geo.streetId,
             country.code,
             country.fictive AS countryfictive,
             country.level AS countrylevel,
@@ -540,11 +545,12 @@ CREATE INDEX IF NOT EXISTS idx_geofeature_level
                     geo_1.boroughid,
                     geo_1.neighborhoodid,
                     geo_1.microneighborhoodid,
+                    geo_1.streetid,
                     geo_1.streetids,
                     json_agg(jsonb_build_object('displayname', g.displayname, 'name', g.name, 'slug', g.slug, 'language', g.language)) AS names
                    FROM ${PG_SCHEMA}.geofeature geo_1
                      LEFT JOIN ${PG_SCHEMA}.geoname g ON g.avivgeoid::text = geo_1.avivgeoid::text
-                     GROUP BY geo_1.avivgeoid, geo_1.type, geo_1.mainpostalcode, geo_1.countrycode, geo_1.fictive, geo_1.level, geo_1.postalcodes, geo_1.parents, geo_1.population, geo_1.countryid, geo_1.regionid, geo_1.provinceid, geo_1.municipalityid, geo_1.boroughid, geo_1.neighborhoodid, geo_1.microneighborhoodid, geo_1.streetids) geo
+                     GROUP BY geo_1.avivgeoid, geo_1.type, geo_1.mainpostalcode, geo_1.countrycode, geo_1.fictive, geo_1.level, geo_1.postalcodes, geo_1.parents, geo_1.population, geo_1.countryid, geo_1.regionid, geo_1.provinceid, geo_1.municipalityid, geo_1.boroughid, geo_1.neighborhoodid, geo_1.microneighborhoodid, geo_1.streetid, geo_1.streetids) geo
              LEFT JOIN ${PG_SCHEMA}.mv_geofeature_names country ON country.avivgeoid::text = geo.countryid::text OR country.avivgeoid::text = geo.avivgeoid::text AND geo.level = 200
              LEFT JOIN ${PG_SCHEMA}.mv_geofeature_names region ON region.avivgeoid::text = geo.regionid::text OR region.avivgeoid::text = geo.avivgeoid::text AND geo.level = 400
              LEFT JOIN ${PG_SCHEMA}.mv_geofeature_names province ON province.avivgeoid::text = geo.provinceid::text OR province.avivgeoid::text = geo.avivgeoid::text AND geo.level = 600
@@ -552,7 +558,7 @@ CREATE INDEX IF NOT EXISTS idx_geofeature_level
              LEFT JOIN ${PG_SCHEMA}.mv_geofeature_names borough ON borough.avivgeoid::text = geo.boroughid::text OR borough.avivgeoid::text = geo.avivgeoid::text AND geo.level = 900
              LEFT JOIN ${PG_SCHEMA}.mv_geofeature_names neighborhood ON neighborhood.avivgeoid::text = geo.neighborhoodid::text OR neighborhood.avivgeoid::text = geo.avivgeoid::text AND geo.level = 1000
              LEFT JOIN ${PG_SCHEMA}.mv_geofeature_names microneighborhood ON microneighborhood.avivgeoid::text = geo.microneighborhoodid::text OR microneighborhood.avivgeoid::text = geo.avivgeoid::text AND geo.level = 1100
-             LEFT JOIN ${PG_SCHEMA}.mv_geofeature_names street ON street.avivgeoid::text = geo.streetids[1]::text OR street.avivgeoid::text = geo.avivgeoid::text AND geo.level = 1200;
+             LEFT JOIN ${PG_SCHEMA}.mv_geofeature_names street ON street.avivgeoid::text = geo.streetid::text OR street.avivgeoid::text = geo.avivgeoid::text AND geo.level = 1200;
       `);
       logger.info('[ECS Task] Vue v_geo_full créée/remplacée avec succès !');
     } catch (error) {

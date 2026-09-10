@@ -31,7 +31,7 @@ export async function processMassiveSqlToDynamoDB(): Promise<void> {
             boroughid, boroughcode, boroughfictive, boroughnames,
             neighborhoodid, neighborhoodcode, neighborhoodfictive, neighborhoodnames,
             microneighborhoodid, microneighborhoodcode, microneighborhoodfictive, microneighborhoodnames,
-            streetcode, streetfictive, streetlevel, streetnames, streetids, population
+            streetid,streetcode, streetfictive, streetlevel, streetnames, streetids, population
       FROM ${schema}.v_geo_full;
     `,
     });
@@ -100,7 +100,7 @@ function mapRecordToGeo(row: Record<string, any>): Partial<Geo> {
         Borough: mapGeoEntity(row.boroughid, row.boroughcode, row.boroughfictive, row.boroughnames),
         Neighborhood: mapGeoEntity(row.neighborhoodid, row.neighborhoodcode, row.neighborhoodfictive, row.neighborhoodnames),
         MicroNeighborhood: mapGeoEntity(row.microneighborhoodid, row.microneighborhoodcode, row.microneighborhoodfictive, row.microneighborhoodnames),
-        Street: mapGeoEntity(firstString(row.streetids), row.streetcode, row.streetfictive, row.streetnames),
+        Street: mapGeoEntity(row.streetid, row.streetcode, row.streetfictive, row.streetnames),
         StreetIds: row.streetids ?? undefined,
         AvailableNeighborhoods: row.neighbouringgeos,
         Population: row.population ?? undefined,

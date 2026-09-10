@@ -23,15 +23,16 @@ export async function persistGeoFeatureInSQL(geoData: Geo): Promise<void> {
         parents, 
         countryid, 
         regionid,
-         provinceid, 
-         municipalityid,
-         neighborhoodid,
-         microneighborhoodid,
-          boroughid, 
-          streetids, 
-          neighbors,
-           population
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+        provinceid, 
+        municipalityid,
+        neighborhoodid,
+        microneighborhoodid,
+        boroughid, 
+        streetid,
+        streetids, 
+        neighbors,
+        population
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
       ON CONFLICT (avivgeoid) DO UPDATE SET
         type = EXCLUDED.type,
         mainpostalcode = EXCLUDED.mainpostalcode,
@@ -47,6 +48,7 @@ export async function persistGeoFeatureInSQL(geoData: Geo): Promise<void> {
         neighborhoodid = EXCLUDED.neighborhoodid,
         microneighborhoodid = EXCLUDED.microneighborhoodid,
         boroughid = EXCLUDED.boroughid,
+        streetid = EXCLUDED.streetid,
         streetids = EXCLUDED.streetids,
         neighbors = EXCLUDED.neighbors,
         population = EXCLUDED.population;
@@ -67,7 +69,8 @@ export async function persistGeoFeatureInSQL(geoData: Geo): Promise<void> {
       geoData.Neighborhood?.AvivGeoId ?? null,
       geoData.MicroNeighborhood?.AvivGeoId ?? null,
       geoData.Borough?.AvivGeoId ?? null,
-      geoData.StreetIds, 
+      geoData.Street?.AvivGeoId ?? null,
+      geoData.StreetIds ?? null,
       geoData.AvailableNeighborhoods ?? null,
       geoData.Population ?? null,
 
@@ -95,11 +98,17 @@ export async function upsertGeoFeatureNamesRow(avivGeoId: string): Promise<void>
              f.countrycode,
              f.fictive,
              f.level,
-             json_agg(jsonb_build_object('displayname', g.displayname, 'name', g.name, 'slug', g.slug, 'language', g.language)) AS names
+             json_agg(jsonb_build_object('displayname', g.displayname, 'name', g.name, 
+             'slug', g.slug, 'language', g.language)) AS names
       FROM ${PG_SCHEMA}.geofeature f
         LEFT JOIN ${PG_SCHEMA}.geoname g ON f.avivgeoid::text = g.avivgeoid::text
       WHERE f.avivgeoid = $1
-        AND f.type::text = ANY (ARRAY['Country'::character varying::text, 'Region'::character varying::text, 'Province'::character varying::text, 'Municipality'::character varying::text, 'Street'::character varying::text, 'Borough'::character varying::text, 'Neighborhood'::character varying::text, 'Micro neighborhood'::character varying::text])
+        AND f.type::text = ANY (ARRAY['Country'::character varying::text,
+         'Region'::character varying::text, 'Province'::character varying::text, 
+         'Municipality'::character varying::text, 'Street'::character varying::text, 
+         'Borough'::character varying::text, 'Neighborhood'::character varying::text
+         ,'Micro neighborhood'::character varying::text
+         ])
       GROUP BY f.avivgeoid, f.type, f.mainpostalcode, f.countrycode, f.fictive, f.level;
     `,
     [avivGeoId]
