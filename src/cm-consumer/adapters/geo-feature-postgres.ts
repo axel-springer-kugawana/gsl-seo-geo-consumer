@@ -99,7 +99,7 @@ export async function upsertGeoFeatureNamesRow(avivGeoId: string): Promise<void>
       FROM ${PG_SCHEMA}.geofeature f
         LEFT JOIN ${PG_SCHEMA}.geoname g ON f.avivgeoid::text = g.avivgeoid::text
       WHERE f.avivgeoid = $1
-        AND f.type::text = ANY (ARRAY['Country'::character varying::text, 'Region'::character varying::text, 'Province'::character varying::text, 'Municipality'::character varying::text, 'Street'::character varying::text])
+        AND f.type::text = ANY (ARRAY['Country'::character varying::text, 'Region'::character varying::text, 'Province'::character varying::text, 'Municipality'::character varying::text, 'Street'::character varying::text, 'Borough'::character varying::text, 'Neighborhood'::character varying::text, 'Micro neighborhood'::character varying::text])
       GROUP BY f.avivgeoid, f.type, f.mainpostalcode, f.countrycode, f.fictive, f.level;
     `,
     [avivGeoId]
