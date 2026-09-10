@@ -1,0 +1,26 @@
+{
+    "id": "bd287471-c2a3-4530-a73a-6f59fff17cce",
+    "idempotencykey": "9b543a09cb73adbb742b7b6cb1ca530f",
+    "specversion": "1.0",
+    "source": "geo",
+    "type": "geo.deleted.v1",
+    "data": {
+        "id": "NBH1FR1",
+        "type": "DELETED",
+        "updateDate": "2023-11-02T16:16:16.985Z",
+        "platform": "FR",
+        "release_date": "2025-10-17",
+        "created": null,
+        "updated": null,
+        "current_feature": null,
+        "deleted": {
+            "fallback": [
+                {
+                    "type": "LINEAGE",
+                    "ancestor_id": "NBH1FR1",
+                    "descendant_id": "AD08FR37123"
+                }
+            ]
+        }
+    }
+}

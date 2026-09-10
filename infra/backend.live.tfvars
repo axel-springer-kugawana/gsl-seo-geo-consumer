@@ -1,2 +1,2 @@
 bucket  = "crazy-penguin-live-tfstate"
-key     = "live/classified-consumer/terraform.tfstate"
+key     = "live/geo-consumer/terraform.tfstate"

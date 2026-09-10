@@ -1,2 +1,2 @@
 bucket  = "crazy-penguin-preview-tfstate"
-key     = "preview/classified-consumer/terraform.tfstate"
+key     = "preview/geo-consumer/terraform.tfstate"

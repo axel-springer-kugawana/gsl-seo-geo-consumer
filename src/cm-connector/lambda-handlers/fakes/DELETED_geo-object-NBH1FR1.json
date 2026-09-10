@@ -1,0 +1,28 @@
+{
+    "requestTime": 1698997952194,
+    "updateDate": "2023-11-02T16:16:16.985Z",
+    "geoId": "NBH1FR1",
+    "requestDate": "2023-11-03T07:52:32.194Z",
+    "updateAt": 1698941776985,
+    "geo": {
+        "id": "AD08FR34605",
+        "type": "DELETED",
+        "created": null,
+        "deleted": {
+            "fallback": [
+                {
+                    "type": "LINEAGE",
+                    "ancestor_id": "AD08FR34605",
+                    "descendant_id": "AD08FR37123"
+                }
+            ]
+        },
+        "updated": null,
+        "platform": "FR",
+        "release_date": "2025-10-17",
+        "current_feature": null
+    },
+    "blockDispatching": true,
+    "state": "CREATED",
+    "version": "0"
+}

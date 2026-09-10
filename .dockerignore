@@ -1,0 +1,9 @@
+.git
+node_modules
+src/node_modules
+dist
+src/dist
+src/local
+**/*.test.ts
+**/*.spec.ts
+**/fakes
