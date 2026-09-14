@@ -80,6 +80,17 @@ variable "schedule_expression" {
   default     = ""
 }
 
+variable "schedule_state" {
+  description = "State of the schedule entry when schedule_expression is set. DISABLED creates a visible, on-demand-enable schedule that does not fire on its own"
+  type        = string
+  default     = "ENABLED"
+
+  validation {
+    condition     = contains(["ENABLED", "DISABLED"], var.schedule_state)
+    error_message = "schedule_state must be ENABLED or DISABLED."
+  }
+}
+
 variable "cloudwatch_log_retention" {
   type    = number
   default = 30

@@ -125,13 +125,7 @@ workflows:
       - build-geo-management-connector:
           <<: *devfilter
           ENV_SECRETS: "DEV"
-      - deploy-geo-management-connector:
-          <<: *devfilter
-          ENV: "dev"
-          ENV_SECRETS: "DEV"
-          ENV_PATH_FILE: "./dev.tfvars"
-          requires:
-            - Docker build and push
+    
       - infra/ecr-build-and-push-image:
           <<: *devfilter
           <<: *devkey
@@ -140,20 +134,20 @@ workflows:
           repository-name: 'gm-consumer-dev-geo-bulk-load'
           dockerfile: ./DockerfileBatchCopyDatalake
           requires:
-            - build-geo-management-connector
+            - build-geo-management-connector  
+      - deploy-geo-management-connector:
+          <<: *devfilter
+          ENV: "dev"
+          ENV_SECRETS: "DEV"
+          ENV_PATH_FILE: "./dev.tfvars"
+          requires:
+            - Docker build and push
   geo-management-connector-preview:
     when: << pipeline.parameters.run-geo-management-connector-job >>
     jobs:
       - build-geo-management-connector:
             ENV_SECRETS: "PREVIEW"
             <<: *previewfilter
-      - deploy-geo-management-connector:
-            <<: *previewfilter
-            ENV: "preview"
-            ENV_SECRETS: "PREVIEW"
-            ENV_PATH_FILE: "./preview.tfvars"
-            requires:
-              - Docker build and push
       - infra/ecr-build-and-push-image:
           <<: *previewfilter
           <<: *previewkey
@@ -162,7 +156,14 @@ workflows:
           repository-name: 'gm-consumer-preview-geo-bulk-load'
           dockerfile: ./DockerfileBatchCopyDatalake
           requires:
-            - build-geo-management-connector
+            - build-geo-management-connector 
+      - deploy-geo-management-connector:
+          <<: *previewfilter
+          ENV: "preview"
+          ENV_SECRETS: "PREVIEW"
+          ENV_PATH_FILE: "./preview.tfvars"
+          requires:
+            - Docker build and push
   geo-management-connector-live:
     when: << pipeline.parameters.run-geo-management-connector-job >>
     jobs:
@@ -175,13 +176,6 @@ workflows:
           type: approval
           requires:
             - build-geo-management-connector
-      - deploy-geo-management-connector:
-          <<: *livefilter
-          ENV: "live"
-          ENV_SECRETS: "LIVE"
-          ENV_PATH_FILE: "./live.tfvars"
-          requires:
-            - Docker build and push
       - infra/ecr-build-and-push-image:
           <<: *livefilter
           <<: *livekey
@@ -192,3 +186,10 @@ workflows:
           requires:
             - build-geo-management-connector
             - Approve deploy to prod
+      - deploy-geo-management-connector:
+          <<: *livefilter
+          ENV: "live"
+          ENV_SECRETS: "LIVE"
+          ENV_PATH_FILE: "./live.tfvars"
+          requires:
+            - Docker build and push

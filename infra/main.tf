@@ -73,6 +73,7 @@ module "geo_bulk_load" {
   }
 
   schedule_expression = var.geo_bulk_load_schedule_expression
+  schedule_state      = var.geo_bulk_load_schedule_state
   image_tag = var.geo_bulk_load_image_tag
   application = var.application
   environment = var.environment

@@ -5,3 +5,6 @@ queue_esm_max_concurrency          = 10
 geo_management_sync_bucket  = "geo-export-delivery-backbone-witty-puma"
 geo_management_bucket_key           = "miracle/snowflake/20260731205419-live"
 geo_bucket_kms_key_arn = "arn:aws:kms:eu-west-1:800185712387:key/bfe75758-2638-40d1-bd95-ff327c558507"
+# Entry exists in EventBridge Scheduler for visibility/manual enabling, but does not fire on its own.
+geo_bulk_load_schedule_expression = "cron(0 3 * * ? *)"
+geo_bulk_load_schedule_state      = "DISABLED"

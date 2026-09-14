@@ -173,6 +173,12 @@ variable "geo_bulk_load_schedule_expression" {
   default     = ""
 }
 
+variable "geo_bulk_load_schedule_state" {
+  description = "State of the geo bulk load schedule entry when geo_bulk_load_schedule_expression is set. DISABLED keeps the entry visible in EventBridge Scheduler without it firing"
+  type        = string
+  default     = "ENABLED"
+}
+
 variable "geo_bulk_load_image_tag" {
   description = "Optional explicit ECR image tag for the geo bulk load ECS task. Leave empty to auto-select the most recent tag from ECR"
   type        = string

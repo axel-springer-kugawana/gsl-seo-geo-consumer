@@ -74,6 +74,7 @@ resource "aws_scheduler_schedule" "geo_bulk_load" {
 
   schedule_expression          = var.schedule_expression
   schedule_expression_timezone = "Europe/Paris"
+  state                        = var.schedule_state
 
   target {
     arn      = aws_ecs_cluster.geo_bulk_load.arn
