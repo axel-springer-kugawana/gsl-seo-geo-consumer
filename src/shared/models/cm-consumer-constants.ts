@@ -1,2 +1,2 @@
-export const SSoTConsumerName = "classified-management-connector";
-export const SSotEntityName = "classified";
+export const SSoTConsumerName = "geo-management-connector";
+export const SSotEntityName = "geo";

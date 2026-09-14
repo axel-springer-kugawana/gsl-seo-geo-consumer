@@ -23,10 +23,6 @@ variable "connector_events_queue" {
   })
 }
 
-variable "cm_api_url" {
-  type = string
-}
-
 variable "handle_cm_events_lambda" {
   type = object({
     dist_file                 = string

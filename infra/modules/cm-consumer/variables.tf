@@ -23,22 +23,24 @@ variable "cm_connector_consumer_queue" {
 variable "ssot_name" {
   type = string
 }
-variable "rds_arn" {
+ 
+
+variable "feature_dynamodb_arn" {
   type = string
 }
 
-variable "secret_name" {
+variable "feature_dynamodb_table_name" {
   type = string
 }
 
-variable "rds_sg_id" {
+variable "lineage_dynamodb_arn" {
   type = string
 }
 
-variable "dynamodb_arn" {
+variable "lineage_dynamodb_table_name" {
   type = string
 }
 
-variable "dynamodb_table_name" {
+variable "geo_dynamodb_schema_version" {
   type = string
 }

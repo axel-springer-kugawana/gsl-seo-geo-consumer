@@ -1,7 +1,7 @@
 environment                        = "preview"
-classified_management_sync_bucket  = "aviv-classdisp-preview-stage-resync-bucket"
-classified_management_events_topic = "arn:aws:sns:eu-west-1:821590770219:classdisp-stage-dispatch-classified-event-topic"
-classified_management_events_fifo_topic = "arn:aws:sns:eu-west-1:821590770219:classdisp-stage-dispatch-classified-data.fifo"
-classified_management_api          = "https://classmgt-stage-api.kind-camel-preview.aws.aviv-internal.eu"
+geo_management_events_fifo_topic = "arn:aws:sns:eu-west-1:803634025826:geodata_updates.fifo  "
 aws_account_name                   = "crazy-penguin-preview"
 queue_esm_max_concurrency          = 10
+geo_management_sync_bucket  = "geo-export-delivery-backbone-witty-puma"
+geo_management_bucket_key           = "miracle/snowflake/20260731205419-live"
+geo_bucket_kms_key_arn = "arn:aws:kms:eu-west-1:800185712387:key/bfe75758-2638-40d1-bd95-ff327c558507"

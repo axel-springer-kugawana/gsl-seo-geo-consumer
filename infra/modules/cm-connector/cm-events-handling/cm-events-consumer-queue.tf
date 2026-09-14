@@ -10,11 +10,7 @@ module "cm_events_queue_subscription" {
   target_queue_arn     = module.cm_events_consumer_queue.queue_arn
   target_queue_id      = module.cm_events_consumer_queue.queue_id
   filter_policy = jsonencode({
-    type = ["classified.created", "classified.updated", "classified.deleted"]
-    data = {
-      isFraudPending = [false, { "exists" : false }]
-      isGeoEnrichmentPending = [false, { "exists" : false }]
-    }
+    type = ["georef.created", "georef.updated", "georef.deleted"]
   })
 
   filter_policy_scope = "MessageBody"

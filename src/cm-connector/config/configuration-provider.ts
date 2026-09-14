@@ -19,14 +19,8 @@ const configSchema = {
         default: "CONNECTOR_EVENTS_QUEUE",
         env: 'CONNECTOR_EVENTS_QUEUE',
     },
-    cmApiUrl: {
-        doc: 'Classifieds API Url',
-        format: String,
-        default: "CM_API_URL",
-        env: 'CM_API_URL',
-    },
     cmApiSecret: {
-        doc: 'Classifieds API Secret Name',
+        doc: 'Geo API Secret Name',
         format: String,
         default: "CM_API_SECRET_NAME",
         env: 'CM_API_SECRET_NAME',

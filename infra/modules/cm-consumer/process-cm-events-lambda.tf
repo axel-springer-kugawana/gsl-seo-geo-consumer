@@ -35,14 +35,18 @@ resource "aws_iam_role_policy_attachment" "attach_iam_policy_to_iam_role" {
 module "process_cm_connector_events_lambda" {
   source                           = "../constructs/lambda"
   lambda_handler                   = var.process_cm_connector_events_lambda.handler
-  lambda_function_name             = "${var.application}-${var.environment}-process-cm-connector-events"
+  lambda_function_name             = "${var.application}-${var.environment}-process-gm-connector-events"
   lambda_dist_file                 = var.process_cm_connector_events_lambda.dist_file
   lambda_role_arn                  = aws_iam_role.lambda_role.arn
   memory_size                      = "512"
   timeout                          = 9
   is_lambda_vpc                    = true
   enable_secrets_manager_extension = true
-  env_variables = { MV_TABLE_NAME = var.dynamodb_table_name, MV_APPLICATION_NAME = var.application
+  env_variables = {
+    MV_FEATURE_TABLE_NAME       = var.feature_dynamodb_table_name
+    MV_LINEAGE_TABLE_NAME       = var.lineage_dynamodb_table_name
+    MV_APPLICATION_NAME         = var.application
+    GEO_DYNAMODB_SCHEMA_VERSION = var.geo_dynamodb_schema_version
   }
 }
 
@@ -112,20 +116,15 @@ data "aws_iam_policy_document" "lambda_policy" {
     resources = ["*"]
   }
 
-  statement {
-    effect = "Allow"
-    actions = [
-      "rds-db:connect",
-      "rds:*",
-      "rds-data:*",
-    ]
-    resources = [var.rds_arn]
-  }
+ 
   statement {
     effect = "Allow"
     actions = [
       "dynamodb:UpdateItem"
     ]
-    resources = ["${var.dynamodb_arn}"]
+    resources = [
+      var.feature_dynamodb_arn,
+      var.lineage_dynamodb_arn
+    ]
   }
 }
