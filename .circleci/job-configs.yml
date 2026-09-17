@@ -111,6 +111,15 @@ jobs:
       - terraform/init:
           path: ./infra
           backend_config: "backend.<<parameters.ENV>>.tfvars"
+      - run:
+          name: Import ECR repository if it already exists outside state
+          command: |
+            cd infra
+            if ! terraform state list | grep -q 'module.geo_bulk_load.aws_ecr_repository.geo_bulk_load'; then
+              terraform import -var-file=<<parameters.ENV_PATH_FILE>> \
+                module.geo_bulk_load.aws_ecr_repository.geo_bulk_load \
+                gm-consumer-<<parameters.ENV>>-geo-bulk-load
+            fi
       - terraform/plan:
           path: ./infra
           var_file: <<parameters.ENV_PATH_FILE>>
