@@ -44,18 +44,20 @@ data "aws_iam_policy_document" "task" {
       "s3:GetObject",
     ]
     resources = [
-      "${var.geo_bucket.arn}/*"
+      "${var.geo_bucket.arn}/*",
+      "arn:aws:s3:::${var.geo_legacy_mapping_bucket_name}/*",
     ]
   }
 
-  # Resolving the latest snapshot and expanding the parquet globs both list.
+  # Resolving the latest snapshot and expanding source globs both list.
   statement {
     effect = "Allow"
     actions = [
       "s3:ListBucket",
     ]
     resources = [
-      var.geo_bucket.arn
+      var.geo_bucket.arn,
+      "arn:aws:s3:::${var.geo_legacy_mapping_bucket_name}",
     ]
   }
 

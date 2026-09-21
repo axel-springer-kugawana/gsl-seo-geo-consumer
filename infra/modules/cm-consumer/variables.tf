@@ -41,6 +41,11 @@ variable "lineage_dynamodb_table_name" {
   type = string
 }
 
+variable "geo_legacy_mapping_bucket_name" {
+  description = "S3 bucket holding the geo mapping legacy load source files"
+  type        = string
+}
+
 variable "geo_dynamodb_schema_version" {
   type = string
 }

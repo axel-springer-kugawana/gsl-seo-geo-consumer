@@ -293,3 +293,12 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
         logger.info('[ECS Task] PostgreSQL connection closed.');
     }
 }
+
+
+
+export async function importLegacyMappingFallbacksToDynamoDB(): Promise<void> {
+   
+    throw new Error('importLegacyMappingFallbacksToDynamoDB not implemented');
+}
+
+
