@@ -48,7 +48,7 @@ module "cm_consumer_fifo" {
   feature_dynamodb_table_name = module.dynamodb-ssot-geo-feature.properties.dynamodb_table_name
   lineage_dynamodb_arn        = module.dynamodb-ssot-geo-lineage.properties.dynamodb_arn
   lineage_dynamodb_table_name = module.dynamodb-ssot-geo-lineage.properties.dynamodb_table_name
-  geo_legacy_mapping_bucket_name = module.s3.output.bucket_name_geo_legacy_mapping
+  geo_legacy_mapping_bucket_name = module.s3.bucket_name_geo_legacy_mapping
   geo_dynamodb_schema_version = var.geo_dynamodb_schema_version
 }
 
@@ -94,8 +94,8 @@ module "geo_bulk_load" {
     name = module.dynamodb-ssot-geo-legacy-mapping.properties.dynamodb_table_name
   }
   geo_legacy_mapping_bucket = {
-    arn  = module.s3.output.bucket_arn_geo_legacy_mapping
-    name = module.s3.output.bucket_name_geo_legacy_mapping
+    arn  = module.s3.bucket_arn_geo_legacy_mapping
+    name = module.s3.bucket_name_geo_legacy_mapping
   }
 }
 

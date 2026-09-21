@@ -45,7 +45,7 @@ data "aws_iam_policy_document" "task" {
     ]
     resources = [
       "${var.geo_bucket.arn}/*",
-      "arn:aws:s3:::${var.geo_legacy_mapping_bucket_name}/*",
+      "arn:aws:s3:::${var.geo_legacy_mapping_bucket.name}/*",
     ]
   }
 
@@ -57,7 +57,7 @@ data "aws_iam_policy_document" "task" {
     ]
     resources = [
       var.geo_bucket.arn,
-      "arn:aws:s3:::${var.geo_legacy_mapping_bucket_name}",
+      "arn:aws:s3:::${var.geo_legacy_mapping_bucket.name}",
     ]
   }
 
