@@ -3,8 +3,9 @@ import { accessSync, constants } from 'fs';
 import { getGeoApiSecret, type GeoSSOTSecret } from "./geo-api-secrets";
 import { createPgClient } from "@shared/adapters/pg-client";
 import { logger } from "@shared/cross-cutting/logger";
+import { requireEnvironmentVariable } from "@shared/cross-cutting/environment";
 
-
+const awsRegion = requireEnvironmentVariable('AWS_REGION');
 const MANAGED_PREFIX_IDS = [
   'AD02', 'AD03', 'AD04', 'AD05', 'AD06', 'AD07', 'AD08', 'AD09',
   'NBH1', 'NBH2', 'NBH3', 'STRTFR', 'HONUFR'
@@ -594,8 +595,8 @@ async function postgresClearCache(conn: DuckDBConnection, secrets: GeoSSOTSecret
 }
 
 async function setupDuckDBConnection(instance: DuckDBInstance, secrets: GeoSSOTSecret): Promise<DuckDBConnection> {
-  const AWS_REGION = process.env.AWS_REGION || 'eu-west-1';
-
+ 
+  
   const conn = await instance.connect();
 
   logger.info('[ECS Task] Chargement des extensions (httpfs, postgres, json)...');
@@ -616,7 +617,7 @@ async function setupDuckDBConnection(instance: DuckDBInstance, secrets: GeoSSOTS
   accessSync(caCertFile, constants.R_OK);
   logger.info('[ECS Task] CA certificate file: ' + caCertFile);
   await conn.run(`SET ca_cert_file='${caCertFile}';`);
-  await conn.run(`SET s3_region='${AWS_REGION}';`);
+  await conn.run(`SET s3_region='${awsRegion}';`);
 
   // Resolves credentials from env vars, ~/.aws/credentials or the ECS task role, in that order.
   logger.info('[ECS Task] Chargement des credentials AWS via load_aws_credentials()...');

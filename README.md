@@ -42,6 +42,8 @@ flowchart LR
 
 > See the [cm-connector-consumer-architecture skill](./.github/skills/cm-connector-consumer-architecture/SKILL.md) for the full breakdown of each step.
 
+> Latest release: [GDA-217](./docs/releases/GDA-217.md) — Geo stale-write protection and consumer reliability.
+
 ## code structure
 * In the `src` dir you will find the code of the lambda functions
     * [cm-connector](./src/cm-connector/) contains the Lambda functions that implement the Geo Management connector logic

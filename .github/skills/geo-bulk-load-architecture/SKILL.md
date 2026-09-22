@@ -40,3 +40,4 @@ Built as a Docker image (`DockerfileBatchCopyDatalake`) pushed to ECR by CircleC
 ## Debugging notes
 - Throttling/warmup errors on DynamoDB writes are retried automatically; sustained throttling usually means `GEO_DYNAMODB_WRITE_CONCURRENCY` is too high for a cold on-demand table.
 - `ValidationException: The provided key element does not match the schema` means a write is missing the `version` sort key attribute (see DynamoDB schema notes in the [cm-connector-consumer-architecture skill](../cm-connector-consumer-architecture/SKILL.md)).
+- Batch rebuilds write a fresh snapshot keyed by `AvivGeoId` + `version`; live consumer updates remain governed by the `lastupdatedate` optimistic-concurrency guard described in the consumer skill, which prevents stale events from overwriting newer data.

@@ -59,6 +59,9 @@ importers:
       convict:
         specifier: ^6.2.4
         version: 6.2.4
+      csv-parse:
+        specifier: ^7.0.2
+        version: 7.0.2
       pg:
         specifier: 8.11.3
         version: 8.11.3
@@ -4230,6 +4233,10 @@ packages:
       shebang-command: 2.0.0
       which: 2.0.2
     dev: true
+
+  /csv-parse@7.0.2:
+    resolution: {integrity: sha512-uKZghv9UmPkMVLYy//KZ9HFAIJsl7wkhoEdIL0+rhuSY9pZQlhaeGEDPIe+/w7eh81MOql8Q/9+inAGWG6ZHYA==}
+    dev: false
 
   /debug@2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}

@@ -1,6 +1,7 @@
 import { logger } from "@shared/cross-cutting/logger";
 import { processMassiveParquetToPostgres as parquetToPG } from './process-massive-parquet-to-postgres';
-import { processMassiveSqlToDynamoDB as pgGeoFullToDynamoDB, processGeoLineageFallbacksToDynamoDB as pgGeoLineageToDynamoDB, importLegacyMappingFallbacksToDynamoDB } from './process-massive-sql-to-dynamodb';
+import { processMassiveSqlToDynamoDB as pgGeoFullToDynamoDB, processGeoLineageFallbacksToDynamoDB as pgGeoLineageToDynamoDB } from './process-massive-sql-to-dynamodb';
+import {  importLegacyMappingFallbacksToDynamoDB } from './process-massive-s3-to-dynamodb';
 
 export { parquetToPG as processMassiveParquetToPostgres, pgGeoFullToDynamoDB as processMassiveSqlToDynamoDB, importLegacyMappingFallbacksToDynamoDB };
 
