@@ -106,6 +106,7 @@ data "aws_iam_policy_document" "task" {
     resources = [
       var.geo_dynamodb_table.arn,
       var.geo_lineage_dynamodb_table.arn,
+      var.geo_legacy_mapping_dynamodb_table.arn,
     ]
   }
 }
