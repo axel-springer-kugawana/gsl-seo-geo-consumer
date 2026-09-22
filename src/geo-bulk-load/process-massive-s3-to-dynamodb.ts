@@ -26,15 +26,25 @@ interface GeoLegacyMappingDto {
 
 export async function importLegacyMappingFallbacksToDynamoDB(): Promise<void> {
 
-    const fileKey = "Pricemap.csv";
+    const fileKey = "pricemap.csv";
     const bucketName = requireEnvironmentVariable('GEO_LEGACY_MAPPING_BUCKET_NAME');
     const tableName = requireEnvironmentVariable('GEO_LEGACY_MAPPING_DYNAMODB_TABLE_NAME');
 
     // 1. Récupération du fichier CSV depuis S3
-    const s3Response = await s3Client.send(new GetObjectCommand({
-        Bucket: bucketName,
-        Key: fileKey,
-    }));
+    let s3Response;
+    try {
+        s3Response = await s3Client.send(new GetObjectCommand({
+            Bucket: bucketName,
+            Key: fileKey,
+        }));
+    } catch (error) {
+        logger.error('Failed to retrieve legacy mapping file from S3', {
+            bucket: bucketName,
+            key: fileKey,
+            error,
+        });
+        throw error;
+    }
 
     if (!s3Response.Body) {
         throw new Error("Le corps de la réponse S3 est vide.");
