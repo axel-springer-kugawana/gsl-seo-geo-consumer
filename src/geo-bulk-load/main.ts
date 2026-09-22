@@ -9,6 +9,7 @@ const GEO_LEGACY_MAPPING_LOAD_TASK = 'geo-legacy-mapping-load';
 
 async function runGeoBulkLoadTask(): Promise<void> {
   const taskName = process.env.GEO_BULK_LOAD_TASK;
+  logger.info(`Running task: ${taskName}`);
 
   if (taskName === GEO_LEGACY_MAPPING_LOAD_TASK) {
     await importLegacyMappingFallbacksToDynamoDB();
