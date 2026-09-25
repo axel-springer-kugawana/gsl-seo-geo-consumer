@@ -19,14 +19,15 @@ module "dynamodb-ssot-geo-feature" {
   source      = "./modules/dynamodb"
   application = "gsl-seo-geo-feature-${var.environment}"
   environment = var.environment
+  gsi_attribute_name = ""
 }
-
 
 module "dynamodb-ssot-geo-lineage" {
   partition_key = "AvivGeoId"
   source      = "./modules/dynamodb"
   application = "gsl-seo-geo-lineage-${var.environment}"
   environment = var.environment
+  gsi_attribute_name = "AvivGeoId"
 }
 
 module "cm_consumer_fifo" {
