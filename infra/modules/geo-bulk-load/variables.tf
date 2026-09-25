@@ -127,6 +127,22 @@ variable "geo_lineage_dynamodb_table" {
   })
 }
 
+variable "geo_legacy_mapping_dynamodb_table" {
+  description = "DynamoDB table backed up into by processGeoLegacyMappingFallbacksToDynamoDB (reuses the ssot-geo-legacy-mapping table)"
+  type = object({
+    arn  = string
+    name = string
+  })
+}
+
+variable "geo_legacy_mapping_bucket" {
+  description = "S3 bucket holding the geo mapping legacy load source files"
+  type = object({
+    arn  = string
+    name = string
+  })
+}
+
 variable "geo_dynamodb_schema_version" {
   description = "Static sort key value (\"V1\", \"V2\"...) written to the geo-feature and geo-lineage DynamoDB tables"
   type        = string

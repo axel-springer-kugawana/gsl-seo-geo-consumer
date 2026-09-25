@@ -1,18 +1,14 @@
-import { DynamoDBClient, BatchWriteItemCommand, WriteRequest } from '@aws-sdk/client-dynamodb';
-import { marshall } from '@aws-sdk/util-dynamodb';
-import { createDynamoDBClient } from "@shared/adapters/dynamodb-client";
-import { isRetryableDynamoDbError } from "@shared/adapters/dynamodb-retry";
+import { createDynamoDBClient, DYNAMODB_BATCH_WRITE_LIMIT, sendBatchToDynamoDB } from "@shared/adapters/dynamodb-client";
 import { getGeoApiSecret } from "./geo-api-secrets";
 import { createPgClient } from "@shared/adapters/pg-client";
+import { requireEnvironmentVariable } from "@shared/cross-cutting/environment";
 import { GEO_DYNAMODB_SCHEMA_VERSION } from "@shared/models/geo-dynamodb-schema-version";
 import { logger } from "@shared/cross-cutting/logger";
 import { Geo, GeoEntityBase, GeoName } from '../shared/models/geo/1.0.0/geo';
 import { GeoLineageFallbackItem } from '../models/geoManagementStructure';
 
-// DynamoDB BatchWriteItem accepts a maximum of 25 items per request.
-const DYNAMODB_BATCH_WRITE_LIMIT = 25;
 const PG_SCHEMA = 'public';
-const AWS_REGION = process.env.AWS_REGION || 'eu-west-1';
+const awsRegion = requireEnvironmentVariable('AWS_REGION');
 
 type RawGeoName = { displayname?: string | null; name?: string | null; slug?: string | null; language?: string | null };
 
@@ -74,9 +70,6 @@ function mapGeoEntity(id: string | null, code: string | null, fictive: boolean |
     };
 }
 
-function firstString(items: string[] | null | undefined): string | null {
-    return items?.[0] ?? null;
-}
 
 // v_geo_full -> shared Geo model (shared/models/geo/1.0.0/geo.ts). Geo fields left unmapped
 // due to no equivalent in the view: Version, Macroregion, AvailableNeighborhoods,
@@ -117,75 +110,6 @@ function mapRowGeoLineage(row: Record<string, any>): GeoLineageFallbackItem {
     };
 }
 
-function chunkArray<T>(items: T[], size: number): T[][] {
-    const chunks: T[][] = [];
-    for (let i = 0; i < items.length; i += size) {
-        chunks.push(items.slice(i, i + size));
-    }
-    return chunks;
-}
-
-// Runs the tasks with a limited number of concurrent in-flight DynamoDB calls.
-async function runWithConcurrency<T>(tasks: (() => Promise<T>)[], concurrency: number): Promise<void> {
-    let cursor = 0;
-
-    async function worker(): Promise<void> {
-        while (cursor < tasks.length) {
-            const taskIndex = cursor;
-            cursor += 1;
-            await tasks[taskIndex]();
-        }
-    }
-
-    await Promise.all(Array.from({ length: Math.min(concurrency, tasks.length) }, worker));
-}
-
-// Writes PutRequests to DynamoDB: an upsert per item (creates it if absent, fully replaces it if present).
-// Returns the number of retries it took, so the caller can aggregate a single error summary instead of logging each retry.
-async function writeBatchToDynamoDB(
-    ddbClient: DynamoDBClient,
-    tableName: string,
-    writeRequests: WriteRequest[]
-): Promise<number> {
-    let remaining = writeRequests;
-    let attempt = 0;
-
-    while (remaining.length > 0) {
-        let response;
-        try {
-            response = await ddbClient.send(
-                new BatchWriteItemCommand({ RequestItems: { [tableName]: remaining } })
-            );
-        } catch (error) {
-            attempt += 1;
-            if (!isRetryableDynamoDbError(error) || attempt > 5) {
-                logger.error(`[ECS Task] Non-recoverable DynamoDB failure after ${attempt} attempt(s) (${(error as { name?: string })?.name ?? 'unknown'}) : ${error}`);
-                throw error;
-            }
-            logger.debug(`[ECS Task] DynamoDB unavailable (${(error as { name?: string })?.name}), likely warmup/throttling, retrying (${attempt}/5)...`);
-            await new Promise((resolve) => setTimeout(resolve, 200 * 2 ** attempt));
-            continue;
-        }
-
-        const unprocessed = response.UnprocessedItems?.[tableName];
-
-        if (!unprocessed || unprocessed.length === 0) {
-            return attempt;
-        }
-
-        attempt += 1;
-        if (attempt > 5) {
-            throw new Error(`[ECS Task] Definitive DynamoDB write failure after ${attempt} attempts (${unprocessed.length} items remaining).`);
-        }
-        logger.debug(`[ECS Task] ${unprocessed.length} items not processed by DynamoDB (likely throttling), retrying (${attempt}/5)...`);
-        remaining = unprocessed;
-        await new Promise((resolve) => setTimeout(resolve, 200 * attempt));
-    }
-
-    return attempt;
-}
-
-
 type BackupCursorToDynamoDbOptions<T> = {
     // Used in logs and to derive the SQL cursor name, to distinguish this backup from the others sharing this code path.
     key: string;
@@ -195,7 +119,7 @@ type BackupCursorToDynamoDbOptions<T> = {
 };
 
 // Shared server-side-cursor -> DynamoDB batch backup: fetches rows in pages, converts them via
-// mapRow, and writes them to DynamoDB with bounded concurrency and retry-on-throttling.
+// mapRow, and writes them to DynamoDB in batches with retry-on-throttling.
 async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
     options: BackupCursorToDynamoDbOptions<T>
 ): Promise<void> {
@@ -205,19 +129,13 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
     logger.info(`[ECS Task] Starting bulk backup of ${taskLabel} to DynamoDB...`);
 
     const apisecrets = await getGeoApiSecret(process.env.GEO_DB_SECRET_ID || '');
-    const DYNAMODB_TABLE_NAME = process.env[dynamoTableNameEnvVar];
+    const DYNAMODB_TABLE_NAME = requireEnvironmentVariable(dynamoTableNameEnvVar);
     const FETCH_BATCH_SIZE = Number(process.env.GEO_DYNAMODB_FETCH_BATCH_SIZE || '1000');
-    const WRITE_CONCURRENCY = Number(process.env.GEO_DYNAMODB_WRITE_CONCURRENCY || '20');
-
-    if (!DYNAMODB_TABLE_NAME) {
-        throw new Error(`[ECS Task] ERROR: ${dynamoTableNameEnvVar} environment variable is not set.`);
-    }
 
     logger.info(`[ECS Task] DynamoDB backup configuration (${taskLabel})`, {
-        AWS_REGION,
+        
         DYNAMODB_TABLE_NAME,
         FETCH_BATCH_SIZE,
-        WRITE_CONCURRENCY,
         DYNAMODB_BATCH_WRITE_LIMIT,
     });
 
@@ -225,7 +143,7 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
     await pgClient.connect();
     logger.info('[ECS Task] PostgreSQL connection established.');
 
-    const ddbClient = createDynamoDBClient(AWS_REGION);
+    const ddbClient = createDynamoDBClient(awsRegion);
 
     // Batches with retries are logged individually; the rest are only reflected in this running total,
     // to keep progress logs to one line every PROGRESS_LOG_EVERY_N_BATCHES instead of one per batch.
@@ -252,28 +170,26 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
             batchIndex += 1;
             logger.debug(`[ECS Task] Batch #${batchIndex}: ${result.rows.length} rows fetched from PostgreSQL in ${Date.now() - fetchStartedAt}ms.`);
 
-            const writeRequests: WriteRequest[] = result.rows.map((row) => {
+            let batch: Record<string, any>[] = [];
+
+            for (const row of result.rows) {
                 const { ...item } = mapRow(row) as { Version?: string } & Record<string, any>;
                 // 'Version' is the table's static sort key ("3.1"); drop any extra field
                 // so it isn't stored redundantly alongside the sort key.
-                return {
-                    PutRequest: { Item: marshall({ ...item, Version: GEO_DYNAMODB_SCHEMA_VERSION }, { removeUndefinedValues: true }) },
-                };
-            });
+                batch.push({ ...item, Version: GEO_DYNAMODB_SCHEMA_VERSION });
 
-            const chunks = chunkArray(writeRequests, DYNAMODB_BATCH_WRITE_LIMIT);
-            logger.debug(`[ECS Task] Batch #${batchIndex}: writing ${chunks.length} DynamoDB chunk(s) with a concurrency of ${WRITE_CONCURRENCY}...`);
-
-            const writeTasks = chunks.map((chunk) => async () => {
-                const retries = await writeBatchToDynamoDB(ddbClient, DYNAMODB_TABLE_NAME, chunk);
-                if (retries > 0) {
-                    totalRetriedBatches += 1;
-                    logger.warn(`[ECS Task] Batch #${batchIndex}: a chunk needed ${retries} retry(ies) (throttling/warmup).`);
+                if (batch.length === DYNAMODB_BATCH_WRITE_LIMIT) {
+                    await sendBatchToDynamoDB(ddbClient, DYNAMODB_TABLE_NAME, batch);
+                    totalRowsProcessed += batch.length;
+                    batch = [];
                 }
-            });
-            await runWithConcurrency(writeTasks, WRITE_CONCURRENCY);
+            }
 
-            totalRowsProcessed += result.rows.length;
+            if (batch.length > 0) {
+                await sendBatchToDynamoDB(ddbClient, DYNAMODB_TABLE_NAME, batch);
+                totalRowsProcessed += batch.length;
+            }
+
             const elapsedSeconds = (Date.now() - startedAt) / 1000;
             const throughput = Math.round(totalRowsProcessed / elapsedSeconds);
             if (batchIndex % PROGRESS_LOG_EVERY_N_BATCHES === 0) {

@@ -3,8 +3,9 @@ import { accessSync, constants } from 'fs';
 import { getGeoApiSecret, type GeoSSOTSecret } from "./geo-api-secrets";
 import { createPgClient } from "@shared/adapters/pg-client";
 import { logger } from "@shared/cross-cutting/logger";
+import { requireEnvironmentVariable } from "@shared/cross-cutting/environment";
 
-
+const awsRegion = requireEnvironmentVariable('AWS_REGION');
 const MANAGED_PREFIX_IDS = [
   'AD02', 'AD03', 'AD04', 'AD05', 'AD06', 'AD07', 'AD08', 'AD09',
   'NBH1', 'NBH2', 'NBH3', 'STRTFR', 'HONUFR'
@@ -29,6 +30,21 @@ const FAKE_PROVINCES_IDS = [
   'AD06DE121', 'AD06DE137'
 ];
 const PG_SCHEMA = 'public';
+
+// Secondary indexes of geoFeature: dropped before the bulk insert and rebuilt once the data is loaded.
+const GEO_FEATURE_INDEXES: { name: string; definition: string }[] = [
+  { name: 'idx_geofeature_level', definition: '(level)' },
+  { name: 'idx_municipality_id', definition: '(municipalityId) WHERE municipalityId IS NOT NULL' },
+  { name: 'ix_geofeature_muni_by_country', definition: '(countryId) WHERE level = 800' },
+  { name: 'ix_geofeature_muni_by_region', definition: '(regionId) WHERE level = 800' },
+  { name: 'ix_geofeature_muni_by_province', definition: '(provinceId) WHERE level = 800' },
+  { name: 'ix_geofeature_nbh_by_muni', definition: '(municipalityId) WHERE level = 1000' },
+  { name: 'idx_geofeature_nbh_by_borough', definition: '(boroughId) WHERE level = 1000' },
+  { name: 'idx_geofeature_streets_by_municipality', definition: '(municipalityId, avivGeoId) WHERE level = 1200 AND municipalityId IS NOT NULL' },
+  { name: 'idx_geofeature_streets_by_neighborhood', definition: '(neighborhoodId) WHERE level = 1200' },
+  { name: 'idx_geofeature_honu_by_municipality', definition: '(municipalityId, streetId) WHERE level = 1400' },
+  { name: 'idx_geofeature_honu_by_neighborhood', definition: '(neighborhoodId, streetId) WHERE level = 1400' },
+];
 
 export async function processMassiveParquetToPostgres() {
 
@@ -314,9 +330,11 @@ export async function processMassiveParquetToPostgres() {
 );
 `);
 
-    // Drop the PK and empty the table without dropping it, to speed up the bulk insert that follows.
+    // Drop the PK and indexes and empty the table without dropping it, to speed up the bulk insert that follows.
     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoFeature DROP CONSTRAINT IF EXISTS GeoFeature_pkey;`);
-  await pgClient.query(`DROP INDEX IF EXISTS ${PG_SCHEMA}.idx_geofeature_streets_by_municipality;`);
+    for (const { name } of GEO_FEATURE_INDEXES) {
+      await pgClient.query(`DROP INDEX IF EXISTS ${PG_SCHEMA}.${name};`);
+    }
     await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}.geoFeature;`);
 
     // STEP 2: Vectorized bulk copy from Parquet S3
@@ -382,6 +400,10 @@ export async function processMassiveParquetToPostgres() {
     await pgClient.query(`
      ALTER TABLE ${PG_SCHEMA}.geoFeature ADD CONSTRAINT GeoFeature_pkey PRIMARY KEY (avivGeoId);
 `);
+    logger.info('[ECS Task] Reconstruction des index de geoFeature...');
+    for (const { name, definition } of GEO_FEATURE_INDEXES) {
+      await pgClient.query(`CREATE INDEX IF NOT EXISTS ${name} ON ${PG_SCHEMA}.geoFeature USING btree ${definition};`);
+    }
     // STEP 5: Cleanup
     logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoFeature_staging;`);
@@ -390,19 +412,7 @@ export async function processMassiveParquetToPostgres() {
   async function updateMunicipalityStreetIds(): Promise<void> {
     logger.info('[ECS Task] Mise à jour des streetIds des municipalités...');
 
-    await pgClient.query(`
-      CREATE INDEX IF NOT EXISTS idx_geofeature_streets_by_municipality
-        ON ${PG_SCHEMA}.geoFeature (municipalityId, avivGeoId)
-        WHERE level = 1200
-          AND municipalityId IS NOT NULL;
-    `);
- await pgClient.query(`
-     
-CREATE INDEX IF NOT EXISTS idx_geofeature_level
-    ON ${PG_SCHEMA}.geoFeature USING btree
-    (level ASC NULLS LAST)
-    TABLESPACE pg_default;
-    `);
+    // Relies on idx_geofeature_streets_by_municipality, rebuilt at the end of storeGeoFeature.
     await pgClient.query(`
       UPDATE ${PG_SCHEMA}.geoFeature municipality
       SET streetIds = streets.streetIds
@@ -594,8 +604,8 @@ async function postgresClearCache(conn: DuckDBConnection, secrets: GeoSSOTSecret
 }
 
 async function setupDuckDBConnection(instance: DuckDBInstance, secrets: GeoSSOTSecret): Promise<DuckDBConnection> {
-  const AWS_REGION = process.env.AWS_REGION || 'eu-west-1';
-
+ 
+  
   const conn = await instance.connect();
 
   logger.info('[ECS Task] Chargement des extensions (httpfs, postgres, json)...');
@@ -616,7 +626,7 @@ async function setupDuckDBConnection(instance: DuckDBInstance, secrets: GeoSSOTS
   accessSync(caCertFile, constants.R_OK);
   logger.info('[ECS Task] CA certificate file: ' + caCertFile);
   await conn.run(`SET ca_cert_file='${caCertFile}';`);
-  await conn.run(`SET s3_region='${AWS_REGION}';`);
+  await conn.run(`SET s3_region='${awsRegion}';`);
 
   // Resolves credentials from env vars, ~/.aws/credentials or the ECS task role, in that order.
   logger.info('[ECS Task] Chargement des credentials AWS via load_aws_credentials()...');

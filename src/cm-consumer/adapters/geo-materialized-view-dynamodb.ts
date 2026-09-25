@@ -1,4 +1,5 @@
 import { logger } from "@shared/cross-cutting/logger";
+import { requireEnvironmentVariable } from "@shared/cross-cutting/environment";
 import { persistDataInDynamoDB, softDeleteGeoFromReferential } from "./geo-dynamodb";
 import { getGeoApiSecret } from "./geo-api-secrets";
 import { GeoManagementStructure, GeoLineageFallbackItem } from "@models";
@@ -32,11 +33,7 @@ export async function createOrUpdateGeo(id: string, data: any, geo: GeoManagemen
 
   await enrichGeoData(geoData);
 
-  const tableName = process.env.MV_FEATURE_TABLE_NAME;
-
-  if (!tableName) {
-    throw new Error("MV_FEATURE_TABLE_NAME environment variable is not set");
-  }
+  const tableName = requireEnvironmentVariable('MV_FEATURE_TABLE_NAME');
   try {
     await persistDataInDynamoDB(id, geoData, tableName, data?.metadata?.updateDate?.toString() ?? Date.now().toString());
     await persistGeoFeatureInSQL(geoData);
@@ -166,11 +163,7 @@ export async function markGeoAsDeleted(deleteCommand: { id: string; updateDate: 
   };
 
   // Marshalling happens inside persistDataInDynamoDB.
-  const tableName =  process.env.MV_LINEAGE_TABLE_NAME;
-
-  if (!tableName) {
-    throw new Error("MV_LINEAGE_TABLE_NAME environment variable is not set");
-  }
+  const tableName = requireEnvironmentVariable('MV_LINEAGE_TABLE_NAME');
   try {
     await persistDataInDynamoDB(deleteCommand.id, geoLineage, tableName, deleteCommand.updateDate?.toString() ?? Date.now().toString());
     await persistGeoLineageInSQL(geoLineage);
@@ -186,10 +179,7 @@ export async function markGeoAsDeleted(deleteCommand: { id: string; updateDate: 
   const onDayInSeconds = 60 * 60 * 24 * 1;
   const expiryTime = Math.floor(Date.now() / 1000) + onDayInSeconds;
 
-  const updatedTableName = process.env.MV_FEATURE_TABLE_NAME;
-  if (!updatedTableName) {
-    throw new Error("MV_FEATURE_TABLE_NAME environment variable is not set");
-  }
+  const updatedTableName = requireEnvironmentVariable('MV_FEATURE_TABLE_NAME');
 
   await softDeleteGeoFromReferential(updatedTableName, deleteCommand.id, deleteCommand.updateDate, expiryTime);
 }

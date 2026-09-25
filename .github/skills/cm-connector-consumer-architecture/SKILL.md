@@ -64,10 +64,12 @@ flowchart LR
 - Hash key: `AvivGeoId`
 - Sort key: `version` — a static schema version (e.g. `"V1"`/`"V2"`), sourced from the `GEO_DYNAMODB_SCHEMA_VERSION` env var, NOT a changing timestamp.
 - Concurrency: a separate `lastupdatedate` attribute (distinct from the `version` sort key) guards against out-of-order writes via a DynamoDB `ConditionExpression`.
+- Live updates also clear `softdeleted` and `expireat` on successful upserts, then reapply them only when a write is newer than the current item.
 
 ## Environment variables (lambdas)
 - `MV_FEATURE_TABLE_NAME`, `MV_LINEAGE_TABLE_NAME`, `MV_APPLICATION_NAME`, `GEO_DYNAMODB_SCHEMA_VERSION`
 
 ## Debugging notes
 - `ValidationException: The provided key element does not match the schema` on a DynamoDB write means the `Key` is missing the `version` sort key attribute, or `GEO_DYNAMODB_SCHEMA_VERSION` doesn't match what was used when the item was created.
+- `ConditionalCheckFailedException` is expected when an older event arrives after a newer `lastupdatedate` has already been persisted; the write is intentionally ignored to preserve the most recent state.
 - Local dev routes DynamoDB writes to a fixed local table name (`gsl-seo-geo-feature-dev`) and uses SSO credentials (`isLocal` check in `geo-materialized-view-dynamodb.ts`).

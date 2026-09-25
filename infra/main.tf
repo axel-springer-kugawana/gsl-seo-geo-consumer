@@ -19,11 +19,7 @@ module "dynamodb-ssot-geo-feature" {
   source      = "./modules/dynamodb"
   application = "gsl-seo-geo-feature-${var.environment}"
   environment = var.environment
-}
-
-moved {
-  from = module.dynamodb-ssot-geo-updated
-  to   = module.dynamodb-ssot-geo-feature
+  gsi_attribute_name = ""
 }
 
 module "dynamodb-ssot-geo-lineage" {
@@ -31,6 +27,7 @@ module "dynamodb-ssot-geo-lineage" {
   source      = "./modules/dynamodb"
   application = "gsl-seo-geo-lineage-${var.environment}"
   environment = var.environment
+  gsi_attribute_name = ""
 }
 
 module "cm_consumer_fifo" {
@@ -52,6 +49,7 @@ module "cm_consumer_fifo" {
   feature_dynamodb_table_name = module.dynamodb-ssot-geo-feature.properties.dynamodb_table_name
   lineage_dynamodb_arn        = module.dynamodb-ssot-geo-lineage.properties.dynamodb_arn
   lineage_dynamodb_table_name = module.dynamodb-ssot-geo-lineage.properties.dynamodb_table_name
+  geo_legacy_mapping_bucket_name = module.s3.bucket_name_geo_legacy_mapping
   geo_dynamodb_schema_version = var.geo_dynamodb_schema_version
 }
 
@@ -91,4 +89,28 @@ module "geo_bulk_load" {
   }
 
   geo_dynamodb_schema_version = var.geo_dynamodb_schema_version
+
+  geo_legacy_mapping_dynamodb_table = {
+    arn  = module.dynamodb-ssot-geo-legacy-mapping.properties.dynamodb_arn
+    name = module.dynamodb-ssot-geo-legacy-mapping.properties.dynamodb_table_name
+  }
+  geo_legacy_mapping_bucket = {
+    arn  = module.s3.bucket_arn_geo_legacy_mapping
+    name = module.s3.bucket_name_geo_legacy_mapping
+  }
+}
+
+module "s3"{
+  source = "./modules/s3"
+  aws_account_name                = var.aws_account_name
+}
+
+
+module "dynamodb-ssot-geo-legacy-mapping" {
+  partition_key = "LegacyGeoId"
+  range_key     = "Brand"
+  source      = "./modules/dynamodb"
+  application = "gsl-seo-geo-legacy-mapping-${var.environment}"
+  environment = var.environment
+  gsi_attribute_name = "AvivGeoId"
 }
