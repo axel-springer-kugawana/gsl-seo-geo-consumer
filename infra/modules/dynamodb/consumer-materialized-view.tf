@@ -13,6 +13,15 @@ resource "aws_dynamodb_table" "consumer_materialized_view_table" {
     type = "S"
   }
 
+  # GSI hash key must be declared as an attribute (only when the GSI is created)
+  dynamic "attribute" {
+    for_each = var.gsi_attribute_name != "" ? [var.gsi_attribute_name] : []
+    content {
+      name = attribute.value
+      type = "S"
+    }
+  }
+
   ttl {
     attribute_name = "expireat"
     enabled        = true
