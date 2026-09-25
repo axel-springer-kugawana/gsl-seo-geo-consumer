@@ -24,11 +24,32 @@ interface GeoLegacyMappingDto {
     MatchType: string;
 }
 
-export async function importLegacyMappingFallbacksToDynamoDB(): Promise<void> {
+interface LegacyMappingSource {
+    fileKey: string;
+    brand: string;
+}
 
-    const fileKey = "pricemap.csv";
+const LEGACY_MAPPING_SOURCES: LegacyMappingSource[] = [
+    { fileKey: "selogerPricemap.csv", brand: "Seloger" },
+    { fileKey: "selogerSerp.csv", brand: "Seloger" },
+    { fileKey: "logicimmoSerp.csv", brand: "Logicimmo" },
+];
+
+export async function importLegacyMappingFallbacksToDynamoDB(): Promise<void> {
     const bucketName = requireEnvironmentVariable('GEO_LEGACY_MAPPING_BUCKET_NAME');
     const tableName = requireEnvironmentVariable('GEO_LEGACY_MAPPING_DYNAMODB_TABLE_NAME');
+
+    for (const source of LEGACY_MAPPING_SOURCES) {
+        await importLegacyMappingFileToDynamoDB(bucketName, tableName, source);
+    }
+}
+
+async function importLegacyMappingFileToDynamoDB(
+    bucketName: string,
+    tableName: string,
+    { fileKey, brand }: LegacyMappingSource,
+): Promise<void> {
+    logger.info(`Importing legacy mapping file ${fileKey} for brand ${brand}`);
 
     // 1. Récupération du fichier CSV depuis S3
     let s3Response;
@@ -69,7 +90,7 @@ export async function importLegacyMappingFallbacksToDynamoDB(): Promise<void> {
 
         batch.push({
             LegacyGeoId: row.url_legacy,
-            Brand: "PriceMap",
+            Brand: brand,
             GeoLevel: row.geo_level,
             AvivGeoId: row.url_new,
             MatchType: row.match_type,
@@ -88,5 +109,5 @@ export async function importLegacyMappingFallbacksToDynamoDB(): Promise<void> {
         totalProcessed += batch.length;
     }
 
-    logger.info(`Total processed: ${totalProcessed}`);
+    logger.info(`Total processed for ${fileKey} (${brand}): ${totalProcessed}`);
 }

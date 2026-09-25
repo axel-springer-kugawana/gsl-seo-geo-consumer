@@ -47,7 +47,6 @@ locals {
     { name = "GEO_DYNAMODB_TABLE_NAME", value = var.geo_dynamodb_table.name },
     { name = "GEO_LINEAGE_DYNAMODB_TABLE_NAME", value = var.geo_lineage_dynamodb_table.name },
     { name = "GEO_LEGACY_MAPPING_DYNAMODB_TABLE_NAME", value = var.geo_legacy_mapping_dynamodb_table.name },
-   
     { name = "GEO_DYNAMODB_SCHEMA_VERSION", value = var.geo_dynamodb_schema_version },
   ]
 }
