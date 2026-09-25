@@ -30,9 +30,9 @@ interface LegacyMappingSource {
 }
 
 const LEGACY_MAPPING_SOURCES: LegacyMappingSource[] = [
-    { fileKey: "selogerPricemap.csv", brand: "pricemap" },
-    { fileKey: "selogerSerp.csv", brand: "seloger" },
-    { fileKey: "logicimmoSerp.csv", brand: "logicimmo" },
+    { fileKey: "selogerPricemap.csv", brand: "PriceMap" },
+    { fileKey: "selogerSerp.csv", brand: "Seloger" },
+    { fileKey: "logicimmoSerp.csv", brand: "Logicimmo" },
 ];
 
 export async function importLegacyMappingFallbacksToDynamoDB(): Promise<void> {
