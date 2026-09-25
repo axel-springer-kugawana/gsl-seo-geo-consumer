@@ -27,7 +27,7 @@ module "dynamodb-ssot-geo-lineage" {
   source      = "./modules/dynamodb"
   application = "gsl-seo-geo-lineage-${var.environment}"
   environment = var.environment
-  gsi_attribute_name = "AvivGeoId"
+  gsi_attribute_name = ""
 }
 
 module "cm_consumer_fifo" {
@@ -112,4 +112,5 @@ module "dynamodb-ssot-geo-legacy-mapping" {
   source      = "./modules/dynamodb"
   application = "gsl-seo-geo-legacy-mapping-${var.environment}"
   environment = var.environment
+  gsi_attribute_name = "AvivGeoId"
 }
