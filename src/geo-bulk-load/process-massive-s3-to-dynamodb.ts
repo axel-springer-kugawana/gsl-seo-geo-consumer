@@ -78,15 +78,25 @@ async function importLegacyMappingFileToDynamoDB(
         delimiter: ';',
         columns: true,
         skip_empty_lines: true,
-
+        bom: true,
         trim: true,
     }));
 
     let batch: GeoLegacyMappingDto[] = [];
     let totalProcessed = 0;
+    let totalSkipped = 0;
 
     for await (const record of csvParser) {
         const row: CsvRowDto = record;
+
+        // LegacyGeoId est la clé de partition : une valeur absente ou vide est rejetée par DynamoDB
+        if (!row.url_legacy) {
+            if (totalSkipped === 0) {
+                logger.warn(`Row without url_legacy in ${fileKey}, skipping`, { columns: Object.keys(record) });
+            }
+            totalSkipped++;
+            continue;
+        }
 
         batch.push({
             LegacyGeoId: row.url_legacy,
@@ -109,5 +119,5 @@ async function importLegacyMappingFileToDynamoDB(
         totalProcessed += batch.length;
     }
 
-    logger.info(`Total processed for ${fileKey} (${brand}): ${totalProcessed}`);
+    logger.info(`Total processed for ${fileKey} (${brand}): ${totalProcessed}, skipped: ${totalSkipped}`);
 }
