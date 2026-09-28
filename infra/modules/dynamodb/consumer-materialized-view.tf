@@ -36,6 +36,14 @@ resource "aws_dynamodb_table" "consumer_materialized_view_table" {
         attribute_name = global_secondary_index.value
         key_type       = "HASH"
       }
+      # Optional GSI range key (must be an already declared attribute, e.g. the table range_key)
+      dynamic "key_schema" {
+        for_each = var.gsi_range_key != "" ? [var.gsi_range_key] : []
+        content {
+          attribute_name = key_schema.value
+          key_type       = "RANGE"
+        }
+      }
     }
   }
 }

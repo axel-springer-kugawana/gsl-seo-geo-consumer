@@ -113,4 +113,5 @@ module "dynamodb-ssot-geo-legacy-mapping" {
   application = "gsl-seo-geo-legacy-mapping-${var.environment}"
   environment = var.environment
   gsi_attribute_name = "AvivGeoId"
+  gsi_range_key      = "Brand"
 }
