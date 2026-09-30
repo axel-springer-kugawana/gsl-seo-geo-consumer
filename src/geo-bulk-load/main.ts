@@ -1,9 +1,9 @@
 import { logger } from "@shared/cross-cutting/logger";
-import { processMassiveParquetToPostgres as parquetToPG } from './process-massive-parquet-to-postgres';
-import { processMassiveSqlToDynamoDB as pgGeoFullToDynamoDB, processGeoLineageFallbacksToDynamoDB as pgGeoLineageToDynamoDB } from './process-massive-sql-to-dynamodb';
+import { parquetToPG } from './process-massive-parquet-to-postgres';
+import { processGeoFeatureToDynamoDB, pgGeoLineageToDynamoDB, pgGeoLinkToDynamoDB } from './process-massive-sql-to-dynamodb';
 import {  importLegacyMappingFallbacksToDynamoDB } from './process-massive-s3-to-dynamodb';
 
-export { parquetToPG as processMassiveParquetToPostgres, pgGeoFullToDynamoDB as processMassiveSqlToDynamoDB, importLegacyMappingFallbacksToDynamoDB };
+export {  processGeoFeatureToDynamoDB, pgGeoLineageToDynamoDB , pgGeoLinkToDynamoDB, importLegacyMappingFallbacksToDynamoDB };
 
 const GEO_LEGACY_MAPPING_LOAD_TASK = 'geo-legacy-mapping-load';
 
@@ -17,8 +17,9 @@ async function runGeoBulkLoadTask(): Promise<void> {
   }
 
   await parquetToPG();
-  await pgGeoLineageToDynamoDB();
-  await pgGeoFullToDynamoDB();
+   await pgGeoLineageToDynamoDB();
+  // await pgGeoLinkToDynamoDB();
+  // await processGeoFeatureToDynamoDB();
 }
 
 if (require.main === module) {

@@ -3,7 +3,7 @@
   "scripts": {
     "build:lambdas": "node esbuild.config.js",
     "build:tasks": "node esbuild.tasks.config.js",
-    "smoke:geo-bulk-load": "npm run build:tasks && node -e \"const task = require('./dist/geo-bulk-load/main.js'); if (typeof task.processMassiveParquetToPostgres !== 'function') process.exit(2); console.log('geo-bulk-load bundle smoke test passed')\"",
+    "smoke:geo-bulk-load": "npm run build:tasks && node -e \"const task = require('./dist/geo-bulk-load/main.js'); if (typeof task.processMassiveParquetToPg !== 'function') process.exit(2); console.log('geo-bulk-load bundle smoke test passed')\"",
     "watch": "tsc --noEmit --watch",
     "local": "tsx ./local/local-lambda-invoke.ts",
     "local:geo-bulk-load": "tsx ./geo-bulk-load/main.ts",

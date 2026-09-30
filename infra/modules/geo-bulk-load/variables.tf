@@ -112,7 +112,7 @@ variable "geo_management_bucket_key" {
 }
 
 variable "geo_dynamodb_table" {
-  description = "DynamoDB table backed up into by processMassiveSqlToDynamoDB (reuses the ssot-geo-feature table)"
+  description = "DynamoDB table backed up into by processGeoFeatureToDynamoDB (reuses the ssot-geo-feature table)"
   type = object({
     arn  = string
     name = string
@@ -120,7 +120,15 @@ variable "geo_dynamodb_table" {
 }
 
 variable "geo_lineage_dynamodb_table" {
-  description = "DynamoDB table backed up into by processGeoLineageFallbacksToDynamoDB (reuses the ssot-geo-lineage table)"
+  description = "DynamoDB table backed up into by pgGeoLineageToDynamoDB (reuses the ssot-geo-lineage table)"
+  type = object({
+    arn  = string
+    name = string
+  })
+}
+
+variable "geo_link_dynamodb_table" {
+  description = "DynamoDB table backed up into by pgGeoLinkToDynamoDB (PK AvivGeoId = LEFT_ID, SK Type)"
   type = object({
     arn  = string
     name = string

@@ -46,7 +46,7 @@ const GEO_FEATURE_INDEXES: { name: string; definition: string }[] = [
   { name: 'idx_geofeature_honu_by_neighborhood', definition: '(neighborhoodId, streetId) WHERE level = 1400' },
 ];
 
-export async function processMassiveParquetToPostgres() {
+export async function parquetToPG() {
 
   logger.info('[ECS Task] Démarrage du traitement massif Parquet vers PostgreSQL...');
   const secrets = await getGeoApiSecret(process.env.GEO_DB_SECRET_ID || '');
@@ -66,6 +66,10 @@ export async function processMassiveParquetToPostgres() {
     console.log('store geo lineage start ...');
     await storeGeoLineage();
     console.log('store geo lineage done...');
+
+    console.log('store geo links start ...');
+    await storeGeoLinks();
+    console.log('store geo links done...');
 
     console.log('store geo feature start ...');
     await storeGeoFeature();
@@ -157,6 +161,67 @@ export async function processMassiveParquetToPostgres() {
     // STEP 5: Cleanup
     logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoLineage_staging;`);
+  }
+
+  // link parquet: one row per (TYPE, LEFT_ID, RIGHT_ID), aggregated here into one row per (TYPE, LEFT_ID).
+  async function storeGeoLinks() {
+    const S3_PARQUET_PATH = getS3ParquetPath('link');
+
+    // STEP 1: Temporary UNLOGGED table
+    logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
+    await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoLink_staging;`);
+
+    await pgClient.query(`
+      CREATE UNLOGGED TABLE ${PG_SCHEMA}.geoLink_staging (
+        type character varying NOT NULL,
+        leftId character varying NOT NULL,
+        rightIds text[]
+      );
+    `);
+
+    await pgClient.query(`
+      CREATE TABLE IF NOT EXISTS ${PG_SCHEMA}.geoLink (
+        type character varying NOT NULL,
+        leftId character varying NOT NULL,
+        rightIds text[]
+      );
+    `);
+
+    // Drop the PK and empty the table without dropping it, to speed up the bulk insert that follows.
+    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoLink DROP CONSTRAINT IF EXISTS geoLink_pkey;`);
+    await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}.geoLink;`);
+
+    // STEP 2: Vectorized bulk copy from Parquet S3, grouped by (TYPE, LEFT_ID)
+    logger.info('[ECS Task] Étape 2/5 : Insertion massive des liens agrégés...');
+    await postgresClearCache(duckDBConnection, secrets);
+    await duckDBConnection.run(`
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoLink_staging (type, leftId, rightIds)
+      SELECT
+        TYPE AS type,
+        LEFT_ID AS leftId,
+        LIST(RIGHT_ID::VARCHAR) AS rightIds
+      FROM read_parquet('${S3_PARQUET_PATH}')
+      WHERE COUNTRY_CODE = 'FR'
+        AND TYPE IS NOT NULL
+        AND LEFT_ID IS NOT NULL
+      GROUP BY TYPE, LEFT_ID;
+    `);
+
+    // STEP 3: Insert all rows (the target table has just been emptied)
+    logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
+    await duckDBConnection.run(`
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoLink (type, leftId, rightIds)
+      SELECT type, leftId, rightIds
+      FROM postgres_db.${PG_SCHEMA}.geoLink_staging;
+    `);
+
+    // STEP 4: Re-add the primary key constraint on the final table
+    logger.info('[ECS Task] Étape 4/5 : Remise de la contrainte de clé primaire...');
+    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoLink ADD CONSTRAINT geoLink_pkey PRIMARY KEY (leftId, type);`);
+
+    // STEP 5: Cleanup
+    logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
+    await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoLink_staging;`);
   }
 
   function getS3ParquetPath(path: string): string | undefined {
@@ -604,8 +669,6 @@ async function postgresClearCache(conn: DuckDBConnection, secrets: GeoSSOTSecret
 }
 
 async function setupDuckDBConnection(instance: DuckDBInstance, secrets: GeoSSOTSecret): Promise<DuckDBConnection> {
- 
-  
   const conn = await instance.connect();
 
   logger.info('[ECS Task] Chargement des extensions (httpfs, postgres, json)...');
