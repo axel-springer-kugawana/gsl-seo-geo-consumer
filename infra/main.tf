@@ -41,13 +41,11 @@ module "dynamodb-ssot-geo-legacy-mapping" {
 }
 
 module "dynamodb-ssot-geo-link" {
-  partition_key = "LegacyPath"
-  range_key     = "PageTypeBrand"
+  partition_key = "AvivGeoId"
+  range_key     = "Type"
   source      = "./modules/dynamodb"
   application = "gsl-seo-geo-link-${var.environment}"
   environment = var.environment
-  gsi_attribute_name = "AvivGeoId"
-  gsi_range_key      = "Type"
 }
 
 module "cm_consumer_fifo" {
