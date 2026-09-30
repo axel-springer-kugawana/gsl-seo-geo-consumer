@@ -94,6 +94,12 @@ module "geo_bulk_load" {
     arn  = module.dynamodb-ssot-geo-legacy-mapping.properties.dynamodb_arn
     name = module.dynamodb-ssot-geo-legacy-mapping.properties.dynamodb_table_name
   }
+
+  geo_link_dynamodb_table = {
+    arn  = module.dynamodb-ssot-geo-link.properties.dynamodb_arn
+    name = module.dynamodb-ssot-geo-link.properties.dynamodb_table_name
+  }
+
   geo_legacy_mapping_bucket = {
     arn  = module.s3.bucket_arn_geo_legacy_mapping
     name = module.s3.bucket_name_geo_legacy_mapping
