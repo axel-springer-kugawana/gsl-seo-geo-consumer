@@ -171,11 +171,12 @@ export async function parquetToPG() {
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoLink_staging;`);
 
+    // One row per (type, leftId, rightId): the aggregation is done by Postgres in step 3.
     await pgClient.query(`
       CREATE UNLOGGED TABLE ${PG_SCHEMA}.geoLink_staging (
         type character varying NOT NULL,
         leftId character varying NOT NULL,
-        rightIds text[]
+        rightId character varying
       );
     `);
 
@@ -191,28 +192,30 @@ export async function parquetToPG() {
     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoLink DROP CONSTRAINT IF EXISTS geoLink_pkey;`);
     await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}.geoLink;`);
 
-    // STEP 2: Vectorized bulk copy from Parquet S3, grouped by (TYPE, LEFT_ID)
-    logger.info('[ECS Task] Étape 2/5 : Insertion massive des liens agrégés...');
+    // STEP 2: Vectorized bulk copy from Parquet S3, raw rows only.
+    // No GROUP BY here: a DuckDB hash aggregate with LIST() over all links spills tens of GiB
+    // to the task's ephemeral storage, whereas a plain filtered copy streams without buffering.
+    logger.info('[ECS Task] Étape 2/5 : Insertion massive des liens bruts...');
     await postgresClearCache(duckDBConnection, secrets);
     await duckDBConnection.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}.geoLink_staging (type, leftId, rightIds)
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoLink_staging (type, leftId, rightId)
       SELECT
         TYPE AS type,
         LEFT_ID AS leftId,
-        LIST(RIGHT_ID::VARCHAR) AS rightIds
+        RIGHT_ID::VARCHAR AS rightId
       FROM read_parquet('${S3_PARQUET_PATH}')
       WHERE COUNTRY_CODE = 'FR'
         AND TYPE IS NOT NULL
-        AND LEFT_ID IS NOT NULL
-      GROUP BY TYPE, LEFT_ID;
+        AND LEFT_ID IS NOT NULL;
     `);
 
-    // STEP 3: Insert all rows (the target table has just been emptied)
-    logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
-    await duckDBConnection.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}.geoLink (type, leftId, rightIds)
-      SELECT type, leftId, rightIds
-      FROM postgres_db.${PG_SCHEMA}.geoLink_staging;
+    // STEP 3: Aggregate into one row per (type, leftId), in Postgres (the target table has just been emptied)
+    logger.info('[ECS Task] Étape 3/5 : Agrégation et INSERT des lignes...');
+    await pgClient.query(`
+      INSERT INTO ${PG_SCHEMA}.geoLink (type, leftId, rightIds)
+      SELECT type, leftId, array_agg(rightId)
+      FROM ${PG_SCHEMA}.geoLink_staging
+      GROUP BY type, leftId;
     `);
 
     // STEP 4: Re-add the primary key constraint on the final table
