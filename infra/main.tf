@@ -107,11 +107,11 @@ module "s3"{
 
 
 module "dynamodb-ssot-geo-legacy-mapping" {
-  partition_key = "LegacyGeoId"
-  range_key     = "Brand"
+  partition_key = "LegacyPath"
+  range_key     = "PageTypeBrand"
   source      = "./modules/dynamodb"
   application = "gsl-seo-geo-legacy-mapping-${var.environment}"
   environment = var.environment
   gsi_attribute_name = "AvivGeoId"
-  gsi_range_key      = "Brand"
+  gsi_range_key      = "PageTypeBrand"
 }

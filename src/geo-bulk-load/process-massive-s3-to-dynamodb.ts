@@ -25,14 +25,16 @@ interface GeoLegacyMappingDto {
 }
 
 interface LegacyMappingSource {
-    fileKey: string;
-    brand: string;
+    fileName: string;
+    brand?: string;
+    pageTypeByBrand?: string;
 }
 
 const LEGACY_MAPPING_SOURCES: LegacyMappingSource[] = [
-    { fileKey: "selogerPricemap.csv", brand: "PriceMap" },
-    { fileKey: "selogerSerp.csv", brand: "Seloger" },
-    { fileKey: "logicimmoSerp.csv", brand: "Logicimmo" },
+    { fileName: "selogerSerp.csv", pageTypeByBrand: "selogerSerp" },
+    { fileName: "logicimmoSerp.csv", pageTypeByBrand: "logicimmoSerp" },
+    { fileName: "selogerPricemapSiteMap.csv", pageTypeByBrand: "selogerPricemapSiteMap" },
+    { fileName: "selogerPricemap.csv", pageTypeByBrand: "selogerPricemap" } 
 ];
 
 export async function importLegacyMappingFallbacksToDynamoDB(): Promise<void> {
@@ -47,9 +49,9 @@ export async function importLegacyMappingFallbacksToDynamoDB(): Promise<void> {
 async function importLegacyMappingFileToDynamoDB(
     bucketName: string,
     tableName: string,
-    { fileKey, brand }: LegacyMappingSource,
+    { fileName: fileKey, pageTypeByBrand: pageTypeBrand }: LegacyMappingSource,
 ): Promise<void> {
-    logger.info(`Importing legacy mapping file ${fileKey} for brand ${brand}`);
+    logger.info(`Importing legacy mapping file ${fileKey} for page type by brand ${pageTypeBrand}`);
 
     // 1. Récupération du fichier CSV depuis S3
     let s3Response;
@@ -99,8 +101,8 @@ async function importLegacyMappingFileToDynamoDB(
         }
 
         batch.push({
-            LegacyGeoId: row.url_legacy,
-            Brand: brand,
+            LegacyPath: row.url_legacy,
+            PageTypeBrand: pageTypeBrand,
             GeoLevel: row.geo_level,
             AvivGeoId: row.url_new,
             MatchType: row.match_type,
