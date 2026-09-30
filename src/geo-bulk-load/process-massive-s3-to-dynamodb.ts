@@ -17,8 +17,8 @@ interface CsvRowDto {
 }
 
 interface GeoLegacyMappingDto {
-    LegacyGeoId: string;
-    Brand: string;
+    LegacyPath: string;
+    PageTypeBrand: string;
     GeoLevel: string;
     AvivGeoId: string;
     MatchType: string;
@@ -26,8 +26,7 @@ interface GeoLegacyMappingDto {
 
 interface LegacyMappingSource {
     fileName: string;
-    brand?: string;
-    pageTypeByBrand?: string;
+    pageTypeByBrand: string;
 }
 
 const LEGACY_MAPPING_SOURCES: LegacyMappingSource[] = [
@@ -91,10 +90,10 @@ async function importLegacyMappingFileToDynamoDB(
     for await (const record of csvParser) {
         const row: CsvRowDto = record;
 
-        // LegacyGeoId est la clé de partition : une valeur absente ou vide est rejetée par DynamoDB
-        if (!row.url_legacy) {
+        // LegacyPath est la clé de partition et AvivGeoId la clé du GSI : une valeur absente ou vide est rejetée par DynamoDB
+        if (!row.url_legacy || !row.url_new) {
             if (totalSkipped === 0) {
-                logger.warn(`Row without url_legacy in ${fileKey}, skipping`, { columns: Object.keys(record) });
+                logger.warn(`Row without url_legacy or url_new in ${fileKey}, skipping`, { columns: Object.keys(record) });
             }
             totalSkipped++;
             continue;
@@ -121,5 +120,5 @@ async function importLegacyMappingFileToDynamoDB(
         totalProcessed += batch.length;
     }
 
-    logger.info(`Total processed for ${fileKey} (${brand}): ${totalProcessed}, skipped: ${totalSkipped}`);
+    logger.info(`Total processed for ${fileKey} (${pageTypeBrand}): ${totalProcessed}, skipped: ${totalSkipped}`);
 }
