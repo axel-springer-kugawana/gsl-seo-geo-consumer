@@ -30,6 +30,26 @@ module "dynamodb-ssot-geo-lineage" {
   gsi_attribute_name = ""
 }
 
+module "dynamodb-ssot-geo-legacy-mapping" {
+  partition_key = "LegacyPath"
+  range_key     = "PageTypeBrand"
+  source      = "./modules/dynamodb"
+  application = "gsl-seo-geo-legacy-mapping-${var.environment}"
+  environment = var.environment
+  gsi_attribute_name = "AvivGeoId"
+  gsi_range_key      = "PageTypeBrand"
+}
+
+module "dynamodb-ssot-geo-link" {
+  partition_key = "LegacyPath"
+  range_key     = "PageTypeBrand"
+  source      = "./modules/dynamodb"
+  application = "gsl-seo-geo-link-${var.environment}"
+  environment = var.environment
+  gsi_attribute_name = "AvivGeoId"
+  gsi_range_key      = "Type"
+}
+
 module "cm_consumer_fifo" {
   # depends_on = [module.cm_connector, module.rds, module.dynamodb]
   source = "./modules/cm-consumer"
@@ -111,13 +131,3 @@ module "s3"{
   aws_account_name                = var.aws_account_name
 }
 
-
-module "dynamodb-ssot-geo-legacy-mapping" {
-  partition_key = "LegacyPath"
-  range_key     = "PageTypeBrand"
-  source      = "./modules/dynamodb"
-  application = "gsl-seo-geo-legacy-mapping-${var.environment}"
-  environment = var.environment
-  gsi_attribute_name = "AvivGeoId"
-  gsi_range_key      = "PageTypeBrand"
-}
