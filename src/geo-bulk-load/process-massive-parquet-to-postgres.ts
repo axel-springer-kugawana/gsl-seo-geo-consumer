@@ -29,6 +29,8 @@ const FAKE_PROVINCES_IDS = [
   'AD06DE107', 'AD06DE108', 'AD06DE109', 'AD06DE110', 'AD06DE118', 'AD06DE119', 'AD06DE120',
   'AD06DE121', 'AD06DE137'
 ];
+// Link types copied from the link parquet into geoLink (TYPE column)
+const MANAGED_LINK_TYPES = ['AD04AD04', 'NBH2STRT', 'STRTSTRT'];
 const PG_SCHEMA = 'public';
 
 // Secondary indexes of geoFeature: dropped before the bulk insert and rebuilt once the data is loaded.
@@ -171,11 +173,11 @@ export async function parquetToPG() {
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoLink_staging;`);
 
-    // One row per (type, leftId, rightId): the aggregation is done by Postgres in step 3.
+    // One row per (type, avivGeoId, rightId): the aggregation is done by Postgres in step 3.
     await pgClient.query(`
       CREATE UNLOGGED TABLE ${PG_SCHEMA}.geoLink_staging (
         type character varying NOT NULL,
-        leftId character varying NOT NULL,
+        avivGeoId character varying NOT NULL,
         rightId character varying
       );
     `);
@@ -183,9 +185,24 @@ export async function parquetToPG() {
     await pgClient.query(`
       CREATE TABLE IF NOT EXISTS ${PG_SCHEMA}.geoLink (
         type character varying NOT NULL,
-        leftId character varying NOT NULL,
-        rightIds text[]
+        avivGeoId character varying NOT NULL,
+        avivGeoIds text[]
       );
+    `);
+
+    // Tables created before the rename still have leftId / rightIds: rename them in place (idempotent).
+    await pgClient.query(`
+      DO $$
+      BEGIN
+        IF EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_schema = lower('${PG_SCHEMA}') AND table_name = 'geolink' AND column_name = 'leftid') THEN
+          ALTER TABLE ${PG_SCHEMA}.geoLink RENAME COLUMN leftId TO avivGeoId;
+        END IF;
+        IF EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_schema = lower('${PG_SCHEMA}') AND table_name = 'geolink' AND column_name = 'rightids') THEN
+          ALTER TABLE ${PG_SCHEMA}.geoLink RENAME COLUMN rightIds TO avivGeoIds;
+        END IF;
+      END $$;
     `);
 
     // Drop the PK and empty the table without dropping it, to speed up the bulk insert that follows.
@@ -196,30 +213,33 @@ export async function parquetToPG() {
     // No GROUP BY here: a DuckDB hash aggregate with LIST() over all links spills tens of GiB
     // to the task's ephemeral storage, whereas a plain filtered copy streams without buffering.
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des liens bruts...');
+    const linkTypesList = MANAGED_LINK_TYPES
+      .map((type) => `'${type}'`)
+      .join(', ');
     await postgresClearCache(duckDBConnection, secrets);
     await duckDBConnection.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}.geoLink_staging (type, leftId, rightId)
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoLink_staging (type, avivGeoId, rightId)
       SELECT
         TYPE AS type,
-        LEFT_ID AS leftId,
+        LEFT_ID AS avivGeoId,
         RIGHT_ID::VARCHAR AS rightId
       FROM read_parquet('${S3_PARQUET_PATH}')
       WHERE COUNTRY_CODE = 'FR'
-      AND TYPE in ('AD04AD04','NBH2STRT','STRTSTRT');
+      AND TYPE IN (${linkTypesList});
     `);
 
-    // STEP 3: Aggregate into one row per (type, leftId), in Postgres (the target table has just been emptied)
+    // STEP 3: Aggregate into one row per (type, avivGeoId), in Postgres (the target table has just been emptied)
     logger.info('[ECS Task] Étape 3/5 : Agrégation et INSERT des lignes...');
     await pgClient.query(`
-      INSERT INTO ${PG_SCHEMA}.geoLink (type, leftId, rightIds)
-      SELECT type, leftId, array_agg(rightId)
+      INSERT INTO ${PG_SCHEMA}.geoLink (type, avivGeoId, avivGeoIds)
+      SELECT type, avivGeoId, array_agg(rightId)
       FROM ${PG_SCHEMA}.geoLink_staging
-      GROUP BY type, leftId;
+      GROUP BY type, avivGeoId;
     `);
 
     // STEP 4: Re-add the primary key constraint on the final table
     logger.info('[ECS Task] Étape 4/5 : Remise de la contrainte de clé primaire...');
-    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoLink ADD CONSTRAINT geoLink_pkey PRIMARY KEY (leftId, type);`);
+    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoLink ADD CONSTRAINT geoLink_pkey PRIMARY KEY (avivGeoId, type);`);
 
     // STEP 5: Cleanup
     logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');

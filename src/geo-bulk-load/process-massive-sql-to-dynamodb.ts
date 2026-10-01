@@ -53,7 +53,7 @@ export async function pgGeoLinkToDynamoDB(): Promise<void> {
         dynamoTableNameEnvVar: 'GEO_LINK_DYNAMODB_TABLE_NAME',
         mapRow: mapRowGeoLink,
         declareCursorSql: (schema) => `
-      SELECT type, leftid, rightids
+      SELECT type, avivgeoid, avivgeoids
       FROM ${schema}.geolink;
     `,
     });
@@ -125,9 +125,9 @@ function mapRowGeoLineage(row: Record<string, any>): GeoLineageFallbackItem {
 // geolink -> DynamoDB item keyed by AvivGeoId (LEFT_ID) + Type, holding the linked ids (RIGHT_IDs).
 function mapRowGeoLink(row: Record<string, any>): { AvivGeoId: string; Type: string; AvivGeoIds: string[] } {
     return {
-        AvivGeoId: row.leftid,
+        AvivGeoId: row.avivgeoid,
         Type: row.type,
-        AvivGeoIds: row.rightids ?? [],
+        AvivGeoIds: row.avivgeoids ?? [],
     };
 }
 

@@ -13,7 +13,7 @@ Batch ECS Fargate task that rebuilds the geo "source of truth" in PostgreSQL fro
 1. **`processMassiveParquetToPg`** ([process-massive-parquet-to-postgres.ts](../../../src/geo-bulk-load/process-massive-parquet-to-postgres.ts))
    - Reads Parquet files from `s3://<GEO_MANAGEMENT_SYNC_BUCKET>/<GEO_MANAGEMENT_BUCKET_KEY>/{name,lineage,link,feature}/*.parquet` via DuckDB (`@duckdb/node-api`, in-memory instance, `aws`/`httpfs`/`postgres`/`json` extensions).
    - For each of `geoName`, `geoLineage`, `geoLink`, `geoFeature`: creates an `UNLOGGED` staging table, bulk-copies rows filtered by `MANAGED_PREFIX_IDS`, inserts into the final table, re-adds the PK, drops the staging table.
-   - `geoLink` is aggregated in DuckDB (`WHERE COUNTRY_CODE = 'FR' GROUP BY TYPE, LEFT_ID`, `LIST(RIGHT_ID)` -> `rightIds text[]`), PK `(leftId, type)`.
+   - `geoLink` is aggregated in DuckDB (`WHERE COUNTRY_CODE = 'FR' GROUP BY TYPE, LEFT_ID`, `LIST(RIGHT_ID)` -> `avivGeoIds text[]`; `LEFT_ID` -> `avivGeoId`), PK `(avivGeoId, type)`.
    - Rebuilds `mv_geofeature_names` (materialized view joining geofeature+geoname) and the `v_geo_full` view (joins feature with country/region/province/municipality via the MV).
    - DuckDB talks to Postgres through its `postgres` extension (`ATTACH ... TYPE POSTGRES`); DDL (CREATE/TRUNCATE/constraints) goes through a native `pg` client instead, since DuckDB's postgres extension only supports `ALTER TABLE ADD COLUMN` and no `TRUNCATE`.
 2. **`processGeoFeatureToDynamoDB`** — backs up `v_geo_full` into the `gsl-seo-geo-feature-*` DynamoDB table.
