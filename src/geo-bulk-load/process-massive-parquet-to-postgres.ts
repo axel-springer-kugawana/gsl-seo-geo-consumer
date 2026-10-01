@@ -205,8 +205,7 @@ export async function parquetToPG() {
         RIGHT_ID::VARCHAR AS rightId
       FROM read_parquet('${S3_PARQUET_PATH}')
       WHERE COUNTRY_CODE = 'FR'
-        AND TYPE IS NOT NULL
-        AND LEFT_ID IS NOT NULL;
+      AND TYPE in ('AD04AD04','NBH2STRT','STRTSTRT');
     `);
 
     // STEP 3: Aggregate into one row per (type, leftId), in Postgres (the target table has just been emptied)
