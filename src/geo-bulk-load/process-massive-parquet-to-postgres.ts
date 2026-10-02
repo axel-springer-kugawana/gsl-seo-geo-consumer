@@ -253,7 +253,7 @@ export async function parquetToPG() {
 
 
     return bucket && bucketKey
-      ? `s3://${bucket}/${bucketKey}/${path}/*.parquet`
+      ? `s3://${bucket}/${bucketKey}/${path}/**/*.parquet`
       : undefined;
   }
 
