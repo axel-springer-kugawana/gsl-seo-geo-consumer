@@ -30,7 +30,7 @@ const FAKE_PROVINCES_IDS = [
   'AD06DE121', 'AD06DE137'
 ];
 // Link types copied from the link parquet into geoLink (TYPE column)
-const MANAGED_LINK_TYPES = ['AD04AD04', 'NBH2STRT', 'STRTSTRT'];
+const MANAGED_LINK_TYPES = ['AD04AD04', 'AD08AD08', 'AD09AD09','NBH2NBH2' ,'NBH2STRT', 'STRTSTRT'];
 const PG_SCHEMA = 'public';
 
 // Secondary indexes of geoFeature: dropped before the bulk insert and rebuilt once the data is loaded.
