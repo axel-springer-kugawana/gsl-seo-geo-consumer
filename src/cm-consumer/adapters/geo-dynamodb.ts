@@ -1,7 +1,8 @@
 import { UpdateItemCommand } from "@aws-sdk/client-dynamodb";
+import { createDynamoDBClient } from "@shared/adapters/dynamodb-client";
+
 import { marshall, convertToAttr } from "@aws-sdk/util-dynamodb";
 import { logger } from "@shared/cross-cutting/logger";
-import { createDynamoDBClient } from "@shared/adapters/dynamodb-client";
 import { withDynamoDbRetry } from "@shared/adapters/dynamodb-retry";
 import { GEO_DYNAMODB_SCHEMA_VERSION } from "@shared/models/geo-dynamodb-schema-version";
 

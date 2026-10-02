@@ -43,10 +43,11 @@ module "process_cm_connector_events_lambda" {
   is_lambda_vpc                    = true
   enable_secrets_manager_extension = true
   env_variables = {
-    MV_FEATURE_TABLE_NAME       = var.feature_dynamodb_table_name
-    MV_LINEAGE_TABLE_NAME       = var.lineage_dynamodb_table_name
-    MV_APPLICATION_NAME         = var.application
-    GEO_DYNAMODB_SCHEMA_VERSION = var.geo_dynamodb_schema_version
+    MV_FEATURE_TABLE_NAME          = var.feature_dynamodb_table_name
+    MV_LINEAGE_TABLE_NAME          = var.lineage_dynamodb_table_name
+    MV_APPLICATION_NAME            = var.application
+    GEO_DYNAMODB_SCHEMA_VERSION    = var.geo_dynamodb_schema_version
+    GEO_LEGACY_MAPPING_BUCKET_NAME = var.geo_legacy_mapping_bucket_name
   }
 }
 
@@ -117,6 +118,27 @@ data "aws_iam_policy_document" "lambda_policy" {
   }
 
  
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+    ]
+    resources = [
+      "arn:aws:s3:::${var.geo_legacy_mapping_bucket_name}/*",
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:ListBucket",
+    ]
+    resources = [
+      "arn:aws:s3:::${var.geo_legacy_mapping_bucket_name}",
+    ]
+  }
+
+
   statement {
     effect = "Allow"
     actions = [
