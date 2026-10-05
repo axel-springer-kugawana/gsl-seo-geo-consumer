@@ -15,3 +15,13 @@ variable "range_key" {
   type    = string
   default = "Version"
 }
+
+variable "gsi_attribute_name" {
+  type    = string
+  default = ""
+}
+
+variable "gsi_range_key" {
+  type    = string
+  default = ""
+}

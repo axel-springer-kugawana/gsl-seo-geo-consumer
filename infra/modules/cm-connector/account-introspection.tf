@@ -6,7 +6,6 @@ data "aws_ssm_parameter" "account_name" {
   name = "/aft/account-request/custom-fields/account_name"
 }
 
-
 data "aws_ssm_parameter" "vpc_id" {
   name = "/network/vpc/${data.aws_ssm_parameter.account_name.value}/id"
 }

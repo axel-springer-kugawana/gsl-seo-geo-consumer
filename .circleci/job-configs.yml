@@ -115,7 +115,7 @@ jobs:
           name: Import ECR repository if it already exists outside state
           command: |
             cd infra
-            if ! terraform state list | grep -q 'module.geo_bulk_load.aws_ecr_repository.geo_bulk_load'; then
+            if [ -z "$(terraform state list module.geo_bulk_load.aws_ecr_repository.geo_bulk_load)" ]; then
               terraform import -var-file=<<parameters.ENV_PATH_FILE>> \
                 module.geo_bulk_load.aws_ecr_repository.geo_bulk_load \
                 gm-consumer-<<parameters.ENV>>-geo-bulk-load

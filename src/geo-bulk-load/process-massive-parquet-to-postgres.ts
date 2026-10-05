@@ -3,8 +3,9 @@ import { accessSync, constants } from 'fs';
 import { getGeoApiSecret, type GeoSSOTSecret } from "./geo-api-secrets";
 import { createPgClient } from "@shared/adapters/pg-client";
 import { logger } from "@shared/cross-cutting/logger";
+import { requireEnvironmentVariable } from "@shared/cross-cutting/environment";
 
-
+const awsRegion = requireEnvironmentVariable('AWS_REGION');
 const MANAGED_PREFIX_IDS = [
   'AD02', 'AD03', 'AD04', 'AD05', 'AD06', 'AD07', 'AD08', 'AD09',
   'NBH1', 'NBH2', 'NBH3', 'STRTFR', 'HONUFR'
@@ -28,9 +29,26 @@ const FAKE_PROVINCES_IDS = [
   'AD06DE107', 'AD06DE108', 'AD06DE109', 'AD06DE110', 'AD06DE118', 'AD06DE119', 'AD06DE120',
   'AD06DE121', 'AD06DE137'
 ];
+// Link types copied from the link parquet into geoLink (TYPE column)
+const MANAGED_LINK_TYPES = ['AD04AD04', 'AD08AD08', 'AD09AD09','NBH2NBH2' ,'NBH2STRT', 'STRTSTRT'];
 const PG_SCHEMA = 'public';
 
-export async function processMassiveParquetToPostgres() {
+// Secondary indexes of geoFeature: dropped before the bulk insert and rebuilt once the data is loaded.
+const GEO_FEATURE_INDEXES: { name: string; definition: string }[] = [
+  { name: 'idx_geofeature_level', definition: '(level)' },
+  { name: 'idx_municipality_id', definition: '(municipalityId) WHERE municipalityId IS NOT NULL' },
+  { name: 'ix_geofeature_muni_by_country', definition: '(countryId) WHERE level = 800' },
+  { name: 'ix_geofeature_muni_by_region', definition: '(regionId) WHERE level = 800' },
+  { name: 'ix_geofeature_muni_by_province', definition: '(provinceId) WHERE level = 800' },
+  { name: 'ix_geofeature_nbh_by_muni', definition: '(municipalityId) WHERE level = 1000' },
+  { name: 'idx_geofeature_nbh_by_borough', definition: '(boroughId) WHERE level = 1000' },
+  { name: 'idx_geofeature_streets_by_municipality', definition: '(municipalityId, avivGeoId) WHERE level = 1200 AND municipalityId IS NOT NULL' },
+  { name: 'idx_geofeature_streets_by_neighborhood', definition: '(neighborhoodId) WHERE level = 1200' },
+  { name: 'idx_geofeature_honu_by_municipality', definition: '(municipalityId, streetId) WHERE level = 1400' },
+  { name: 'idx_geofeature_honu_by_neighborhood', definition: '(neighborhoodId, streetId) WHERE level = 1400' },
+];
+
+export async function parquetToPG() {
 
   logger.info('[ECS Task] Démarrage du traitement massif Parquet vers PostgreSQL...');
   const secrets = await getGeoApiSecret(process.env.GEO_DB_SECRET_ID || '');
@@ -50,6 +68,10 @@ export async function processMassiveParquetToPostgres() {
     console.log('store geo lineage start ...');
     await storeGeoLineage();
     console.log('store geo lineage done...');
+
+    console.log('store geo links start ...');
+    await storeGeoLinks();
+    console.log('store geo links done...');
 
     console.log('store geo feature start ...');
     await storeGeoFeature();
@@ -143,6 +165,87 @@ export async function processMassiveParquetToPostgres() {
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoLineage_staging;`);
   }
 
+  // link parquet: one row per (TYPE, LEFT_ID, RIGHT_ID), aggregated here into one row per (TYPE, LEFT_ID).
+  async function storeGeoLinks() {
+    const S3_PARQUET_PATH = getS3ParquetPath('link');
+
+    // STEP 1: Temporary UNLOGGED table
+    logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
+    await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoLink_staging;`);
+
+    // One row per (type, avivGeoId, rightId): the aggregation is done by Postgres in step 3.
+    await pgClient.query(`
+      CREATE UNLOGGED TABLE ${PG_SCHEMA}.geoLink_staging (
+        type character varying NOT NULL,
+        avivGeoId character varying NOT NULL,
+        rightId character varying
+      );
+    `);
+
+    await pgClient.query(`
+      CREATE TABLE IF NOT EXISTS ${PG_SCHEMA}.geoLink (
+        type character varying NOT NULL,
+        avivGeoId character varying NOT NULL,
+        avivGeoIds text[]
+      );
+    `);
+
+    // Tables created before the rename still have leftId / rightIds: rename them in place (idempotent).
+    await pgClient.query(`
+      DO $$
+      BEGIN
+        IF EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_schema = lower('${PG_SCHEMA}') AND table_name = 'geolink' AND column_name = 'leftid') THEN
+          ALTER TABLE ${PG_SCHEMA}.geoLink RENAME COLUMN leftId TO avivGeoId;
+        END IF;
+        IF EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_schema = lower('${PG_SCHEMA}') AND table_name = 'geolink' AND column_name = 'rightids') THEN
+          ALTER TABLE ${PG_SCHEMA}.geoLink RENAME COLUMN rightIds TO avivGeoIds;
+        END IF;
+      END $$;
+    `);
+
+    // Drop the PK and empty the table without dropping it, to speed up the bulk insert that follows.
+    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoLink DROP CONSTRAINT IF EXISTS geoLink_pkey;`);
+    await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}.geoLink;`);
+
+    // STEP 2: Vectorized bulk copy from Parquet S3, raw rows only.
+    // No GROUP BY here: a DuckDB hash aggregate with LIST() over all links spills tens of GiB
+    // to the task's ephemeral storage, whereas a plain filtered copy streams without buffering.
+    logger.info('[ECS Task] Étape 2/5 : Insertion massive des liens bruts...');
+    const linkTypesList = MANAGED_LINK_TYPES
+      .map((type) => `'${type}'`)
+      .join(', ');
+    await postgresClearCache(duckDBConnection, secrets);
+    await duckDBConnection.run(`
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoLink_staging (type, avivGeoId, rightId)
+      SELECT
+        TYPE AS type,
+        LEFT_ID AS avivGeoId,
+        RIGHT_ID::VARCHAR AS rightId
+      FROM read_parquet('${S3_PARQUET_PATH}')
+      WHERE COUNTRY_CODE = 'FR'
+      AND TYPE IN (${linkTypesList});
+    `);
+
+    // STEP 3: Aggregate into one row per (type, avivGeoId), in Postgres (the target table has just been emptied)
+    logger.info('[ECS Task] Étape 3/5 : Agrégation et INSERT des lignes...');
+    await pgClient.query(`
+      INSERT INTO ${PG_SCHEMA}.geoLink (type, avivGeoId, avivGeoIds)
+      SELECT type, avivGeoId, array_agg(rightId)
+      FROM ${PG_SCHEMA}.geoLink_staging
+      GROUP BY type, avivGeoId;
+    `);
+
+    // STEP 4: Re-add the primary key constraint on the final table
+    logger.info('[ECS Task] Étape 4/5 : Remise de la contrainte de clé primaire...');
+    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoLink ADD CONSTRAINT geoLink_pkey PRIMARY KEY (avivGeoId, type);`);
+
+    // STEP 5: Cleanup
+    logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
+    await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoLink_staging;`);
+  }
+
   function getS3ParquetPath(path: string): string | undefined {
 
     const bucket = process.env.GEO_MANAGEMENT_SYNC_BUCKET;
@@ -150,7 +253,7 @@ export async function processMassiveParquetToPostgres() {
 
 
     return bucket && bucketKey
-      ? `s3://${bucket}/${bucketKey}/${path}/*.parquet`
+      ? `s3://${bucket}/${bucketKey}/${path}/**/*.parquet`
       : undefined;
   }
 
@@ -314,9 +417,11 @@ export async function processMassiveParquetToPostgres() {
 );
 `);
 
-    // Drop the PK and empty the table without dropping it, to speed up the bulk insert that follows.
+    // Drop the PK and indexes and empty the table without dropping it, to speed up the bulk insert that follows.
     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoFeature DROP CONSTRAINT IF EXISTS GeoFeature_pkey;`);
-  await pgClient.query(`DROP INDEX IF EXISTS ${PG_SCHEMA}.idx_geofeature_streets_by_municipality;`);
+    for (const { name } of GEO_FEATURE_INDEXES) {
+      await pgClient.query(`DROP INDEX IF EXISTS ${PG_SCHEMA}.${name};`);
+    }
     await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}.geoFeature;`);
 
     // STEP 2: Vectorized bulk copy from Parquet S3
@@ -382,6 +487,10 @@ export async function processMassiveParquetToPostgres() {
     await pgClient.query(`
      ALTER TABLE ${PG_SCHEMA}.geoFeature ADD CONSTRAINT GeoFeature_pkey PRIMARY KEY (avivGeoId);
 `);
+    logger.info('[ECS Task] Reconstruction des index de geoFeature...');
+    for (const { name, definition } of GEO_FEATURE_INDEXES) {
+      await pgClient.query(`CREATE INDEX IF NOT EXISTS ${name} ON ${PG_SCHEMA}.geoFeature USING btree ${definition};`);
+    }
     // STEP 5: Cleanup
     logger.info('[ECS Task] Étape 5/5 : Suppression de la table de Staging...');
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoFeature_staging;`);
@@ -390,19 +499,7 @@ export async function processMassiveParquetToPostgres() {
   async function updateMunicipalityStreetIds(): Promise<void> {
     logger.info('[ECS Task] Mise à jour des streetIds des municipalités...');
 
-    await pgClient.query(`
-      CREATE INDEX IF NOT EXISTS idx_geofeature_streets_by_municipality
-        ON ${PG_SCHEMA}.geoFeature (municipalityId, avivGeoId)
-        WHERE level = 1200
-          AND municipalityId IS NOT NULL;
-    `);
- await pgClient.query(`
-     
-CREATE INDEX IF NOT EXISTS idx_geofeature_level
-    ON ${PG_SCHEMA}.geoFeature USING btree
-    (level ASC NULLS LAST)
-    TABLESPACE pg_default;
-    `);
+    // Relies on idx_geofeature_streets_by_municipality, rebuilt at the end of storeGeoFeature.
     await pgClient.query(`
       UPDATE ${PG_SCHEMA}.geoFeature municipality
       SET streetIds = streets.streetIds
@@ -594,8 +691,6 @@ async function postgresClearCache(conn: DuckDBConnection, secrets: GeoSSOTSecret
 }
 
 async function setupDuckDBConnection(instance: DuckDBInstance, secrets: GeoSSOTSecret): Promise<DuckDBConnection> {
-  const AWS_REGION = process.env.AWS_REGION || 'eu-west-1';
-
   const conn = await instance.connect();
 
   logger.info('[ECS Task] Chargement des extensions (httpfs, postgres, json)...');
@@ -616,7 +711,7 @@ async function setupDuckDBConnection(instance: DuckDBInstance, secrets: GeoSSOTS
   accessSync(caCertFile, constants.R_OK);
   logger.info('[ECS Task] CA certificate file: ' + caCertFile);
   await conn.run(`SET ca_cert_file='${caCertFile}';`);
-  await conn.run(`SET s3_region='${AWS_REGION}';`);
+  await conn.run(`SET s3_region='${awsRegion}';`);
 
   // Resolves credentials from env vars, ~/.aws/credentials or the ECS task role, in that order.
   logger.info('[ECS Task] Chargement des credentials AWS via load_aws_credentials()...');
