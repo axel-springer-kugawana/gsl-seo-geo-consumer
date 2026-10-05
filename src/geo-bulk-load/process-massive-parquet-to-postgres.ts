@@ -351,7 +351,7 @@ export async function processMassiveParquetToPostgres() {
         CASE WHEN ID IN (${fictiveMunicipalityIdsList}) THEN true ELSE FICTIVE END AS fictive,
         TYPE_LEVEL AS level,
         POSTAL_CODES::JSON::VARCHAR[] AS postalCodes,
-        PARENTS::JSON::VARCHAR[] AS parents,
+        list_filter(PARENTS::JSON::VARCHAR[], x -> NOT (x LIKE 'STU%' OR x LIKE 'POCO%' OR x LIKE 'PARC%')) AS parents,
         POPULATION AS population,
         (CASE WHEN TYPE_LEVEL = 200 THEN ID ELSE (AD02->>0)::VARCHAR END) AS countryId,
         (CASE WHEN TYPE_LEVEL = 400 THEN ID ELSE (AD04->>0)::VARCHAR END) AS regionId,
