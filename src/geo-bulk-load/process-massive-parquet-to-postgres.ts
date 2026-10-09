@@ -61,29 +61,29 @@ export async function parquetToPG() {
   const pgClient = await createPgClient(secrets);
   await pgClient.connect();
   try {
-    console.log('store geo names start ...');
+    logger.info('store geo names start ...');
     await storeGeoNames();
-    console.log('store geo names done...');
+    logger.info('store geo names done...');
 
-    console.log('store geo lineage start ...');
+    logger.info('store geo lineage start ...');
     await storeGeoLineage();
-    console.log('store geo lineage done...');
+    logger.info('store geo lineage done...');
 
-    console.log('store geo links start ...');
+    logger.info('store geo links start ...');
     await storeGeoLinks();
-    console.log('store geo links done...');
+    logger.info('store geo links done...');
 
-    console.log('store geo feature start ...');
+    logger.info('store geo feature start ...');
     await storeGeoFeature();
-    console.log('store geo feature done...');
+    logger.info('store geo feature done...');
 
-    console.log('update municipality street ids start ...');
+    logger.info('update municipality street ids start ...');
     await updateMunicipalityStreetIds();
-    console.log('update municipality street ids done...');
+    logger.info('update municipality street ids done...');
 
-    console.log('create or refresh materialized view start ...');
+    logger.info('create or refresh materialized view start ...');
     await createOrRefreshMaterializedView();
-    console.log('create or refresh materialized view done...');
+    logger.info('create or refresh materialized view done...');
 
     logger.info('[ECS Task] TRAITEMENT TERMINÉ AVEC SUCCÈS !');
   } catch (error) {
