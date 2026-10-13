@@ -270,6 +270,8 @@ export async function parquetToPG() {
         language character varying,
         displayName character varying ,
         name character varying ,
+        nameRoot character varying ,
+        namePrefix character varying ,
         slug character varying ,
         key character varying ,
         rank integer
