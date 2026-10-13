@@ -16,8 +16,7 @@ export async function persistGeoFeatureInSQL(geoData: Geo): Promise<void> {
  
  
   await client.query(
-    `
-      INSERT INTO ${PG_SCHEMA}.geofeature (
+    `INSERT INTO ${PG_SCHEMA}.geofeature (
         avivgeoid, type, mainpostalcode, countrycode, fictive, level,
         postalcodes, 
         parents, 
@@ -33,7 +32,8 @@ export async function persistGeoFeatureInSQL(geoData: Geo): Promise<void> {
         neighbors,
         population
       ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
-      ON CONFLICT (avivgeoid) DO UPDATE SET
+      ON CONFLICT (avivgeoid) 
+      DO UPDATE SET
         type = EXCLUDED.type,
         mainpostalcode = EXCLUDED.mainpostalcode,
         countrycode = EXCLUDED.countrycode,
@@ -98,7 +98,10 @@ export async function upsertGeoFeatureNamesRow(avivGeoId: string): Promise<void>
              f.countrycode,
              f.fictive,
              f.level,
-             json_agg(jsonb_build_object('displayname', g.displayname, 'name', g.name, 
+             json_agg(jsonb_build_object('displayname', g.displayname,
+              'name', g.name, 
+              'nameRoot', g.nameroot,
+              'namePrefix', g.nameprefix,
              'slug', g.slug, 'language', g.language)) AS names
       FROM ${PG_SCHEMA}.geofeature f
         LEFT JOIN ${PG_SCHEMA}.geoname g ON f.avivgeoid::text = g.avivgeoid::text
@@ -130,11 +133,15 @@ export async function persistGeoNamesInSQL(geoData: Geo): Promise<void> {
 
   await client.query(
     `
-      INSERT INTO ${PG_SCHEMA}.geoname (avivgeoid, language, displayname, name, slug)
-      SELECT * FROM UNNEST($1::text[], $2::text[], $3::text[], $4::text[], $5::text[])
-      ON CONFLICT (avivgeoid, language) DO UPDATE SET
+      INSERT INTO ${PG_SCHEMA}.geoname (avivgeoid, language, displayname, name, nameroot, nameprefix, slug)
+      SELECT * 
+      FROM UNNEST($1::text[], $2::text[], $3::text[], $4::text[], $5::text[], $6::text[], $7::text[])
+      ON CONFLICT (avivgeoid, language)
+      DO UPDATE SET
         displayname = EXCLUDED.displayname,
         name = EXCLUDED.name,
+        nameroot = EXCLUDED.nameroot,
+        nameprefix = EXCLUDED.nameprefix,
         slug = EXCLUDED.slug;
     `,
     [
@@ -142,6 +149,8 @@ export async function persistGeoNamesInSQL(geoData: Geo): Promise<void> {
       names.map((name) => name.Language),
       names.map((name) => name.DisplayName),
       names.map((name) => name.Name),
+      names.map((name) => name.NameRoot ?? ''),
+      names.map((name) => name.NamePrefix ?? ''),
       names.map((name) => name.Slug),
     ]
   );

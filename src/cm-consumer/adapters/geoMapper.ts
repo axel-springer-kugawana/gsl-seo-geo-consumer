@@ -17,6 +17,8 @@ export const transformGeoManagementToGeo = (geoMgmt: GeoManagementStructure): Ge
     Language: language,
     Name: name.name,
     Slug: name.slug,
+    NameRoot: name.name_root ?? '',
+    NamePrefix: name.name_prefix ?? '',
   }))
   );
 

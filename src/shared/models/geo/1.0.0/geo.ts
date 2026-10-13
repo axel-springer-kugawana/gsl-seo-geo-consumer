@@ -4,6 +4,8 @@ export interface GeoName {
   DisplayName: string;
   Language: string;
   Name: string;
+  NameRoot?: string;
+  NamePrefix?: string;
   Slug: string;
 }
 

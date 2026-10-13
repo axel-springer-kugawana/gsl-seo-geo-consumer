@@ -10,7 +10,14 @@ import { GeoLineageFallbackItem } from '../models/geoManagementStructure';
 const PG_SCHEMA = 'public';
 const awsRegion = requireEnvironmentVariable('AWS_REGION');
 
-type RawGeoName = { displayname?: string | null; name?: string | null; slug?: string | null; language?: string | null };
+type RawGeoName = { 
+    displayname?: string | null;
+    nameRoot?: string | null;
+    namePrefix?: string | null;
+    name?: string | null; 
+    slug?: string | null; 
+    language?: string | null 
+};
 
 export async function processGeoFeatureToDynamoDB(): Promise<void> {
     return backupPostgresCursorToDynamoDB({
@@ -66,6 +73,8 @@ function mapRawNames(rawNames: RawGeoName[] | null): GeoName[] {
             DisplayName: rawName.displayname ?? rawName.name ?? '',
             Language: rawName.language ?? '',
             Name: rawName.name ?? rawName.displayname ?? '',
+            NameRoot: rawName.nameRoot ?? '',
+            NamePrefix: rawName.namePrefix ?? '',
             Slug: rawName.slug ?? '',
         }));
 }
@@ -155,7 +164,7 @@ async function backupPostgresCursorToDynamoDB<T extends Record<string, any>>(
 
     logger.info(`[ECS Task] Starting bulk backup of ${taskLabel} to DynamoDB...`, { tableName, fetchSize, writeConcurrency });
 
-    const pgClient = await createPgClient(await getGeoApiSecret(process.env.GEO_DB_SECRET_ID || ''));
+    const pgClient = await createPgClient(await getGeoApiSecret(requireEnvironmentVariable('GEO_DB_SECRET_ID')));
     await pgClient.connect();
     const ddbClient = createDynamoDBClient(awsRegion);
 

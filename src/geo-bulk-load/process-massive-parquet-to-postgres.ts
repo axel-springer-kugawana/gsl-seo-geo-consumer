@@ -281,10 +281,15 @@ export async function parquetToPG() {
               language character varying ,
               displayName character varying  ,
               name character varying ,
+              nameRoot character varying ,
+              namePrefix character varying ,
               slug character varying ,
               key character varying,
               rank integer);
 `);
+    // Existing databases already have the table: add the columns introduced by GDA-459.
+    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName ADD COLUMN IF NOT EXISTS nameRoot character varying;`);
+    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName ADD COLUMN IF NOT EXISTS namePrefix character varying;`);
 
     // Drop the PK and empty the table without dropping it, to speed up the bulk insert that follows.
     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName DROP CONSTRAINT IF EXISTS GeoName_pkey;`);
@@ -299,15 +304,18 @@ export async function parquetToPG() {
 
     await postgresClearCache(duckDBConnection, secrets);
     await duckDBConnection.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}.geoName_staging (avivGeoId, language, displayName, name, slug, key, rank)
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoName_staging 
+      (avivGeoId, language, displayName, name, nameRoot, namePrefix, slug, key, rank)
       SELECT 
         FEATURE_ID AS avivGeoId,
         LANGUAGE AS language,
         DISPLAY_NAME AS displayName,
         NAME AS name,
+        NAME_ROOT AS nameRoot,
+        NAME_PREFIX AS namePrefix,
         SLUG AS slug,
         KEY AS key,
-        RANK AS rank  
+        RANK AS rank
       FROM read_parquet('${S3_PARQUET_PATH}')
       WHERE (${featureIdPrefixFilter})
         AND LANGUAGE IS NOT NULL
@@ -320,8 +328,8 @@ export async function parquetToPG() {
     // STEP 3: Insert all rows (the target table has just been emptied)
     logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
     await duckDBConnection.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}.geoName (avivGeoId, language, displayName, name, slug, key, rank)
-      SELECT avivGeoId, language, displayName, name, slug, key, rank
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoName (avivGeoId, language, displayName, name, nameRoot, namePrefix, slug, key, rank)
+      SELECT avivGeoId, language, displayName, name, nameRoot, namePrefix, slug, key, rank
       FROM postgres_db.${PG_SCHEMA}.geoName_staging;
     `);
 
@@ -436,18 +444,20 @@ export async function parquetToPG() {
     await postgresClearCache(duckDBConnection, secrets);
 
     await duckDBConnection.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature_staging (avivGeoId, type, mainPostalcode, countryCode, fictive, level, postalCodes, parents
-      , population
-      , countryId
-      , regionId
-      , provinceId
-      , municipalityId
-      , boroughId
-      , neighborhoodId
-      , microNeighborhoodId
-      , streetId
-      , streetIds,
-      neighbors)
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature_staging 
+        (avivGeoId, type
+        , mainPostalcode, countryCode, fictive, level, postalCodes, parents
+        , population
+        , countryId
+        , regionId
+        , provinceId
+        , municipalityId
+        , boroughId
+        , neighborhoodId
+        , microNeighborhoodId
+        , streetId
+        , streetIds,
+        neighbors)
       SELECT 
         ID AS avivGeoId,
         TYPE_LABEL AS type,
@@ -536,16 +546,17 @@ export async function parquetToPG() {
       logger.info('[ECS Task] Reconstruction complète de mv_geofeature_names...');
       await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}.mv_geofeature_names;`);
       await pgClient.query(`
-        INSERT INTO ${PG_SCHEMA}.mv_geofeature_names (avivgeoid, type, code, countrycode, fictive, level, names)
+        INSERT INTO ${PG_SCHEMA}.mv_geofeature_names
+          (avivgeoid, type, code, countrycode, fictive, level, names)
         SELECT f.avivgeoid,
                f.type,
                f.mainpostalcode AS code,
                f.countrycode,
                f.fictive,
                f.level,
-               json_agg(jsonb_build_object('displayname', g.displayname, 'name', g.name, 'slug', g.slug, 'language', g.language)) AS names
+               json_agg(jsonb_build_object('displayname', g.displayname, 'name', g.name, 'nameRoot', g.nameRoot, 'namePrefix', g.namePrefix, 'slug', g.slug, 'language', g.language)) AS names
         FROM ${PG_SCHEMA}.geofeature f
-          LEFT JOIN ${PG_SCHEMA}.geoname g ON f.avivgeoid::text = g.avivgeoid::text
+        LEFT JOIN ${PG_SCHEMA}.geoname g ON f.avivgeoid::text = g.avivgeoid::text
         WHERE f.type::text = ANY (ARRAY['Country'::character varying::text, 
           'Region'::character varying::text,
           'Province'::character varying::text,
@@ -666,8 +677,9 @@ export async function parquetToPG() {
 }
 
 async function createDuckDBClient(secrets: GeoSSOTSecret): Promise<DuckDBInstance> {
-  const bucket = process.env.GEO_MANAGEMENT_SYNC_BUCKET;
-  const bucketKey = process.env.GEO_MANAGEMENT_BUCKET_KEY;
+  const bucket = requireEnvironmentVariable('GEO_MANAGEMENT_SYNC_BUCKET');
+  const bucketKey = requireEnvironmentVariable('GEO_MANAGEMENT_BUCKET_KEY');
+  const duckDbExtensionDirectory = process.env.DUCKDB_EXTENSION_DIRECTORY || '/opt/duckdb/extensions';
 
   if (!secrets.DbHostWriter || !secrets.DbMainDatabase || !secrets.DbUsername || !secrets.DbPassword || !bucket || !bucketKey) {
     throw new Error('[ECS Task] ERREUR: Variables PostgreSQL ou chemin S3 manquants.');
@@ -675,8 +687,6 @@ async function createDuckDBClient(secrets: GeoSSOTSecret): Promise<DuckDBInstanc
 
   logger.info('[ECS Task] Initialisation de DuckDB via @duckdb/node-api...');
 
-  // Création de l'instance et de la connexion asynchrone native
-  const duckDbExtensionDirectory = process.env.DUCKDB_EXTENSION_DIRECTORY ?? '/opt/duckdb/extensions';
   const duckDbOptions = { extension_directory: duckDbExtensionDirectory };
   logger.info('[ECS Task] DuckDB extension directory: ' + duckDbExtensionDirectory);
   const instance = await DuckDBInstance.create(':memory:', duckDbOptions);
