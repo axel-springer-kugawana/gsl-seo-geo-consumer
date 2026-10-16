@@ -270,7 +270,8 @@ export async function parquetToPG() {
         language character varying,
         displayName character varying ,
         name character varying ,
-        nameRoot character varying ,
+        nameRoot character varying,
+        namePrepositions jsonb,
         namePrefix character varying ,
         slug character varying ,
         key character varying ,
@@ -285,6 +286,7 @@ export async function parquetToPG() {
               name character varying ,
               nameRoot character varying ,
               namePrefix character varying ,
+              namePrepositions jsonb ,
               slug character varying ,
               key character varying,
               rank integer);
@@ -292,10 +294,16 @@ export async function parquetToPG() {
     // Existing databases already have the table: add the columns introduced by GDA-459.
     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName ADD COLUMN IF NOT EXISTS nameRoot character varying;`);
     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName ADD COLUMN IF NOT EXISTS namePrefix character varying;`);
+    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName ADD COLUMN IF NOT EXISTS namePrepositions jsonb;`);
 
     // Drop the PK and empty the table without dropping it, to speed up the bulk insert that follows.
     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName DROP CONSTRAINT IF EXISTS GeoName_pkey;`);
     await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}.geoName;`);
+    await pgClient.query(`
+      ALTER TABLE ${PG_SCHEMA}.geoName
+      ALTER COLUMN namePrepositions TYPE jsonb
+      USING namePrepositions::jsonb;
+    `);
 
     // STEP 2: Vectorized bulk copy from Parquet S3
     logger.info('[ECS Task] Étape 2/5 : Insertion massive des 30M de lignes...');
@@ -307,13 +315,14 @@ export async function parquetToPG() {
     await postgresClearCache(duckDBConnection, secrets);
     await duckDBConnection.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoName_staging 
-      (avivGeoId, language, displayName, name, nameRoot, namePrefix, slug, key, rank)
+      (avivGeoId, language, displayName, name, nameRoot, namePrepositions, namePrefix, slug, key, rank)
       SELECT 
         FEATURE_ID AS avivGeoId,
         LANGUAGE AS language,
         DISPLAY_NAME AS displayName,
         NAME AS name,
         NAME_ROOT AS nameRoot,
+        to_json(NAME_PREPOSITIONS) AS namePrepositions,
         NAME_PREFIX AS namePrefix,
         SLUG AS slug,
         KEY AS key,
@@ -330,8 +339,8 @@ export async function parquetToPG() {
     // STEP 3: Insert all rows (the target table has just been emptied)
     logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
     await duckDBConnection.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}.geoName (avivGeoId, language, displayName, name, nameRoot, namePrefix, slug, key, rank)
-      SELECT avivGeoId, language, displayName, name, nameRoot, namePrefix, slug, key, rank
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoName (avivGeoId, language, displayName, name, nameRoot, namePrefix, slug, key, rank, namePrepositions)
+      SELECT avivGeoId, language, displayName, name, nameRoot, namePrefix, slug, key, rank, namePrepositions
       FROM postgres_db.${PG_SCHEMA}.geoName_staging;
     `);
 
@@ -556,7 +565,7 @@ export async function parquetToPG() {
                f.countrycode,
                f.fictive,
                f.level,
-               json_agg(jsonb_build_object('displayname', g.displayname, 'name', g.name, 'nameRoot', g.nameRoot, 'namePrefix', g.namePrefix, 'slug', g.slug, 'language', g.language)) AS names
+               json_agg(jsonb_build_object('displayname', g.displayname, 'name', g.name, 'nameRoot', g.nameRoot, 'namePrefix', g.namePrefix, 'slug', g.slug, 'language', g.language, 'namePrepositions', g.namePrepositions)) AS names
         FROM ${PG_SCHEMA}.geofeature f
         LEFT JOIN ${PG_SCHEMA}.geoname g ON f.avivgeoid::text = g.avivgeoid::text
         WHERE f.type::text = ANY (ARRAY['Country'::character varying::text, 
@@ -750,4 +759,3 @@ function createPgConnectionString(secrets: GeoSSOTSecret) {
   const escapedPgConnString = pgConnString.replace(/'/g, "''");
   return escapedPgConnString;
 }
-

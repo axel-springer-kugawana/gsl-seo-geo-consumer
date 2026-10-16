@@ -102,7 +102,8 @@ export async function upsertGeoFeatureNamesRow(avivGeoId: string): Promise<void>
               'name', g.name, 
               'nameRoot', g.nameroot,
               'namePrefix', g.nameprefix,
-             'slug', g.slug, 'language', g.language)) AS names
+              'slug', g.slug, 'language', g.language,
+              'namePrepositions', g.nameprepositions)) AS names
       FROM ${PG_SCHEMA}.geofeature f
         LEFT JOIN ${PG_SCHEMA}.geoname g ON f.avivgeoid::text = g.avivgeoid::text
       WHERE f.avivgeoid = $1
@@ -133,16 +134,18 @@ export async function persistGeoNamesInSQL(geoData: Geo): Promise<void> {
 
   await client.query(
     `
-      INSERT INTO ${PG_SCHEMA}.geoname (avivgeoid, language, displayname, name, nameroot, nameprefix, slug)
-      SELECT * 
-      FROM UNNEST($1::text[], $2::text[], $3::text[], $4::text[], $5::text[], $6::text[], $7::text[])
+      INSERT INTO ${PG_SCHEMA}.geoname (avivgeoid, language, displayname, name, nameroot, nameprefix, slug, nameprepositions)
+      SELECT avivgeoid, language, displayname, name, nameroot, nameprefix, slug, nameprepositions::jsonb
+      FROM UNNEST($1::text[], $2::text[], $3::text[], $4::text[], $5::text[], $6::text[], $7::text[], $8::text[])
+        AS names(avivgeoid, language, displayname, name, nameroot, nameprefix, slug, nameprepositions)
       ON CONFLICT (avivgeoid, language)
       DO UPDATE SET
         displayname = EXCLUDED.displayname,
         name = EXCLUDED.name,
         nameroot = EXCLUDED.nameroot,
         nameprefix = EXCLUDED.nameprefix,
-        slug = EXCLUDED.slug;
+        slug = EXCLUDED.slug,
+        nameprepositions = EXCLUDED.nameprepositions;
     `,
     [
       names.map(() => geoData.AvivGeoId),
@@ -152,6 +155,7 @@ export async function persistGeoNamesInSQL(geoData: Geo): Promise<void> {
       names.map((name) => name.NameRoot ?? ''),
       names.map((name) => name.NamePrefix ?? ''),
       names.map((name) => name.Slug),
+      names.map((name) => JSON.stringify(name.NamePrepositions ?? {})),
     ]
   );
 

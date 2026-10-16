@@ -10,7 +10,8 @@ import { GeoLineageFallbackItem } from '../models/geoManagementStructure';
 const PG_SCHEMA = 'public';
 const awsRegion = requireEnvironmentVariable('AWS_REGION');
 
-type RawGeoName = { 
+type RawGeoName = {
+    namePrepositions?: { [key: string]: string } | null;
     displayname?: string | null;
     nameRoot?: string | null;
     namePrefix?: string | null;
@@ -70,11 +71,12 @@ function mapRawNames(rawNames: RawGeoName[] | null): GeoName[] {
     return (rawNames ?? [])
         .filter((rawName) => rawName?.language)
         .map((rawName) => ({
-            DisplayName: rawName.displayname ?? rawName.name ?? '',
+            DisplayName: rawName.displayname ??'',
             Language: rawName.language ?? '',
-            Name: rawName.name ?? rawName.displayname ?? '',
+            Name: rawName.name ?? '',
             NameRoot: rawName.nameRoot ?? '',
             NamePrefix: rawName.namePrefix ?? '',
+            NamePrepositions: rawName.namePrepositions ?? {},
             Slug: rawName.slug ?? '',
         }));
 }
