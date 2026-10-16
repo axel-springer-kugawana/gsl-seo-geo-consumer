@@ -6,6 +6,7 @@ export interface GeoName {
   Name: string;
   NameRoot?: string;
   NamePrefix?: string;
+  NamePrepositions?: { [key: string]: string };
   Slug: string;
 }
 

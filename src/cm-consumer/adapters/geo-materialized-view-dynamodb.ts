@@ -183,25 +183,22 @@ export async function markGeoAsDeleted(deleteCommand: { id: string; updateDate: 
 
   await softDeleteGeoFromReferential(updatedTableName, deleteCommand.id, deleteCommand.updateDate, expiryTime);
 }
+type LocalizedName = components["schemas"]["LocalizedName"];
 
-type RawGeoName = {
-  name?: string | null;
-  display_name?: string | null;
-  slug?: string | null;
-  name_rank?: number | null;
-  name_root?: string | null;
-  name_prefix?: string | null;
-  name_prepositions?: { [key: string]: string; } | null;
-};
-
-function mapDtoNames(tmp: { [language: string]: RawGeoName[]; }): GeoName[] {
-  return Object.entries(tmp).flatMap(([language, localizedNames]) => (localizedNames ?? []).map(name => ({
-    DisplayName: name.display_name ?? name.name ?? "",
-    Language: language,
-    Name: name.name ?? name.display_name ?? "",
-    Slug: name.slug ?? "",
-  }))
-  );
+function mapDtoNames(names: { [language: string]: LocalizedName[] }): GeoName[] {
+  return Object
+          .entries(names)
+          .flatMap(([language, localizedNames]) =>
+            (localizedNames ?? []).map((name): GeoName => ({
+              DisplayName: name.display_name ??"",
+              Language: language,
+              Name: name.name ?? name.display_name ?? "",
+              Slug: name.slug ?? "",
+              NameRoot: name.name_root ?? "",
+              NamePrefix: name.name_prefix ?? "",
+              NamePrepositions: name.name_prepositions ?? {},
+            }))
+          );
 }
 
 // Walks every /relation/{place_id} page via keyset pagination, collecting all street ids into a single array.
