@@ -123,7 +123,7 @@ export interface components {
     AtlasMapping: {
       metric?: components["schemas"]["MappingMetrics"] | null;
       /** Id */
-      |?: string | null;
+      id?: string | null;
       /** Type */
       type?: string | null;
       metadata?: components["schemas"]["AtlasMetadataMapping"] | null;
@@ -198,7 +198,7 @@ export interface components {
     /** Duplicate */
     Duplicate: {
       /** Id */
-      |: string;
+      id: string;
       /** Type */
       type: string;
       /** Level */
@@ -223,7 +223,7 @@ export interface components {
     /** Feature */
     Feature: {
       /** Id */
-      |?: string | null;
+      id?: string | null;
       /** Type */
       type?: string | null;
       /** Type Key */
@@ -400,7 +400,7 @@ export interface components {
     /** HierarchyItem */
     HierarchyItem: {
       /** Id */
-      |: string;
+      id: string;
       /** Type */
       type: string;
       /** Level */
@@ -414,7 +414,7 @@ export interface components {
     /** History */
     History: {
       /** Id */
-      |: string;
+      id: string;
       type: components["schemas"]["HistoryType"];
       current_feature: components["schemas"]["Feature"] | null;
       platform: components["schemas"]["HistoryCountry"];
@@ -479,7 +479,7 @@ export interface components {
     ImmowebMapping: {
       metric?: components["schemas"]["MappingMetrics"] | null;
       /** Id */
-      |?: string | null;
+      id?: string | null;
       /** Type */
       type?: string | null;
       metadata?: components["schemas"]["ImmowebMetadataMapping"] | null;
@@ -497,13 +497,13 @@ export interface components {
     ImmoweltGeoidsMapping: {
       metric?: components["schemas"]["MappingMetrics"] | null;
       /** Id */
-      |?: string | null;
+      id?: string | null;
     };
     /** ImmoweltMapping */
     ImmoweltMapping: {
       metric?: components["schemas"]["MappingMetrics"] | null;
       /** Id */
-      |?: string | null;
+      id?: string | null;
       /** Type */
       type?: string | null;
     };
@@ -516,7 +516,7 @@ export interface components {
     Iso3166Mapping: {
       metric?: components["schemas"]["MappingMetrics"] | null;
       /** Id */
-      |?: string | null;
+      id?: string | null;
       /** Type */
       type?: string | null;
     };
@@ -529,7 +529,7 @@ export interface components {
     /** LegacyMappingItem */
     LegacyMappingItem: {
       /** Id */
-      |?: string | null;
+      id?: string | null;
       /** Type */
       type?: string | null;
       /** Inseecodes */
@@ -592,7 +592,7 @@ export interface components {
     LogicimmoMapping: {
       metric?: components["schemas"]["MappingMetrics"] | null;
       /** Id */
-      |?: string | null;
+      id?: string | null;
       /** Type */
       type?: string | null;
     };
@@ -631,7 +631,7 @@ export interface components {
     MeilleursAgentsMapping: {
       metric?: components["schemas"]["MappingMetrics"] | null;
       /** Id */
-      |?: number | null;
+      id?: number | null;
       /** Type */
       type?: string | null;
       /** Platform */
@@ -640,7 +640,7 @@ export interface components {
     /** ParentFeature */
     ParentFeature: {
       /** Id */
-      |?: string | null;
+      id?: string | null;
       /** Type */
       type?: string | null;
       /** Type Key */
@@ -741,7 +741,7 @@ export interface components {
     PlacesMapping: {
       metric?: components["schemas"]["MappingMetrics"] | null;
       /** Id */
-      |?: string | null;
+      id?: string | null;
       /** Type */
       type?: string | null;
       metadata?: components["schemas"]["PlacesMetadataMapping"] | null;
@@ -767,7 +767,7 @@ export interface components {
     /** Properties */
     Properties: {
       /** Id */
-      |: string;
+      id: string;
       coordinates: components["schemas"]["Centroids"];
       viewport: components["schemas"]["GeoRectangle"];
       maximized_viewport: components["schemas"]["GeoRectangle"];
@@ -808,7 +808,7 @@ export interface components {
     /** SchoolItem */
     SchoolItem: {
       /** Id */
-      |: string;
+      id: string;
       /** Names */
       names?: {
         [key: string]: string;
@@ -856,7 +856,7 @@ export interface components {
      * SortType
      * @enum {string}
      */
-    SortType: "|" | "name" | "administrative_code" | "weight";
+    SortType: "id" | "name" | "administrative_code" | "weight";
     /** StatisticItem */
     StatisticItem: {
       /** Name */
@@ -1022,7 +1022,7 @@ export interface operations {
   get_feature_by_id_places__place_id__get: {
     parameters: {
       path: {
-        /** @description The | of the place, in format <type><country><index>, see available types on /relation/describe */
+        /** @description The id of the place, in format <type><country><index>, see available types on /relation/describe */
         place_id: string;
       };
     };
@@ -1162,7 +1162,7 @@ export interface operations {
         level_of_detail?: number | null;
       };
       path: {
-        /** @description The | of the place, in format <type><country><index>, see available types on /relation/describe */
+        /** @description The id of the place, in format <type><country><index>, see available types on /relation/describe */
         place_id: string;
       };
     };
@@ -2104,7 +2104,7 @@ export interface operations {
         sort_order?: components["schemas"]["SortOrder"];
       };
       path: {
-        /** @description The | of the place, in format <type><country><index>, see available types on /relation/describe */
+        /** @description The id of the place, in format <type><country><index>, see available types on /relation/describe */
         place_id: string;
       };
     };
@@ -2204,7 +2204,7 @@ export interface operations {
         sort_order?: components["schemas"]["SortOrder"];
       };
       path: {
-        /** @description The | of the place, in format <type><country><index>, see available types on /relation/describe */
+        /** @description The id of the place, in format <type><country><index>, see available types on /relation/describe */
         place_id: string;
       };
     };
@@ -2365,7 +2365,7 @@ export interface operations {
         exclusion_radius: number;
         /** @description A seed to control pseudo-random algorithm */
         seed?: string | null;
-        /** @description The | of the address */
+        /** @description The id of the address */
         honu_id?: string | null;
         /** @description The AVIV Geo ID of the place */
         place_id: string;
@@ -2521,7 +2521,7 @@ export interface operations {
   get_history_by_id_history__place_id__get: {
     parameters: {
       path: {
-        /** @description The | of the place, in format <type><country><index>, see available types on /relation/describe */
+        /** @description The id of the place, in format <type><country><index>, see available types on /relation/describe */
         place_id: string;
       };
     };
