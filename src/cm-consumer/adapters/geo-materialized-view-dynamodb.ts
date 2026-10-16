@@ -183,8 +183,6 @@ export async function markGeoAsDeleted(deleteCommand: { id: string; updateDate: 
 
   await softDeleteGeoFromReferential(updatedTableName, deleteCommand.id, deleteCommand.updateDate, expiryTime);
 }
-
-type RawGeoName = {
 type LocalizedName = components["schemas"]["LocalizedName"];
 
 function mapDtoNames(names: { [language: string]: LocalizedName[] }): GeoName[] {
