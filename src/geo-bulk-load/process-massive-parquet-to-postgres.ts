@@ -322,7 +322,7 @@ export async function parquetToPG() {
         DISPLAY_NAME AS displayName,
         NAME AS name,
         NAME_ROOT AS nameRoot,
-        to_json(NAME_PREPOSITIONS) AS namePrepositions,
+        COALESCE(to_json(NAME_PREPOSITIONS), '{}'::JSON) AS namePrepositions,
         NAME_PREFIX AS namePrefix,
         SLUG AS slug,
         KEY AS key,
