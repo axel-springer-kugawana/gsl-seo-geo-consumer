@@ -666,7 +666,7 @@ export async function parquetToPG() {
                     geo_1.microneighborhoodid,
                     geo_1.streetid,
                     geo_1.streetids,
-                    json_agg(jsonb_build_object('displayname', g.displayname, 'name', g.name, 'nameprefix', g.nameprefix, 'nameroot', g.nameroot, 'slug', g.slug, 'language', g.language)) AS names
+                    json_agg(jsonb_build_object('displayname', g.displayname, 'name', g.name, 'nameRoot', g.nameRoot, 'namePrefix', g.namePrefix, 'slug', g.slug, 'language', g.language, 'namePrepositions', g.namePrepositions)) AS names
            
                     FROM ${PG_SCHEMA}.geofeature geo_1
                      LEFT JOIN ${PG_SCHEMA}.geoname g ON g.avivgeoid::text = geo_1.avivgeoid::text
