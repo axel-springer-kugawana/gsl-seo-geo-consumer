@@ -299,6 +299,7 @@ export async function parquetToPG() {
     // Drop the PK and empty the table without dropping it, to speed up the bulk insert that follows.
     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName DROP CONSTRAINT IF EXISTS GeoName_pkey;`);
     await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}.geoName;`);
+    await pgClient.query(`DROP VIEW IF EXISTS ${PG_SCHEMA}.v_geo_full;`);
     await pgClient.query(`
       ALTER TABLE ${PG_SCHEMA}.geoName
       ALTER COLUMN namePrepositions TYPE jsonb
@@ -593,7 +594,6 @@ export async function parquetToPG() {
 
       // Create/update the v_geo_full view
       logger.info('[ECS Task] Création ou remplacement de la vue v_geo_full...');
-      await pgClient.query(`DROP VIEW IF EXISTS ${PG_SCHEMA}.v_geo_full;`);
       await pgClient.query(`
         CREATE OR REPLACE VIEW ${PG_SCHEMA}.v_geo_full
          AS
