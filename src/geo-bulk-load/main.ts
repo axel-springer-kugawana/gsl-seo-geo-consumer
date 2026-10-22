@@ -1,5 +1,5 @@
 import { logger } from "@shared/cross-cutting/logger";
-import { parquetToPG } from './process-massive-parquet-to-postgres';
+import { parquetGeoLineageToPG, parquetGeoFeatureToPG, parquetLinksToPG } from './process-massive-parquet-to-postgres';
 import { processGeoFeatureToDynamoDB, pgGeoLineageToDynamoDB, pgGeoLinkToDynamoDB } from './process-massive-sql-to-dynamodb';
 import {  importLegacyMappingFallbacksToDynamoDB } from './process-massive-s3-to-dynamodb';
 
@@ -16,11 +16,13 @@ async function runGeoBulkLoadTask(): Promise<void> {
     return;
   }
 
-  await parquetToPG();
-  await pgGeoLineageToDynamoDB()
-    .then(pgGeoLinkToDynamoDB)
-    .then(processGeoFeatureToDynamoDB);
-  // await processGeoFeatureToDynamoDB();
+  await parquetGeoLineageToPG()
+  .then(() => parquetLinksToPG())
+  .then(() => parquetGeoFeatureToPG())
+  .then(() => pgGeoLineageToDynamoDB())
+  .then(() => pgGeoLinkToDynamoDB())
+ // .then(() => processGeoFeatureToDynamoDB()
+  ;
 }
 
 if (require.main === module) {
