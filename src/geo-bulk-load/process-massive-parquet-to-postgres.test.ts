@@ -50,20 +50,19 @@ describe('Parquet to PostgreSQL workflows', () => {
     expect(pgClient.end).toHaveBeenCalledTimes(1);
   });
 
-  test('loads the complete feature workflow without touching lineage', async () => {
+  test('loads the complete feature workflow without touching lineage or links', async () => {
     await parquetGeoFeatureToPG();
 
     expect(queries()).toContain('INSERT INTO postgres_db.public.geoName');
-    expect(queries()).toContain('INSERT INTO public.geoLink');
     expect(queries()).toContain('INSERT INTO postgres_db.public.geoFeature');
     expect(queries()).toContain('SET streetIds = streets.streetIds');
     expect(queries()).toContain('INSERT INTO public.mv_geofeature_names');
     expect(queries()).toContain('CREATE OR REPLACE VIEW public.v_geo_full');
-    expect(queries()).not.toMatch(/geoLineage/i);
+    expect(queries()).not.toMatch(/geoLineage|geoLink/i);
     expect(pgClient.end).toHaveBeenCalledTimes(1);
   });
 
-  test('parquetFeatureToPG loads only links', async () => {
+  test('parquetLinksToPG loads only links', async () => {
     await parquetLinksToPG();
 
     expect(queries()).toContain('INSERT INTO postgres_db.public.geoLink_staging');
@@ -99,7 +98,7 @@ describe('Parquet to PostgreSQL workflows', () => {
 
   test.each([
     { workflow: 'lineage', run: parquetGeoLineageToPG, steps: ['storeGeoLineage'] },
-    { workflow: 'feature', run: parquetGeoFeatureToPG, steps: ['storeGeoNames', 'storeGeoLinks', 'storeGeoFeature', 'updateMunicipalityStreetIds', 'createOrRefreshMaterializedView'] },
+    { workflow: 'feature', run: parquetGeoFeatureToPG, steps: ['storeGeoNames', 'storeGeoFeature', 'updateMunicipalityStreetIds', 'createOrRefreshMaterializedView'] },
     { workflow: 'links', run: parquetLinksToPG, steps: ['storeGeoLinks'] },
   ])('runs $workflow steps in order with generic workflow logs', async ({ workflow, run, steps }) => {
     await run();
