@@ -30,7 +30,7 @@ const FAKE_PROVINCES_IDS = [
   'AD06DE121', 'AD06DE137'
 ];
 // Link types copied from the link parquet into geoLink (TYPE column)
-const MANAGED_LINK_TYPES = ['AD04AD04', 'AD08AD08', 'AD09AD09','NBH2NBH2' ,'NBH2STRT', 'STRTSTRT'];
+const MANAGED_LINK_TYPES = ['AD04AD04', 'AD08AD08', 'AD08AD09', 'AD09AD09','NBH2NBH2' ,'NBH2STRT', 'STRTSTRT'];
 const PG_SCHEMA = 'public';
 
 // Secondary indexes of geoFeature: dropped before the bulk insert and rebuilt once the data is loaded.
@@ -48,9 +48,21 @@ const GEO_FEATURE_INDEXES: { name: string; definition: string }[] = [
   { name: 'idx_geofeature_honu_by_neighborhood', definition: '(neighborhoodId, streetId) WHERE level = 1400' },
 ];
 
-export async function parquetToPG() {
+export async function parquetLinksToPG() : Promise<void> {
+  await runParquetToPG('links');
+}
 
-  logger.info('[ECS Task] Démarrage du traitement massif Parquet vers PostgreSQL...');
+export async function parquetGeoLineageToPG(): Promise<void> {
+  await runParquetToPG('lineage');
+}
+
+export async function parquetGeoFeatureToPG(): Promise<void> {
+  await runParquetToPG('feature');
+}
+
+async function runParquetToPG(workflow: 'all' | 'lineage' | 'feature' | 'links'): Promise<void> {
+
+  logger.info(`[ECS Task] ${workflow}: Parquet to PostgreSQL start ...`);
   const secrets = await getGeoApiSecret(process.env.GEO_DB_SECRET_ID || '');
 
   const duckDBClient = await createDuckDBClient(secrets);
@@ -61,33 +73,31 @@ export async function parquetToPG() {
   const pgClient = await createPgClient(secrets);
   await pgClient.connect();
   try {
-    logger.info('store geo names start ...');
-    await storeGeoNames();
-    logger.info('store geo names done...');
+    let steps: (() => Promise<void>)[];
+    switch (workflow) {
+      case 'links':
+        steps = [storeGeoLinks];
+        break;
+      case 'lineage':
+        steps = [storeGeoLineage];
+        break;
+      case 'feature':
+        steps = [storeGeoNames,  storeGeoFeature, updateMunicipalityStreetIds, createOrRefreshMaterializedView];
+        break;
+      default:
+        steps =[];
+        break;
+    }
 
-    logger.info('store geo lineage start ...');
-    await storeGeoLineage();
-    logger.info('store geo lineage done...');
+    for (const step of steps) {
+      logger.info(`[ECS Task] ${workflow}: ${step.name} start ...`);
+      await step();
+      logger.info(`[ECS Task] ${workflow}: ${step.name} done...`);
+    }
 
-    logger.info('store geo links start ...');
-    await storeGeoLinks();
-    logger.info('store geo links done...');
-
-    logger.info('store geo feature start ...');
-    await storeGeoFeature();
-    logger.info('store geo feature done...');
-
-    logger.info('update municipality street ids start ...');
-    await updateMunicipalityStreetIds();
-    logger.info('update municipality street ids done...');
-
-    logger.info('create or refresh materialized view start ...');
-    await createOrRefreshMaterializedView();
-    logger.info('create or refresh materialized view done...');
-
-    logger.info('[ECS Task] TRAITEMENT TERMINÉ AVEC SUCCÈS !');
+    logger.info(`[ECS Task] ${workflow}: Parquet to PostgreSQL done...`);
   } catch (error) {
-    logger.error('[ECS Task] ERREUR CRITIQUE :' + error);
+    logger.error(`[ECS Task] ${workflow}: ERREUR CRITIQUE :` + error);
     throw error;
   } finally {
     duckDBConnection.closeSync();
@@ -148,10 +158,10 @@ export async function parquetToPG() {
 
     // STEP 3: Insert all rows (the target table has just been emptied)
     logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
-    await duckDBConnection.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}.geoLineage (newId, oldId,  key, coefficient)
+    await pgClient.query(`
+      INSERT INTO ${PG_SCHEMA}.geoLineage (newId, oldId,  key, coefficient)
       SELECT newId, oldId, key, coefficient
-      FROM postgres_db.${PG_SCHEMA}.geoLineage_staging;
+      FROM ${PG_SCHEMA}.geoLineage_staging;
     `);
 
     // STEP 4: Re-add the primary key constraint on the final table
@@ -188,21 +198,6 @@ export async function parquetToPG() {
         avivGeoId character varying NOT NULL,
         avivGeoIds text[]
       );
-    `);
-
-    // Tables created before the rename still have leftId / rightIds: rename them in place (idempotent).
-    await pgClient.query(`
-      DO $$
-      BEGIN
-        IF EXISTS (SELECT 1 FROM information_schema.columns
-                   WHERE table_schema = lower('${PG_SCHEMA}') AND table_name = 'geolink' AND column_name = 'leftid') THEN
-          ALTER TABLE ${PG_SCHEMA}.geoLink RENAME COLUMN leftId TO avivGeoId;
-        END IF;
-        IF EXISTS (SELECT 1 FROM information_schema.columns
-                   WHERE table_schema = lower('${PG_SCHEMA}') AND table_name = 'geolink' AND column_name = 'rightids') THEN
-          ALTER TABLE ${PG_SCHEMA}.geoLink RENAME COLUMN rightIds TO avivGeoIds;
-        END IF;
-      END $$;
     `);
 
     // Drop the PK and empty the table without dropping it, to speed up the bulk insert that follows.
@@ -251,7 +246,6 @@ export async function parquetToPG() {
     const bucket = process.env.GEO_MANAGEMENT_SYNC_BUCKET;
     const bucketKey = process.env.GEO_MANAGEMENT_BUCKET_KEY;
 
-
     return bucket && bucketKey
       ? `s3://${bucket}/${bucketKey}/${path}/**/*.parquet`
       : undefined;
@@ -291,11 +285,7 @@ export async function parquetToPG() {
               key character varying,
               rank integer);
 `);
-    // Existing databases already have the table: add the columns introduced by GDA-459.
-    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName ADD COLUMN IF NOT EXISTS nameRoot character varying;`);
-    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName ADD COLUMN IF NOT EXISTS namePrefix character varying;`);
-    await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName ADD COLUMN IF NOT EXISTS namePrepositions jsonb;`);
-
+ 
     // Drop the PK and empty the table without dropping it, to speed up the bulk insert that follows.
     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName DROP CONSTRAINT IF EXISTS GeoName_pkey;`);
     await pgClient.query(`TRUNCATE TABLE ${PG_SCHEMA}.geoName;`);
@@ -337,41 +327,18 @@ export async function parquetToPG() {
         ;
     `);
 
-    // STEP 3: Insert all rows (the target table has just been emptied)
+    // STEP 3: Insert one name per feature and language, keeping the lowest rank.
     logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
-    await duckDBConnection.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}.geoName (avivGeoId, language, displayName, name, nameRoot, namePrefix, slug, key, rank, namePrepositions)
-      SELECT avivGeoId, language, displayName, name, nameRoot, namePrefix, slug, key, rank, namePrepositions
-      FROM postgres_db.${PG_SCHEMA}.geoName_staging;
-    `);
-
-    // STEP 4: Deduplicate rows and re-add the primary key constraint
-    logger.info('[ECS Task] Étape 4/5 : Suppression des doublons et remise de la contrainte de clé primaire...');
     await pgClient.query(`
-      WITH a_supprimer AS (
-        SELECT *
-        FROM (
-          SELECT v.avivGeoId, v.language, v.rank,
-                 ROW_NUMBER() OVER (PARTITION BY v.avivGeoId, v.language ORDER BY v.rank) AS pos
-          FROM (
-            SELECT avivGeoId, language
-            FROM ${PG_SCHEMA}.geoName
-            GROUP BY avivGeoId, language
-            HAVING COUNT(*) > 1
-          ) tmp
-          INNER JOIN ${PG_SCHEMA}.geoName v
-            ON tmp.avivGeoId = v.avivGeoId
-            AND tmp.language = v.language
-        ) tmp2
-        WHERE pos > 1
-      )
-      DELETE FROM ${PG_SCHEMA}.geoName g
-      USING a_supprimer s
-      WHERE g.avivGeoId = s.avivGeoId
-        AND g.language = s.language
-        AND g.rank = s.rank;
+      INSERT INTO ${PG_SCHEMA}.geoName (avivGeoId, language, displayName, name, nameRoot, namePrefix, slug, key, rank, namePrepositions)
+      SELECT DISTINCT ON (avivGeoId, language)
+        avivGeoId, language, displayName, name, nameRoot, namePrefix, slug, key, rank, namePrepositions
+      FROM ${PG_SCHEMA}.geoName_staging
+      ORDER BY avivGeoId, language, rank ASC NULLS LAST;
     `);
 
+    // STEP 4: Re-add the primary key constraint
+    logger.info('[ECS Task] Étape 4/5 : Remise de la contrainte de clé primaire...');
     await pgClient.query(`ALTER TABLE ${PG_SCHEMA}.geoName ADD CONSTRAINT GeoName_pkey PRIMARY KEY (avivGeoId, language);`);
 
     // STEP 5: Cleanup
@@ -381,7 +348,6 @@ export async function parquetToPG() {
 
   async function storeGeoFeature(): Promise<void> {
     const S3_PARQUET_PATH = getS3ParquetPath('feature');
-
 
     // STEP 1: Temporary UNLOGGED table
     logger.info('[ECS Task] Étape 1/5 : Création de la table UNLOGGED...');
@@ -496,13 +462,13 @@ export async function parquetToPG() {
 
     // STEP 3: Insert all rows (the target table has just been emptied)
     logger.info('[ECS Task] Étape 3/5 : INSERT des lignes...');
-    await duckDBConnection.run(`
-      INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature (avivGeoId, type, mainPostalcode, countryCode, fictive, level
+    await pgClient.query(`
+      INSERT INTO ${PG_SCHEMA}.geoFeature (avivGeoId, type, mainPostalcode, countryCode, fictive, level
       , postalCodes, parents, population, countryId,
       regionId, provinceId, municipalityId, boroughId, neighborhoodId, microNeighborhoodId,streetId, streetIds, neighbors)
       SELECT avivGeoId, type, mainPostalcode, countryCode, fictive, level, postalCodes, parents, population
       , countryId, regionId, provinceId, municipalityId, boroughId, neighborhoodId, microNeighborhoodId, streetId, streetIds, neighbors
-      FROM postgres_db.${PG_SCHEMA}.geoFeature_staging;
+      FROM ${PG_SCHEMA}.geoFeature_staging;
     `);
 
     // STEP 4: Re-add the primary key constraint on the final table
