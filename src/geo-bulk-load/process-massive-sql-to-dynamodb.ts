@@ -79,6 +79,9 @@ export async function cleanGeoFeaturesFromLineage(): Promise<void> {
     const pgClient = await createPgClient(await getGeoApiSecret(requireEnvironmentVariable('GEO_DB_SECRET_ID')));
     const ddbClient = createDynamoDBClient(awsRegion);
     let totalKeys = 0;
+    const cleanupTime = Date.now();
+    const updateDate = new Date(cleanupTime).toISOString();
+    const expiryTime = Math.floor(cleanupTime / 1000) + 60 * 60 * 24;
     logger.info('[ECS Task] Starting lineage feature cleanup...', { tableName, version: GEO_DYNAMODB_SCHEMA_VERSION });
 
     try {
@@ -96,7 +99,7 @@ export async function cleanGeoFeaturesFromLineage(): Promise<void> {
             }
             const keys = rows.map((row) => ({ AvivGeoId: row.oldid, Version: GEO_DYNAMODB_SCHEMA_VERSION }));
             await writeInParallelBatches(keys, writeConcurrency, async (batch) => {
-                await deleteItemsFromDynamoDB(ddbClient, tableName, batch, { mode: 'hard' });
+                await deleteItemsFromDynamoDB(ddbClient, tableName, batch, { mode: 'soft', updateDate, expiryTime });
             });
             totalKeys += keys.length;
             logger.info(`[ECS Task] Lineage feature cleanup: ${totalKeys} DynamoDB keys processed.`);

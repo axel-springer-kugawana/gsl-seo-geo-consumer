@@ -36,7 +36,7 @@ describe('cleanGeoFeaturesFromLineage', () => {
         });
     }
 
-    test('deletes distinct lineage old IDs, including IDs absent from SQL features, in batches of at most 25', async () => {
+    test('soft-deletes distinct lineage old IDs, including IDs absent from SQL features, in batches of at most 25', async () => {
         const rows = Array.from({ length: 26 }, (_, index) => ({ oldid: `old-${index}` }));
         setPages([rows, [{ oldid: 'dynamo-only' }]]);
 
@@ -51,7 +51,13 @@ describe('cleanGeoFeaturesFromLineage', () => {
             AvivGeoId: row.oldid, Version: GEO_DYNAMODB_SCHEMA_VERSION,
         })));
         expect(calls.every(([, table]) => table === 'features')).toBe(true);
-        expect(calls.every(([, , , options]) => options.mode === 'hard')).toBe(true);
+        const options = calls[0][3];
+        expect(options.mode).toBe('soft');
+        if (options.mode === 'soft') {
+            expect(Date.parse(options.updateDate)).not.toBeNaN();
+            expect(options.expiryTime).toBe(Math.floor(Date.parse(options.updateDate) / 1000) + 60 * 60 * 24);
+        }
+        expect(calls.map(([, , , callOptions]) => callOptions)).toEqual(Array(calls.length).fill(options));
         for (const table of ['geofeature', 'geoname', 'mv_geofeature_names']) {
             expect(pgClient.query).toHaveBeenCalledWith(expect.stringContaining(`DELETE FROM public.${table} feature`));
         }
