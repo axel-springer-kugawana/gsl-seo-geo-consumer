@@ -8,7 +8,8 @@ import createClient from 'openapi-fetch';
 import { paths, components } from '../../shared/models/geo-api';
 import { Geo, GeoEntityBase, GeoName } from '../../shared/models/geo/1.0.0/geo';
 import { Middleware } from 'openapi-fetch';
-import { persistGeoFeatureInSQL, persistGeoNamesInSQL, deleteGeoFeature, upsertGeoFeatureNamesRow, persistGeoLineageInSQL } from "./geo-feature-postgres";
+import { persistGeoFeatureInPG, persistGeoNamesInSQL, getPgClient, upsertGeoFeatureNamesInPG, persistGeoLineageInPG } from "./geo-feature-postgres";
+import { deleteGeoFeaturesInPG } from "@shared/adapters/geo-feature-postgres";
 
 const RELATION_PAGE_LIMIT = 50;
 
@@ -36,9 +37,9 @@ export async function createOrUpdateGeo(id: string, data: any, geo: GeoManagemen
   const tableName = requireEnvironmentVariable('MV_FEATURE_TABLE_NAME');
   try {
     await persistDataInDynamoDB(id, geoData, tableName, data?.metadata?.updateDate?.toString() ?? Date.now().toString());
-    await persistGeoFeatureInSQL(geoData);
+    await persistGeoFeatureInPG(geoData);
     await persistGeoNamesInSQL(geoData);
-    await upsertGeoFeatureNamesRow(geoData.AvivGeoId);
+    await upsertGeoFeatureNamesInPG(geoData.AvivGeoId);
 
   } catch (error) {
     logger.error("Error upserting geoFeature in Postgres", {
@@ -166,8 +167,9 @@ export async function markGeoAsDeleted(deleteCommand: { id: string; updateDate: 
   const tableName = requireEnvironmentVariable('MV_LINEAGE_TABLE_NAME');
   try {
     await persistDataInDynamoDB(deleteCommand.id, geoLineage, tableName, deleteCommand.updateDate?.toString() ?? Date.now().toString());
-    await persistGeoLineageInSQL(geoLineage);
-    await deleteGeoFeature(deleteCommand.id);
+    await persistGeoLineageInPG(geoLineage);
+    const client = await getPgClient();
+    await deleteGeoFeaturesInPG(client, { source: 'ids', avivGeoIds: [deleteCommand.id] });
   } catch (error) {
     logger.error("Error deleting geoFeature in Postgres", {
       geoid: deleteCommand.id,
@@ -179,9 +181,7 @@ export async function markGeoAsDeleted(deleteCommand: { id: string; updateDate: 
   const onDayInSeconds = 60 * 60 * 24 * 1;
   const expiryTime = Math.floor(Date.now() / 1000) + onDayInSeconds;
 
-  const updatedTableName = requireEnvironmentVariable('MV_FEATURE_TABLE_NAME');
-
-  await softDeleteGeoFromReferential(updatedTableName, deleteCommand.id, deleteCommand.updateDate, expiryTime);
+  await softDeleteGeoFromReferential(deleteCommand.id, deleteCommand.updateDate, expiryTime);
 }
 type LocalizedName = components["schemas"]["LocalizedName"];
 

@@ -457,7 +457,7 @@ async function runParquetToPG(workflow: 'all' | 'lineage' | 'feature' | 'links')
         STRT::JSON::VARCHAR[] AS streetIds,
         NEIGHBORS::JSON::VARCHAR[] AS neighbors
       FROM read_parquet('${S3_PARQUET_PATH}')
-      WHERE (${featureIdPrefixFilter})
+      WHERE ACTIVE = true AND (${featureIdPrefixFilter})
      `);
 
     // STEP 3: Insert all rows (the target table has just been emptied)

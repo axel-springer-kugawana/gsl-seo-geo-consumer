@@ -1,9 +1,9 @@
 import { logger } from "@shared/cross-cutting/logger";
 import { parquetGeoLineageToPG, parquetGeoFeatureToPG, parquetLinksToPG } from './process-massive-parquet-to-postgres';
-import { processGeoFeatureToDynamoDB, pgGeoLineageToDynamoDB, pgGeoLinkToDynamoDB } from './process-massive-sql-to-dynamodb';
+import { processGeoFeatureToDynamoDB, pgGeoLineageToDynamoDB, pgGeoLinkToDynamoDB, cleanGeoFeaturesFromLineage } from './process-massive-sql-to-dynamodb';
 import {  importLegacyMappingFallbacksToDynamoDB } from './process-massive-s3-to-dynamodb';
 
-export {  processGeoFeatureToDynamoDB, pgGeoLineageToDynamoDB , pgGeoLinkToDynamoDB, importLegacyMappingFallbacksToDynamoDB };
+export {  processGeoFeatureToDynamoDB, pgGeoLineageToDynamoDB , pgGeoLinkToDynamoDB, importLegacyMappingFallbacksToDynamoDB, cleanGeoFeaturesFromLineage };
 
 const GEO_LEGACY_MAPPING_LOAD_TASK = 'geo-legacy-mapping-load';
 
@@ -23,6 +23,8 @@ async function runGeoBulkLoadTask(): Promise<void> {
   .then(() => pgGeoLinkToDynamoDB())
   // .then(() => processGeoFeatureToDynamoDB())
   ;
+
+  await cleanGeoFeaturesFromLineage();
 }
 
 if (require.main === module) {

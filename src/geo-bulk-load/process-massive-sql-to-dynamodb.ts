@@ -1,6 +1,7 @@
-import { createDynamoDBClient, DYNAMODB_BATCH_WRITE_LIMIT, sendBatchToDynamoDB } from "@shared/adapters/dynamodb-client";
+import { createDynamoDBClient, DYNAMODB_BATCH_WRITE_LIMIT, sendBatchToDynamoDB, deleteItemsFromDynamoDB } from "@shared/adapters/dynamodb-client";
 import { getGeoApiSecret } from "./geo-api-secrets";
 import { createPgClient } from "@shared/adapters/pg-client";
+import { deleteGeoFeaturesInPG } from "@shared/adapters/geo-feature-postgres";
 import { requireEnvironmentVariable } from "@shared/cross-cutting/environment";
 import { GEO_DYNAMODB_SCHEMA_VERSION } from "@shared/models/geo-dynamodb-schema-version";
 import { logger } from "@shared/cross-cutting/logger";
@@ -65,6 +66,54 @@ export async function pgGeoLinkToDynamoDB(): Promise<void> {
       FROM ${schema}.geolink;
     `,
     });
+}
+
+export async function cleanGeoFeaturesFromLineage(): Promise<void> {
+    const tableName = requireEnvironmentVariable('GEO_DYNAMODB_TABLE_NAME');
+    const fetchSize = Number(process.env.GEO_DYNAMODB_FETCH_BATCH_SIZE || '1000');
+    const writeConcurrency = Number(process.env.GEO_DYNAMODB_WRITE_CONCURRENCY || '16');
+    if (!Number.isSafeInteger(fetchSize) || fetchSize <= 0 || !Number.isSafeInteger(writeConcurrency) || writeConcurrency <= 0) {
+        throw new Error('DynamoDB fetch batch size and write concurrency must be positive integers.');
+    }
+
+    const pgClient = await createPgClient(await getGeoApiSecret(requireEnvironmentVariable('GEO_DB_SECRET_ID')));
+    const ddbClient = createDynamoDBClient(awsRegion);
+    let totalKeys = 0;
+    logger.info('[ECS Task] Starting lineage feature cleanup...', { tableName, version: GEO_DYNAMODB_SCHEMA_VERSION });
+
+    try {
+        await pgClient.connect();
+        await pgClient.query('BEGIN ISOLATION LEVEL REPEATABLE READ');
+        await pgClient.query(`
+            DECLARE lineage_feature_cleanup_cursor CURSOR FOR
+            SELECT DISTINCT oldid FROM ${PG_SCHEMA}.geolineage WHERE oldid IS NOT NULL;
+        `);
+
+        for (;;) {
+            const { rows } = await pgClient.query(`FETCH ${fetchSize} FROM lineage_feature_cleanup_cursor;`);
+            if (rows.length === 0) {
+                break;
+            }
+            const keys = rows.map((row) => ({ AvivGeoId: row.oldid, Version: GEO_DYNAMODB_SCHEMA_VERSION }));
+            await writeInParallelBatches(keys, writeConcurrency, async (batch) => {
+                await deleteItemsFromDynamoDB(ddbClient, tableName, batch, { mode: 'hard' });
+            });
+            totalKeys += keys.length;
+            logger.info(`[ECS Task] Lineage feature cleanup: ${totalKeys} DynamoDB keys processed.`);
+        }
+
+        await pgClient.query('CLOSE lineage_feature_cleanup_cursor;');
+        const deletedFeatures = await deleteGeoFeaturesInPG(pgClient, { source: 'lineage' });
+        await pgClient.query('COMMIT');
+        logger.info('[ECS Task] Lineage feature cleanup completed.', { dynamoKeys: totalKeys, sqlFeatures: deletedFeatures });
+    } catch (error) {
+        await pgClient.query('ROLLBACK').catch(() => undefined);
+        logger.error(`[ECS Task] Lineage feature cleanup failed: ${error}`);
+        throw error;
+    } finally {
+        await pgClient.end();
+        ddbClient.destroy();
+    }
 }
 
 function mapRawNames(rawNames: RawGeoName[] | null): GeoName[] {

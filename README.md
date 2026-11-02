@@ -108,6 +108,26 @@ then drops the staging table.
 s3 parquet snapshot ──duckdb──> PostgreSQL staging table ──> geoName table
 ```
 
+### Lineage feature cleanup
+
+The bulk task ends with `cleanGeoFeaturesFromLineage`. It reads distinct
+`geolineage.oldid` values and deletes matching `AvivGeoId` feature records
+from DynamoDB at `GEO_DYNAMODB_SCHEMA_VERSION`, then deletes matching rows
+from PostgreSQL `geofeature`, `geoname`, and `mv_geofeature_names`. Lineage records and
+replacement IDs (`newid`) are retained. The legacy-mapping task skips cleanup.
+
+The consumer and bulk task share `deleteGeoFeaturesInPG` in
+`src/shared/adapters/geo-feature-postgres.ts`. The consumer supplies explicit
+IDs; the bulk task matches lineage directly in SQL. Connection and transaction
+management remain with the caller.
+
+DynamoDB deletes use paginated PostgreSQL reads and retryable batches of up
+to 25 keys, including IDs whose SQL feature is already absent. SQL deletions
+commit only after all DynamoDB deletes succeed. The stores do not share a
+transaction: a failure can leave completed DynamoDB deletes in place, and
+rerunning cleanup safely retries them. The lineage and feature projection
+tables must already exist, even if their import steps are disabled.
+
 ### Configuring the snapshot
 
 Set these Terraform variables in the environment tfvars file:

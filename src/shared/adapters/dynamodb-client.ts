@@ -2,11 +2,12 @@ import {
     BatchWriteItemCommand,
     DynamoDBClient,
     DynamoDBClientConfig,
+    UpdateItemCommand,
     WriteRequest,
 } from "@aws-sdk/client-dynamodb";
 import { fromSSO } from "@aws-sdk/credential-provider-sso";
 import { marshall } from "@aws-sdk/util-dynamodb";
-import { isRetryableDynamoDbError } from "./dynamodb-retry";
+import { isRetryableDynamoDbError, withDynamoDbRetry } from "./dynamodb-retry";
 import { logger } from "@shared/cross-cutting/logger";
 
 const isLocal = process.env.AWS_EXECUTION_ENV === undefined;
@@ -34,6 +35,67 @@ export async function sendBatchToDynamoDB(
             Item: marshall(item, { removeUndefinedValues: true }),
         },
     }));
+    return sendWriteRequestsToDynamoDB(client, tableName, writeRequests);
+}
+
+export async function sendDeleteBatchToDynamoDB(
+    client: DynamoDBClient,
+    tableName: string,
+    keys: Record<string, any>[],
+): Promise<number> {
+    return sendWriteRequestsToDynamoDB(client, tableName, keys.map((key) => ({
+        DeleteRequest: { Key: marshall(key) },
+    })));
+}
+
+export async function deleteItemsFromDynamoDB(
+    client: DynamoDBClient,
+    tableName: string,
+    keys: Record<string, any>[],
+    options: { mode: 'hard' } | { mode: 'soft'; updateDate: string; expiryTime: number },
+): Promise<number> {
+    if (options.mode === 'hard') {
+        return sendDeleteBatchToDynamoDB(client, tableName, keys);
+    }
+
+    for (const key of keys) {
+        try {
+            const result = await withDynamoDbRetry(() => client.send(new UpdateItemCommand({
+                TableName: tableName,
+                Key: marshall(key),
+                UpdateExpression: 'SET #EXPIREAT = :EXPIREAT, #LASTUPDATEDATE = :LASTUPDATEDATECURRV, #SOFTDELETE = :SOFTDELETE',
+                ConditionExpression: 'attribute_not_exists(#LASTUPDATEDATE) OR #LASTUPDATEDATE <= :LASTUPDATEDATECURRV',
+                ExpressionAttributeValues: {
+                    ':EXPIREAT': { N: options.expiryTime.toString() },
+                    ':LASTUPDATEDATECURRV': { S: options.updateDate?.toString() },
+                    ':SOFTDELETE': { BOOL: true },
+                },
+                ExpressionAttributeNames: {
+                    '#EXPIREAT': 'expireat',
+                    '#LASTUPDATEDATE': 'lastupdatedate',
+                    '#SOFTDELETE': 'softdeleted',
+                },
+            })));
+            if (result.$metadata.httpStatusCode !== 200) {
+                throw new Error('Error soft-deleting DynamoDB item', { cause: result.$metadata });
+            }
+        } catch (error) {
+            if ((error as { name?: string })?.name === 'ConditionalCheckFailedException') {
+                logger.warn('Conditional Check failed on lastUpdate date. Geo won\'t be soft-deleted', { key });
+            } else {
+                logger.warn('Error While soft-deleting DynamoDB Record', { key, Error: String(error) });
+                throw error;
+            }
+        }
+    }
+    return 0;
+}
+
+async function  sendWriteRequestsToDynamoDB(
+    client: DynamoDBClient,
+    tableName: string,
+    writeRequests: WriteRequest[],
+): Promise<number> {
     let remaining = writeRequests;
     let retryCount = 0;
 
