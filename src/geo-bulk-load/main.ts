@@ -17,15 +17,15 @@ async function runGeoBulkLoadTask(): Promise<void> {
   }
 
   await parquetLinksToPG()
-  // .then(() => parquetGeoLineageToPG()
-  // .then(() => parquetGeoFeatureToPG())
-  // .then(() => pgGeoLineageToDynamoDB())
-  .then(() => pgGeoLinkToDynamoDB())
-  // .then(() => processGeoFeatureToDynamoDB())
-  ;
+    .then(() => parquetGeoLineageToPG())
+    .then(() => parquetGeoFeatureToPG())
+    .then(() => pgGeoLineageToDynamoDB())
+    .then(() => pgGeoLinkToDynamoDB())
+    .then(() => processGeoFeatureToDynamoDB())
+   
+    ;
+ // await cleanGeoFeaturesFromLineage();
 
-  await cleanGeoFeaturesFromLineage();
-}
 
 if (require.main === module) {
   runGeoBulkLoadTask()
