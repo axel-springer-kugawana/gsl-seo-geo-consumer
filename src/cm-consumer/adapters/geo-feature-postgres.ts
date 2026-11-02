@@ -11,7 +11,7 @@ const PG_SCHEMA = 'public';
 let cachedPgClient: PgClient | null = null;
  
 // Mirrors the DynamoDB write with an upsert on the geoFeature table used by the geo-bulk-load pipeline.
-export async function persistGeoFeatureInSQL(geoData: Geo): Promise<void> {
+export async function persistGeoFeatureInPG(geoData: Geo): Promise<void> {
   const client = await getPgClient();
  
  
@@ -82,7 +82,7 @@ export async function persistGeoFeatureInSQL(geoData: Geo): Promise<void> {
 
 // mv_geofeature_names is a plain table (not a materialized view): upsert only this geo's row instead
 // of paying for a full rebuild, which is only affordable in the geo-bulk-load batch job.
-export async function upsertGeoFeatureNamesRow(avivGeoId: string): Promise<void> {
+export async function upsertGeoFeatureNamesInPG(avivGeoId: string): Promise<void> {
   const client = await getPgClient();
 
   logger.info("Upserting mv_geofeature_names row", { geoid: avivGeoId });
@@ -162,38 +162,25 @@ export async function persistGeoNamesInSQL(geoData: Geo): Promise<void> {
   logger.info("geoNames upserted successfully in PostgreSQL", { geoid: geoData.AvivGeoId, count: names.length });
 }
 
-export async function deleteGeoFeature(avivGeoId: string): Promise<void> {
-  const client = await getPgClient();
-
-  logger.info("Deleting geoFeature in PostgreSQL", { geoid: avivGeoId });
-
-  await client.query(`DELETE FROM ${PG_SCHEMA}.geofeature WHERE avivgeoid = $1;`, [avivGeoId]);
-
-  await client.query(`DELETE FROM ${PG_SCHEMA}.geoname WHERE avivgeoid = $1;`, [avivGeoId]);
- 
-  await client.query(`DELETE FROM ${PG_SCHEMA}.mv_geofeature_names WHERE avivgeoid = $1;`, [avivGeoId]);
-
-  logger.info("geoFeature deleted successfully in PostgreSQL", { geoid: avivGeoId });
-
-//TODO : add in lineage table
-
-}
-
 // Reused across warm lambda invocations; reconnects lazily if the previous connection dropped.
-async function getPgClient(): Promise<PgClient> {
+export async function getPgClient(): Promise<PgClient> {
   if (cachedPgClient) {
     return cachedPgClient;
   }
 
   const secrets = await getGeoApiSecret();
   const client = await createPgClient(secrets);
+
   await client.connect();
+  
   logger.info("PostgreSQL connection established for geoFeature writes");
+  
   cachedPgClient = client;
+  
   return client;
 }
 // Mirrors the DynamoDB Fallbacks with an upsert into the geoLineage table used by the geo-bulk-load pipeline.
-export async function persistGeoLineageInSQL(geoData: GeoLineageFallbackItem): Promise<void> {
+export async function persistGeoLineageInPG(geoData: GeoLineageFallbackItem): Promise<void> {
   const client = await getPgClient();
   const fallbacks = geoData.Fallbacks ?? [];
 

@@ -110,6 +110,16 @@ data "aws_iam_policy_document" "task" {
       var.geo_legacy_mapping_dynamodb_table.arn,
     ]
   }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "dynamodb:UpdateItem",
+    ]
+    resources = [
+      var.geo_dynamodb_table.arn,
+    ]
+  }
 }
 
 resource "aws_iam_policy" "task" {
