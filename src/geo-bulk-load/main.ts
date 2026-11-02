@@ -16,12 +16,12 @@ async function runGeoBulkLoadTask(): Promise<void> {
     return;
   }
 
-  await parquetGeoLineageToPG()
-  .then(() => parquetLinksToPG())
-  .then(() => parquetGeoFeatureToPG())
-  .then(() => pgGeoLineageToDynamoDB())
+  await parquetLinksToPG()
+  // .then(() => parquetGeoLineageToPG()
+  // .then(() => parquetGeoFeatureToPG())
+  // .then(() => pgGeoLineageToDynamoDB())
   .then(() => pgGeoLinkToDynamoDB())
-  .then(() => processGeoFeatureToDynamoDB())
+  // .then(() => processGeoFeatureToDynamoDB())
   ;
 }
 
