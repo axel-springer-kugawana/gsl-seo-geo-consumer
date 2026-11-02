@@ -1,4 +1,3 @@
-import { beforeEach, describe, expect, test } from '@jest/globals';
 import { BatchWriteItemCommand, DynamoDBClient, UpdateItemCommand, WriteRequest } from '@aws-sdk/client-dynamodb';
 import { mockClient } from 'aws-sdk-client-mock';
 import { sendBatchToDynamoDB, sendDeleteBatchToDynamoDB, deleteItemsFromDynamoDB } from './dynamodb-client';
