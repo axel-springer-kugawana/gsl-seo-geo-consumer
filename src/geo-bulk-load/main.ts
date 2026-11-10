@@ -27,6 +27,8 @@ async function runGeoBulkLoadTask(): Promise<void> {
  // await cleanGeoFeaturesFromLineage();
 
 
+}
+
 if (require.main === module) {
   runGeoBulkLoadTask()
     .catch((error) => {
