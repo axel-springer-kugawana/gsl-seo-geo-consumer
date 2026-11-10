@@ -33,7 +33,8 @@ const LEGACY_MAPPING_SOURCES: LegacyMappingSource[] = [
     { fileName: "selogerSerp.csv", pageTypeByBrand: "selogerSerp" },
     { fileName: "logicimmoSerp.csv", pageTypeByBrand: "logicimmoSerp" },
     { fileName: "selogerPricemapSiteMap.csv", pageTypeByBrand: "selogerPricemapSiteMap" },
-    { fileName: "selogerPricemap.csv", pageTypeByBrand: "selogerPricemap" } 
+    { fileName: "selogerPricemap.csv", pageTypeByBrand: "selogerPricemap" } ,
+    { fileName: "selogerNeufSerp.csv", pageTypeByBrand: "selogerNeufSerp" } 
 ];
 
 export async function importLegacyMappingFallbacksToDynamoDB(): Promise<void> {
