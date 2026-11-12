@@ -87,12 +87,9 @@ export async function cleanGeoFeaturesFromLineage(): Promise<void> {
     try {
         await pgClient.connect();
         await pgClient.query('BEGIN ISOLATION LEVEL REPEATABLE READ');
-        const stagingTable = `${PG_SCHEMA}.geofeature_deleted_staging`;
-        logger.info('[ECS Task] Feature cleanup sources.', { stagingTable });
         await pgClient.query(`
             DECLARE lineage_feature_cleanup_cursor CURSOR FOR
-            SELECT DISTINCT oldid FROM ${PG_SCHEMA}.geolineage WHERE oldid IS NOT NULL
-            UNION SELECT avivgeoid AS oldid FROM ${stagingTable} WHERE avivgeoid IS NOT NULL;
+            SELECT DISTINCT oldid FROM ${PG_SCHEMA}.geolineage WHERE oldid IS NOT NULL;
         `);
 
         for (;;) {
@@ -111,12 +108,8 @@ export async function cleanGeoFeaturesFromLineage(): Promise<void> {
         await pgClient.query('CLOSE lineage_feature_cleanup_cursor;');
         logger.info('[ECS Task] DynamoDB cleanup finished; starting PostgreSQL lineage deletion.', { dynamoKeys: totalKeys });
         const deletedFeatures = await deleteGeoFeaturesInPG(pgClient, { source: 'lineage' });
-        const stagingResult = await pgClient.query(
-            `DELETE FROM ${stagingTable} staging USING ${PG_SCHEMA}.geolineage lineage WHERE staging.avivgeoid = lineage.oldid;`,
-        );
-        const deletedStagingRows = stagingResult.rowCount ?? 0;
         await pgClient.query('COMMIT');
-        logger.info('[ECS Task] Lineage feature cleanup completed.', { dynamoKeys: totalKeys, sqlFeatures: deletedFeatures, stagingRows: deletedStagingRows });
+        logger.info('[ECS Task] Lineage feature cleanup completed.', { dynamoKeys: totalKeys, sqlFeatures: deletedFeatures });
     } catch (error) {
         await pgClient.query('ROLLBACK').catch(() => undefined);
         logger.error(`[ECS Task] Lineage feature cleanup failed: ${error}`);
