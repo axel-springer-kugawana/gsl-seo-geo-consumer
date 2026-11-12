@@ -116,6 +116,11 @@ from DynamoDB at `GEO_DYNAMODB_SCHEMA_VERSION`, then deletes matching rows
 from PostgreSQL `geofeature`, `geoname`, and `mv_geofeature_names`. Lineage records and
 replacement IDs (`newid`) are retained. The legacy-mapping task skips cleanup.
 
+The required `public.geofeature_deleted_staging` table's non-null `avivgeoid`
+values are also included in the DynamoDB soft-delete cursor. A SQL `UNION`
+deduplicates IDs across both sources. After DynamoDB processing, staging rows
+matching lineage old IDs are removed; other staging rows are retained.
+
 The consumer and bulk task share `deleteGeoFeaturesInPG` in
 `src/shared/adapters/geo-feature-postgres.ts`. The consumer supplies explicit
 IDs; the bulk task matches lineage directly in SQL. Connection and transaction
