@@ -60,7 +60,11 @@ export async function parquetGeoFeatureToPG(): Promise<void> {
   await runParquetToPG('feature');
 }
 
-async function runParquetToPG(workflow: 'all' | 'lineage' | 'feature' | 'links'): Promise<void> {
+export async function parquetGeoFeatureDeletedPatch(): Promise<void> {
+  await runParquetToPG('parquetGeoFeatureDeletedPatch');
+}
+
+async function runParquetToPG(workflow: 'all' | 'lineage' | 'feature' | 'links' | 'parquetGeoFeatureDeletedPatch', ): Promise<void> {
 
   logger.info(`[ECS Task] ${workflow}: Parquet to PostgreSQL start ...`);
   const secrets = await getGeoApiSecret(process.env.GEO_DB_SECRET_ID || '');
@@ -84,6 +88,9 @@ async function runParquetToPG(workflow: 'all' | 'lineage' | 'feature' | 'links')
       case 'feature':
         steps = [storeGeoNames,  storeGeoFeature, updateMunicipalityStreetIds, createOrRefreshMaterializedView];
         break;
+      case 'parquetGeoFeatureDeletedPatch':
+        steps = [storeGeoFeatureDeletedPatch];
+        break;
       default:
         steps =[];
         break;
@@ -103,6 +110,36 @@ async function runParquetToPG(workflow: 'all' | 'lineage' | 'feature' | 'links')
     duckDBConnection.closeSync();
     duckDBClient.closeSync();
     await pgClient.end();
+  }
+
+    const S3_PARQUET_PATH = getS3ParquetPath('feature');
+    await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoFeature_deleted_staging;`);
+    await pgClient.query(`CREATE UNLOGGED TABLE ${PG_SCHEMA}.geoFeature_deleted_staging (avivGeoId character varying NOT NULL);`);
+    await postgresClearCache(duckDBConnection, secrets);
+    await duckDBConnection.run(`
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature_deleted_staging (avivGeoId)
+      SELECT ID AS avivGeoId
+      FROM read_parquet('${S3_PARQUET_PATH}')
+      WHERE ACTIVE = false AND ID IS NOT NULL;
+    `);
+    await pgClient.query('BEGIN');
+    try {
+      await pgClient.query(`
+        DELETE FROM ${PG_SCHEMA}.geoFeature AS feature
+        USING ${PG_SCHEMA}.geoFeature_deleted_staging AS deleted
+        WHERE feature.avivGeoId = deleted.avivGeoId;
+      `);
+      await pgClient.query(`
+        DELETE FROM ${PG_SCHEMA}.mv_geofeature_names AS feature
+        USING ${PG_SCHEMA}.geoFeature_deleted_staging AS deleted
+        WHERE feature.avivGeoId = deleted.avivGeoId;
+      `);
+      await pgClient.query('COMMIT');
+    } catch (error) {
+      await pgClient.query('ROLLBACK');
+      throw error;
+    }
+   // await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoFeature_deleted_staging;`);
   }
 
   async function storeGeoLineage() {
@@ -654,6 +691,9 @@ async function runParquetToPG(workflow: 'all' | 'lineage' | 'feature' | 'links')
   }
 }
 
+
+
+
 async function createDuckDBClient(secrets: GeoSSOTSecret): Promise<DuckDBInstance> {
   const bucket = requireEnvironmentVariable('GEO_MANAGEMENT_SYNC_BUCKET');
   const bucketKey = requireEnvironmentVariable('GEO_MANAGEMENT_BUCKET_KEY');
@@ -725,3 +765,5 @@ function createPgConnectionString(secrets: GeoSSOTSecret) {
   const escapedPgConnString = pgConnString.replace(/'/g, "''");
   return escapedPgConnString;
 }
+
+
