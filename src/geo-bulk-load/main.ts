@@ -16,7 +16,7 @@ async function runGeoBulkLoadTask(): Promise<void> {
     return;
   }
 
-  await parquetGeoFeatureDeletedPatch()
+  await parquetGeoFeatureDeletedPatch().then(() => cleanGeoFeaturesFromLineage())
   //  parquetLinksToPG()
   //   .then(() => parquetGeoLineageToPG())
   //   .then(() => parquetGeoFeatureToPG())
@@ -25,8 +25,8 @@ async function runGeoBulkLoadTask(): Promise<void> {
   //   .then(() => pgGeoLinkToDynamoDB())
   //   .then(() => processGeoFeatureToDynamoDB())
    
-    ;
-  await cleanGeoFeaturesFromLineage();
+  //   ;
+  // await cleanGeoFeaturesFromLineage();
 
 
 }
