@@ -121,19 +121,15 @@ async function runParquetToPG(workflow: 'all' | 'lineage' | 'feature' | 'links' 
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoFeature_deleted_staging;`);
     await pgClient.query(`CREATE UNLOGGED TABLE ${PG_SCHEMA}.geoFeature_deleted_staging (avivGeoId character varying NOT NULL);`);
     await postgresClearCache(duckDBConnection, secrets);
-
-
     const featureIdPrefixFilter = MANAGED_PREFIX_IDS_PATCH
-      .map((prefix) => `NEW_ID LIKE '${prefix}%'`)
+      .map((prefix) => `ID LIKE '${prefix}%'`)
       .join(' OR ');
 
-      
     await duckDBConnection.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature_deleted_staging (avivGeoId)
       SELECT ID AS avivGeoId
       FROM read_parquet('${S3_PARQUET_PATH}')
-        WHERE ACTIVE = false AND ID IS NOT NULL AND (${featureIdPrefixFilter})
-
+      WHERE ACTIVE = false AND ID IS NOT NULL AND (${featureIdPrefixFilter});
     `);
     await pgClient.query('BEGIN');
     try {
