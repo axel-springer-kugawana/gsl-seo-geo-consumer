@@ -10,6 +10,10 @@ const MANAGED_PREFIX_IDS = [
   'AD02', 'AD03', 'AD04', 'AD05', 'AD06', 'AD07', 'AD08', 'AD09',
   'NBH1', 'NBH2', 'NBH3', 'STRTFR', 'HONUFR'
 ];
+
+const MANAGED_PREFIX_IDS_PATCH = [
+  'STRTFR', 'HONUFR'
+];
 // Municipalities forced to fictive=true (mergers/splits not reflected in FICTIVE on the source side)
 const FAKE_PROVINCES_IDS = [
   'AD06DE144', 'AD06DE307', 'AD06DE155', 'AD06DE160', 'AD06DE161', 'AD06DE162', 'AD06DE163',
@@ -117,11 +121,19 @@ async function runParquetToPG(workflow: 'all' | 'lineage' | 'feature' | 'links' 
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoFeature_deleted_staging;`);
     await pgClient.query(`CREATE UNLOGGED TABLE ${PG_SCHEMA}.geoFeature_deleted_staging (avivGeoId character varying NOT NULL);`);
     await postgresClearCache(duckDBConnection, secrets);
+
+
+    const featureIdPrefixFilter = MANAGED_PREFIX_IDS_PATCH
+      .map((prefix) => `NEW_ID LIKE '${prefix}%'`)
+      .join(' OR ');
+
+      
     await duckDBConnection.run(`
       INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature_deleted_staging (avivGeoId)
       SELECT ID AS avivGeoId
       FROM read_parquet('${S3_PARQUET_PATH}')
-      WHERE ACTIVE = false AND ID IS NOT NULL;
+        WHERE ACTIVE = false AND ID IS NOT NULL AND (${featureIdPrefixFilter})
+
     `);
     await pgClient.query('BEGIN');
     try {

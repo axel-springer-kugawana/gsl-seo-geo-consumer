@@ -107,8 +107,17 @@ export async function cleanGeoFeaturesFromLineage(): Promise<void> {
 
         await pgClient.query('CLOSE lineage_feature_cleanup_cursor;');
         const deletedFeatures = await deleteGeoFeaturesInPG(pgClient, { source: 'lineage' });
+        const stagingTable = `${PG_SCHEMA}.geofeature_deleted_staging`;
+        const { rows: stagingRows } = await pgClient.query('SELECT to_regclass($1) AS table_name;', [stagingTable]);
+        let deletedStagingRows = 0;
+        if (stagingRows[0]?.table_name) {
+            const stagingResult = await pgClient.query(
+                `DELETE FROM ${stagingTable} staging USING ${PG_SCHEMA}.geolineage lineage WHERE staging.avivgeoid = lineage.oldid;`,
+            );
+            deletedStagingRows = stagingResult.rowCount ?? 0;
+        }
         await pgClient.query('COMMIT');
-        logger.info('[ECS Task] Lineage feature cleanup completed.', { dynamoKeys: totalKeys, sqlFeatures: deletedFeatures });
+        logger.info('[ECS Task] Lineage feature cleanup completed.', { dynamoKeys: totalKeys, sqlFeatures: deletedFeatures, stagingRows: deletedStagingRows });
     } catch (error) {
         await pgClient.query('ROLLBACK').catch(() => undefined);
         logger.error(`[ECS Task] Lineage feature cleanup failed: ${error}`);

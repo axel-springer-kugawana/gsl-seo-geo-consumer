@@ -67,6 +67,19 @@ describe('cleanGeoFeaturesFromLineage', () => {
         expect(ddbClient.destroy).toHaveBeenCalledTimes(1);
     });
 
+    test('deletes lineage IDs from geofeature_deleted_staging only when the table exists', async () => {
+        pgClient.query.mockImplementation(async (sql: string) => (
+            sql.startsWith('SELECT to_regclass') ? { rows: [{ table_name: 'geofeature_deleted_staging' }], rowCount: 1 } : { rows: [], rowCount: 0 }
+        ));
+        await cleanGeoFeaturesFromLineage();
+        expect(pgClient.query).toHaveBeenCalledWith(expect.stringContaining('DELETE FROM public.geofeature_deleted_staging staging'));
+
+        pgClient.query.mockClear();
+        pgClient.query.mockResolvedValue({ rows: [], rowCount: 0 });
+        await cleanGeoFeaturesFromLineage();
+        expect(pgClient.query).not.toHaveBeenCalledWith(expect.stringContaining('geofeature_deleted_staging staging'));
+    });
+
     test('handles an empty lineage without DynamoDB writes', async () => {
         await cleanGeoFeaturesFromLineage();
 

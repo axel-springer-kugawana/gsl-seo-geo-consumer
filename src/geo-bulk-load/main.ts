@@ -21,11 +21,12 @@ async function runGeoBulkLoadTask(): Promise<void> {
   //   .then(() => parquetGeoLineageToPG())
   //   .then(() => parquetGeoFeatureToPG())
   //   .then(() => pgGeoLineageToDynamoDB())
+
   //   .then(() => pgGeoLinkToDynamoDB())
   //   .then(() => processGeoFeatureToDynamoDB())
    
     ;
- // await cleanGeoFeaturesFromLineage();
+  await cleanGeoFeaturesFromLineage();
 
 
 }
