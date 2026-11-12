@@ -1,5 +1,5 @@
 import { logger } from "@shared/cross-cutting/logger";
-import { parquetGeoLineageToPG, parquetGeoFeatureToPG, parquetLinksToPG } from './process-massive-parquet-to-postgres';
+import { parquetGeoLineageToPG, parquetGeoFeatureToPG, parquetLinksToPG, parquetGeoFeatureDeletedPatch } from './process-massive-parquet-to-postgres';
 import { processGeoFeatureToDynamoDB, pgGeoLineageToDynamoDB, pgGeoLinkToDynamoDB, cleanGeoFeaturesFromLineage } from './process-massive-sql-to-dynamodb';
 import {  importLegacyMappingFallbacksToDynamoDB } from './process-massive-s3-to-dynamodb';
 
@@ -16,15 +16,19 @@ async function runGeoBulkLoadTask(): Promise<void> {
     return;
   }
 
-  await parquetLinksToPG()
-  // .then(() => parquetGeoLineageToPG()
-  // .then(() => parquetGeoFeatureToPG())
-  // .then(() => pgGeoLineageToDynamoDB())
-  .then(() => pgGeoLinkToDynamoDB())
-  // .then(() => processGeoFeatureToDynamoDB())
-  ;
+  await parquetGeoFeatureDeletedPatch().then(() => cleanGeoFeaturesFromLineage())
+  //  parquetLinksToPG()
+  //   .then(() => parquetGeoLineageToPG())
+  //   .then(() => parquetGeoFeatureToPG())
+  //   .then(() => pgGeoLineageToDynamoDB())
 
-  await cleanGeoFeaturesFromLineage();
+  //   .then(() => pgGeoLinkToDynamoDB())
+  //   .then(() => processGeoFeatureToDynamoDB())
+   
+  //   ;
+  // await cleanGeoFeaturesFromLineage();
+
+
 }
 
 if (require.main === module) {

@@ -10,6 +10,10 @@ const MANAGED_PREFIX_IDS = [
   'AD02', 'AD03', 'AD04', 'AD05', 'AD06', 'AD07', 'AD08', 'AD09',
   'NBH1', 'NBH2', 'NBH3', 'STRTFR', 'HONUFR'
 ];
+
+const MANAGED_PREFIX_IDS_PATCH = [
+  'STRTFR', 'HONUFR'
+];
 // Municipalities forced to fictive=true (mergers/splits not reflected in FICTIVE on the source side)
 const FAKE_PROVINCES_IDS = [
   'AD06DE144', 'AD06DE307', 'AD06DE155', 'AD06DE160', 'AD06DE161', 'AD06DE162', 'AD06DE163',
@@ -60,7 +64,11 @@ export async function parquetGeoFeatureToPG(): Promise<void> {
   await runParquetToPG('feature');
 }
 
-async function runParquetToPG(workflow: 'all' | 'lineage' | 'feature' | 'links'): Promise<void> {
+export async function parquetGeoFeatureDeletedPatch(): Promise<void> {
+  await runParquetToPG('parquetGeoFeatureDeletedPatch');
+}
+
+async function runParquetToPG(workflow: 'all' | 'lineage' | 'feature' | 'links' | 'parquetGeoFeatureDeletedPatch', ): Promise<void> {
 
   logger.info(`[ECS Task] ${workflow}: Parquet to PostgreSQL start ...`);
   const secrets = await getGeoApiSecret(process.env.GEO_DB_SECRET_ID || '');
@@ -84,6 +92,9 @@ async function runParquetToPG(workflow: 'all' | 'lineage' | 'feature' | 'links')
       case 'feature':
         steps = [storeGeoNames,  storeGeoFeature, updateMunicipalityStreetIds, createOrRefreshMaterializedView];
         break;
+      case 'parquetGeoFeatureDeletedPatch':
+        steps = [storeGeoFeatureDeletedPatch];
+        break;
       default:
         steps =[];
         break;
@@ -103,6 +114,41 @@ async function runParquetToPG(workflow: 'all' | 'lineage' | 'feature' | 'links')
     duckDBConnection.closeSync();
     duckDBClient.closeSync();
     await pgClient.end();
+  }
+
+  async function storeGeoFeatureDeletedPatch(): Promise<void> {
+    const S3_PARQUET_PATH = getS3ParquetPath('feature');
+    await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoFeature_deleted_staging;`);
+    await pgClient.query(`CREATE UNLOGGED TABLE ${PG_SCHEMA}.geoFeature_deleted_staging (avivGeoId character varying NOT NULL);`);
+    await postgresClearCache(duckDBConnection, secrets);
+    const featureIdPrefixFilter = MANAGED_PREFIX_IDS_PATCH
+      .map((prefix) => `ID LIKE '${prefix}%'`)
+      .join(' OR ');
+
+    await duckDBConnection.run(`
+      INSERT INTO postgres_db.${PG_SCHEMA}.geoFeature_deleted_staging (avivGeoId)
+      SELECT ID AS avivGeoId
+      FROM read_parquet('${S3_PARQUET_PATH}')
+      WHERE ACTIVE = false AND ID IS NOT NULL AND (${featureIdPrefixFilter});
+    `);
+    await pgClient.query('BEGIN');
+    try {
+      await pgClient.query(`
+        DELETE FROM ${PG_SCHEMA}.geoFeature AS feature
+        USING ${PG_SCHEMA}.geoFeature_deleted_staging AS deleted
+        WHERE feature.avivGeoId = deleted.avivGeoId;
+      `);
+      await pgClient.query(`
+        DELETE FROM ${PG_SCHEMA}.mv_geofeature_names AS feature
+        USING ${PG_SCHEMA}.geoFeature_deleted_staging AS deleted
+        WHERE feature.avivGeoId = deleted.avivGeoId;
+      `);
+      await pgClient.query('COMMIT');
+    } catch (error) {
+      await pgClient.query('ROLLBACK');
+      throw error;
+    }
+   // await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoFeature_deleted_staging;`);
   }
 
   async function storeGeoLineage() {
@@ -654,6 +700,9 @@ async function runParquetToPG(workflow: 'all' | 'lineage' | 'feature' | 'links')
   }
 }
 
+
+
+
 async function createDuckDBClient(secrets: GeoSSOTSecret): Promise<DuckDBInstance> {
   const bucket = requireEnvironmentVariable('GEO_MANAGEMENT_SYNC_BUCKET');
   const bucketKey = requireEnvironmentVariable('GEO_MANAGEMENT_BUCKET_KEY');
@@ -725,3 +774,5 @@ function createPgConnectionString(secrets: GeoSSOTSecret) {
   const escapedPgConnString = pgConnString.replace(/'/g, "''");
   return escapedPgConnString;
 }
+
+

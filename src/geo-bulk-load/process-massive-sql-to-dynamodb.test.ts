@@ -67,7 +67,38 @@ describe('cleanGeoFeaturesFromLineage', () => {
         expect(ddbClient.destroy).toHaveBeenCalledTimes(1);
     });
 
-    test('handles an empty lineage without DynamoDB writes', async () => {
+    test('deletes lineage IDs from geofeature_deleted_staging', async () => {
+        await cleanGeoFeaturesFromLineage();
+        expect(pgClient.query).toHaveBeenCalledWith(expect.stringContaining('DELETE FROM public.geofeature_deleted_staging staging'));
+    });
+
+    test('includes staging IDs in the paginated DynamoDB soft-delete cursor', async () => {
+        const pages = [
+            Array.from({ length: 26 }, (_, index) => ({ oldid: `staging-${index}` })),
+            [{ oldid: 'staging-next-page' }],
+        ];
+        pgClient.query.mockImplementation(async (sql: string) => {
+            if (sql.startsWith('FETCH ')) {
+                return { rows: pages.shift() ?? [], rowCount: 0 };
+            }
+            return { rows: [], rowCount: 0 };
+        });
+
+        await cleanGeoFeaturesFromLineage();
+
+        expect(pgClient.query).toHaveBeenCalledWith(expect.stringContaining(
+            'UNION SELECT avivgeoid AS oldid FROM public.geofeature_deleted_staging WHERE avivgeoid IS NOT NULL',
+        ));
+        const calls = jest.mocked(deleteItemsFromDynamoDB).mock.calls;
+        expect(calls.map(([, , keys]) => keys.length)).toEqual([25, 1, 1]);
+        expect(calls.flatMap(([, , keys]) => keys).map((key) => key.AvivGeoId)).toEqual([
+            ...Array.from({ length: 26 }, (_, index) => `staging-${index}`),
+            'staging-next-page',
+        ]);
+        expect(calls.every(([, table, , options]) => table === 'features' && options.mode === 'soft')).toBe(true);
+    });
+
+    test('handles empty lineage and staging tables without DynamoDB writes', async () => {
         await cleanGeoFeaturesFromLineage();
 
         expect(deleteItemsFromDynamoDB).not.toHaveBeenCalled();
