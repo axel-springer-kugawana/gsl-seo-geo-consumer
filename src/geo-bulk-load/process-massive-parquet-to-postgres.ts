@@ -112,6 +112,7 @@ async function runParquetToPG(workflow: 'all' | 'lineage' | 'feature' | 'links' 
     await pgClient.end();
   }
 
+  async function storeGeoFeatureDeletedPatch(): Promise<void> {
     const S3_PARQUET_PATH = getS3ParquetPath('feature');
     await pgClient.query(`DROP TABLE IF EXISTS ${PG_SCHEMA}.geoFeature_deleted_staging;`);
     await pgClient.query(`CREATE UNLOGGED TABLE ${PG_SCHEMA}.geoFeature_deleted_staging (avivGeoId character varying NOT NULL);`);
